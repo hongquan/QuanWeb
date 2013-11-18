@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Quan web{% endblock %}
+
+{% block inner_content %}
+  {% with front=True %}
+    {% for p in posts %}
+      {% include 'blog/block_post.html' %}
+    {% endfor %}
+  {% endwith %}
+{% endblock inner_content %}

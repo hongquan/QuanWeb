@@ -1,0 +1,29 @@
+<article class='post'>
+  <header class='entry-header'>
+    <h1 class='entry-title'>
+      <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
+    </h1>
+    <div class='entry-meta'>
+      <span class='date'>
+        <a rel='bookmark' title='Permalink to {{ p.title }}' href='{{ p|entry_url }}'>
+          <span class='glyphicon glyphicon-calendar'></span>
+          <time datetime='{{ p.date_published }}' class='entry-date'>{{ p.date_published|strftime('%d %B %Y') }}</time>
+        </a>
+      </span>
+      <span class='categories-links'>
+        <a rel='category' href='{{ p.category|category_url }}'>
+          <span class='glyphicon glyphicon-folder-open'></span>
+          <span>&nbsp;{{ p.category }}</span>
+        </a>
+      </span>
+    </div>
+  </header>
+  <div class='entry-content'>
+    {% if not front %}
+      {{ p.body|markdown }}
+    {% else %}
+      {{ p.preamble|safe }}
+    {% endif %}
+  </div>
+  <footer class='entry-meta'></footer>
+</article>

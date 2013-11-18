@@ -1,0 +1,20 @@
+<header role='banner' class='site-header' id='masthead'>
+  <a rel='home' title='Wordpress' href='/' class='home-link'>
+    <h1 class='site-title'>{{ config.SITE_TITLE }}</h1>
+    <h2 class='site-description'>{{ config.SITE_DESCRIPTION }}</h2>
+  </a>
+
+  <div class='navbar' id='navbar'>
+    <nav role='navigation' class='navigation main-navigation' id='site-navigation'>
+      <h3 class='menu-toggle'>Menu</h3>
+      <a title='Skip to content' href='#content' class='screen-reader-text skip-link'>Skip to content</a>
+      <div class='nav-menu'><ul><li class='page_item'><a href='#'>Sample Page</a></li></ul></div>
+      <form action='http://localhost/wordpress/' class='search-form' method='get' role='search'>
+    <label>
+      <span class='screen-reader-text'>Search for:</span>
+      <input type='search' title='Search for:' name='s' value='' placeholder='Search …' class='search-field'>
+    </label>
+    <input type='submit' value='Search' class='search-submit'>
+  </form>				</nav><!-- #site-navigation -->
+  </div><!-- #navbar -->
+</header>

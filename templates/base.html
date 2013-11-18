@@ -1,0 +1,30 @@
+{% extends 'bootstrap/base.html' %}
+
+{%- block styles %}
+  <link href="{{ static('css/bootstrap.css') }}" rel='stylesheet' media='screen'>
+    <!--
+  <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Source+Sans+Pro%3A300%2C400%2C700%2C300italic%2C400italic%2C700italic%7CBitter%3A400%2C700&subset=latin%2Clatin-ext'>
+  -->
+  <link rel='stylesheet' href='{{ static('css/custom.css') }}'>
+  <link rel='stylesheet' href='{{ static('fonts/genericons.css') }}'>
+  <link rel='stylesheet' href='{{ static('css/pygments-css/default.css') }}'>
+  <style id='twentythirteen-header-css' type='text/css'>
+    .site-header {
+      background: url({{static('images/headers/circle.png')}}) no-repeat scroll top;
+      background-size: 1600px auto;
+  }
+  </style>
+{%- endblock styles %}
+
+{% block navbar -%}
+  {% include 'navbar.html' %}
+{%- endblock navbar %}
+{% block content %}
+  <div class='container'>
+    {% block banner %}
+      {% include 'banner_intro.html' %}
+    {% endblock banner %}
+    {% block inner_content %}
+    {% endblock inner_content %}
+  </div>
+{% endblock content %}

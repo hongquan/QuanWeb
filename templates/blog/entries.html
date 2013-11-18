@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cat|default('All') }}{% endblock title %}
+
+{% block inner_content %}
+  {% with front=True %}
+    {% for p in entries %}
+      {% include 'blog/block_post.html' %}
+    {% endfor %}
+  {% endwith %}
+{% endblock inner_content %}

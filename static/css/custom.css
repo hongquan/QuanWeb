@@ -1,0 +1,91 @@
+article.post {
+    max-width: 640px;
+    margin: 0 auto;
+}
+.entry-header, .entry-content, .entry-summary, .entry-meta {
+    width: 100%;
+}
+
+.entry-header {
+    margin-bottom: 30px;
+}
+
+.entry-meta {
+    clear: both;
+    font-size: 13px;
+}
+
+.entry-meta > span {
+    margin-right: 20px;
+}
+
+
+.genericon:before, .menu-toggle:after, .featured-post:before, .date a:before, .entry-meta .author a:before, .format-audio .entry-content:before, .comments-link a:before, .tags-links a:first-child:before, .categories-links a:first-child:before, .edit-link a:before, .attachment .entry-title:before, .attachment-meta:before, .attachment-meta a:before, .comment-awaiting-moderation:before, .comment-reply-link:before, .comment-reply-login:before, .comment-reply-title small a:before, .bypostauthor > .comment-body .fn:before, .error404 .page-title:before {
+    display: inline-block;
+    font: 16px/1 Genericons;
+    vertical-align: text-bottom;
+}
+
+.entry-title a {
+    color: #141412;
+}
+
+.entry-title a:hover {
+    color: #EA9629;
+}
+
+h1.entry-title {
+  font-family: Bitter,Georgia,serif;
+  line-height: 1.3;
+  font-size: 48px;
+}
+
+.entry-meta a {
+    color: #BC360A;
+}
+
+.entry-content {
+    -moz-hyphens: auto;
+    word-wrap: break-word;
+}
+
+
+.codehilitetable .linenos pre {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: #A0A0A0;
+}
+
+.codehilitetable .code pre {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.codehilitetable pre {
+  font-family: "Ubuntu Mono";
+  font-size: 14px;
+}
+
+#disqus_thread {
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+}
+
+.navbar-orange {
+  background-image: url(../img/headers/circle.png);
+  background-position: -300px -300px;
+}
+
+.navbar-orange a {
+  color: white;
+}
+
+.navbar-orange li a:hover, .navbar-orange li a:focus, .navbar-orange li a:active {
+  background-color: #B22F18;
+}
+
+.navbar-orange .open > a, .navbar-orange .open > a:hover, .navbar-orange .open > a:focus {
+  background-color: #B22F18;
+}

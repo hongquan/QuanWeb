@@ -1,0 +1,32 @@
+{% macro render_errors(field) %}
+{% if field.errors %}
+<ul class="errors">
+    {% for error in field.errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
+{% macro render_form(form, action=".", method="POST", multipart=False) %}
+<form method="{{ method }}" action="{{ action }}" {% if multipart %} enctype="multipart/form-data"{% endif %}>
+    {% if form.errors %}
+    <p class="error">Your form contains errors.</p>
+    {% endif %}
+    {{ caller() }}
+</form>
+{% endmacro %}
+
+
+{% macro render_field(field) %}
+{{ render_errors(field) }}
+<p class="field {% if field.errors %} error{% endif %}">
+        {{ caller() }}
+    </p>
+{% endmacro %}
+
+
+{% macro render_label(field, breakafter=True) %}
+{{ field.label(*varargs, **kwargs) }}{% if field.flags.required %}*{% endif %}
+{% if breakafter %}<br>{% endif %}
+{% endmacro %}
