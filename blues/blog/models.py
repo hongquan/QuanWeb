@@ -1,5 +1,4 @@
 from datetime import datetime
-from bs4 import BeautifulSoup
 from slugify import slugify
 
 from quanweb.common import db, md
