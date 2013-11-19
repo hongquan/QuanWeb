@@ -29,6 +29,7 @@ setup(
     platforms='any',
     install_requires=[
         'Flask',
+        'psycopg2',
         'Flask-SQLAlchemy',
         'Flask-WTF',
         'Flask-Login',
