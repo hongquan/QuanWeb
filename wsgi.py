@@ -9,7 +9,7 @@ from cherrypy import wsgiserver
 
 from quanweb import app
 
-ADDRESS = '0.0.0.0'
+ADDRESS = '127.0.0.1'
 PORT = 2750
 
 LOG_ERROR = os.path.join(dirname(dirname(abspath(__file__))), 'quanweb.error.log')
