@@ -1,5 +1,6 @@
 from flask import url_for
-from .views import blogm
+from .views import blogm, UNCATEGORIZED
+
 
 @blogm.app_template_filter()
 def entry_url(entry):
@@ -10,4 +11,8 @@ def entry_url(entry):
 
 @blogm.app_template_filter()
 def category_url(cat):
-    return url_for('blog.list_posts', catslug=cat.slug)
+    if cat is None:
+        slug = UNCATEGORIZED
+    else:
+        slug = cat.slug
+    return url_for('blog.list_posts', catslug=slug)

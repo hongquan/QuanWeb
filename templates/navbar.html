@@ -17,6 +17,7 @@
               <li><a href='{{ cat|category_url }}'>{{ cat }}</a></li>
             {% endfor %}
             <li class='divider'></li>
+            <li><a href='{{ url_for('blog.list_posts', catslug='_uncategorized') }}'>Uncategorized</a></li>
             <li><a href='{{ url_for('blog.list_posts', catslug=None) }}'>All</a></li>
           </ul>
         </li>

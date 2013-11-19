@@ -13,7 +13,7 @@
       <span class='categories-links'>
         <a rel='category' href='{{ p.category|category_url }}'>
           <span class='glyphicon glyphicon-folder-open'></span>
-          <span>&nbsp;{{ p.category }}</span>
+          <span>&nbsp;{{ p.category|default('Uncategorized', true) }}</span>
         </a>
       </span>
     </div>
