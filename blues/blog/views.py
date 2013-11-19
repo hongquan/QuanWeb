@@ -20,13 +20,14 @@ def show_post(year, month, pk, slug):
 @blogm.route('/')
 def list_posts(catslug=None):
     cvars = {}
+    query = Entry.query.order_by(Entry.date_published.desc())
     if catslug == UNCATEGORIZED:
-        entries = Entry.query.filter_by(category=None)
+        entries = query.filter_by(category=None)
     elif catslug:
-        category = Category.query.filter_by(slug=catslug).one()
+        category = query.filter_by(slug=catslug).one()
         cvars['cat'] = category
-        entries = Entry.query.filter_by(category=category)
+        entries = query.filter_by(category=category)
     else:
-        entries = Entry.query.all()
+        entries = query.all()
     cvars['entries'] = entries
     return render_template('blog/entries.html', **cvars)
