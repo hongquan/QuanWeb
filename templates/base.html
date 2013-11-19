@@ -28,3 +28,8 @@
     {% endblock inner_content %}
   </div>
 {% endblock content %}
+
+{% block scripts %}
+  <script src='{{ static('js/jquery/jquery.js') }}'></script>
+  <script src='{{ static('js/bootstrap.min.js') }}'></script>
+{%- endblock scripts %}
