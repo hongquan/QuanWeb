@@ -35,6 +35,7 @@ setup(
         'Flask-Script',
         'Flask-Markdown',
         'Flask-Bootstrap',
+        'slugify',
         'cherrypy',
         'wsgilog'
     ],
