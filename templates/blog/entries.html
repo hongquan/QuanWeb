@@ -9,3 +9,8 @@
     {% endfor %}
   {% endwith %}
 {% endblock inner_content %}
+
+{% block scripts %}
+  {{ super() }}
+  {% include 'blog/comment_count.html' %}
+{% endblock scripts %}

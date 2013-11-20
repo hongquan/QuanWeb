@@ -1,7 +1,11 @@
 <article class='post'>
   <header class='entry-header'>
     <h1 class='entry-title'>
-      <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
+      {% if front %}
+        <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
+      {% else %}
+        {{ p.title }}
+      {% endif %}
     </h1>
     <div class='entry-meta'>
       <span class='date'>
@@ -25,5 +29,11 @@
       {{ p.preamble|safe }}
     {% endif %}
   </div>
-  <footer class='entry-meta'></footer>
+  {% if front %}
+    <footer class='entry-meta'>
+      <div class='comment-links'>
+        <a href='{{ p|entry_url }}#disqus_thread'>comments</a>
+      </div>
+    </footer>
+  {% endif %}
 </article>
