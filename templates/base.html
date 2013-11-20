@@ -1,5 +1,22 @@
 {% extends 'bootstrap/base.html' %}
 
+{%- block head %}
+  {{ super() }}
+  {%- block headjs %}
+    <!-- KeenIO -->
+    <script type="text/javascript">
+      var Keen=Keen||{configure:function(e){this._cf=e},addEvent:function(e,t,n,i){this._eq=this._eq||[],this._eq.push([e,t,n,i])},setGlobalProperties:function(e){this._gp=e},onChartsReady:function(e){this._ocrq=this._ocrq||[],this._ocrq.push(e)}};(function(){var e=document.createElement("script");e.type="text/javascript",e.async=!0,e.src=("https:"==document.location.protocol?"https://":"http://")+"dc8na2hxrj29i.cloudfront.net/code/keen-2.1.0-min.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)})();
+
+      // Configure the Keen object with your Project ID and (optional) access keys.
+      Keen.configure({
+          projectId: "528258a436bf5a2a8500000d",
+          writeKey: "cb0977e6c3a756454cb5c590e033531d26d0e1f662ffddba18c47f3f08fd5970b6d2db9ccb97682a0cab800ddbb09218c77b1b74d8e1bc7f2f93c983c7f6d2f286c852d761184182812665dba7236fc1937ff094304c471cbdce689dbd40749739c69d32e99da99e654ece40ff788eb2", // required for sending events
+          readKey: "8ed6893936582249c10d4f26c24cc056ddf731ee2a3e5c42aae8bc81f17161f7df49eaa6937dce5870098cbfa50366d93bcfae4033a8203fd0121d2a9fd7fd4892b3d1c8f096c0b16d8ece30a2519c5cfa51efbbe1c2277c8fec5f74affad50bc2e77027943a0cf52dc6ef6c4b6fc6e3"    // required for doing analysis
+      });
+    </script>
+  {%- endblock headjs %}
+{%- endblock head %}
+
 {%- block styles %}
   <link href="{{ static('css/bootstrap.css') }}" rel='stylesheet' media='screen'>
     <!--
@@ -32,4 +49,9 @@
 {% block scripts %}
   <script src='{{ static('js/jquery/jquery.js') }}'></script>
   <script src='{{ static('js/bootstrap.min.js') }}'></script>
+  <script src='{{ static('js/jquery/jquery.cookie.js') }}'></script>
+  <script src='{{ static('js/ua-parser.min.js') }}'></script>
+  <script src='{{ static('js/purl.js') }}'></script>
+  <script src='{{ static('js/Math.uuid.js') }}'></script>
+  <script src='{{ static('js/tracking.js') }}'></script>
 {%- endblock scripts %}
