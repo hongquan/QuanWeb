@@ -24,7 +24,7 @@ def list_posts(catslug=None):
     if catslug == UNCATEGORIZED:
         entries = query.filter_by(category=None)
     elif catslug:
-        category = query.filter_by(slug=catslug).one()
+        category = Category.query.filter_by(slug=catslug).one()
         cvars['cat'] = category
         entries = query.filter_by(category=category)
     else:
