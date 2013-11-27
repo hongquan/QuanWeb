@@ -18,7 +18,12 @@
         {% for cat in p.categories %}
           <a rel='category' href='{{ cat|category_url }}'>
             <span class='glyphicon glyphicon-folder-open'></span>
-            <span>&nbsp;{{ cat|default('Uncategorized', true) }}</span>
+            <span>&nbsp;{{ cat }}</span>
+          </a>
+        {% else %}
+          <a rel='category' href='{{ url_for('blog.list_posts', catslug=UNCATEGORIZED) }}'>
+            <span class='glyphicon glyphicon-folder-open'></span>
+            <span>&nbsp;Uncategorized</span>
           </a>
         {% endfor %}
       </span>
