@@ -22,11 +22,11 @@ def list_posts(catslug=None):
     cvars = {}
     query = Entry.query.order_by(Entry.date_published.desc())
     if catslug == UNCATEGORIZED:
-        entries = query.filter_by(category=None)
+        entries = query.filter_by(categories=None)
     elif catslug:
         category = Category.query.filter_by(slug=catslug).one()
         cvars['cat'] = category
-        entries = query.filter_by(category=category)
+        entries = category.entries.all()
     else:
         entries = query.all()
     cvars['entries'] = entries

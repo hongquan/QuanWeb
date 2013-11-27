@@ -77,18 +77,24 @@ def importfile(filepath):
     if not title:
         title = os.path.basename(base)
     print('Title:', title)
-    question = 'Category?\n'
-    choices = []
+    ask = 'Category? (Enter to not select)\n'
+    choices = {}
+    names = {}
     for i, name in db.session.query(Category.id, Category.title).all():
-        choices.append(str(i))
-        question += '{}. {}\n'.format(i, name)
-    sel = input(question)
-    if sel != '' and sel not in choices:
-        print('Wrong choice. Bye.', file=sys.stderr)
+        choices[str(i)] = name
+
     entry = Entry(title=title, body=content)
-    if sel in choices:
+    while choices.keys():
+        question = ask + '\n'.join('{}. {} '.format(k, v) for k, v in choices.items())
+        sel = input(question)
+        if sel != '' and sel not in choices:
+            print('Wrong choice. Bye.', file=sys.stderr)
+            continue
+        elif not sel:
+            break;
         cat = Category.query.get(sel)
-        entry.category = cat
+        entry.categories.append(cat)
+        del choices[sel]
     db.session.add(entry)
     db.session.commit()
     print('Added your post', title)

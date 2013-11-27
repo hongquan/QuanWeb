@@ -15,10 +15,12 @@
         </a>
       </span>
       <span class='categories-links'>
-        <a rel='category' href='{{ p.category|category_url }}'>
-          <span class='glyphicon glyphicon-folder-open'></span>
-          <span>&nbsp;{{ p.category|default('Uncategorized', true) }}</span>
-        </a>
+        {% for cat in p.categories %}
+          <a rel='category' href='{{ cat|category_url }}'>
+            <span class='glyphicon glyphicon-folder-open'></span>
+            <span>&nbsp;{{ cat|default('Uncategorized', true) }}</span>
+          </a>
+        {% endfor %}
       </span>
     </div>
   </header>

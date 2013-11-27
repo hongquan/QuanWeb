@@ -11,7 +11,7 @@ def generate_slug(context):
 
 def generate_preamble(context):
     body = context.current_parameters['body']
-    lines = body.splitlines(True)[:5]
+    lines = body.splitlines(True)[:7]
     # Count "code block" marker (```)
     count = sum(1 for l in lines if l.startswith('```'))
     if (count % 2) == 1:  # There are odd number of marks
@@ -23,6 +23,11 @@ def generate_preamble(context):
             lines.append('```')
     reduced = ''.join(lines)
     return md._instance.convert(reduced)
+
+
+entrycats = db.Table('entrycats',
+                     db.Column('category_id', db.Integer, db.ForeignKey('categories.id')),
+                     db.Column('entry_id', db.Integer, db.ForeignKey('entries.id')))
 
 
 class Category(db.Model):
@@ -53,8 +58,8 @@ class Entry(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     author = db.relationship(User, backref=db.backref('posts', lazy='dynamic'))
 
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
-    category = db.relationship(Category, backref=db.backref('posts', lazy='dynamic'))
+    categories = db.relationship(Category, secondary=entrycats,
+                                 backref=db.backref('entries', lazy='dynamic'))
 
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_modified = db.Column(db.DateTime, default=datetime.utcnow,

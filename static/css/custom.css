@@ -89,3 +89,7 @@ h1.entry-title {
 .navbar-orange .open > a, .navbar-orange .open > a:hover, .navbar-orange .open > a:focus {
   background-color: #B22F18;
 }
+
+.categories-links a {
+  margin-right: 6px;
+}
