@@ -93,3 +93,18 @@ h1.entry-title {
 .categories-links a {
   margin-right: 6px;
 }
+
+#footer-page {
+  margin-top: 20px;
+}
+
+#logos {
+  margin-top: 10px;
+  border-top: 1px solid #DDD;
+  padding-top: 10px;
+}
+
+#banner h1 {
+  font-family: Convergence;
+  font-size: 48px;
+}
