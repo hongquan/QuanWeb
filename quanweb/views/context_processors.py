@@ -8,7 +8,10 @@ def inject_config():
 
 @app.context_processor
 def is_running_locally():
-    hostname, port = request.host.split(':')
-    if port == '5000':
-        return {'running_locally': True}
+    try:
+        hostname, port = request.host.split(':')
+        if port == '5000':
+            return {'running_locally': True}
+    except ValueError:
+        pass
     return {}
