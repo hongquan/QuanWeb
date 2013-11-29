@@ -15,6 +15,6 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
 SQLALCHEMY_ECHO = False
 
 try:
-    from .secret import SECRET_KEY, SQLALCHEMY_DATABASE_URI
+    from .secret import *
 except ImportError:
     pass
