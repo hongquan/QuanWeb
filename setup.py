@@ -38,6 +38,7 @@ setup(
         'Pygments',
         'python-slugify',
         'cherrypy',
+        'logentries',
     ],
     include_package_data=True
 )
