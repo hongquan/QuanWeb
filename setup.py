@@ -38,7 +38,6 @@ setup(
         'Pygments',
         'python-slugify',
         'cherrypy',
-        'wsgilog'
     ],
     include_package_data=True
 )
