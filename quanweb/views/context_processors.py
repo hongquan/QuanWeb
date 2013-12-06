@@ -10,7 +10,7 @@ def inject_config():
 def is_running_locally():
     try:
         hostname, port = request.host.split(':')
-        if port == '5000':
+        if port == '5000' or 'hostname' in ('localhost', '127.0.0.1'):
             return {'running_locally': True}
     except ValueError:
         pass
