@@ -1,8 +1,8 @@
 from flask import g, session
 
 from blog.models import Category
+from auth.models import User
 from .common import app
-from .models import User
 
 @app.before_request
 def authenticate():

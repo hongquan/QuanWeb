@@ -3,8 +3,9 @@ from datetime import date
 from werkzeug import generate_password_hash, check_password_hash
 
 from flask.ext.sqlalchemy import BaseQuery
+from flask.ext.login import AnonymousUserMixin
 
-from .common import db
+from quanweb.common import db
 
 
 class UserQuery(BaseQuery):
@@ -51,3 +52,7 @@ class User(db.Model):
 
     def __str__(self):
         return self.email
+
+
+class AnonymousUser(AnonymousUserMixin):
+    pass

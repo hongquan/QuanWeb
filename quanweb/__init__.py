@@ -5,22 +5,24 @@ from os.path import dirname
 from flask import Flask, render_template, g, redirect, url_for, flash, session
 
 # Insert blueprint folder to PYTHONPATH
-sys.path.insert(0, os.path.join(dirname(dirname(__file__)), 'blues'))
+_bluefolder = os.path.join(dirname(dirname(__file__)), 'blues')
+if _bluefolder not in sys.path:
+    sys.path.insert(1, _bluefolder)
 
 # Blueprints
 from front import frontpage
 from blog import blogm
+from auth.models import AnonymousUser
 
 import blog.models
 
 from . import config
-from .common import app, loginmanager
+from .common import app, loginmanager, db
 from . import views, filters, widedata
-from .models import db, User
-
 
 # SQLAlchemy
 db.init_app(app)
+loginmanager.anonymous_user = AnonymousUser
 loginmanager.init_app(app)
 
 # Jinja

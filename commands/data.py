@@ -4,7 +4,7 @@ import os.path
 from flask.ext.script import Manager, prompt_bool
 from sqlalchemy.exc import IntegrityError
 from quanweb import app, db
-from quanweb.models import User
+from auth.models import User
 from blog.models import Category, Entry
 
 manager = Manager(app)

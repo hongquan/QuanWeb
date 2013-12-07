@@ -2,7 +2,7 @@ from datetime import datetime
 from slugify import slugify
 
 from quanweb.common import db, md
-from quanweb.models import User
+from auth.models import User
 
 
 def generate_slug(context):
