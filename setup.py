@@ -40,6 +40,7 @@ setup(
         'python-slugify',
         'cherrypy',
         'logentries',
+        'alembic',
     ],
     include_package_data=True
 )
