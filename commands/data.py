@@ -1,7 +1,7 @@
 import sys
 import os.path
 
-from flask.ext.script import Manager, prompt_bool
+from flask_script import Manager, prompt_bool
 from sqlalchemy.exc import IntegrityError
 from quanweb import app, db
 from auth.models import User
@@ -49,8 +49,9 @@ def newcategory():
         print('This name existed. Bye.', file=sys.stderr)
 
 
-@manager.command
-def importfile(filepath):
+@manager.option(dest='filepath', help='Input file path')
+@manager.option('-u', dest='pid', help='Post ID to update. Will create new post if not specified')
+def importfile(filepath, pid=None):
     base, ext = os.path.splitext(filepath)
     with open(filepath) as fl:
         content = fl.read()
@@ -68,6 +69,20 @@ def importfile(filepath):
     if not title:
         title = os.path.basename(base)
     print('Title:', title)
+    # Update existing post, if pid is specified
+    if pid:
+        existing = Entry.query.get(pid)
+        if not existing:
+            print('Post with ID {} is not exist'.format(pid), file=sys.stderr)
+            sys.exit(-1)
+        # Found
+        print('To update post {}: {}'.format(pid, existing.title))
+        existing.title = title
+        existing.body = content
+        db.session.commit()
+        print('Updated post', existing.title)
+        return
+    # Create new post
     ask = 'Category? (Enter to not select)\n'
     choices = {}
     names = {}
