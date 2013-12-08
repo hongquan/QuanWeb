@@ -50,28 +50,6 @@ def newcategory():
 
 
 @manager.command
-def createsamplepost():
-    cat = Category(title='Python')
-    db.session.add(cat)
-    entry = Entry(title='Python is great')
-    entry.body = '''
-Example code:
-
-```python
-print("Hello word"*5)
-print("Done")
-```
-
-So *neat*!
-    '''
-    entry.category = cat
-    user = User.query.get(1)
-    entry.author = user
-    db.session.add(entry)
-    db.session.commit()
-
-
-@manager.command
 def importfile(filepath):
     base, ext = os.path.splitext(filepath)
     with open(filepath) as fl:
