@@ -39,7 +39,7 @@ setup(
         'Pygments',
         'python-slugify',
         'cherrypy',
-        'logentries',
+        'LogentriesLogger',
         'alembic',
     ],
     include_package_data=True
