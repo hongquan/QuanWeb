@@ -9,7 +9,7 @@ def generate_slug(context):
     return slugify(context.current_parameters['title'])
 
 
-def generate_preamble(context):
+def generate_excerpt(context):
     body = context.current_parameters['body']
     lines = body.splitlines(True)[:7]
     # Count "code block" marker (```)
@@ -52,7 +52,7 @@ class Entry(db.Model):
     slug = db.Column(db.String(200), default=generate_slug, onupdate=generate_slug)
     body = db.Column(db.Text)
     format = db.Column(db.Enum('md', 'rst', name='format_types'), default='md')
-    preamble = db.Column(db.Text, default=generate_preamble, onupdate=generate_preamble)
+    excerpt = db.Column(db.Text, default=generate_excerpt, onupdate=generate_excerpt)
 
     published = db.Column(db.Boolean, default=False)
     date_published = db.Column(db.DateTime, default=datetime.utcnow)

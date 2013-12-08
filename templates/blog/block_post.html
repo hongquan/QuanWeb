@@ -33,7 +33,7 @@
     {% if not front %}
       {{ p.body|markdown }}
     {% else %}
-      {{ p.preamble|safe }}
+      {{ p.excerpt|safe }}
     {% endif %}
   </div>
   {% if front %}
