@@ -26,8 +26,10 @@ def generate_preamble(context):
 
 
 entrycats = db.Table('entrycats',
-                     db.Column('category_id', db.Integer, db.ForeignKey('categories.id')),
-                     db.Column('entry_id', db.Integer, db.ForeignKey('entries.id')))
+                     db.Column('category_id', db.Integer,
+                               db.ForeignKey('categories.id', ondelete='CASCADE')),
+                     db.Column('entry_id', db.Integer,
+                               db.ForeignKey('entries.id', ondelete='CASCADE')))
 
 
 class Category(db.Model):
@@ -59,6 +61,7 @@ class Entry(db.Model):
     author = db.relationship(User, backref=db.backref('posts', lazy='dynamic'))
 
     categories = db.relationship(Category, secondary=entrycats,
+                                 passive_deletes=True,
                                  backref=db.backref('entries', lazy='dynamic'))
 
     date_created = db.Column(db.DateTime, default=datetime.utcnow)

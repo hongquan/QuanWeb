@@ -1,13 +1,13 @@
-"""First
+"""First migration
 
-Revision ID: 4516a58ea8d
+Revision ID: 12ed237527b
 Revises: None
-Create Date: 2013-12-08 23:10:26.072810
+Create Date: 2013-12-09 01:53:20.965048
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '4516a58ea8d'
+revision = '12ed237527b'
 down_revision = None
 
 from alembic import op
@@ -54,8 +54,8 @@ def upgrade():
     op.create_table('entrycats',
     sa.Column('category_id', sa.Integer(), nullable=True),
     sa.Column('entry_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
-    sa.ForeignKeyConstraint(['entry_id'], ['entries.id'], ),
+    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['entry_id'], ['entries.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint()
     )
     ### end Alembic commands ###
