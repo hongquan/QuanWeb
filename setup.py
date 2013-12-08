@@ -35,6 +35,7 @@ setup(
         'Flask-Login',
         'Flask-Script',
         'Flask-Markdown',
+        'Flask-Bootstrap',
         'Pygments',
         'python-slugify',
         'cherrypy',

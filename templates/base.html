@@ -43,8 +43,14 @@
       {%- endblock banner %}
     </header>
 
+    {% block flash_message %}
+      <div class='container flash'>
+        {% include 'flash_messages.html' %}
+      </div>
+    {% endblock %}
+
     {% block content -%}
-      <div class='container'>
+      <div class='container main'>
         {% block inner_content -%}
         {%- endblock inner_content %}
       </div>

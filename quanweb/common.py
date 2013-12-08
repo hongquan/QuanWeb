@@ -5,14 +5,15 @@ from flask.ext.markdown import Markdown
 
 from . import config
 
+# Constants
+UNCATEGORIZED = '_uncategorized'
+
 app = Flask(__name__, static_folder=config.STATIC_FOLDER,
             template_folder=config.TEMPLATE_FOLDER)
 app.config.from_object(config)
 
 db = SQLAlchemy()
 loginmanager = LoginManager()
-
-loginmanager.login_view = 'views.login'
 
 
 # Markdown

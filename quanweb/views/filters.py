@@ -1,6 +1,6 @@
 from flask import url_for
 
-from .common import app
+from ..common import app
 
 
 app.jinja_env.globals['static'] = lambda filename: url_for('static', filename=filename)

@@ -21,6 +21,19 @@ def resetdb():
 
 
 @manager.command
+def newuser():
+    email = input('Email: ')
+    email = email.strip()
+    username = input('Username: ')
+    username = username.strip()
+    passw = input('Password: ')
+    sup = prompt_bool('Superuser', True)
+    u = User(username=username, email=email, password=passw, is_superuser=sup)
+    db.session.add(u)
+    db.session.commit()
+
+
+@manager.command
 def newcategory():
     print('Existing categories:')
     for cat in Category.query.all():

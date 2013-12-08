@@ -3,7 +3,7 @@ from datetime import date
 from werkzeug import generate_password_hash, check_password_hash
 
 from flask.ext.sqlalchemy import BaseQuery
-from flask.ext.login import AnonymousUserMixin
+from flask.ext.login import AnonymousUserMixin, UserMixin
 
 from quanweb.common import db
 
@@ -12,12 +12,12 @@ class UserQuery(BaseQuery):
 
     def authenticate(self, email, password):
 
-        user = self.filter_by(email=email, is_active=True).first()
+        user = self.filter_by(email=email, active=True).first()
         if user and user.check_password(password):
             return user
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
 
     __tablename__ = 'users'
 
@@ -31,7 +31,7 @@ class User(db.Model):
 
     email = db.Column(db.String(200), unique=True, nullable=False)
 
-    is_active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
     is_superuser = db.Column(db.Boolean, default=False)
 
     _password = db.Column('password', db.String(80), nullable=False)

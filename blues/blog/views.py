@@ -2,9 +2,8 @@ from flask import Blueprint, render_template, abort
 from jinja2 import TemplateNotFound
 
 from quanweb import config
+from quanweb.common import UNCATEGORIZED
 from .models import db, Entry, Category
-
-UNCATEGORIZED = '_uncategorized'
 
 blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
                   template_folder=config.TEMPLATE_FOLDER)

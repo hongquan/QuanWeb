@@ -1,16 +1,16 @@
-{% extends 'bootstrap/base.html' %}
+{% extends 'base.html' %}
 
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block title %}Login{% endblock title %}
 
 {% block content %}
-  <article>
-    <header class='entry-header'>
+  <section>
+    <header class='text-center'>
       <h2>Sign in</h2>
     </header>
     <div class=''>
-      {{ wtf.quick_form(form, form_type='horizontal', horizontal_columns=('md', 4, 3)) }}
+      {{ wtf.quick_form(form, form_type='horizontal', horizontal_columns=('md', 5, 3)) }}
     </div>
-  </article>
+  </section>
 {% endblock content %}

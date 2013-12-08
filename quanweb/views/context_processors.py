@@ -1,5 +1,5 @@
 from flask import request
-from ..common import app
+from ..common import app, UNCATEGORIZED
 from .. import config
 
 @app.context_processor
@@ -15,3 +15,8 @@ def is_running_locally():
     except ValueError:
         pass
     return {}
+
+
+@app.context_processor
+def inject_constants():
+    return {'UNCATEGORIZED': UNCATEGORIZED}

@@ -107,3 +107,11 @@ h1.entry-title {
   font-family: Convergence;
   font-size: 48px;
 }
+
+.flash {
+  max-width: 670px;
+}
+
+.container.main {
+  min-height: 500px;
+}
