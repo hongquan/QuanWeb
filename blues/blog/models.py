@@ -2,6 +2,7 @@ from datetime import datetime
 from slugify import slugify
 
 from quanweb.common import db, md
+from quanweb.models import ModelMixIn
 from auth.models import User
 
 
@@ -32,21 +33,19 @@ entrycats = db.Table('entrycats',
                                db.ForeignKey('entries.id', ondelete='CASCADE')))
 
 
-class Category(db.Model):
+class Category(ModelMixIn, db.Model):
     __tablename__ = 'categories'
-    id = db.Column(db.Integer, primary_key=True)
+
     title = db.Column(db.String(50), nullable=False)
     slug = db.Column(db.String(50), unique=True, default=generate_slug, onupdate=generate_slug)
-
 
     def __str__(self):
         return self.title
 
 
 
-class Entry(db.Model):
+class Entry(ModelMixIn, db.Model):
     __tablename__ = 'entries'
-    id = db.Column(db.Integer, primary_key=True)
 
     title = db.Column(db.Unicode(200), nullable=False)
     slug = db.Column(db.String(200), default=generate_slug, onupdate=generate_slug)

@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import BaseQuery
 from flask.ext.login import AnonymousUserMixin, UserMixin
 
 from quanweb.common import db
+from quanweb.models import ModelMixIn
 
 
 class UserQuery(BaseQuery):
@@ -17,13 +18,12 @@ class UserQuery(BaseQuery):
             return user
 
 
-class User(UserMixin, db.Model):
+class User(ModelMixIn, UserMixin, db.Model):
 
     __tablename__ = 'users'
 
     query_class = UserQuery
 
-    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), unique=True, nullable=False)
 
     firstname = db.Column(db.Unicode(40))
