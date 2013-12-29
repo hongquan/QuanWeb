@@ -8,3 +8,4 @@ __pycache__
 .git
 quanweb.egg-info
 */secret.py
+DB
