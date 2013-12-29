@@ -15,6 +15,7 @@ from front import frontpage
 from blog import blogm
 from auth import authm
 from auth.models import AnonymousUser
+from bookshelf import bookshelfm
 
 import blog.models
 
