@@ -7,7 +7,7 @@ from auth.models import User
 class Author(ModelMixIn, db.Model):
     __tablename__ = 'authors'
 
-    name = db.Column(db.Text)
+    name = db.Column(db.Text, nullable=False)
 
     def __str__(self):
         return self.name
@@ -16,7 +16,8 @@ class Author(ModelMixIn, db.Model):
 class Book(ModelMixIn, db.Model):
     __tablename__ = 'books'
 
-    title = db.Column(db.Text)
+    title = db.Column(db.Text, nullable=False)
+    download_url = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
     author = db.relationship(Author, backref=db.backref('books', lazy='dynamic'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
