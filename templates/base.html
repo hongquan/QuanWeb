@@ -12,6 +12,14 @@
       <link rel='stylesheet' href='{{ static('fonts/genericons.css') }}'>
       <link rel='stylesheet' href='{{ static('css/pygments-css/default.css') }}'>
       <link rel='icon' href='{{ static('img/favicon.png') }}'>
+      <style>
+        body {
+          font-family: 'Ubuntu';
+        }
+        h1, h2, h3, h4, h5, h6 {
+          font-family: 'DejaVu Sans';
+        }
+      </style>
     {%- endblock css %}
 
     {% block headjs -%}
@@ -83,6 +91,7 @@
 
     {% block js -%}
       <script src='{{ static('js/bootstrap.min.js') }}'></script>
+      <script src='{{ static('js/main.js') }}'></script>
 
       {% if not running_locally %}
         <script src='{{ static('js/jquery/jquery.cookie.js') }}'></script>

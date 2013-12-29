@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Books{% endblock %}
+
+{% block inner_content %}
+  {% for b in books -%}
+    <article>
+      <header><h2>{{ b }}</h2></header>
+      <div>
+        {{ b.author }}
+      </div>
+      <div>
+        <a href='{{ b.download_url }}' target='_blank'>Download</a>
+      </div>
+    </article>
+  {%- endfor %}
+{% endblock inner_content %}

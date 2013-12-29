@@ -115,3 +115,8 @@ h1.entry-title {
 .container.main {
   min-height: 340px;
 }
+
+a.onbar.active {
+  border-bottom: 2px solid #FFFFFF;
+  height: 50px;
+}
