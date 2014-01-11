@@ -1,62 +1,27 @@
-<footer role='contentinfo' class='site-footer' id='colophon'>
-	<div role='complementary' class='sidebar-container' id='secondary'>
-		<div class='widget-area masonry' style='position: relative; height: 355px;'>
-			<aside class='widget widget_search masonry-brick' id='search-2' style='position: absolute; top: 0px; left: 0px;'>
-				<form action='http://localhost/wordpress/' class='search-form' method='get' role='search'>
-					<label>
-						<span class='screen-reader-text'>Search for:</span>
-						<input type='search' title='Search for:' name='s' value='' placeholder='Search …' class='search-field'>
-					</label>
-					<input type='submit' value='Search' class='search-submit'>
-				</form>
-			</aside>
-			<aside class='widget widget_recent_entries masonry-brick' id='recent-posts-2' style='position: absolute; top: 0px; left: 265px;'>
-				<h3 class='widget-title'>Recent Posts</h3>
-				<ul>
-					<li>
-						<a href='http://localhost/wordpress/?p=1'>Hello world!</a>
-					</li>
-				</ul>
-			</aside>
-			<aside class='widget widget_recent_comments masonry-brick' id='recent-comments-2' style='position: absolute; top: 0px; left: 530px;'>
-				<h3 class='widget-title'>Recent Comments</h3>
-				<ul id='recentcomments'>
-					<li class='recentcomments'>
-						<a class='url' rel='external nofollow' href='http://wordpress.org/'>Mr WordPress</a> on <a href='http://localhost/wordpress/?p=1#comment-1'>Hello world!</a>
-					</li>
-				</ul>
-			</aside>
-			<aside class='widget widget_archive masonry-brick' id='archives-2' style='position: absolute; top: 0px; left: 795px;'>
-				<h3 class='widget-title'>Archives</h3>
-				<ul>
-					<li>
-						<a href='http://localhost/wordpress/?m=201311'>November 2013</a>
-					</li>
-				</ul>
-			</aside>
-			<aside class='widget widget_categories masonry-brick' id='categories-2' style='position: absolute; top: 96px; left: 0px;'>
-				<h3 class='widget-title'>Categories</h3>
-				<ul>
-					<li class='cat-item cat-item-1'>
-						<a title='View all posts filed under Uncategorized' href='http://localhost/wordpress/?cat=1'>Uncategorized</a>
-					</li>
-				</ul>
-			</aside>
-			<aside class='widget widget_meta masonry-brick' id='meta-2' style='position: absolute; top: 131px; left: 265px;'>
-				<h3 class='widget-title'>Meta</h3>
-				<ul>
-					<li>
-						<a href='{{ url_for('login') }}'>Log in</a>
-					</li>
-					<li>
-						<a title='Powered by WordPress, state-of-the-art semantic personal publishing platform.' href='http://wordpress.org/'>WordPress.org</a>
-					</li>
-				</ul>
-			</aside>
-		</div><!-- .widget-area -->
-	</div><!-- #secondary -->
-
-	<div class='site-info'>
-		<a title='Semantic Personal Publishing Platform' href='http://wordpress.org/'>Proudly powered by WordPress</a>
-	</div><!-- .site-info -->
+<footer id='footer-page'>
+	<ul id='logos' class='list-inline container text-center'>
+		<li>
+			<a href='http://www.python.org'>
+				<img src='{{ static('img/logos/python-powered-w-100x40.png') }}'>
+			</a>
+		</li>
+		<li>
+			<a href='http://flask.pocoo.org'>
+				<img src='{{ static('img/logos/flask.png') }}'>
+			</a>
+		</li>
+		<li>
+			<a href='http://www.postgresql.org'>
+				<img src='{{ static('img/logos/postgresql.png') }}'>
+			</a>
+		</li>
+		<li>
+			<a href='http://www.sqlalchemy.org'>
+				<img src='{{ static('img/logos/sqla.png') }}'>
+			</a>
+		</li>
+	</ul>
+	<p class='container text-center small'>
+		This site supports <a href='http://www.mozilla.org'>Firefox</a>, <a href='http://www.google.com/chrome/‎'>Chrome</a>, <a href='http://www.opera.com'>Opera</a> browsers.
+	</p>
 </footer>

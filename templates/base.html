@@ -65,30 +65,7 @@
       </div>
     {%- endblock content %}
 
-    <footer id='footer-page'>
-      <ul id='logos' class='list-inline container text-center'>
-        <li>
-          <a href='http://www.python.org'>
-            <img src='{{ static('img/logos/python-powered-w-100x40.png') }}'>
-          </a>
-        </li>
-        <li>
-          <a href='http://flask.pocoo.org'>
-            <img src='{{ static('img/logos/flask.png') }}'>
-          </a>
-        </li>
-        <li>
-          <a href='http://www.postgresql.org'>
-            <img src='{{ static('img/logos/postgresql.png') }}'>
-          </a>
-        </li>
-        <li>
-          <a href='http://www.sqlalchemy.org'>
-            <img src='{{ static('img/logos/sqla.png') }}'>
-          </a>
-        </li>
-      </ul>
-    </footer>
+    {% include 'footer.html' %}
 
     {% block js -%}
       <script src='{{ static('js/bootstrap.min.js') }}'></script>
