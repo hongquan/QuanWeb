@@ -38,7 +38,7 @@ setup(
         'Flask-Bootstrap',
         'Pygments',
         'python-slugify',
-        'cherrypy',
+        'waitress',
         'LogentriesLogger',
         'alembic',
     ],
