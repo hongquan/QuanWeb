@@ -3,15 +3,19 @@
 {% block title %}Books{% endblock %}
 
 {% block inner_content %}
-  {% for b in books -%}
-    <article>
-      <header><h2>{{ b }}</h2></header>
-      <div>
-        {{ b.author }}
+  <div class='row'>
+    {% for b in books -%}
+      <div class='col-xs-4'>
+        <article>
+          <header><h3>{{ b }}</h3></header>
+          <div>
+            {{ b.author }}
+          </div>
+          <div>
+            <a href='{{ b.download_url }}' target='_blank'>Download</a>
+          </div>
+        </article>
       </div>
-      <div>
-        <a href='{{ b.download_url }}' target='_blank'>Download</a>
-      </div>
-    </article>
-  {%- endfor %}
+    {%- endfor %}
+  </div>
 {% endblock inner_content %}
