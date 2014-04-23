@@ -1,14 +1,22 @@
+from datetime import datetime
 from urllib.parse import urlencode
 from flask import request, redirect, url_for
 from flask_admin.base import AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.model import typefmt
 from flask_login import current_user
 
 from quanweb.common import db
 from blog.models import Category, Entry
 from auth.models import User
 
-from .formatters import truncate_longtext, email_nohost
+from .formatters import truncate_longtext, truncate_html, \
+                        email_nohost, datetime_short
+
+MY_DEFAULT_FORMATTERS = dict(typefmt.BASE_FORMATTERS)
+MY_DEFAULT_FORMATTERS.update({
+    type(datetime(2000, 1, 1)): datetime_short
+})
 
 class QAdmin(ModelView):
     edit_template = 'admin/edit.html'
@@ -41,8 +49,9 @@ class EntryAdmin(QAdmin):
     column_formatters = {
         'author': email_nohost,
         'body': truncate_longtext,
-        'excerpt': truncate_longtext
+        'excerpt': truncate_html
     }
+    column_type_formatters = MY_DEFAULT_FORMATTERS
 
     form_excluded_columns = ('slug', 'excerpt', 'date_published', 'date_created', 'date_modified')
 

@@ -42,6 +42,8 @@ setup(
         'waitress',
         'LogentriesLogger',
         'alembic',
+        'arrow',
+        'htmllaundry',
     ],
     include_package_data=True
 )
