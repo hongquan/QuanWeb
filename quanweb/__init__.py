@@ -22,7 +22,7 @@ from blog.models import Category, Entry
 from . import config
 from .common import app, loginmanager, db
 from . import views, widedata
-from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin
+from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin
 
 # SQLAlchemy
 db.init_app(app)
@@ -44,3 +44,4 @@ app.register_blueprint(bookshelfm, url_prefix='/book')
 admin = Admin(app, index_view=AdminHomeView(), base_template='admin/master_local.html')
 admin.add_view(CategoryAdmin())
 admin.add_view(EntryAdmin())
+admin.add_view(UserAdmin())

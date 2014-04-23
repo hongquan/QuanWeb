@@ -6,6 +6,7 @@ from flask_login import current_user
 
 from quanweb.common import db
 from blog.models import Category, Entry
+from auth.models import User
 
 from .formatters import truncate_longtext, email_nohost
 
@@ -47,3 +48,11 @@ class EntryAdmin(QAdmin):
 
     def __init__(self):
         super().__init__(Entry, name='Entries', endpoint='entries')
+
+
+class UserAdmin(QAdmin):
+    column_exclude_list = ('password', '_password')
+    form_excluded_columns = ('password', 'posts', 'books')
+
+    def __init__(self):
+        super().__init__(User, name='Users', endpoint='users')
