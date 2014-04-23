@@ -1,10 +1,12 @@
 from datetime import datetime
 from slugify import slugify
+from sqlalchemy import event
 
-from quanweb.common import db, md
+from quanweb.common import db
 from quanweb.models import ModelMixIn
 from auth.models import User
 
+from .util import make_excerpt
 
 def generate_slug(context):
     return slugify(context.current_parameters['title'])
@@ -12,18 +14,7 @@ def generate_slug(context):
 
 def generate_excerpt(context):
     body = context.current_parameters['body']
-    lines = body.splitlines(True)[:7]
-    # Count "code block" marker (```)
-    count = sum(1 for l in lines if l.startswith('```'))
-    if (count % 2) == 1:  # There are odd number of marks
-        if lines[-1].startswith('```'):
-            # Remove last mark...
-            lines = lines[:-1]
-        else:
-            # ...Or add another mark to make sure the number is even
-            lines.append('```')
-    reduced = ''.join(lines)
-    return md._instance.convert(reduced)
+    return make_excerpt(body)
 
 
 entrycats = db.Table('entrycats',
@@ -37,7 +28,7 @@ class Category(ModelMixIn, db.Model):
     __tablename__ = 'categories'
 
     title = db.Column(db.String(50), nullable=False)
-    slug = db.Column(db.String(50), unique=True, default=generate_slug, onupdate=generate_slug)
+    slug = db.Column(db.String(50), unique=True, default=generate_slug)
 
     def __str__(self):
         return self.title
@@ -48,10 +39,10 @@ class Entry(ModelMixIn, db.Model):
     __tablename__ = 'entries'
 
     title = db.Column(db.Unicode(200), nullable=False)
-    slug = db.Column(db.String(200), default=generate_slug, onupdate=generate_slug)
+    slug = db.Column(db.String(200), default=generate_slug)
     body = db.Column(db.Text)
     format = db.Column(db.Enum('md', 'rst', name='format_types'), default='md')
-    excerpt = db.Column(db.Text, default=generate_excerpt, onupdate=generate_excerpt)
+    excerpt = db.Column(db.Text, default=generate_excerpt)
 
     published = db.Column(db.Boolean, default=False)
     date_published = db.Column(db.DateTime, default=datetime.utcnow)
@@ -69,3 +60,15 @@ class Entry(ModelMixIn, db.Model):
 
     def __str__(self):
         return self.title
+
+
+# Event listener
+def update_slug(mapper, connection, target):
+    target.slug = slugify(target.title)
+
+event.listen(Category, 'before_update', update_slug)
+event.listen(Entry, 'before_update', update_slug)
+
+@event.listens_for(Entry, 'before_update')
+def update_excerpt(mapper, connection, target):
+    target.excerpt = make_excerpt(target.body)

@@ -4,6 +4,7 @@ from os.path import dirname
 
 from flask import Flask, render_template, g, redirect, url_for, flash, session
 from flask_bootstrap import Bootstrap
+from flask_admin import Admin
 
 # Insert blueprint folder to PYTHONPATH
 _bluefolder = os.path.join(dirname(dirname(__file__)), 'blues')
@@ -16,12 +17,12 @@ from blog import blogm
 from auth import authm
 from auth.models import AnonymousUser
 from bookshelf import bookshelfm
-
-import blog.models
+from blog.models import Category, Entry
 
 from . import config
 from .common import app, loginmanager, db
 from . import views, widedata
+from admini.views import QAdmin, CategoryAdmin, EntryAdmin
 
 # SQLAlchemy
 db.init_app(app)
@@ -38,3 +39,8 @@ app.register_blueprint(frontpage)
 app.register_blueprint(blogm, url_prefix='/blog')
 app.register_blueprint(authm, url_prefix='/auth')
 app.register_blueprint(bookshelfm, url_prefix='/book')
+
+# Admin
+admin = Admin(app, base_template='admin/master_local.html')
+admin.add_view(CategoryAdmin())
+admin.add_view(EntryAdmin())

@@ -4,7 +4,10 @@ from flask.views import MethodView
 from flask_login import login_user, logout_user
 
 from quanweb import config
+from quanweb.common import loginmanager
+
 from .forms import LoginForm
+from .models import User
 from .models import User
 
 
@@ -38,3 +41,10 @@ class LogoutView(MethodView):
         logout_user()
         flash('You logged out', 'info')
         return redirect('/')
+
+
+
+
+@loginmanager.user_loader
+def load_user(userid):
+    return User.get(userid)

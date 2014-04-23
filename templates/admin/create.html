@@ -1,0 +1,53 @@
+{% extends 'admin/model/edit.html' %}
+
+{% macro my_extra() %}
+  <input name="_add_another" type="submit" class="btn" value="{{ _gettext('Save and Add') }}" />
+{% endmacro %}
+
+{% macro render_form_buttons(cancel_url, extra=None) %}
+    <div class="control-group">
+      <div class="controls">
+        <input type="submit" class="btn btn-primary" value="{{ _gettext('Submit') }}" />
+        {% if extra %}
+        {{ extra }}
+        {% endif %}
+        {% if cancel_url %}
+        <a href="{{ cancel_url }}" class="btn">{{ _gettext('Cancel') }}</a>
+        {% endif %}
+      </div>
+    </div>
+{% endmacro %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        .form-horizontal .control-label {
+            width: 200px;
+        }
+        .form-horizontal .controls {
+            margin-left: 210px;
+        }
+        .form-horizontal textarea {
+            width: 300px;
+        }
+        #success_url {
+            width: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+  <ul class="nav nav-tabs">
+      <li>
+          <a href="{{ return_url }}">{{ _gettext('List') }}</a>
+      </li>
+      <li class="active">
+          <a href="javascript:void(0)">{{ _gettext('Create') }}</a>
+      </li>
+  </ul>
+
+  {% call lib.form_tag(form) %}
+      {{ lib.render_form_fields(form, form_opts=form_opts) }}
+      {{ render_form_buttons(return_url, my_extra()) }}
+  {% endcall %}
+{% endblock %}

@@ -36,6 +36,7 @@ setup(
         'Flask-Script',
         'Flask-Markdown',
         'Flask-Bootstrap',
+        'Flask-Admin',
         'Pygments',
         'python-slugify',
         'waitress',
