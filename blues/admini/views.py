@@ -1,3 +1,6 @@
+from urllib.parse import urlencode
+from flask import request, redirect, url_for
+from flask_admin.base import AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
 
@@ -15,6 +18,15 @@ class QAdmin(ModelView):
 
     def is_accessible(self):
         return current_user.is_authenticated()
+
+
+class AdminHomeView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        if not current_user.is_authenticated():
+            url = url_for('login') + '?' + urlencode({'next': request.path})
+            return redirect(url)
+        return super().index()
 
 
 class CategoryAdmin(QAdmin):

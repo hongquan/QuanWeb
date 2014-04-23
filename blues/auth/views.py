@@ -28,7 +28,8 @@ class LoginView(MethodView):
             if user:
                 flash('Login successfully', 'success')
                 login_user(user)
-                return redirect('/')
+                next_url = request.values.get('next') or '/'
+                return redirect(next_url)
             # else
             flash('Wrong data', 'error')
 
