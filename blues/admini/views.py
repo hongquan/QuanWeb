@@ -46,6 +46,8 @@ class CategoryAdmin(QAdmin):
 
 
 class EntryAdmin(QAdmin):
+    edit_template = 'admin/entry_edit.html'
+
     column_formatters = {
         'author': email_nohost,
         'body': truncate_longtext,

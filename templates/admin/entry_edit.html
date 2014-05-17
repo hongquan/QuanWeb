@@ -1,0 +1,134 @@
+{% extends 'admin/edit.html' %}
+
+{% block head_css %}
+  {{ super() }}
+  <link rel='stylesheet' href='{{ static('css/zenburn.min.css') }}' />
+  <style>
+    textarea[name=body] {
+      height: 400px;
+    }
+    textarea, #editor div {
+        display: inline-block;
+        width: 49%;
+        height: 100%;
+        vertical-align: top;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 20px;
+        height: 400px;
+        overflow: scroll;
+    }
+
+    textarea {
+        border: none;
+        border-right: 1px solid #ccc;
+        resize: none;
+        outline: none;
+        background-color: #f6f6f6;
+        font-size: 14px;
+        font-family: 'Ubuntu Mono', monospace;
+        padding: 20px;
+    }
+
+    code {
+        color: #f66;
+    }
+  </style>
+{% endblock head_css %}
+
+{% block head %}
+  {{ super() }}
+  <script type='text/javascript' src='{{ static('js/highlight.min.js') }}'></script>
+  <script type='text/javascript' src='{{ static('js/marked.min.js') }}'></script>
+{% endblock head %}
+
+{% block tail %}
+  {{ super() }}
+  <script type='text/javascript' src='{{ static('js/vue.min.js') }}'></script>
+  <script type='text/javascript'>
+    $(function() {
+      var orig = $('textarea#body').text();
+      new Vue({
+          el: '#editor',
+          data: {
+              input: orig
+          },
+          filters: {
+              marked: marked
+          }
+      })
+    });
+  </script>
+{% endblock tail %}
+
+{% macro render_body_field(form, field, kwargs={'v-model': 'input'}) %}
+  {% set direct_error = h.is_field_error(field.errors) %}
+  <div class="control-group{{ ' error' if direct_error else '' }}">
+    <div class="control-label">
+      <label for="{{ field.id }}">{{ field.label.text }}
+          {% if h.is_required_form_field(field) %}
+            <strong style="color: red">&#42;</strong>
+          {%- else -%}
+            &nbsp;
+          {%- endif %}
+      </label>
+    </div>
+    <div class="controls">
+    <div id='editor'>
+      {{ field(**kwargs)|safe }}
+      <div v-html='input | marked'></div>
+    </div>
+    {% if field.description %}
+    <p class="help-block">{{ field.description }}</p>
+    {% endif %}
+    {% if direct_error %}
+      <ul{% if direct_error %} class="input-errors"{% endif %}>
+      {% for e in field.errors if e is string %}
+        <li>{{ e }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro my_render_form_fields(form, form_opts=None) %}
+    {% if form.hidden_tag is defined %}
+        {{ form.hidden_tag() }}
+    {% else %}
+        {% if csrf_token %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {% endif %}
+        {% for f in form if f.type == 'HiddenField' %}
+            {{ f }}
+        {% endfor %}
+    {% endif %}
+
+    {% if form_opts and form_opts.form_rules %}
+        {% for r in form_opts.form_rules %}
+            {{ r(form, form_opts=form_opts) }}
+        {% endfor %}
+    {% else %}
+        {% for f in form if f.type != 'HiddenField' and f.type != 'CSRFTokenField' %}
+          {% if form_opts %}
+            {% set kwargs = form_opts.widget_args.get(f.name, {}) %}
+          {% else %}
+            {% set kwargs = {} %}
+          {% endif %}
+
+          {% if f.name != 'body' %}
+            {{ lib.render_field(form, f, kwargs) }}
+          {% else %}
+            {{ render_body_field(form, f) }}
+          {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{% block body %}
+    {% call lib.form_tag(form) %}
+        {{ my_render_form_fields(form, form_opts=form_opts) }}
+        {{ render_form_buttons(return_url, my_extra()) }}
+    {% endcall %}
+{% endblock %}
