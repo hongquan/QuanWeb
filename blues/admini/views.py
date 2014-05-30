@@ -46,6 +46,7 @@ class CategoryAdmin(QAdmin):
 
 
 class EntryAdmin(QAdmin):
+    create_template = 'admin/entry_edit.html'
     edit_template = 'admin/entry_edit.html'
 
     column_formatters = {
