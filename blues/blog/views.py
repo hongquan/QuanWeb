@@ -19,7 +19,7 @@ def show_post(year, month, pk, slug):
 @blogm.route('/')
 def list_posts(catslug=None):
     cvars = {}
-    query = Entry.query.order_by(Entry.date_published.desc())
+    query = Entry.pub().order_by(Entry.date_published.desc())
     if catslug == UNCATEGORIZED:
         entries = query.filter_by(categories=None)
     elif catslug:

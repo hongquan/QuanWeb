@@ -9,5 +9,5 @@ frontpage = Blueprint('frontpage', __name__, static_folder=config.STATIC_FOLDER,
 
 @frontpage.route('/')
 def index():
-    posts = Entry.query.order_by(Entry.date_published.desc()).limit(5).all()
+    posts = Entry.pub().order_by(Entry.date_published.desc()).limit(5).all()
     return render_template('front/index.html', posts=posts)

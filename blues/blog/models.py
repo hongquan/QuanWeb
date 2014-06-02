@@ -58,6 +58,11 @@ class Entry(ModelMixIn, db.Model):
     date_modified = db.Column(db.DateTime, default=datetime.utcnow,
                               onupdate=datetime.utcnow)
 
+    @classmethod
+    # Get only published entries
+    def pub(cls):
+        return cls.query.filter_by(published=True)
+
     def __str__(self):
         return self.title
 
