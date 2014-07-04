@@ -120,3 +120,7 @@ a.onbar.active {
   border-bottom: 2px solid #FFFFFF;
   height: 50px;
 }
+
+.codehilitetable {
+  width: 100%
+}
