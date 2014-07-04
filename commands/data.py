@@ -7,6 +7,8 @@ from quanweb import app, db
 from auth.models import User
 from blog.models import Category, Entry
 
+from .tools import split_content
+
 manager = Manager(app)
 
 @manager.command
@@ -53,21 +55,7 @@ def newcategory():
 @manager.option('-u', dest='pid', help='Post ID to update. Will create new post if not specified')
 def importfile(filepath, pid=None):
     base, ext = os.path.splitext(filepath)
-    with open(filepath) as fl:
-        content = fl.read()
-    # Read first line to find title. To specify title,
-    # first line should starts with "#" then title
-    title = None
-    pos = content.find('\n')
-    if pos != -1:
-        firstline = content[:pos]
-        if firstline.startswith('#'):
-            title = firstline[1:].strip()
-            # Content will be the rest of file
-            content = content[pos+1:]
-    # If there is no title in file, use file name as title
-    if not title:
-        title = os.path.basename(base)
+    title, content = split_content(filepath)
     print('Title:', title)
     # Update existing post, if pid is specified
     if pid:
