@@ -4,6 +4,7 @@ from flask import request, redirect, url_for
 from flask_admin.base import AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.model import typefmt
+from flask_admin.actions import action
 from flask_login import current_user
 
 from quanweb.common import db
@@ -60,6 +61,12 @@ class EntryAdmin(QAdmin):
 
     def __init__(self):
         super().__init__(Entry, name='Entries', endpoint='entries')
+
+    @action('publish', 'Publish')
+    def action_publish(self, ids):
+        queryset = Entry.query.filter(Entry.id.in_(ids))
+        queryset.update({'published': True}, synchronize_session=False)
+        db.session.commit()
 
 
 class UserAdmin(QAdmin):
