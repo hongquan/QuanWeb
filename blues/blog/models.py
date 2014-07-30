@@ -9,10 +9,14 @@ from auth.models import User
 from .util import make_excerpt
 
 def generate_slug(context):
+    if not context:    # Called on empty form
+        return
     return slugify(context.current_parameters['title'])
 
 
 def generate_excerpt(context):
+    if not context:
+        return
     body = context.current_parameters['body']
     return make_excerpt(body)
 
