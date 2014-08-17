@@ -6,6 +6,14 @@ article.post {
     width: 100%;
 }
 
+article .entry-content img {
+    max-width: 640px;
+}
+
+article .entry-content h2 {
+    font-size: initial;
+}
+
 .entry-header {
     margin-bottom: 30px;
 }
