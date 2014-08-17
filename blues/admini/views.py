@@ -1,15 +1,18 @@
+from flask import Markup
 from datetime import datetime
+from htmltag import a, i as i_tag
 from urllib.parse import urlencode
-from flask import request, redirect, url_for
-from flask_admin.base import AdminIndexView, expose
-from flask_admin.contrib.sqla import ModelView
+from jinja2 import contextfunction
+from flask_login import current_user
 from flask_admin.model import typefmt
 from flask_admin.actions import action
-from flask_login import current_user
+from flask import request, redirect, url_for
+from flask_admin.contrib.sqla import ModelView
+from flask_admin.base import AdminIndexView, expose
 
+from auth.models import User
 from quanweb.common import db
 from blog.models import Category, Entry
-from auth.models import User
 
 from .formatters import truncate_longtext, truncate_html, \
                         email_nohost, datetime_short
@@ -68,6 +71,21 @@ class EntryAdmin(QAdmin):
         queryset = Entry.query.filter(Entry.id.in_(ids))
         queryset.update({'published': True}, synchronize_session=False)
         db.session.commit()
+
+    def get_list_columns(self):
+        column_list = super().get_list_columns()
+        column_list.append(('extra', ''))
+        return column_list
+
+    @contextfunction
+    def get_list_value(self, context, model, name):
+        if name == 'extra':
+            date_published = model.date_published
+            year, month = date_published.year, date_published.month
+            url = url_for('blog.show_post', year=year, month=month, pk=model.id, slug=model.slug)
+            link = a(i_tag(_class='icon-eye-open'), href=url)
+            return Markup(link)
+        return super().get_list_value(context, model, name)
 
 
 class UserAdmin(QAdmin):

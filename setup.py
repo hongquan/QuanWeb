@@ -44,6 +44,8 @@ setup(
         'alembic',
         'arrow',
         'htmllaundry',
+        'sphinx',
+        'htmltag'
     ],
     include_package_data=True
 )
