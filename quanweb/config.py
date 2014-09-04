@@ -17,6 +17,9 @@ SQLALCHEMY_ECHO = False
 # logentries.com service
 LOGENTRIES_TOKEN ='zzzz'
 
+# App Enlight service
+APPENLIGHT_PRVKEY = 'zzzz'
+
 # Secret config saved in secret.py
 try:
     from .secret import *
