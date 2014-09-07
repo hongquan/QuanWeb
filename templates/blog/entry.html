@@ -7,6 +7,9 @@
     {% include 'blog/block_post.html' %}
   {% endwith %}
   {% block comments %}
+    <div id='flattr_box'>
+      {% include 'block_flattr.html' %}
+    </div>
     <div id="disqus_thread"></div>
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */

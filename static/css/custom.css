@@ -132,3 +132,9 @@ a.onbar.active {
 .codehilitetable {
   width: 100%
 }
+
+#flattr_box {
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto
+}
