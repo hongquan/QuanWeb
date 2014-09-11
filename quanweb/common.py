@@ -17,5 +17,5 @@ loginmanager = LoginManager()
 
 
 # Markdown
-md = Markdown(app, extensions=('fenced_code', 'codehilite(linenums=True)'),
+md = Markdown(app, extensions=('fenced_code', 'codehilite'),
               safe_mode=True, output_format='html5')
