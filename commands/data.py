@@ -77,7 +77,7 @@ def importfile(filepath, pid=None):
     for i, name in db.session.query(Category.id, Category.title).all():
         choices[str(i)] = name
 
-    entry = Entry(title=title, body=content)
+    entry = Entry(title=title, body=content, published=True)
     while choices.keys():
         question = ask + '\n'.join('{}. {} '.format(k, v) for k, v in choices.items())
         sel = input(question)
