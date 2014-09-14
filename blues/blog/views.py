@@ -14,14 +14,12 @@ blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
 @blogm.route('/<int:year>/<int:month>/<int:pk>/<slug>')
 def show_post(year, month, pk, slug):
     entry = Entry.query.get(pk)
-    siblings = Entry.pub()
+    siblings = Entry.pub().options(load_only('id', 'date_published'))
     cat = request.args.get('cat')
     if cat:
-        category = Category.query.filter_by(slug=cat).one()
-        siblings = category.entries.filter_by(published=True)
-    siblings = siblings.options(load_only('id', 'date_published'))
+        siblings = siblings.join(Entry.categories).filter(Category.slug == cat)
     next_entry = siblings.filter(Entry.id>pk).first()
-    prev_entry = siblings.filter(Entry.id<pk).order_by('-id').first()
+    prev_entry = siblings.filter(Entry.id<pk).order_by(Entry.id.desc()).first()
     return render_template('blog/entry.html', entry=entry,
                            prev_entry=prev_entry,
                            next_entry=next_entry,
