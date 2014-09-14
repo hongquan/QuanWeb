@@ -1,6 +1,7 @@
-from datetime import datetime
 from slugify import slugify
 from sqlalchemy import event
+from datetime import datetime
+from sqlalchemy.orm import deferred
 
 from quanweb.common import db
 from quanweb.models import ModelMixIn
@@ -44,9 +45,9 @@ class Entry(ModelMixIn, db.Model):
 
     title = db.Column(db.Unicode(200), nullable=False)
     slug = db.Column(db.String(200), default=generate_slug)
-    body = db.Column(db.Text)
+    body = deferred(db.Column(db.Text))
     format = db.Column(db.Enum('md', 'rst', name='format_types'), default='md')
-    excerpt = db.Column(db.Text, default=generate_excerpt)
+    excerpt = deferred(db.Column(db.Text, default=generate_excerpt))
 
     published = db.Column(db.Boolean, default=False)
     date_published = db.Column(db.DateTime, default=datetime.utcnow)

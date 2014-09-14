@@ -6,10 +6,14 @@
   {% with p=entry %}
     {% include 'blog/block_post.html' %}
   {% endwith %}
+  <div id='flattr_box' class='center-block'>
+    {% include 'block_flattr.html' %}
+  </div>
+  <ul class='pager'>
+    <li class="previous {{ prev_entry|yesno('', 'disabled') }}"><a href='{{ prev_entry|entry_url }}'>&larr; Older</a></li>
+    <li class="next {{ next_entry|yesno('', 'disabled') }}"><a href='{{ next_entry|entry_url }}'>Newer &rarr;</a></li>
+  </ul>
   {% block comments %}
-    <div id='flattr_box'>
-      {% include 'block_flattr.html' %}
-    </div>
     <div id="disqus_thread"></div>
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */

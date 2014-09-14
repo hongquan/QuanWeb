@@ -1,5 +1,4 @@
 article.post {
-    max-width: 640px;
     margin: 0 auto;
 }
 .entry-header, .entry-content, .entry-summary, .entry-meta {
@@ -7,7 +6,6 @@ article.post {
 }
 
 article .entry-content img {
-    max-width: 640px;
 }
 
 article .entry-content h2 {
@@ -74,9 +72,6 @@ h1.entry-title {
 }
 
 #disqus_thread {
-  max-width: 640px;
-  margin-left: auto;
-  margin-right: auto;
   margin-top: 20px;
 }
 
@@ -133,8 +128,6 @@ a.onbar.active {
   width: 100%
 }
 
-#flattr_box {
-  max-width: 640px;
-  margin-left: auto;
-  margin-right: auto
+.container.main {
+  max-width: 640px
 }

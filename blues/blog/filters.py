@@ -4,6 +4,8 @@ from .views import blogm, UNCATEGORIZED
 
 @blogm.app_template_filter()
 def entry_url(entry):
+    if not entry:
+        return ''
     date_published = entry.date_published
     year, month = date_published.year, date_published.month
     return url_for('blog.show_post', year=year, month=month, pk=entry.id, slug=entry.slug)
