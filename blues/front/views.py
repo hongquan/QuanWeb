@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, abort
+from flask import Blueprint
+from flask import request, render_template, abort
 from jinja2 import TemplateNotFound
 
 from quanweb import config
@@ -9,5 +10,11 @@ frontpage = Blueprint('frontpage', __name__, static_folder=config.STATIC_FOLDER,
 
 @frontpage.route('/')
 def index():
-    posts = Entry.pub().order_by(Entry.date_published.desc()).limit(5).all()
-    return render_template('front/index.html', posts=posts)
+    posts = Entry.pub().order_by(Entry.date_published.desc())
+    page = int(request.args.get('page', 1))
+    ctx = {
+        'posts': posts.all(),
+        'pagination': posts.paginate(page, 5),
+        'endpoint': 'frontpage.index',
+    }
+    return render_template('front/index.html', **ctx)

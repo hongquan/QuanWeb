@@ -30,3 +30,19 @@
 {{ field.label(*varargs, **kwargs) }}{% if field.flags.required %}*{% endif %}
 {% if breakafter %}<br>{% endif %}
 {% endmacro %}
+
+{% macro render_pagination(pagination, endpoint) %}
+  <ul class='pagination'>
+    <li class="{{ pagination.has_prev|yesno('', 'disabled') }}">
+      <a href="{{ url_for(endpoint) }}">&laquo;</a>
+    </li>
+    {%- for page in pagination.iter_pages() %}
+      <li class="{{ pagination.page|compare_flip(page, 'active') }}">
+        <a href="{{ url_for(endpoint)|add_urlparam('page', page) }}">{{ page }}</a>
+      </li>
+    {%- endfor %}
+    <li class="{{ pagination.has_next|yesno('', 'disabled') }}">
+      <a href="{{ url_for(endpoint)|add_urlparam('page', pagination.total) }}">&raquo;</a>
+    </li>
+  </ul>
+{% endmacro %}
