@@ -24,7 +24,8 @@ def show_post(year, month, pk, slug):
     prev_entry = siblings.filter(Entry.id<pk).order_by('-id').first()
     return render_template('blog/entry.html', entry=entry,
                            prev_entry=prev_entry,
-                           next_entry=next_entry)
+                           next_entry=next_entry,
+                           catslug=cat)
 
 
 @blogm.route('/<catslug>')
