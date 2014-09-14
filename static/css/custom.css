@@ -6,6 +6,7 @@ article.post {
 }
 
 article .entry-content img {
+  max-width: 100%
 }
 
 article .entry-content h2 {
