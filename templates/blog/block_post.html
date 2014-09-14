@@ -1,10 +1,12 @@
 <article class='post'>
   <header class='entry-header'>
     <h1 class='entry-title'>
-      {% if front %}
-        <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
-      {% else %}
+      {% if not front %}
         {{ p.title }}
+      {% elif cat %}
+        <a rel='bookmark' href='{{ p|entry_url|add_urlparam('cat', cat.slug) }}'>{{ p.title }}</a>
+      {% else %}
+        <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
       {% endif %}
     </h1>
     <div class='entry-meta'>
