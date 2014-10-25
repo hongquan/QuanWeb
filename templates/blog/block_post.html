@@ -31,7 +31,7 @@
       </span>
     </div>
   </header>
-  <div class='entry-content'>
+  <div class='entry-content {{ front|yesno('front') }}'>
     {% if not front %}
       {{ p.body|markdown }}
     {% else %}
@@ -40,9 +40,14 @@
   </div>
   {% if front %}
     <footer class='entry-meta'>
-      <div class='comment-links'>
-        <a href='{{ p|entry_url }}#disqus_thread'>comments</a>
-      </div>
+      {% with url_full=p|entry_url %}
+        <div class='link-comment'>
+          <a href='{{ url_full }}#disqus_thread'>comments</a>
+        </div>
+        <div class='pull-right'>
+          <a href='{{ url_full }}'>&raquo; Read full</a>
+        </div>
+      {% endwith %}
     </footer>
   {% endif %}
 </article>

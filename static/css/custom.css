@@ -132,3 +132,11 @@ a.onbar.active {
 .container.main {
   max-width: 640px
 }
+
+.link-comment {
+    display: inline-block
+}
+
+.entry-content.front:after {
+    content: '…'
+}
