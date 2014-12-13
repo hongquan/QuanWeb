@@ -59,7 +59,7 @@ class EntryAdmin(QAdmin):
         'excerpt': truncate_html
     }
     column_type_formatters = MY_DEFAULT_FORMATTERS
-    #column_default_sort = ('id', True)
+    column_default_sort = (Entry.id, True)
 
     form_excluded_columns = ('slug', 'excerpt', 'date_published', 'date_created', 'date_modified')
 
