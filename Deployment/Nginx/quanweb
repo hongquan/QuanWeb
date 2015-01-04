@@ -25,7 +25,7 @@ server {
 	index index.html index.htm;
 
 	# Make site accessible from http://localhost/
-	server_name quan.hoabinh.vn xn--nghqun-0ta.vn 103.27.60.111 "";
+	server_name quan.hoabinh.vn xn--nghqun-0ta.vn _;
 
 	access_log /var/log/nginx/quanweb/access.log;
 	error_log /var/log/nginx/quanweb/error.log;
