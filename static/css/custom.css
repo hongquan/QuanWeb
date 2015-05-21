@@ -140,3 +140,7 @@ a.onbar.active {
 .entry-content.front:after {
     content: '…'
 }
+
+.navbar-toggle .icon-bar {
+  background-color: #000
+}
