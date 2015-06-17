@@ -6,4 +6,7 @@ $(function() {
       $(elm).addClass('active');
     }
   })
+
+  /* Add class to rendered table */
+  $('article.post table').addClass('table');
 })
