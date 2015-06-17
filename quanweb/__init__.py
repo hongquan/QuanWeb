@@ -41,7 +41,9 @@ app.register_blueprint(authm, url_prefix='/auth')
 app.register_blueprint(bookshelfm, url_prefix='/book')
 
 # Admin
-admin = Admin(app, index_view=AdminHomeView(), base_template='admin/master_local.html')
+admin = Admin(app, index_view=AdminHomeView(),
+              base_template='admin/master_local.html',
+              template_mode='bootstrap3')
 admin.add_view(CategoryAdmin())
 admin.add_view(EntryAdmin())
 admin.add_view(UserAdmin())

@@ -64,17 +64,15 @@
 
 {% macro render_body_field(form, field, kwargs={'v-model': 'input'}) %}
   {% set direct_error = h.is_field_error(field.errors) %}
-  <div class="control-group{{ ' error' if direct_error else '' }}">
-    <div class="control-label">
+  <div class="form-group{{ ' has-error' if direct_error else '' }}">
+    <div class="col-md-2">
       <label for="{{ field.id }}">{{ field.label.text }}
-          {% if h.is_required_form_field(field) %}
+          {% if h.is_required_form_field(field) -%}
             <strong style="color: red">&#42;</strong>
-          {%- else -%}
-            &nbsp;
           {%- endif %}
       </label>
     </div>
-    <div class="controls">
+    <div class="col-md-12">
     <div id='editor'>
       {{ field(**kwargs)|safe }}
       <div v-html='input | marked'></div>

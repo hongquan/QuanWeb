@@ -1,18 +1,18 @@
 {% extends 'admin/model/edit.html' %}
 
 {% macro my_extra() %}
-  <input name="_continue_editing" type="submit" class="btn" value="{{ _gettext('Save and Continue') }}" />
+  <input name="_continue_editing" type="submit" class="btn btn-default" value="{{ _gettext('Save and Continue') }}" />
 {% endmacro %}
 
 {% macro render_form_buttons(cancel_url, extra=None) %}
-    <div class="control-group">
-      <div class="controls">
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
         <input type="submit" class="btn btn-primary" value="{{ _gettext('Submit') }}" />
         {% if extra %}
         {{ extra }}
         {% endif %}
         {% if cancel_url %}
-        <a href="{{ cancel_url }}" class="btn">{{ _gettext('Cancel') }}</a>
+        <a href="{{ cancel_url }}" class="btn btn-default">{{ _gettext('Cancel') }}</a>
         {% endif %}
       </div>
     </div>
