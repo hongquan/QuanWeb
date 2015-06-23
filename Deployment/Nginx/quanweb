@@ -35,6 +35,11 @@ server {
 		autoindex on;
 	}
 
+	# For Google WebMaster
+	location ~ /google[a-z0-9]+\.html$ {
+		root /home/quan/QuanWeb/;
+	}
+
 
 	# Main site
 	location / {
