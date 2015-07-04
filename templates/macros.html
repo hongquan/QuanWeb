@@ -42,7 +42,7 @@
       </li>
     {%- endfor %}
     <li class="{{ pagination.has_next|yesno('', 'disabled') }}">
-      <a href="{{ url_for(endpoint)|add_urlparam('page', pagination.total) }}">&raquo;</a>
+      <a href="{{ url_for(endpoint)|add_urlparam('page', pagination.pages) }}">&raquo;</a>
     </li>
   </ul>
 {% endmacro %}
