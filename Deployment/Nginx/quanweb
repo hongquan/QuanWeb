@@ -37,7 +37,12 @@ server {
 
 	# For Google WebMaster
 	location ~ /google[a-z0-9]+\.html$ {
-		root /home/quan/QuanWeb/;
+		root /home/quan/QuanWeb/static;
+	}
+
+	# For robot
+	location /robots.txt {
+		root /home/quan/QuanWeb/static;
 	}
 
 
