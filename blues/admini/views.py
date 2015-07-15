@@ -60,8 +60,11 @@ class EntryAdmin(QAdmin):
     }
     column_type_formatters = MY_DEFAULT_FORMATTERS
     column_default_sort = (Entry.id, True)
+    column_list = ('title', 'excerpt', 'author', 'body',
+                   'published', 'date_modified')
 
-    form_excluded_columns = ('slug', 'excerpt', 'date_published', 'date_created', 'date_modified')
+    form_excluded_columns = ('slug', 'excerpt', 'date_published',
+                             'date_created', 'date_modified')
 
     def __init__(self):
         super().__init__(Entry, name='Entries', endpoint='entries')
@@ -82,7 +85,8 @@ class EntryAdmin(QAdmin):
         if name == 'extra':
             date_published = model.date_published
             year, month = date_published.year, date_published.month
-            url = url_for('blog.show_post', year=year, month=month, pk=model.id, slug=model.slug)
+            url = url_for('blog.show_post', year=year, month=month,
+                          pk=model.id, slug=model.slug)
             link = a(span(_class='glyphicon glyphicon-eye-open'), href=url)
             return Markup(link)
         return super().get_list_value(context, model, name)
