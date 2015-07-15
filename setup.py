@@ -45,7 +45,8 @@ setup(
         'arrow',
         'htmllaundry',
         'sphinx',
-        'htmltag'
+        'htmltag',
+        'mdx_linkify',
     ],
     include_package_data=True
 )
