@@ -1,7 +1,8 @@
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import load_only
 from flask import Blueprint
-from flask import request, render_template, abort
+from sqlalchemy.orm.exc import NoResultFound
+from flask import request, render_template, abort, redirect, url_for
 
 from quanweb import config
 from quanweb.common import UNCATEGORIZED
@@ -24,6 +25,20 @@ def show_post(year, month, pk, slug):
                            prev_entry=prev_entry,
                            next_entry=next_entry,
                            catslug=cat)
+
+
+@blogm.route('/<int:year>/<int:month>/<int:pk>')
+def show_post_short(year, month, pk):
+    ''' Redirect to correct, full URL '''
+    try:
+        entry = Entry.query.get(pk)
+    except NoResultFound:
+        abort(404)
+    date_published = entry.date_published
+    year, month = date_published.year, date_published.month
+    full_url = url_for('blog.show_post',
+                       year=year, month=month, pk=pk, slug=entry.slug)
+    return redirect(full_url, 301)
 
 
 @blogm.route('/<catslug>')

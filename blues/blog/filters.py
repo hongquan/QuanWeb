@@ -8,7 +8,18 @@ def entry_url(entry):
         return ''
     date_published = entry.date_published
     year, month = date_published.year, date_published.month
-    return url_for('blog.show_post', year=year, month=month, pk=entry.id, slug=entry.slug)
+    return url_for('blog.show_post',
+                   year=year, month=month, pk=entry.id, slug=entry.slug)
+
+
+@blogm.app_template_filter()
+def entry_url_short(entry):
+    if not entry:
+        return ''
+    date_published = entry.date_published
+    year, month = date_published.year, date_published.month
+    return url_for('blog.show_post_short',
+                   year=year, month=month, pk=entry.id)
 
 
 @blogm.app_template_filter()
