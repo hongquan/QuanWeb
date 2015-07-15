@@ -40,9 +40,9 @@
   </div>
   {% if front %}
     <footer class='entry-meta'>
-      {% with url_full=p|entry_url %}
+      {% with url_full=p|entry_url, url_short=p|entry_url_short %}
         <div class='link-comment'>
-          <a href='{{ url_full }}#disqus_thread'>comments</a>
+          <a href='{{ url_full }}#disqus_thread' data-disqus-identifier='{{ url_short }}'>comments</a>
         </div>
         <div class='pull-right'>
           <a href='{{ url_full }}'>&raquo; Read full</a>
