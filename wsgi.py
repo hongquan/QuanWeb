@@ -1,6 +1,5 @@
 import logging
 from logentries import LogentriesHandler
-from waitress import serve
 import appenlight_client.ext.flask as appenlight
 
 from quanweb import app
@@ -18,4 +17,5 @@ if APPENLIGHT_PRVKEY:
     app = appenlight.add_appenlight(app, {'appenlight.api_key': APPENLIGHT_PRVKEY})
 
 if __name__ == '__main__':
+    from waitress import serve
     serve(app, host=ADDRESS, port=PORT)

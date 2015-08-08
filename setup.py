@@ -39,7 +39,6 @@ setup(
         'Flask-Admin',
         'Pygments',
         'python-slugify',
-        'waitress',
         'LogentriesLogger',
         'alembic',
         'arrow',
@@ -47,6 +46,7 @@ setup(
         'sphinx',
         'htmltag',
         'mdx_linkify',
+        'gunicorn',
     ],
     include_package_data=True
 )
