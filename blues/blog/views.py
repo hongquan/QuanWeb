@@ -13,7 +13,7 @@ blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
                   template_folder=config.TEMPLATE_FOLDER)
 
 
-@blogm.route('/<int:year>/<int:month>/<int:pk>/<slug>')
+@blogm.route('/<int:year>/<int:month>/<int:pk>-<slug>')
 def show_post(year, month, pk, slug):
     entry = Entry.query.get(pk)
     if not entry.published and not current_user.is_authenticated():
@@ -31,8 +31,11 @@ def show_post(year, month, pk, slug):
                            no_tracking=not entry.published)
 
 
+# The short version is to serve as Disqus Identifier
 @blogm.route('/<int:year>/<int:month>/<int:pk>')
-def show_post_short(year, month, pk):
+# The old scheme of URL, will be redirected to new
+@blogm.route('/<int:year>/<int:month>/<int:pk>/<slug>')
+def show_post_short(year, month, pk, slug=None):
     ''' Redirect to correct, full URL '''
     try:
         entry = Entry.query.get(pk)
