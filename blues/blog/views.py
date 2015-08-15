@@ -15,9 +15,9 @@ blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
 
 @blogm.route('/<int:year>/<int:month>/<int:pk>/<slug>')
 def show_post(year, month, pk, slug):
-    if not current_user.is_authenticated():
-        abort(403)
     entry = Entry.query.get(pk)
+    if not entry.published and not current_user.is_authenticated():
+        abort(403)
     siblings = Entry.pub().options(load_only('id', 'date_published'))
     cat = request.args.get('cat')
     if cat:
