@@ -1,6 +1,7 @@
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import load_only
 from flask import Blueprint
+from flask_login import current_user
 from sqlalchemy.orm.exc import NoResultFound
 from flask import request, render_template, abort, redirect, url_for
 
@@ -14,6 +15,8 @@ blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
 
 @blogm.route('/<int:year>/<int:month>/<int:pk>/<slug>')
 def show_post(year, month, pk, slug):
+    if not current_user.is_authenticated():
+        abort(403)
     entry = Entry.query.get(pk)
     siblings = Entry.pub().options(load_only('id', 'date_published'))
     cat = request.args.get('cat')
@@ -24,7 +27,8 @@ def show_post(year, month, pk, slug):
     return render_template('blog/entry.html', entry=entry,
                            prev_entry=prev_entry,
                            next_entry=next_entry,
-                           catslug=cat)
+                           catslug=cat,
+                           no_tracking=not entry.published)
 
 
 @blogm.route('/<int:year>/<int:month>/<int:pk>')
