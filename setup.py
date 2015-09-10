@@ -47,6 +47,7 @@ setup(
         'htmltag',
         'mdx_linkify',
         'gunicorn',
+        'meinheld'
     ],
     include_package_data=True
 )
