@@ -1,13 +1,14 @@
 # Global config
 
 import os.path
-from os.path import dirname
+from os.path import dirname, abspath
 
 SITE_TITLE = "Quân's blog"
 SITE_DESCRIPTION = 'A blog inspired by Wordpress'
 
-STATIC_FOLDER = os.path.join(dirname(dirname(__file__)), 'static')
-TEMPLATE_FOLDER = os.path.join(dirname(dirname(__file__)), 'templates')
+PROJECT_FOLDER = dirname(dirname(abspath(__file__)))
+STATIC_FOLDER = os.path.join(PROJECT_FOLDER, 'static')
+TEMPLATE_FOLDER = os.path.join(PROJECT_FOLDER, 'templates')
 BOOTSTRAP_SERVE_LOCAL = True
 
 SECRET_KEY = '{{secret_key}}'
