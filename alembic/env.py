@@ -1,6 +1,13 @@
+import sys
+from os.path import abspath, dirname
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
+
+PROJECT_PATH = dirname(dirname(abspath(__file__)))
+sys.path.insert(0, PROJECT_PATH)
+
 from quanweb import app, db
 from quanweb.config import SQLALCHEMY_DATABASE_URI
 # Import all models to help them recognized
