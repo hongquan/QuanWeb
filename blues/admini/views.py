@@ -63,7 +63,8 @@ class EntryAdmin(QAdmin):
     column_list = ('title', 'excerpt', 'author', 'body',
                    'published', 'date_modified')
 
-    form_excluded_columns = ('slug', 'excerpt', 'date_published',
+    form_excluded_columns = ('slug', 'excerpt', 'html',
+                             'date_published',
                              'date_created', 'date_modified')
 
     def __init__(self):

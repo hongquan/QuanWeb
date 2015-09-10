@@ -33,7 +33,11 @@
   </header>
   <div class='entry-content {{ front|yesno('front') }}'>
     {% if not front %}
-      {{ p.body|markdown }}
+      {% if p.html %}
+        {{ p.html|safe }}
+      {% else %}
+        {{ p.body|markdown }}
+      {% endif %}
     {% else %}
       {{ p.excerpt|safe }}
     {% endif %}
