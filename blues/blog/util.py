@@ -15,3 +15,6 @@ def make_excerpt(fullmarkdown):
             lines.append('```')
     reduced = ''.join(lines)
     return md._instance.convert(reduced)
+
+def make_html(fullmarkdown):
+    return md._instance.convert(fullmarkdown)

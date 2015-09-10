@@ -7,7 +7,7 @@ from quanweb.common import db
 from quanweb.models import ModelMixIn
 from auth.models import User
 
-from .util import make_excerpt
+from .util import make_excerpt, make_html
 
 def generate_slug(context):
     if not context:    # Called on empty form
@@ -20,6 +20,13 @@ def generate_excerpt(context):
         return
     body = context.current_parameters['body']
     return make_excerpt(body)
+
+
+def generate_html(context):
+    if not context:
+        return
+    body = context.current_parameters['body']
+    return make_html(body)
 
 
 entrycats = db.Table('entrycats',
@@ -48,6 +55,7 @@ class Entry(ModelMixIn, db.Model):
     body = deferred(db.Column(db.Text))
     format = db.Column(db.Enum('md', 'rst', name='format_types'), default='md')
     excerpt = deferred(db.Column(db.Text, default=generate_excerpt))
+    html = deferred(db.Column(db.Text, default=generate_html))
 
     published = db.Column(db.Boolean, default=False)
     date_published = db.Column(db.DateTime, default=datetime.utcnow)
@@ -82,3 +90,7 @@ event.listen(Entry, 'before_update', update_slug)
 @event.listens_for(Entry, 'before_update')
 def update_excerpt(mapper, connection, target):
     target.excerpt = make_excerpt(target.body)
+
+@event.listens_for(Entry, 'before_update')
+def update_html(mapper, connection, target):
+    target.html = make_html(target.body)
