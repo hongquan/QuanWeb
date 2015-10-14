@@ -18,7 +18,8 @@ authm = Blueprint('auth', __name__, static_folder=config.STATIC_FOLDER,
 class LoginView(MethodView):
     def get(self):
         form = LoginForm()
-        return render_template('auth/login.html', form=form)
+        return render_template('auth/login.html', form=form,
+                               no_tracking=True)
 
     def post(self):
         form = LoginForm()
