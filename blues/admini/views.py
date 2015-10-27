@@ -30,13 +30,13 @@ class QAdmin(ModelView):
         super().__init__(model, db.session, **kwargs)
 
     def is_accessible(self):
-        return current_user.is_authenticated()
+        return current_user.is_authenticated
 
 
 class AdminHomeView(AdminIndexView):
     @expose('/')
     def index(self):
-        if not current_user.is_authenticated():
+        if not current_user.is_authenticated:
             url = url_for('login') + '?' + urlencode({'next': request.path})
             return redirect(url)
         return super().index()
