@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import 'macros.html' as macr %}
 
 {% block title %}{{ cat|default('All') }}{% endblock title %}
 
@@ -8,6 +9,9 @@
       {% include 'blog/block_post.html' %}
     {% endfor %}
   {% endwith %}
+  <div class='text-center'>
+    {{ macr.render_pagination(pagination, endpoint) }}
+  </div>
 {% endblock inner_content %}
 
 {% block js %}

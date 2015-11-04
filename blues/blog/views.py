@@ -9,6 +9,8 @@ from quanweb import config
 from quanweb.common import UNCATEGORIZED
 from .models import db, Entry, Category
 
+PER_PAGE = 5
+
 blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
                   template_folder=config.TEMPLATE_FOLDER)
 
@@ -16,7 +18,7 @@ blogm = Blueprint('blog', __name__, static_folder=config.STATIC_FOLDER,
 @blogm.route('/<int:year>/<int:month>/<int:pk>-<slug>')
 def show_post(year, month, pk, slug):
     entry = Entry.query.get(pk)
-    if not entry.published and not current_user.is_authenticated():
+    if not entry.published and not current_user.is_authenticated:
         abort(403)
     siblings = Entry.pub().options(load_only('id', 'date_published'))
     cat = request.args.get('cat')
@@ -58,8 +60,13 @@ def list_posts(catslug=None):
     elif catslug:
         category = Category.query.filter_by(slug=catslug).one()
         cvars['cat'] = category
-        entries = category.entries.all()
+        entries = category.entries
     else:
-        entries = query.all()
-    cvars['entries'] = entries
+        entries = query
+    page = int(request.args.get('page', 1))
+    start = (page - 1)*PER_PAGE
+    end = start + PER_PAGE
+    cvars['entries'] = entries.slice(start, end)
+    cvars['pagination'] = entries.paginate(page, PER_PAGE)
+    cvars['endpoint'] = 'blog.list_posts'
     return render_template('blog/entries.html', **cvars)
