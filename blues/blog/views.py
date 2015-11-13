@@ -60,7 +60,7 @@ def list_posts(catslug=None):
     elif catslug:
         category = Category.query.filter_by(slug=catslug).one()
         cvars['cat'] = category
-        entries = category.entries
+        entries = query.filter(Entry.categories.contains(category))
     else:
         entries = query
     page = int(request.args.get('page', 1))
