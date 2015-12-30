@@ -1,0 +1,14 @@
+map $http_user_agent $is_bot {
+	~Pingdom 1;
+	~Appenlight 1;
+
+	~Googlebot 1;
+	~Baiduspider 1;
+	~facebookexternalhit 1;
+	~MJ12bot 1;
+	~YandexBot 1;
+	~AhrefsBot 1;
+	~coccoc 1;
+
+	default 0;
+}
