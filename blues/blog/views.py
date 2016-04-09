@@ -50,7 +50,7 @@ def show_post_short(year, month, pk, slug=None):
     return redirect(full_url, 301)
 
 
-@blogm.route('/<catslug>')
+@blogm.route('/<catslug>/')
 @blogm.route('/')
 def list_posts(catslug=None):
     cvars = {}
