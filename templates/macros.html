@@ -37,9 +37,15 @@
       <a href="{{ url_for(endpoint) }}">&laquo;</a>
     </li>
     {%- for page in pagination.iter_pages() %}
-      <li class="{{ pagination.page|compare_flip(page, 'active') }}">
-        <a href="{{ url_for(endpoint)|add_urlparam('page', page) }}">{{ page }}</a>
-      </li>
+      {% if page %}
+        <li class="{{ pagination.page|compare_flip(page, 'active') }}">
+          <a href="{{ url_for(endpoint)|add_urlparam('page', page) }}">{{ page }}</a>
+        </li>
+      {% else %}
+        <li>
+          <span class='ellipsis'>…</span>
+        </li>
+      {% endif %}
     {%- endfor %}
     <li class="{{ pagination.has_next|yesno('', 'disabled') }}">
       <a href="{{ url_for(endpoint)|add_urlparam('page', pagination.pages) }}">&raquo;</a>
