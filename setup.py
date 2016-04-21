@@ -49,7 +49,8 @@ setup(
         'htmltag',
         'mdx_linkify',
         'gunicorn',
-        'meinheld'
+        'meinheld',
+        'SQLAlchemy-Utils'
     ],
     include_package_data=True
 )

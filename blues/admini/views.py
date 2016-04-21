@@ -9,6 +9,8 @@ from flask_admin.actions import action
 from flask import request, redirect, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.base import AdminIndexView, expose
+from wtforms.fields import SelectField
+from babel.core import Locale
 
 from auth.models import User
 from quanweb.common import db
@@ -21,6 +23,13 @@ MY_DEFAULT_FORMATTERS = dict(typefmt.BASE_FORMATTERS)
 MY_DEFAULT_FORMATTERS.update({
     type(datetime(2000, 1, 1)): datetime_short
 })
+
+
+def get_language_choices():
+    LANGS = ('en', 'vi')
+    choices = tuple((i, Locale(i).display_name) for i in LANGS)
+    return choices
+
 
 class QAdmin(ModelView):
     edit_template = 'admin/edit.html'
@@ -66,6 +75,13 @@ class EntryAdmin(QAdmin):
     form_excluded_columns = ('slug', 'excerpt', 'html',
                              'date_published',
                              'date_created', 'date_modified')
+
+    form_overrides = {
+        'locale': SelectField
+    }
+    form_args = {
+        'locale': dict(choices=get_language_choices())
+    }
 
     def __init__(self):
         super().__init__(Entry, name='Entries', endpoint='entries')

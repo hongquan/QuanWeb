@@ -2,6 +2,7 @@ from slugify import slugify
 from sqlalchemy import event
 from datetime import datetime
 from sqlalchemy.orm import deferred
+from sqlalchemy_utils import LocaleType
 
 from quanweb.common import db
 from quanweb.models import ModelMixIn
@@ -54,6 +55,7 @@ class Entry(ModelMixIn, db.Model):
     slug = db.Column(db.String(200), default=generate_slug)
     body = deferred(db.Column(db.Text))
     format = db.Column(db.Enum('md', 'rst', name='format_types'), default='md')
+    locale = db.Column(LocaleType)
     excerpt = deferred(db.Column(db.Text, default=generate_excerpt))
     html = deferred(db.Column(db.Text, default=generate_html))
 

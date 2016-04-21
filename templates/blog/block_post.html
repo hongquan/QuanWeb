@@ -1,4 +1,4 @@
-<article class='post'>
+<article class='post' {% if p.locale %}lang='{{ p.locale.language }}'{% endif %}>
   <header class='entry-header'>
     <h1 class='entry-title'>
       {% if not front %}
