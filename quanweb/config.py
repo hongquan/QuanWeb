@@ -10,6 +10,7 @@ PROJECT_FOLDER = dirname(dirname(abspath(__file__)))
 STATIC_FOLDER = os.path.join(PROJECT_FOLDER, 'static')
 TEMPLATE_FOLDER = os.path.join(PROJECT_FOLDER, 'templates')
 BOOTSTRAP_SERVE_LOCAL = True
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SECRET_KEY = '{{secret_key}}'
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
