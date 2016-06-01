@@ -1,0 +1,19 @@
+[Unit]
+Description=QuanWeb
+After=syslog.target network.target
+
+[Service]
+User=quan
+Group=quan
+
+Type=simple
+WorkingDirectory=/home/quan/QuanWeb
+Environment=PROJDIR=/home/quan/QuanWeb
+Environment=PYTHONPATH=/home/quan/QuanWeb
+ExecStart=/var/PyEnv/quanweb/bin/gunicorn wsgi:app -b unix:${PROJDIR}/gunicorn.sock -k "egg:meinheld#gunicorn_worker"
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
