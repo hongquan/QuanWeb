@@ -82,9 +82,9 @@
         <script src='{{ static('js/ua-parser.min.js') }}'></script>
         <script src='{{ static('js/purl.js') }}'></script>
         <script src='{{ static('js/Math.uuid.js') }}'></script>
-        <script src='{{ static('js/tracking.js') }}'></script>
 
         {% if not no_tracking %}
+          <script src='{{ static('js/tracking.js') }}'></script>
           {% include 'block_tracking.html' %}
         {% endif %}
       {% endif %}
