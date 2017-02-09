@@ -45,8 +45,3 @@
     <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
   {% endblock comments %}
 {% endblock inner_content %}
-
-{% block js %}
-  {{ super() }}
-  {% include 'block_inline_comment.html' %}
-{% endblock js %}
