@@ -1,0 +1,8 @@
+[Unit]
+Description=Renew Let's Encrypt certification for QuanWeb
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/quan/QuanWeb/certs
+ExecStart=/usr/bin/certbot renew --renew-hook "/usr/sbin/service nginx reload"
+
