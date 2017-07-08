@@ -2,8 +2,8 @@ from datetime import date
 
 from werkzeug import generate_password_hash, check_password_hash
 
-from flask.ext.sqlalchemy import BaseQuery
-from flask.ext.login import AnonymousUserMixin, UserMixin
+from flask_sqlalchemy import BaseQuery
+from flask_login import AnonymousUserMixin, UserMixin
 
 from quanweb.common import db
 from quanweb.models import ModelMixIn

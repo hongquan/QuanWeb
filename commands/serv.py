@@ -1,4 +1,4 @@
-from flask.ext.script import Server
+from flask_script import Server
 
 from .data import app
 
@@ -9,4 +9,3 @@ class MyServer(Server):
         app.debug = True
         super().handle(app, host, port, use_debugger, use_reloader,
                        threaded, processes, passthrough_errors)
-
