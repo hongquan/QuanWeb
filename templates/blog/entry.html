@@ -2,6 +2,22 @@
 
 {% block title %}{{ entry.title }}{% endblock title %}
 
+{% block meta_seo %}
+  {% if entry.seo_description %}
+    <meta property='description' content='{{ entry.seo_description }}' />
+  {% endif %}
+  {% if entry.seo_keywords %}
+    <meta property='keywords' content='{{ entry.seo_keywords }}' />
+  {% endif %}
+{% endblock meta_seo %}
+
+{% block meta_og %}
+  <meta property='og:type' content='article' />
+  {% if entry.og_image %}
+    <meta property='og:image' content='{{ entry.og_image }}' />
+  {% endif %}
+{% endblock meta_og %}
+
 {% block inner_content %}
   {% with p=entry %}
     {% include 'blog/block_post.html' %}

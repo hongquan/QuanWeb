@@ -80,7 +80,16 @@ class EntryAdmin(QAdmin):
         'locale': SelectField
     }
     form_args = {
-        'locale': dict(choices=get_language_choices())
+        'locale': dict(choices=get_language_choices()),
+        'seo_description': {
+            'label': 'SEO Description'
+        },
+        'seo_keywords': {
+            'label': 'SEO Keywords'
+        },
+        'og_image': {
+            'label': 'OpenGraph Image URL'
+        }
     }
 
     def __init__(self):

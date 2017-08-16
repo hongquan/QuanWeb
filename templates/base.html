@@ -7,6 +7,8 @@
     {% if no_tracking %}
       <meta name='robots' content='noindex, nofollow'>
     {% endif %}
+    {% block meta_seo %}{% endblock meta_seo %}
+    {% block meta_og %}{% endblock meta_og %}
 
     {% block css -%}
       <link href="{{ static('css/bootstrap.css') }}" rel='stylesheet' media='screen'>

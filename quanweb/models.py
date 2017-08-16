@@ -1,5 +1,6 @@
 from .common import db
 
+
 class ModelMixIn:
     id = db.Column(db.Integer, primary_key=True)
 
