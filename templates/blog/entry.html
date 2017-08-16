@@ -16,7 +16,7 @@
   {% if entry.og_image %}
     <meta property='og:image' content='{{ entry.og_image }}' />
   {% endif %}
-  <meta property='og:description' content='{{ entry.excerpt }}' />
+  <meta property='og:description' content='{{ entry.excerpt|striptags }}' />
 {% endblock meta_og %}
 
 {% block inner_content %}
