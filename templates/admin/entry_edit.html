@@ -6,10 +6,16 @@
   <style>
     textarea[name=body] {
       height: 400px;
+      width: 100%;
     }
-    textarea, #editor div {
+    #preview > div {
+      width: 100%;
+    }
+    #preview img {
+      max-width: 100%;
+    }
+    textarea, #preview > div {
         display: inline-block;
-        width: 49%;
         height: 100%;
         vertical-align: top;
         -webkit-box-sizing: border-box;
@@ -65,28 +71,34 @@
 {% macro render_body_field(form, field, kwargs={'v-model': 'input'}) %}
   {% set direct_error = h.is_field_error(field.errors) %}
   <div class="form-group{{ ' has-error' if direct_error else '' }}">
-    <div class="col-md-2">
-      <label for="{{ field.id }}">{{ field.label.text }}
-          {% if h.is_required_form_field(field) -%}
-            <strong style="color: red">&#42;</strong>
-          {%- endif %}
-      </label>
+    <div class='row'>
+      <div class="col-md-2">
+        <label for="{{ field.id }}">{{ field.label.text }}
+            {% if h.is_required_form_field(field) -%}
+              <strong style="color: red">&#42;</strong>
+            {%- endif %}
+        </label>
+      </div>
     </div>
-    <div class="col-md-12">
-    <div id='editor'>
-      {{ field(**kwargs)|safe }}
-      <div v-html='input | marked'></div>
+    <div class='row' id='editor'>
+      <div class='col-md-6'>
+        {{ field(**kwargs)|safe }}
+      </div>
+      <div id='preview' class='col-md-6'>
+        <div v-html='input | marked'></div>
+      </div>
     </div>
-    {% if field.description %}
-    <p class="help-block">{{ field.description }}</p>
-    {% endif %}
-    {% if direct_error %}
-      <ul{% if direct_error %} class="input-errors"{% endif %}>
-      {% for e in field.errors if e is string %}
-        <li>{{ e }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
+    <div class='row'>
+      {% if field.description %}
+      <p class="help-block">{{ field.description }}</p>
+      {% endif %}
+      {% if direct_error %}
+        <ul{% if direct_error %} class="input-errors"{% endif %}>
+        {% for e in field.errors if e is string %}
+          <li>{{ e }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
     </div>
   </div>
 {% endmacro %}
