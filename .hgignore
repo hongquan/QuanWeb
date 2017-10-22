@@ -9,3 +9,4 @@ __pycache__
 quanweb.egg-info
 */secret.py
 DB
+.vscode
