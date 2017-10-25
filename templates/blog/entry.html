@@ -29,17 +29,17 @@
   <ul class='pager'>
     {% if not catslug %}
       <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
-        <a href='{{ prev_entry|entry_url }}'>&larr; Older</a>
+        <a href='{{ prev_entry|entry_url }}' title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
       </li>
       <li class="next {{ next_entry|yesno('', 'disabled') }}">
-        <a href='{{ next_entry|entry_url }}'>Newer &rarr;</a>
+        <a href='{{ next_entry|entry_url }}' title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
       </li>
     {% else %}
       <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
-        <a href='{{ prev_entry|entry_url|add_urlparam('cat', catslug) }}'>&larr; Older</a>
+        <a href='{{ prev_entry|entry_url|add_urlparam('cat', catslug) }}' title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
       </li>
       <li class="next {{ next_entry|yesno('', 'disabled') }}">
-        <a href='{{ next_entry|entry_url|add_urlparam('cat', catslug) }}'>Newer &rarr;</a>
+        <a href='{{ next_entry|entry_url|add_urlparam('cat', catslug) }}' title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
       </li>
     {% endif %}
   </ul>

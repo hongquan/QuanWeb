@@ -1,3 +1,5 @@
+import textwrap
+
 from slugify import slugify
 from sqlalchemy import event
 from datetime import datetime
@@ -78,6 +80,11 @@ class Entry(ModelMixIn, db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_modified = db.Column(db.DateTime, default=datetime.utcnow,
                               onupdate=datetime.utcnow)
+
+
+    @property
+    def short_title(self):
+        return textwrap.shorten(self.title, 20, placeholder='…')
 
     @classmethod
     # Get only published entries
