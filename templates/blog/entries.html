@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% import 'macros.html' as macr %}
 
-{% block title %}{{ cat|default('All') }}{% endblock title %}
+{% block title %}{{ cat_title|default('All') }}{% endblock title %}
 
 {% block inner_content %}
   {% with front=True %}
@@ -10,7 +10,7 @@
     {% endfor %}
   {% endwith %}
   <div class='text-center'>
-    {{ macr.render_pagination(pagination, endpoint) }}
+    {{ macr.render_pagination(pagination, endpoint, cat_slug=cat) }}
   </div>
 {% endblock inner_content %}
 

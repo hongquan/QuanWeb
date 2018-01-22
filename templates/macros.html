@@ -31,7 +31,7 @@
 {% if breakafter %}<br>{% endif %}
 {% endmacro %}
 
-{% macro render_pagination(pagination, endpoint) %}
+{% macro render_pagination(pagination, endpoint, cat_slug=None) %}
   <ul class='pagination'>
     <li class="{{ pagination.has_prev|yesno('', 'disabled') }}">
       <a href="{{ url_for(endpoint) }}">&laquo;</a>
@@ -39,7 +39,11 @@
     {%- for page in pagination.iter_pages() %}
       {% if page %}
         <li class="{{ pagination.page|compare_flip(page, 'active') }}">
-          <a href="{{ url_for(endpoint)|add_urlparam('page', page) }}">{{ page }}</a>
+          {% if not cat_slug %}
+            <a href="{{ url_for(endpoint)|add_urlparam('page', page) }}">{{ page }}</a>
+          {% else %}
+            <a href="{{ url_for(endpoint, catslug=cat_slug)|add_urlparam('page', page) }}">{{ page }}</a>
+          {% endif %}
         </li>
       {% else %}
         <li>

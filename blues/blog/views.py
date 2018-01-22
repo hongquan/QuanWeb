@@ -1,4 +1,3 @@
-from jinja2 import TemplateNotFound
 from sqlalchemy.orm import load_only
 from flask import Blueprint
 from flask_login import current_user
@@ -7,7 +6,7 @@ from flask import request, render_template, abort, redirect, url_for
 
 from quanweb import config
 from quanweb.common import UNCATEGORIZED
-from .models import db, Entry, Category
+from .models import Entry, Category
 
 PER_PAGE = 5
 
@@ -24,8 +23,8 @@ def show_post(year, month, pk, slug):
     cat = request.args.get('cat')
     if cat:
         siblings = siblings.join(Entry.categories).filter(Category.slug == cat)
-    next_entry = siblings.filter(Entry.id>pk).first()
-    prev_entry = siblings.filter(Entry.id<pk).order_by(Entry.id.desc()).first()
+    next_entry = siblings.filter(Entry.id > pk).first()
+    prev_entry = siblings.filter(Entry.id < pk).order_by(Entry.id.desc()).first()
     return render_template('blog/entry.html', entry=entry,
                            prev_entry=prev_entry,
                            next_entry=next_entry,
@@ -57,12 +56,16 @@ def list_posts(catslug=None):
     query = Entry.pub().order_by(Entry.date_published.desc())
     if catslug == UNCATEGORIZED:
         entries = query.filter_by(categories=None)
+        cvars['cat'] = UNCATEGORIZED
+        cvars['cat_title'] = 'Uncategorized'
     elif catslug:
         category = Category.query.filter_by(slug=catslug).one()
-        cvars['cat'] = category
+        cvars['cat'] = category.slug
+        cvars['cat_title'] = category.title
         entries = query.filter(Entry.categories.contains(category))
     else:
         entries = query
+        cvars['cat'] = None
     page = int(request.args.get('page', 1))
     start = (page - 1)*PER_PAGE
     end = start + PER_PAGE

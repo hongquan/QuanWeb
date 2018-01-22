@@ -12,6 +12,7 @@ from auth.models import User
 
 from .util import make_excerpt, make_html
 
+
 def generate_slug(context):
     if not context:    # Called on empty form
         return
@@ -49,7 +50,6 @@ class Category(ModelMixIn, db.Model):
         return self.title
 
 
-
 class Entry(ModelMixIn, db.Model):
     __tablename__ = 'entries'
 
@@ -81,7 +81,6 @@ class Entry(ModelMixIn, db.Model):
     date_modified = db.Column(db.DateTime, default=datetime.utcnow,
                               onupdate=datetime.utcnow)
 
-
     @property
     def short_title(self):
         return textwrap.shorten(self.title, 20, placeholder='…')
@@ -99,12 +98,15 @@ class Entry(ModelMixIn, db.Model):
 def update_slug(mapper, connection, target):
     target.slug = slugify(target.title)
 
+
 event.listen(Category, 'before_update', update_slug)
 event.listen(Entry, 'before_update', update_slug)
+
 
 @event.listens_for(Entry, 'before_update')
 def update_excerpt(mapper, connection, target):
     target.excerpt = make_excerpt(target.body)
+
 
 @event.listens_for(Entry, 'before_update')
 def update_html(mapper, connection, target):
