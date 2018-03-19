@@ -34,7 +34,7 @@ server {
 	error_log /var/log/nginx/quanweb/error.log;
 
 	location ^~ /static/ {
-		root /home/quan/QuanWeb/;
+		root /home/quan/QuanWeb/quanweb/;
 		autoindex on;
 		# Cache
 		gzip_static on;
@@ -44,28 +44,19 @@ server {
 
 	# For Google WebMaster
 	location ~ /google[a-z0-9]+\.html$ {
-		root /home/quan/QuanWeb/static;
+		root /home/quan/QuanWeb/quanweb/static;
 	}
 
 	# For robot
 	location /robots.txt {
-		root /home/quan/QuanWeb/static;
+		root /home/quan/QuanWeb/quanweb/static;
 	}
 
 
 	# Main site
 	location / {
-		# proxy_pass		http://127.0.0.1:2750;
-		proxy_pass		http://unix:/home/quan/QuanWeb/gunicorn.sock;
-		proxy_redirect		default;
-		proxy_set_header	Host $host;
-		proxy_set_header	X-Real-IP   $remote_addr;
-		proxy_set_header	X-Forwarded-For $proxy_add_x_forwarded_for;
-		# First attempt to serve request as file, then
-		# as directory, then fall back to index.html
-		#try_files $uri $uri/ /index.html;
-		# Uncomment to enable naxsi on this location
-		# include /etc/nginx/naxsi.rules
+		include		proxy_params;
+		proxy_pass	http://unix:/home/quan/QuanWeb/gunicorn.sock;
 	}
 
 
