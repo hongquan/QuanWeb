@@ -4,7 +4,7 @@
       {% if not front %}
         {{ p.title }}
       {% elif cat %}
-        <a rel='bookmark' href='{{ p|entry_url|add_urlparam('cat', cat.slug) }}'>{{ p.title }}</a>
+        <a rel='bookmark' href='{{ p|entry_url|add_urlparam('cat', cat) }}'>{{ p.title }}</a>
       {% else %}
         <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
       {% endif %}
