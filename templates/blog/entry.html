@@ -23,9 +23,6 @@
   {% with p=entry %}
     {% include 'blog/block_post.html' %}
   {% endwith %}
-  <div id='flattr_box' class='center-block'>
-    {% include 'block_flattr.html' %}
-  </div>
   <ul class='pager'>
     {% if not catslug %}
       <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
