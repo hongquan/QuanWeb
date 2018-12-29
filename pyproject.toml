@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "quanweb"
+version = "0.1.1"
+description = "Quan's personal web blog"
+authors = ["Nguyễn Hồng Quân <ng.hong.quan@gmail.com>"]
+homepage = "http://quan.hoabinh.vn"
+
+[tool.poetry.dependencies]
+python = "^3.5"
+Flask-Admin = "^1.5"
+Flask-WTF = "^0.14.2"
+psycopg2 = "^2.7"
+Flask-Login = "^0.4.1"
+Flask-Script = "^2.0"
+Flask-Markdown = "^0.3.0"
+Flask-Bootstrap = "^3.3"
+Pygments = "^2.3"
+python-slugify = "^2.0"
+LogentriesLogger = "^0.2.1"
+appenlight-client = "^0.6.26"
+alembic = "^1.0"
+arrow = "^0.12.1"
+blinker = "^1.4"
+htmllaundry = "^2.1"
+sphinx = "^1.8"
+htmltag = "^1.7"
+mdx_linkify = "^1.2"
+gunicorn = "^19.9"
+meinheld = "^0.6.1"
+SQLAlchemy-Utils = "^0.33.10"
+flask-reverse-proxy = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
