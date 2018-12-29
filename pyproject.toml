@@ -20,8 +20,6 @@ alembic = "^1.0"
 arrow = "^0.12.1"
 blinker = "^1.4"
 htmllaundry = "^2.1"
-sphinx = "^1.8"
-htmltag = "^1.7"
 mdx_linkify = "^1.2"
 gunicorn = "^19.9"
 meinheld = "^0.6.1"
@@ -29,6 +27,8 @@ SQLAlchemy-Utils = "^0.33.10"
 flask-reverse-proxy = "^0.2.0"
 awesome-slugify = "^1.6"
 psycopg2-binary = "^2.7"
+html3 = "^1.17"
+Flask-SQLAlchemy = "^2.3"
 
 [tool.poetry.dev-dependencies]
 

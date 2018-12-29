@@ -1,6 +1,8 @@
-from flask import Markup
+
 from datetime import datetime
-from htmltag import a, span
+
+from flask import Markup
+from html3.html3 import HTML
 from urllib.parse import urlencode
 from jinja2 import contextfunction
 from flask_login import current_user
@@ -113,8 +115,10 @@ class EntryAdmin(QAdmin):
             year, month = date_published.year, date_published.month
             url = url_for('blog.show_post', year=year, month=month,
                           pk=model.id, slug=model.slug)
-            link = a(span(_class='glyphicon glyphicon-eye-open'), href=url)
-            return Markup(link)
+            h = HTML()
+            anchor = h.a(href=url)
+            anchor.span(klass='glyphicon glyphicon-eye-open')
+            return Markup(str(anchor))
         return super().get_list_value(context, model, name)
 
 
