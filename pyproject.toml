@@ -28,7 +28,7 @@ awesome-slugify = "^1.6"
 psycopg2-binary = "^2.7"
 html3 = "^1.17"
 Flask-SQLAlchemy = "^2.3"
-flask-behind-proxy = { git = "git@bitbucket.org:hongquan/flask-behind-proxy.git" }
+flask-behind-proxy = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 
