@@ -6,7 +6,7 @@ authors = ["Nguyễn Hồng Quân <ng.hong.quan@gmail.com>"]
 homepage = "http://quan.hoabinh.vn"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 Flask-Admin = "^1.5"
 Flask-WTF = "^0.14.2"
 Flask-Login = "^0.4.1"
@@ -24,11 +24,11 @@ mdx_linkify = "^1.2"
 gunicorn = "^19.9"
 meinheld = "^0.6.1"
 SQLAlchemy-Utils = "^0.33.10"
-flask-reverse-proxy = "^0.2.0"
 awesome-slugify = "^1.6"
 psycopg2-binary = "^2.7"
 html3 = "^1.17"
 Flask-SQLAlchemy = "^2.3"
+flask-behind-proxy = { git = "git@bitbucket.org:hongquan/flask-behind-proxy.git" }
 
 [tool.poetry.dev-dependencies]
 

@@ -128,6 +128,19 @@ wtforms = "*"
 
 [[package]]
 category = "main"
+description = ""
+name = "flask-behind-proxy"
+optional = false
+python-versions = "^3.6"
+version = "0.1.0"
+
+[package.source]
+reference = "19b28ef4d9b454f4093838d5c8632088467366fe"
+type = "git"
+url = "git@bitbucket.org:hongquan/flask-behind-proxy.git"
+
+[[package]]
+category = "main"
 description = "An extension that includes Bootstrap in your project, without any boilerplate code."
 name = "flask-bootstrap"
 optional = false
@@ -160,14 +173,6 @@ version = "0.3"
 
 [package.dependencies]
 markdown = "*"
-
-[[package]]
-category = "main"
-description = "A Flask extension for applications in a reverse proxy not at the root"
-name = "flask-reverse-proxy"
-optional = false
-python-versions = "*"
-version = "0.2.0.2"
 
 [[package]]
 category = "main"
@@ -475,8 +480,8 @@ python-versions = "*"
 version = "2.2.1"
 
 [metadata]
-content-hash = "d38e0f941bcfdc51ec839f1031196f85ac17c66babe463a8e7b8605acc5142e5"
-python-versions = "^3.5"
+content-hash = "f6e6d0e92d4ade2932b5145bd91cd8d8c786831af784fe15fcf6d2816cbcd867"
+python-versions = "^3.6"
 
 [metadata.hashes]
 alembic = ["e9ffdece0eece55f4108b14b6b0f29ffc730d58e28446a434fe41a1cc5c5f266"]
@@ -491,10 +496,10 @@ click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b
 dominate = ["4076735c0745fe771e57b2313dbb4bfeec42731816ee23cee509f66e8912aa51", "4b9fd42d2824b79761799590697db45bf93daad511b130c50513af38da33df9b"]
 flask = ["2271c0070dbcb5275fad4a82e29f23ab92682dc45f9dfbc22c02ba9b9322ce48", "a080b744b7e345ccfcbc77954861cb05b3c63786e93f2b3875e0913d44b43f05"]
 flask-admin = ["ca0be6ec11a6913b73f656c65c444ae5be416c57c75638dd3199376ce6bc7422"]
+flask-behind-proxy = []
 flask-bootstrap = ["cb08ed940183f6343a64e465e83b3a3f13c53e1baabb8d72b5da4545ef123ac8"]
 flask-login = ["c815c1ac7b3e35e2081685e389a665f2c74d7e077cb93cecabaea352da4752ec"]
 flask-markdown = ["d8c3f02545b395ad525b86760ad721a2c50efa3b8e602a8d486a1f47f68c6250"]
-flask-reverse-proxy = ["637c74fe0af6dfd697b74b46467cbfc92a7dd34bae1991c43ce52b9da61ae1bc"]
 flask-script = ["6425963d91054cfcc185807141c7314a9c5ad46325911bd24dcb489bd0161c65"]
 flask-sqlalchemy = ["3bc0fac969dd8c0ace01b32060f0c729565293302f0c4269beed154b46bec50b", "5971b9852b5888655f11db634e87725a9031e170f37c0ce7851cf83497f56e53"]
 flask-wtf = ["5d14d55cfd35f613d99ee7cba0fc3fbbe63ba02f544d349158c14ca15561cc36", "d9a9e366b32dcbb98ef17228e76be15702cd2600675668bca23f63a7947fd5ac"]
