@@ -29,6 +29,7 @@ psycopg2-binary = "^2.7"
 html3 = "^1.17"
 Flask-SQLAlchemy = "^2.3"
 flask-behind-proxy = "^0.1.0"
+Babel = "^2.6"
 
 [tool.poetry.dev-dependencies]
 

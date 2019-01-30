@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macr %}
+
+{% block title %}Presentations{% endblock title %}
+
+{% block inner_content %}
+  {% for p in presentations %}
+    <article class='post'>
+      <header class='entry-header'>
+        <h3><a href='{{ p.url }}'>{{ p.title }}</a></h3>
+      </header>
+      <div class='entry-meta'>
+      Event: {{ p.event }}
+      </div>
+    </article>
+  {% endfor %}
+{% endblock inner_content %}
+
+{% block js %}
+  {{ super() }}
+  {% include 'blog/comment_count.html' %}
+{% endblock js %}

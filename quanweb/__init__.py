@@ -18,11 +18,12 @@ from auth import authm
 from auth.models import AnonymousUser
 from bookshelf import bookshelfm
 from blog.models import Category, Entry
+from talk import talkm
 
 from . import config
 from .common import app, loginmanager, db
 from . import views, widedata
-from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin
+from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin, PresentationAdmin
 
 # SQLAlchemy
 db.init_app(app)
@@ -39,6 +40,7 @@ app.register_blueprint(frontpage)
 app.register_blueprint(blogm, url_prefix='/blog')
 app.register_blueprint(authm, url_prefix='/auth')
 app.register_blueprint(bookshelfm, url_prefix='/book')
+app.register_blueprint(talkm, url_prefix='/talk')
 
 # Admin
 admin = Admin(app, index_view=AdminHomeView(),
@@ -47,3 +49,4 @@ admin = Admin(app, index_view=AdminHomeView(),
 admin.add_view(CategoryAdmin())
 admin.add_view(EntryAdmin())
 admin.add_view(UserAdmin())
+admin.add_view(PresentationAdmin())

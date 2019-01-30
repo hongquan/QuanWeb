@@ -17,6 +17,7 @@ from babel.core import Locale
 from auth.models import User
 from quanweb.common import db
 from blog.models import Category, Entry
+from talk.models import Presentation
 
 from .formatters import truncate_longtext, truncate_html, \
                         email_nohost, datetime_short
@@ -128,3 +129,8 @@ class UserAdmin(QAdmin):
 
     def __init__(self):
         super().__init__(User, name='Users', endpoint='users')
+
+
+class PresentationAdmin(QAdmin):
+    def __init__(self):
+        super().__init__(Presentation, name='Presentations', endpoint='presentations')
