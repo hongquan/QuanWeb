@@ -11,6 +11,7 @@ from .tools import split_content
 
 manager = Manager(app)
 
+
 @manager.command
 def resetdb():
     if prompt_bool('Are you sure'):
@@ -39,7 +40,7 @@ def newuser():
 def newcategory():
     print('Existing categories:')
     for cat in Category.query.all():
-        print(' '*4, cat)
+        print(' ' * 4, cat)
     sel = input('New category name: ')
     name = sel.strip()
     try:
@@ -73,7 +74,6 @@ def importfile(filepath, pid=None):
     # Create new post
     ask = 'Category? (Enter to not select)\n'
     choices = {}
-    names = {}
     for i, name in db.session.query(Category.id, Category.title).all():
         choices[str(i)] = name
 
@@ -85,7 +85,7 @@ def importfile(filepath, pid=None):
             print('Wrong choice. Bye.', file=sys.stderr)
             continue
         elif not sel:
-            break;
+            break
         cat = Category.query.get(sel)
         entry.categories.append(cat)
         del choices[sel]

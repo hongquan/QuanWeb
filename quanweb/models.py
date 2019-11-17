@@ -8,7 +8,7 @@ class ModelMixIn:
         # Convert <Model object at 0xAAAA> to <Model(string)>
         orig = super().__repr__()
         text = self.__str__()
-        if not ' object at 0x' in orig:
+        if ' object at 0x' not in orig:
             return orig
         pos = orig.find(' object at 0x')
         out = orig[:pos] + '({})'.format(text) + '>'
