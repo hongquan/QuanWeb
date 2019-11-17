@@ -10,9 +10,10 @@ sys.path.insert(0, PROJECT_PATH)
 
 from quanweb import app, db
 from quanweb.config import SQLALCHEMY_DATABASE_URI
+
 # Import all models to help them recognized
-import auth.models
-import blog.models
+import auth.models  # NOQA
+import blog.models  # NOQA
 
 # Make `db` know engine
 db.app = app
@@ -37,6 +38,7 @@ target_metadata = db.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -49,12 +51,14 @@ def run_migrations_offline():
     script output.
 
     """
-    #url = config.get_main_option("sqlalchemy.url")
+    # url = config.get_main_option("sqlalchemy.url")
     url = SQLALCHEMY_DATABASE_URI
-    context.configure(url=url)
+    context.configure(url=url, target_metadata=target_metadata,
+                      literal_binds=True, compare_type=True)
 
     with context.begin_transaction():
         context.run_migrations()
+
 
 def run_migrations_online():
     """Run migrations in 'online' mode.
@@ -64,22 +68,21 @@ def run_migrations_online():
 
     """
     engine = engine_from_config(
-                config.get_section(config.config_ini_section),
-                prefix='sqlalchemy.',
-                poolclass=pool.NullPool,
-                url=SQLALCHEMY_DATABASE_URI)
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        url=SQLALCHEMY_DATABASE_URI,
+    )
 
     connection = engine.connect()
-    context.configure(
-                connection=connection,
-                target_metadata=target_metadata
-                )
+    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
 
     try:
         with context.begin_transaction():
             context.run_migrations()
     finally:
         connection.close()
+
 
 if context.is_offline_mode():
     run_migrations_offline()

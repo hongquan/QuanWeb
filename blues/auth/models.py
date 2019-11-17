@@ -1,4 +1,3 @@
-from datetime import date
 
 from werkzeug import generate_password_hash, check_password_hash
 
@@ -34,7 +33,7 @@ class User(ModelMixIn, UserMixin, db.Model):
     active = db.Column(db.Boolean, default=True)
     is_superuser = db.Column(db.Boolean, default=False)
 
-    _password = db.Column('password', db.String(80), nullable=False)
+    _password = db.Column('password', db.String(100), nullable=False)
 
     def _get_password(self):
         return self._password
@@ -43,12 +42,10 @@ class User(ModelMixIn, UserMixin, db.Model):
         self._password = generate_password_hash(password)
 
     password = db.synonym('_password',
-                         descriptor=property(_get_password, _set_password))
-
+                          descriptor=property(_get_password, _set_password))
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
-
 
     def __str__(self):
         return self.email
