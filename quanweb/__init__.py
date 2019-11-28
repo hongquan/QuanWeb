@@ -19,7 +19,7 @@ from bookshelf import bookshelfm
 from talk import talkm
 
 from .common import app, loginmanager, db
-from . import views   # NOQA
+from . import views, widedata   # NOQA
 from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin, PresentationAdmin
 
 # SQLAlchemy
