@@ -35,8 +35,6 @@
     {% if not front %}
       {% if p.html %}
         {{ p.html|safe }}
-      {% else %}
-        {{ p.body|markdown }}
       {% endif %}
     {% else %}
       {{ p.excerpt|safe }}

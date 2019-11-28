@@ -1,6 +1,8 @@
 #!python3
+import mistletoe
 
-from quanweb.common import md
+from .pygments_renderer import PygmentsRenderer
+
 
 def make_excerpt(fullmarkdown):
     lines = fullmarkdown.splitlines(True)[:7]
@@ -14,7 +16,8 @@ def make_excerpt(fullmarkdown):
             # ...Or add another mark to make sure the number is even
             lines.append('```')
     reduced = ''.join(lines)
-    return md._instance.convert(reduced)
+    return mistletoe.markdown(reduced)
+
 
 def make_html(fullmarkdown):
-    return md._instance.convert(fullmarkdown)
+    return mistletoe.markdown(fullmarkdown, PygmentsRenderer)

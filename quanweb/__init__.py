@@ -2,7 +2,6 @@ import sys
 import os.path
 from os.path import dirname
 
-from flask import Flask, render_template, g, redirect, url_for, flash, session
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 
@@ -17,12 +16,10 @@ from blog import blogm
 from auth import authm
 from auth.models import AnonymousUser
 from bookshelf import bookshelfm
-from blog.models import Category, Entry
 from talk import talkm
 
-from . import config
 from .common import app, loginmanager, db
-from . import views, widedata
+from . import views   # NOQA
 from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin, PresentationAdmin
 
 # SQLAlchemy
