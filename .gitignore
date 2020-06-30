@@ -1,11 +1,9 @@
-syntax: glob
 *~
 *.pyc
 *.pyo
 __pycache__
 *.komodoproject
 .directory
-.git
 quanweb.egg-info
 */secret.py
 DB
