@@ -16,7 +16,8 @@ from .util import make_excerpt, make_html
 def generate_slug(context):
     if not context:    # Called on empty form
         return
-    return slugify(context.current_parameters['title'])
+    title = context.current_parameters['title']
+    return slugify(title.lower())
 
 
 def generate_excerpt(context):
