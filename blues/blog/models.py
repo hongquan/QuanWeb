@@ -97,7 +97,7 @@ class Entry(ModelMixIn, db.Model):
 
 # Event listener
 def update_slug(mapper, connection, target):
-    target.slug = slugify(target.title)
+    target.slug = slugify(target.title.lower())
 
 
 event.listen(Category, 'before_update', update_slug)
