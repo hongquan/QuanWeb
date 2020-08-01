@@ -25,11 +25,12 @@ def show_post(year, month, pk, slug):
         siblings = siblings.join(Entry.categories).filter(Category.slug == cat)
     next_entry = siblings.filter(Entry.id > pk).first()
     prev_entry = siblings.filter(Entry.id < pk).order_by(Entry.id.desc()).first()
+    no_tracking = (not entry.published) or current_user.is_authenticated
     return render_template('blog/entry.html', entry=entry,
                            prev_entry=prev_entry,
                            next_entry=next_entry,
                            catslug=cat,
-                           no_tracking=not entry.published)
+                           no_tracking=no_tracking)
 
 
 # The short version is to serve as Disqus Identifier
@@ -67,7 +68,7 @@ def list_posts(catslug=None):
         entries = query
         cvars['cat'] = None
     page = int(request.args.get('page', 1))
-    start = (page - 1)*PER_PAGE
+    start = (page - 1) * PER_PAGE
     end = start + PER_PAGE
     cvars['entries'] = entries.slice(start, end)
     cvars['pagination'] = entries.paginate(page, PER_PAGE)

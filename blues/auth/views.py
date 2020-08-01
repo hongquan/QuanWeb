@@ -8,7 +8,6 @@ from quanweb.common import loginmanager
 
 from .forms import LoginForm
 from .models import User
-from .models import User
 
 
 authm = Blueprint('auth', __name__, static_folder=config.STATIC_FOLDER,
@@ -37,14 +36,11 @@ class LoginView(MethodView):
         return redirect(url_for('login'))
 
 
-
 class LogoutView(MethodView):
     def get(self):
         logout_user()
         flash('You logged out', 'info')
         return redirect('/')
-
-
 
 
 @loginmanager.user_loader
