@@ -7,7 +7,7 @@ from .pygments_renderer import PygmentsRenderer
 def make_excerpt(fullmarkdown):
     lines = fullmarkdown.splitlines(True)[:7]
     # Count "code block" marker (```)
-    count = sum(1 for l in lines if l.startswith('```'))
+    count = sum(1 for li in lines if li.startswith('```'))
     if (count % 2) == 1:  # There are odd number of marks
         if lines[-1].startswith('```'):
             # Remove last mark...
@@ -16,7 +16,7 @@ def make_excerpt(fullmarkdown):
             # ...Or add another mark to make sure the number is even
             lines.append('```')
     reduced = ''.join(lines)
-    return mistletoe.markdown(reduced)
+    return mistletoe.markdown(reduced) + '...'
 
 
 def make_html(fullmarkdown):

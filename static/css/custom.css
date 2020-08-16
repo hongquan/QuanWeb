@@ -20,6 +20,7 @@ article .entry-content h2 {
 .entry-meta {
     clear: both;
     font-size: 13px;
+    margin-top: 1rem;
 }
 
 .entry-meta > span {
@@ -51,8 +52,8 @@ h1.entry-title {
 }
 
 .entry-content {
-    -moz-hyphens: auto;
-    word-wrap: break-word;
+  -moz-hyphens: auto;
+  word-wrap: break-word;
 }
 
 
@@ -129,8 +130,12 @@ a.onbar.active {
   width: 100%
 }
 
-.container.main {
+.container.main:not(:fullscreen) {
   max-width: 640px
+}
+
+.container.main:fullscreen {
+  max-width: 100%;
 }
 
 .link-comment {
@@ -141,6 +146,14 @@ a.onbar.active {
     content: '…'
 }
 
+.entry-content.front p:last-child {
+  margin-bottom: 0;
+}
+
 .navbar-toggle .icon-bar {
   background-color: #000
+}
+
+.asciicast:fullscreen {
+  width: 100%;
 }
