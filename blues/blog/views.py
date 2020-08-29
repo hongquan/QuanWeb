@@ -73,4 +73,5 @@ def list_posts(catslug=None):
     cvars['entries'] = entries.slice(start, end)
     cvars['pagination'] = entries.paginate(page, PER_PAGE)
     cvars['endpoint'] = 'blog.list_posts'
+    cvars['no_tracking'] = current_user.is_authenticated
     return render_template('blog/entries.html', **cvars)

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask import request, render_template
+from flask import render_template
 
 from quanweb import config
 from .models import Presentation
