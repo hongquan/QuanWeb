@@ -19,6 +19,11 @@ def show_post(year, month, pk, slug):
     entry = Entry.query.get(pk)
     if not entry.published and not current_user.is_authenticated:
         abort(403)
+    if entry.slug != slug:
+        dpub = entry.date_published
+        return redirect(url_for('.show_post', year=dpub.year, month=dpub.month,
+                                pk=entry.id, slug=entry.slug),
+                        301)
     siblings = Entry.pub().options(load_only('id', 'date_published'))
     cat = request.args.get('cat')
     if cat:
