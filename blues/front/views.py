@@ -3,7 +3,7 @@ from flask import request, render_template
 from flask_login import current_user
 
 from quanweb import config
-from blog.models import Entry
+from blues.blog.models import Entry
 
 PER_PAGE = 5
 

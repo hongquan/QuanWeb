@@ -1,4 +1,4 @@
-from auth.views import LoginView, LogoutView
+from blues.auth.views import LoginView, LogoutView
 from ..common import app
 
 app.add_url_rule('/login', view_func=LoginView.as_view('login'))

@@ -1,7 +1,7 @@
 from datetime import datetime
 from quanweb.common import db
 from quanweb.models import ModelMixIn
-from auth.models import User
+from blues.auth.models import User
 
 
 class Author(ModelMixIn, db.Model):

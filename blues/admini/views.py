@@ -14,13 +14,13 @@ from flask_admin.base import AdminIndexView, expose
 from wtforms.fields import SelectField
 from babel.core import Locale
 
-from auth.models import User
 from quanweb.common import db
-from blog.models import Category, Entry
-from talk.models import Presentation
+from blues.auth.models import User
+from blues.blog.models import Category, Entry
+from blues.talk.models import Presentation
 
 from .formatters import truncate_longtext, truncate_html, \
-                        email_nohost, datetime_short
+    email_nohost, datetime_short
 
 MY_DEFAULT_FORMATTERS = dict(typefmt.BASE_FORMATTERS)
 MY_DEFAULT_FORMATTERS.update({

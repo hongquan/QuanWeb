@@ -15,7 +15,3 @@ if LOGENTRIES_TOKEN:
 
 if APPENLIGHT_PRVKEY:
     app = appenlight.add_appenlight(app, {'appenlight.api_key': APPENLIGHT_PRVKEY})
-
-if __name__ == '__main__':
-    from waitress import serve
-    serve(app, host=ADDRESS, port=PORT)

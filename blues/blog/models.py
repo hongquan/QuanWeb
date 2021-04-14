@@ -8,7 +8,7 @@ from sqlalchemy_utils import LocaleType
 
 from quanweb.common import db
 from quanweb.models import ModelMixIn
-from auth.models import User
+from blues.auth.models import User
 
 from .util import make_excerpt, make_html
 

@@ -1,26 +1,18 @@
-import sys
-import os.path
-from os.path import dirname
 
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 
-# Insert blueprint folder to PYTHONPATH
-_bluefolder = os.path.join(dirname(dirname(__file__)), 'blues')
-if _bluefolder not in sys.path:
-    sys.path.insert(1, _bluefolder)
-
 # Blueprints
-from front import frontpage
-from blog import blogm
-from auth import authm
-from auth.models import AnonymousUser
-from bookshelf import bookshelfm
-from talk import talkm
+from blues.front import frontpage
+from blues.blog import blogm
+from blues.auth import authm
+from blues.auth.models import AnonymousUser
+from blues.bookshelf import bookshelfm
+from blues.talk import talkm
 
-from .common import app, loginmanager, db
 from . import views, widedata   # NOQA
-from admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin, PresentationAdmin
+from .common import app, loginmanager, db
+from blues.admini.views import AdminHomeView, CategoryAdmin, EntryAdmin, UserAdmin, PresentationAdmin
 
 # SQLAlchemy
 db.init_app(app)
