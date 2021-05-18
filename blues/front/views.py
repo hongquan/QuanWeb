@@ -23,4 +23,4 @@ def index():
         'endpoint': 'frontpage.index',
         'no_tracking': current_user.is_authenticated
     }
-    return render_template('front/index.html', **ctx)
+    return render_template('front/index.jinja', **ctx)

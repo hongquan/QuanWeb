@@ -1,12 +1,12 @@
-{% extends 'base.html' %}
-{% import 'macros.html' as macr %}
+{% extends 'base.jinja' %}
+{% import 'macros.jinja' as macr %}
 
 {% block title %}{{ cat_title|default('All') }}{% endblock title %}
 
 {% block inner_content %}
   {% with front=True %}
     {% for p in entries %}
-      {% include 'blog/block_post.html' %}
+      {% include 'blog/block_post.jinja' %}
     {% endfor %}
   {% endwith %}
   <div class='text-center'>
@@ -16,5 +16,5 @@
 
 {% block js %}
   {{ super() }}
-  {% include 'blog/comment_count.html' %}
+  {% include 'blog/comment_count.jinja' %}
 {% endblock js %}

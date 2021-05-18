@@ -1,5 +1,5 @@
-{% extends 'base.html' %}
-{% import 'macros.html' as macr %}
+{% extends 'base.jinja' %}
+{% import 'macros.jinja' as macr %}
 
 {% block title %}Presentations{% endblock title %}
 
@@ -18,5 +18,5 @@
 
 {% block js %}
   {{ super() }}
-  {% include 'blog/comment_count.html' %}
+  {% include 'blog/comment_count.jinja' %}
 {% endblock js %}

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.jinja' %}
 
 {% block title %}{{ entry.title }}{% endblock title %}
 
@@ -21,7 +21,7 @@
 
 {% block inner_content %}
   {% with p=entry %}
-    {% include 'blog/block_post.html' %}
+    {% include 'blog/block_post.jinja' %}
   {% endwith %}
   <ul class='pager'>
     {% if not catslug %}

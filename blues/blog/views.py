@@ -31,7 +31,7 @@ def show_post(year, month, pk, slug):
     next_entry = siblings.filter(Entry.id > pk).first()
     prev_entry = siblings.filter(Entry.id < pk).order_by(Entry.id.desc()).first()
     no_tracking = (not entry.published) or current_user.is_authenticated
-    return render_template('blog/entry.html', entry=entry,
+    return render_template('blog/entry.jinja', entry=entry,
                            prev_entry=prev_entry,
                            next_entry=next_entry,
                            catslug=cat,
@@ -79,4 +79,4 @@ def list_posts(catslug=None):
     cvars['pagination'] = entries.paginate(page, PER_PAGE)
     cvars['endpoint'] = 'blog.list_posts'
     cvars['no_tracking'] = current_user.is_authenticated
-    return render_template('blog/entries.html', **cvars)
+    return render_template('blog/entries.jinja', **cvars)

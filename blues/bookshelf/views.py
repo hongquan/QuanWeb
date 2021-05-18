@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from flask import render_template
 from flask.views import MethodView
 
@@ -13,4 +13,4 @@ bookshelfm = Blueprint('bookshelf', __name__,
 class BookListView(MethodView):
     def get(self):
         books = Book.query.all()
-        return render_template('bookshelf/booklist.html', books=books)
+        return render_template('bookshelf/booklist.jinja', books=books)
