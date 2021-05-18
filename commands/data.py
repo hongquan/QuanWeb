@@ -4,8 +4,8 @@ import os.path
 from flask_script import Manager, prompt_bool
 from sqlalchemy.exc import IntegrityError
 from quanweb import app, db
-from auth.models import User
-from blog.models import Category, Entry
+from blues.auth.models import User
+from blues.blog.models import Category, Entry
 
 from .tools import split_content
 
