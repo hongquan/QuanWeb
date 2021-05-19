@@ -10,6 +10,7 @@
     {% endfor %}
   {% endwith %}
   <div class='text-center'>
+    {{ macr.render_mobile_pagination(pagination, endpoint) }}
     {{ macr.render_pagination(pagination, endpoint) }}
   </div>
 {% endblock inner_content %}

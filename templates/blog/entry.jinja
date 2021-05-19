@@ -33,10 +33,10 @@
       </li>
     {% else %}
       <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
-        <a href='{{ prev_entry|entry_url|add_urlparam('cat', catslug) }}' title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
+        <a href="{{ prev_entry|entry_url|add_urlparam('cat', catslug) }}" title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
       </li>
       <li class="next {{ next_entry|yesno('', 'disabled') }}">
-        <a href='{{ next_entry|entry_url|add_urlparam('cat', catslug) }}' title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
+        <a href="{{ next_entry|entry_url|add_urlparam('cat', catslug) }}" title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
       </li>
     {% endif %}
   </ul>

@@ -13,11 +13,11 @@
     <meta name="flattr:id" content="e350d5">
 
     {% block css -%}
-      <link href="{{ static('css/bootstrap.css') }}" rel='stylesheet' media='screen'>
+      <link href="{{ static('vendor/tailwind.css') }}" rel='stylesheet' media='screen'>
       <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Source+Sans+Pro%3A300%2C400%2C700%2C300italic%2C400italic%2C700italic%7CBitter%3A400%2C700&subset=latin%2Clatin-ext'>
       <link href='//fonts.googleapis.com/css?family=Convergence' rel='stylesheet'>
       <link href='//fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
-      <link rel='stylesheet' href="{{ static('css/custom.css') }}?v=5">
+      <link rel='stylesheet' href="{{ static('css/custom.css') }}?v=6">
       <link rel='stylesheet' href="{{ static('fonts/genericons.css') }}">
       <link rel='stylesheet' href="{{ static('css/pygments-css/emacs.css') }}">
       <link rel='icon' href="{{ static('img/favicon.png') }}">
@@ -32,30 +32,29 @@
     {%- endblock css %}
 
     {% block headjs -%}
-      <script src="{{ static('js/jquery/jquery-2.0.3.min.js') }}"></script>
+      <script type='module' src="{{ static('vendor/alpine_v2.8.2.min.js') }}"></script>
+      <script nomodule src="{{ static('vendor/alpine-ie11_v2.8.2.min.js') }}" defer></script>
     {%- endblock headjs %}
   {%- endblock head %}
   </head>
 
-  <body>
-    <nav class='navbar navbar-orange navbar-fixed-top'>
-      {% include 'navbar.jinja' %}
-    </nav>
+  <body x-data='{mobileMenuShown: false, loginShown: false}' x-cloak>
+    {% include 'navbar.jinja' %}
 
-    <header>
+    <header class='container mx-auto w-full max-w-6xl mb-8 px-2'>
       {% block banner -%}
         {% include 'banner_intro.jinja' %}
       {%- endblock banner %}
     </header>
 
     {% block flash_message %}
-      <div class='container flash'>
+      <div class='container mx-auto w-full max-w-4xl px-2'>
         {% include 'flash_messages.jinja' %}
       </div>
     {% endblock %}
 
     {% block content -%}
-      <div class='container main'>
+      <div class='container mx-auto w-full max-w-4xl px-2'>
         {% block inner_content -%}
         {%- endblock inner_content %}
       </div>
@@ -64,8 +63,6 @@
     {% include 'footer.jinja' %}
 
     {% block js -%}
-      <script src='{{ static('js/bootstrap.min.js') }}'></script>
-      <script src='{{ static('js/main.js') }}'></script>
 
       {% if not running_locally %}
         {% if not no_tracking %}

@@ -1,37 +1,41 @@
-<article class='post' {% if p.locale %}lang='{{ p.locale.language }}'{% endif %}>
-  <header class='entry-header'>
-    <h1 class='entry-title'>
+<article class='post mt-8' {% if p.locale %}lang='{{ p.locale.language }}'{% endif %}>
+  <header class='entry-header mb-4 space-y-4'>
+    <h1 class='entry-title text-4xl'>
       {% if not front %}
         {{ p.title }}
-      {% elif cat %}
-        <a rel='bookmark' href='{{ p|entry_url|add_urlparam('cat', cat) }}'>{{ p.title }}</a>
       {% else %}
-        <a rel='bookmark' href='{{ p|entry_url }}'>{{ p.title }}</a>
+        {% with url = p|entry_url|add_urlparam('cat', cat) if cat else p|entry_url %}
+          <a rel='bookmark' href='{{ url }}' class='hover:text-yellow-700'>{{ p.title }}</a>
+        {% endwith %}
       {% endif %}
     </h1>
-    <div class='entry-meta'>
-      <span class='date'>
-        <a rel='bookmark' title='Permalink to {{ p.title }}' href='{{ p|entry_url }}'>
-          <span class='glyphicon glyphicon-calendar'></span>
-          <time datetime='{{ p.date_published }}' class='entry-date'>{{ p.date_published|strftime('%d %B %Y') }}</time>
-        </a>
-      </span>
+    <div class='entry-meta text-sm text-yellow-700 flex flex-col md:flex-row space-x-4'>
+      <a rel='bookmark' title='Permalink to {{ p.title }}' href='{{ p|entry_url }}' class=''>
+        <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+        </svg>
+        <time datetime='{{ p.date_published }}' class='entry-date'>{{ p.date_published|strftime('%d %B %Y') }}</time>
+      </a>
       <span class='categories-links'>
         {% for cat in p.categories %}
-          <a rel='category' href='{{ cat|category_url }}'>
-            <span class='glyphicon glyphicon-folder-open'></span>
-            <span>&nbsp;{{ cat }}</span>
+          <a rel='category' href='{{ cat|category_url }}' class=''>
+            <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z' />
+            </svg>
+            <span>{{ cat }}</span>
           </a>
         {% else %}
-          <a rel='category' href='{{ url_for('blog.list_posts', catslug=UNCATEGORIZED) }}'>
-            <span class='glyphicon glyphicon-folder-open'></span>
-            <span>&nbsp;Uncategorized</span>
+          <a rel='category' href="{{ url_for('blog.list_posts', catslug=UNCATEGORIZED) }}">
+            <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z' />
+            </svg>
+            <span>Uncategorized</span>
           </a>
         {% endfor %}
       </span>
     </div>
   </header>
-  <div class='entry-content {{ front|yesno('front') }}'>
+  <div class="entry-content {{ front|yesno('front') }}">
     {% if not front %}
       {% if p.html %}
         {{ p.html|safe }}
@@ -41,14 +45,13 @@
     {% endif %}
   </div>
   {% if front %}
-    <footer class='entry-meta'>
+    <footer class='entry-meta flex flex-row text-sm text-yellow-700'>
       {% with url_full=p|entry_url, url_short=p|entry_url_short %}
         <div class='link-comment'>
           <a href='{{ url_full }}#disqus_thread' data-disqus-identifier='{{ url_short }}'>comments</a>
         </div>
-        <div class='pull-right'>
-          <a href='{{ url_full }}'>&raquo; Read full</a>
-        </div>
+        <div class='flex-grow'></div>
+        <a href='{{ url_full }}'>&raquo; Read full</a>
       {% endwith %}
     </footer>
   {% endif %}
