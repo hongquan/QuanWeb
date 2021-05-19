@@ -4,16 +4,23 @@
 {% block title %}Presentations{% endblock title %}
 
 {% block inner_content %}
-  {% for p in presentations %}
-    <article class='post'>
-      <header class='entry-header'>
-        <h3><a href='{{ p.url }}'>{{ p.title }}</a></h3>
-      </header>
-      <div class='entry-meta'>
-      Event: {{ p.event }}
+  <dl class='space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10'>
+    {% for p in presentations %}
+      <div class='relative'>
+        <dt class='entry-header'>
+          <a class='absolute flex items-center justify-center h-16 w-16 rounded-md bg-indigo-500 hover:bg-indigo-400 text-white' href='{{ p.url }}' target='_blank'>
+            <svg xmlns='http://www.w3.org/2000/svg' class='h-16 w-16' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z' />
+            </svg>
+          </a>
+          <h3 class='ml-20 text-lg leading-6 font-medium text-gray-900'>{{ p.title }}</h3>
+        </dt>
+        <dd class='mt-2 ml-20 text-base text-gray-500'>
+          Event: {{ p.event or '--' }}
+        </dd>
       </div>
-    </article>
-  {% endfor %}
+    {% endfor %}
+  </dl>
 {% endblock inner_content %}
 
 {% block js %}
