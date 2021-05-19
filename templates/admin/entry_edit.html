@@ -1,8 +1,8 @@
-{% extends 'admin/edit.jinja' %}
+{% extends 'admin/edit.html' %}
 
 {% block head_css %}
   {{ super() }}
-  <link rel='stylesheet' href='{{ static('css/zenburn.min.css') }}' />
+  <link rel='stylesheet' href="{{ static('css/zenburn.min.css') }}" />
   <style>
     textarea[name=body] {
       height: 400px;
@@ -45,14 +45,14 @@
 
 {% block head %}
   {{ super() }}
-  <script type='text/javascript' src='{{ static('js/highlight.min.js') }}'></script>
-  <script type='text/javascript' src='{{ static('js/lodash.min.js') }}'></script>
-  <script type='text/javascript' src='{{ static('js/marked.min.js') }}'></script>
+  <script type='text/javascript' src="{{ static('js/highlight.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/lodash.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/marked.min.js') }}"></script>
 {% endblock head %}
 
 {% block tail %}
   {{ super() }}
-  <script type='text/javascript' src='{{ static('js/vue.min.js') }}'></script>
+  <script type='text/javascript' src="{{ static('js/vue.min.js') }}"></script>
   <script type='text/javascript'>
     $(function() {
       var orig = $('textarea#body').text();
@@ -101,7 +101,7 @@
       <p class="help-block">{{ field.description }}</p>
       {% endif %}
       {% if direct_error %}
-        <ul{% if direct_error %} class="input-errors"{% endif %}>
+        <ul {% if direct_error %} class="input-errors"{% endif %}>
         {% for e in field.errors if e is string %}
           <li>{{ e }}</li>
         {% endfor %}

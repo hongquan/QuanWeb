@@ -35,8 +35,8 @@ def get_language_choices():
 
 
 class QAdmin(ModelView):
-    edit_template = 'admin/edit.jinja'
-    create_template = 'admin/create.jinja'
+    edit_template = 'admin/edit.html'
+    create_template = 'admin/create.html'
 
     def __init__(self, model, **kwargs):
         super().__init__(model, db.session, **kwargs)
@@ -62,8 +62,8 @@ class CategoryAdmin(QAdmin):
 
 
 class EntryAdmin(QAdmin):
-    create_template = 'admin/entry_edit.jinja'
-    edit_template = 'admin/entry_edit.jinja'
+    create_template = 'admin/entry_edit.html'
+    edit_template = 'admin/entry_edit.html'
 
     column_formatters = {
         'author': email_nohost,

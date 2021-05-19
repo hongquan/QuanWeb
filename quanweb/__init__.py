@@ -33,7 +33,7 @@ app.register_blueprint(talkm, url_prefix='/talk')
 
 # Admin
 admin = Admin(app, index_view=AdminHomeView(),
-              base_template='admin/master_local.jinja',
+              base_template='admin/master_local.html',
               template_mode='bootstrap3')
 admin.add_view(CategoryAdmin())
 admin.add_view(EntryAdmin())
