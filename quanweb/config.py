@@ -10,7 +10,6 @@ PROJECT_FOLDER = dirname(dirname(abspath(__file__)))
 STATIC_FOLDER = os.path.join(PROJECT_FOLDER, 'static')
 TEMPLATE_FOLDER = os.path.join(PROJECT_FOLDER, 'templates')
 TEMPLATES_AUTO_RELOAD = True
-BOOTSTRAP_SERVE_LOCAL = True
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SECRET_KEY = '{{secret_key}}'

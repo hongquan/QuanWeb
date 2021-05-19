@@ -9,7 +9,7 @@
       {% include 'blog/block_post.jinja' %}
     {% endfor %}
   {% endwith %}
-  <div class='text-center'>
+  <div class='text-center mt-4'>
     {{ macr.render_mobile_pagination(pagination, endpoint, cat_slug=cat) }}
     {{ macr.render_pagination(pagination, endpoint, cat_slug=cat) }}
   </div>

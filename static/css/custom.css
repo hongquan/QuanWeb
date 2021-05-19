@@ -45,7 +45,13 @@ article .entry-content h2 {
 
 .navbar-orange {
   background-image: url(../img/headers/circle.png);
-  background-position: -300px -300px;
+  background-position: -300px;
+}
+
+@media (min-width: 768px) {
+  .navbar-orange {
+    background-position: -300px -300px;
+  }
 }
 
 .categories-links a {
