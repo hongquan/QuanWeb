@@ -23,7 +23,7 @@
   {% with p=entry %}
     {% include 'blog/block_post.jinja' %}
   {% endwith %}
-  <div class='flex flex-row justify-between space-x-4'>
+  <div class='flex flex-row justify-between mt-6 space-x-4'>
     {% with %}
       {% set prev_url = prev_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else prev_entry|entry_url %}
       {% set next_url = next_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else next_entry|entry_url %}
@@ -35,7 +35,7 @@
   </div>
   {% block comments %}
     <div class='text-yellow-700 text-xs mt-4'>Website này sử dụng <a href='https://disqus.com/'>Disqus</a> cho comment. Nếu bạn không thấy các comment dưới đây, có lẽ Disqus đang bị chặn. Bạn cần <a href='https://thuthuatmaytinh.vn/thu-thuat-facebook/huong-dan-doi-dns-vao-facebook-nhanh-nhat-2015/' class='underline text-blue-500'>đổi DNS</a>.</div>
-    <div id="disqus_thread"></div>
+    <div id="disqus_thread mt-8"></div>
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
         var disqus_shortname = 'quanvn'; // required: replace example with your forum shortname
@@ -49,6 +49,6 @@
         })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <a href="http://disqus.com" class="dsq-brlink text-xs">comments powered by <span class="logo-disqus">Disqus</span></a>
   {% endblock comments %}
 {% endblock inner_content %}
