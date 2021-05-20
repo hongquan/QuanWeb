@@ -16,22 +16,13 @@ article .entry-content h2 {
 
 .entry-content {
   word-wrap: break-word;
+  max-width: unset;
 }
-
-.entry-content p {
-  margin-bottom: 1rem;
-}
-
 
 .codehilitetable .linenos pre {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   background-color: #A0A0A0;
-}
-
-.codehilitetable .code pre {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
 }
 
 .codehilitetable pre {

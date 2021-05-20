@@ -35,7 +35,7 @@
       </span>
     </div>
   </header>
-  <div class="entry-content {{ front|yesno('front') }}">
+  <div class="entry-content prose {{ front|yesno('front') }}">
     {% if not front %}
       {% if p.html %}
         {{ p.html|safe }}

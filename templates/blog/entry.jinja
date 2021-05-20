@@ -23,25 +23,18 @@
   {% with p=entry %}
     {% include 'blog/block_post.jinja' %}
   {% endwith %}
-  <ul class='pager'>
-    {% if not catslug %}
-      <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
-        <a href='{{ prev_entry|entry_url }}' title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
-      </li>
-      <li class="next {{ next_entry|yesno('', 'disabled') }}">
-        <a href='{{ next_entry|entry_url }}' title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
-      </li>
-    {% else %}
-      <li class="previous {{ prev_entry|yesno('', 'disabled') }}">
-        <a href="{{ prev_entry|entry_url|add_urlparam('cat', catslug) }}" title='{{ prev_entry.title }}'>&larr; {{ prev_entry.short_title }}</a>
-      </li>
-      <li class="next {{ next_entry|yesno('', 'disabled') }}">
-        <a href="{{ next_entry|entry_url|add_urlparam('cat', catslug) }}" title='{{ next_entry.title }}'>{{ next_entry.short_title }} &rarr;</a>
-      </li>
-    {% endif %}
-  </ul>
+  <div class='flex flex-row justify-between space-x-4'>
+    {% with %}
+      {% set prev_url = prev_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else prev_entry|entry_url %}
+      {% set next_url = next_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else next_entry|entry_url %}
+      <a href='{{ prev_url }}' title='{{ prev_entry.title }}'
+         class='relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'>&larr; {{ prev_entry.short_title }}</a>
+      <a href='{{ next_url }}' title='{{ next_entry.title }}'
+         class='relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'>{{ next_entry.short_title }} &rarr;</a>
+    {% endwith %}
+  </div>
   {% block comments %}
-    <div class='text-warning'>Website này sử dụng <a href='https://disqus.com/'>Disqus</a> cho comment. Nếu bạn không thấy các comment dưới đây, có lẽ Disqus đang bị chặn. Bạn cần <a href='https://thuthuatmaytinh.vn/thu-thuat-facebook/huong-dan-doi-dns-vao-facebook-nhanh-nhat-2015/'>đổi DNS</a>.</div>
+    <div class='text-yellow-700 text-xs mt-4'>Website này sử dụng <a href='https://disqus.com/'>Disqus</a> cho comment. Nếu bạn không thấy các comment dưới đây, có lẽ Disqus đang bị chặn. Bạn cần <a href='https://thuthuatmaytinh.vn/thu-thuat-facebook/huong-dan-doi-dns-vao-facebook-nhanh-nhat-2015/' class='underline text-blue-500'>đổi DNS</a>.</div>
     <div id="disqus_thread"></div>
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */

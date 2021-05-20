@@ -6,7 +6,7 @@ from pygments.formatters.html import HtmlFormatter
 
 
 class PygmentsRenderer(HTMLRenderer):
-    formatter = HtmlFormatter(cssclass='codehilite overflow-auto p-2')
+    formatter = HtmlFormatter(cssclass='codehilite')
 
     def __init__(self, *extras, style='default'):
         super().__init__(*extras)
