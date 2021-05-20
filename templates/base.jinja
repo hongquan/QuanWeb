@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class='h-full'>
   <head>
   {% block head -%}
     <title>{% block title -%}{%- endblock title %}</title>
@@ -38,7 +38,7 @@
   {%- endblock head %}
   </head>
 
-  <body x-data='{mobileMenuShown: false, loginShown: false}' x-cloak>
+  <body class='flex flex-col min-h-full' x-data='{mobileMenuShown: false, loginShown: false}' x-cloak>
     {% include 'navbar.jinja' %}
 
     <header class='container mx-auto w-full max-w-6xl mb-8 px-2'>
@@ -53,12 +53,14 @@
       </div>
     {% endblock %}
 
-    {% block content -%}
-      <div class='container mx-auto w-full max-w-4xl px-2'>
-        {% block inner_content -%}
-        {%- endblock inner_content %}
-      </div>
-    {%- endblock content %}
+    <main class='flex-auto'>
+      {% block content -%}
+        <div class='container mx-auto w-full max-w-4xl px-2'>
+          {% block inner_content -%}
+          {%- endblock inner_content %}
+        </div>
+      {%- endblock content %}
+    </main>
 
     {% include 'footer.jinja' %}
 
