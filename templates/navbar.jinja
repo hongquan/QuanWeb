@@ -1,5 +1,5 @@
 <div class='navbar-orange'>
-  <nav class='mx-auto w-full max-w-6xl flex flex-wrap p-2 flex-col md:flex-row md:items-center space-y-4 md:space-y-0 text-white'>
+  <nav class='mx-auto w-full max-w-6xl flex flex-wrap p-2 flex-col md:flex-row md:items-center space-y-4 md:space-y-0 text-white' x-data='{mobileMenuShown: false}'>
     <div class='flex flex-row items-center'>
       <a href='/' class='flex-grow title-font font-medium items-center text-white md:mb-0 text-4xl'>Quân</a>
       <button class='md:hidden rounded-lg focus:outline-none focus:shadow-outline hover:text-red-200' x-on:click='mobileMenuShown = !mobileMenuShown'>
@@ -18,7 +18,8 @@
             <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'></path>
           </svg>
         </a>
-        <ul class='md:absolute bg-yellow-700 left-0 md:min-w-max md:mt-2 origin-top-right rounded-md md:shadow-lg px-2 py-2' aria-labelledby='themes' x-show='open' x-on:click.away='open = false'>
+        <ul class='md:absolute bg-yellow-700 left-0 md:min-w-max md:mt-2 origin-top-right rounded-md md:shadow-lg px-2 py-2' aria-labelledby='themes'
+            x-show='open' x-on:click.away='open = false' x-cloak>
           {% for cat in g.categories %}
             <li>
               <a href='{{ cat|category_url }}'

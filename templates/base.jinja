@@ -25,6 +25,9 @@
         body {
           font-family: 'Niramit', sans-serif;
         }
+        [x-cloak] {
+          display: none;
+        }
       </style>
     {%- endblock css %}
 
@@ -35,7 +38,7 @@
   {%- endblock head %}
   </head>
 
-  <body class='flex flex-col min-h-full text-lg' x-data='{mobileMenuShown: false, loginShown: false}' x-cloak>
+  <body class='flex flex-col min-h-full text-lg'>
     {% include 'navbar.jinja' %}
 
     <header class='container mx-auto w-full max-w-6xl mb-8 px-2'>
