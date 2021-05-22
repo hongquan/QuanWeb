@@ -9,7 +9,7 @@
         </svg>
       </button>
     </div>
-    <ul id='navbar-main' class='md:ml-4 space-y-1 md:space-y-0 w-full md:w-auto md:block text-base'
+    <ul id='navbar-main' class='md:ml-4 md:space-x-1 space-y-1 md:space-y-0 w-full md:w-auto md:block text-base'
         x-bind:class="{hidden: !mobileMenuShown}">
       <li class='md:inline relative' x-data='{open: false}'>
         <a class='flex flex-row md:block md:inline px-4 py-2 mt-2 bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none focus:shadow-outline' href='/blog/' x-on:click.prevent='open = !open'>
