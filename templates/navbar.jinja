@@ -14,8 +14,8 @@
       <li class='md:inline relative' x-data='{open: false}'>
         <a class='flex flex-row md:block md:inline px-4 py-2 mt-2 bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none focus:shadow-outline' href='/blog/' x-on:click.prevent='open = !open'>
           <span class='flex-grow'>Blog</span>
-          <svg class="inline fill-current h-4 w-4 -mr-2 transform group-hover:-rotate-180 transition duration-150 ease-in-out rotate-0" :class="{'rotate-180': open, 'rotate-0': !open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"></path>
+          <svg class='inline fill-current h-4 w-4 -mr-2 transform group-hover:-rotate-180 transition duration-150 ease-in-out' :class="{'rotate-180': open, 'rotate-0': !open}" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
+            <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'></path>
           </svg>
         </a>
         <ul class='md:absolute z-10 bg-yellow-700 left-0 md:min-w-max md:mt-2 origin-top-right rounded-md md:shadow-lg px-2 py-2' aria-labelledby='themes' x-show='open' x-on:mousedown.away='open = false'>
