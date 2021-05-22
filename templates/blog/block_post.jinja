@@ -9,7 +9,7 @@
         {% endwith %}
       {% endif %}
     </h1>
-    <div class='entry-meta text-sm text-yellow-700 flex flex-col md:flex-row md:space-x-4'>
+    <div class='entry-meta text-base text-yellow-700 flex flex-col md:flex-row md:space-x-4'>
       <a rel='bookmark' title='Permalink to {{ p.title }}' href='{{ p|entry_url }}' class=''>
         <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
           <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
@@ -35,7 +35,7 @@
       </span>
     </div>
   </header>
-  <div class="entry-content prose {{ front|yesno('front') }}">
+  <div class="entry-content prose text-lg {{ front|yesno('front') }}">
     {% if not front %}
       {% if p.html %}
         {{ p.html|safe }}
@@ -45,7 +45,7 @@
     {% endif %}
   </div>
   {% if front %}
-    <footer class='entry-meta flex flex-row text-sm text-yellow-700'>
+    <footer class='entry-meta flex flex-row text-base text-yellow-700'>
       {% with url_full=p|entry_url, url_short=p|entry_url_short %}
         <div class='link-comment'>
           <a href='{{ url_full }}#disqus_thread' data-disqus-identifier='{{ url_short }}'>comments</a>

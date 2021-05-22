@@ -27,7 +27,6 @@ article .entry-content h2 {
 
 .codehilitetable pre {
   font-family: "Ubuntu Mono";
-  font-size: 14px;
 }
 
 #disqus_thread {
@@ -51,12 +50,6 @@ article .entry-content h2 {
 
 #banner h1 {
   font-family: Convergence;
-  font-size: 48px;
-}
-
-a.onbar.active {
-  border-bottom: 2px solid #FFFFFF;
-  height: 50px;
 }
 
 .codehilitetable {
