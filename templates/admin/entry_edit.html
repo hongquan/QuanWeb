@@ -45,14 +45,14 @@
 
 {% block head %}
   {{ super() }}
-  <script type='text/javascript' src="{{ static('js/highlight.min.js') }}"></script>
-  <script type='text/javascript' src="{{ static('js/lodash.min.js') }}"></script>
-  <script type='text/javascript' src="{{ static('js/marked.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/admin/highlight.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/admin/lodash.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/admin/marked.min.js') }}"></script>
 {% endblock head %}
 
 {% block tail %}
   {{ super() }}
-  <script type='text/javascript' src="{{ static('js/vue.min.js') }}"></script>
+  <script type='text/javascript' src="{{ static('js/admin/vue.min.js') }}"></script>
   <script type='text/javascript'>
     $(function() {
       var orig = $('textarea#body').text();
