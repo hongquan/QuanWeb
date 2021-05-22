@@ -1,5 +1,7 @@
 module.exports = {
-  purge: [],
+  purge: [
+    './templates/**/*.jinja',
+  ],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
