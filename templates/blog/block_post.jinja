@@ -1,6 +1,6 @@
 <article class='post mt-8' {% if p.locale %}lang='{{ p.locale.language }}'{% endif %}>
   <header class='entry-header mb-4 space-y-4'>
-    <h1 class='entry-title text-4xl'>
+    <h1 {% if front %} class='entry-title text-4xl' {% else %} class='entry-title text-5xl' {% endif %}>
       {% if not front %}
         {{ p.title }}
       {% else %}
