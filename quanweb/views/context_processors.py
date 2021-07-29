@@ -2,11 +2,9 @@ from flask import request
 from ..common import app, UNCATEGORIZED
 from .. import config
 
-
 @app.context_processor
 def inject_config():
     return {'config': config}
-
 
 @app.context_processor
 def is_running_locally():

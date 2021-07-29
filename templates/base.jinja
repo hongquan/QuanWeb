@@ -66,8 +66,10 @@
 
     {% block js -%}
 
-      {% if to_track %}
-        {% include 'block_tracking.jinja' %}
+      {% if not running_locally %}
+        {% if not no_tracking %}
+          {% include 'block_tracking.jinja' %}
+        {% endif %}
       {% endif %}
     {%- endblock js %}
   </body>
