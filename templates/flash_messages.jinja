@@ -1,8 +1,8 @@
 {% with errors = get_flashed_messages(category_filter=['error']) %}
   {% if errors %}
-    <div class='alert alert-dismissable alert-danger'>
-      <button class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
-      <ul class='list-unstyled'>
+    <div class='block mb-4 text-sm text-red-600 bg-red-200 border border-red-400 h-12 flex items-center p-4 rounded-sm relative' role='alert'>
+      <button class='absolute top-0 bottom-0 right-0 text-2xl px-3 py-1 hover:text-red-900' aria-hidden='true'>&times;</button>
+      <ul class=''>
         {%- for msg in errors %}
           <li>{{ msg}}</li>
         {% endfor -%}
@@ -13,8 +13,8 @@
 
 {% with warnings = get_flashed_messages(category_filter=['warning']) %}
   {% if warnings %}
-    <div class='alert alert-dismissable alert-warning'>
-      <button class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+    <div class='block mb-4 text-sm text-left text-yellow-600 bg-yellow-200 border border-yellow-400 h-12 flex items-center p-4 rounded-sm'>
+      <button class='absolute top-0 bottom-0 right-0 text-2xl px-3 py-1 hover:text-yellow-900' aria-hidden='true'>&times;</button>
       <ul class='list-unstyled'>
         {%- for msg in warnings %}
           <li>{{ msg}}</li>
@@ -26,9 +26,9 @@
 
 {% with infos = get_flashed_messages(category_filter=['info']) %}
   {% if infos %}
-    <div class='alert alert-dismissable alert-info'>
-      <button class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
-      <ul class='list-unstyled'>
+    <div class='block mb-4 text-sm text-left text-blue-600 bg-blue-200 border border-blue-400 h-12 flex items-center p-4 rounded-sm'>
+      <button class='absolute top-0 bottom-0 right-0 text-2xl px-3 py-1 hover:text-blue-900' aria-hidden='true'>&times;</button>
+      <ul class=''>
         {%- for msg in infos %}
           <li>{{ msg}}</li>
         {% endfor -%}
@@ -39,9 +39,9 @@
 
 {% with successes = get_flashed_messages(category_filter=['success']) %}
   {% if successes %}
-    <div class='alert alert-dismissable alert-success'>
-      <button class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
-      <ul class='list-unstyled'>
+    <div class='block mb4 text-sm text-left text-green-600 bg-green-200 border border-green-400 h-12 flex items-center p-4 rounded-sm'>
+      <button class='absolute top-0 bottom-0 right-0 text-2xl px-3 py-1 hover:text-green-900' aria-hidden='true'>&times;</button>
+      <ul class=''>
         {%- for msg in successes %}
           <li>{{ msg}}</li>
         {% endfor -%}
