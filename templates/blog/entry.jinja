@@ -4,7 +4,7 @@
 
 {% block meta_seo %}
   {% if entry.seo_description %}
-    <meta property='description' content='{{ entry.seo_description }}' />
+    <meta property='description' content='{{ entry.seo_description|e }}' />
   {% endif %}
   {% if entry.seo_keywords %}
     <meta property='keywords' content='{{ entry.seo_keywords }}' />
@@ -16,7 +16,7 @@
   {% if entry.og_image %}
     <meta property='og:image' content='{{ entry.og_image }}' />
   {% endif %}
-  <meta property='og:description' content='{{ entry.excerpt|striptags }}' />
+  <meta property='og:description' content='{{ entry.excerpt|striptags|e }}' />
 {% endblock meta_og %}
 
 {% block inner_content %}
