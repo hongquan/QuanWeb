@@ -7,6 +7,9 @@
   {% with front=True %}
     {% for p in entries %}
       {% include 'blog/block_post.jinja' %}
+      {% if not loop.last %}
+        <hr class='mt-8 border-gray-200'>
+      {% endif %}
     {% endfor %}
   {% endwith %}
   <div class='text-center mt-4'>

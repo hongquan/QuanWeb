@@ -22,6 +22,15 @@ module.exports = {
               marginTop: '1em',
               marginBottom: '1em',
             },
+            a: {
+              '&:hover': {
+                color: '#2c5282',
+              },
+            },
+            hr: {
+              marginTop: '1em',
+              marginBottom: '1em',
+            }
           }
         }
       }
