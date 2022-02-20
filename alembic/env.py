@@ -12,8 +12,8 @@ from quanweb import app, db
 from quanweb.config import SQLALCHEMY_DATABASE_URI
 
 # Import all models to help them recognized
-import auth.models  # NOQA
-import blog.models  # NOQA
+import blues.auth.models  # NOQA
+import blues.blog.models  # NOQA
 
 # Make `db` know engine
 db.app = app
