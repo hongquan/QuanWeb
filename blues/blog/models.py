@@ -73,10 +73,10 @@ class Entry(ModelMixIn, db.Model):
                                  backref=db.backref('entries', lazy='dynamic'))
 
     # SEO
-    seo_description = db.Column(db.String(200))
+    seo_description = db.Column(db.String(400))
     seo_keywords = db.Column(db.String(200))
     # OpenGraph
-    og_image = db.Column(db.String(100))
+    og_image = db.Column(db.String(200))
 
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_modified = db.Column(db.DateTime, default=datetime.utcnow,
