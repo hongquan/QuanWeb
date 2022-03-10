@@ -1,6 +1,5 @@
 import logging
 from logentries import LogentriesHandler
-import appenlight_client.ext.flask as appenlight
 
 from quanweb import app
 from quanweb.config import APPENLIGHT_PRVKEY, LOGENTRIES_TOKEN
@@ -13,5 +12,3 @@ if LOGENTRIES_TOKEN:
     app.logger.addHandler(handler)
     logging.getLogger('sqlalchemy').addHandler(handler)
 
-if APPENLIGHT_PRVKEY:
-    app = appenlight.add_appenlight(app, {'appenlight.api_key': APPENLIGHT_PRVKEY})
