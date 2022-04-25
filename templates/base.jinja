@@ -13,7 +13,7 @@
     <meta name='flattr:id' content='e350d5'>
 
     {% block css -%}
-      <link href="{{ static('vendor/tailwind.css') }}?v=11" rel='stylesheet' media='screen'>
+      <link href="{{ static('vendor/tailwind.css') }}?v=3.0" rel='stylesheet' media='screen'>
       <link rel='preconnect' href='https://fonts.gstatic.com'>
       <link href='https://fonts.googleapis.com/css2?family=Niramit:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap' rel='stylesheet'>
       <link href='//fonts.googleapis.com/css?family=Convergence' rel='stylesheet'>
@@ -41,7 +41,7 @@
   {%- endblock head %}
   </head>
 
-  <body class='flex flex-col min-h-full'>
+  <body class='flex flex-col min-h-full dark:bg-slate-900 dark:text-white'>
     {% include 'navbar.jinja' %}
 
     <header class='container mx-auto w-full max-w-6xl mb-8 px-2'>
