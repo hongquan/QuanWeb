@@ -22,6 +22,7 @@ from blues.talk.models import Presentation
 from .formatters import truncate_longtext, truncate_html, \
     email_nohost, datetime_short
 
+
 MY_DEFAULT_FORMATTERS = dict(typefmt.BASE_FORMATTERS)
 MY_DEFAULT_FORMATTERS.update({
     type(datetime(2000, 1, 1)): datetime_short
@@ -133,4 +134,5 @@ class UserAdmin(QAdmin):
 
 class PresentationAdmin(QAdmin):
     def __init__(self):
-        super().__init__(Presentation, name='Presentations', endpoint='presentations')
+        super().__init__(Presentation, name='Presentations',
+                         endpoint='presentations')

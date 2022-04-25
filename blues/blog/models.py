@@ -36,9 +36,11 @@ def generate_html(context):
 
 entrycats = db.Table('entrycats',
                      db.Column('category_id', db.Integer,
-                               db.ForeignKey('categories.id', ondelete='CASCADE')),
+                               db.ForeignKey('categories.id',
+                                             ondelete='CASCADE')),
                      db.Column('entry_id', db.Integer,
-                               db.ForeignKey('entries.id', ondelete='CASCADE')))
+                               db.ForeignKey('entries.id',
+                                             ondelete='CASCADE')))
 
 
 class Category(ModelMixIn, db.Model):

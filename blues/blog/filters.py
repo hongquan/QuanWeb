@@ -9,7 +9,8 @@ def entry_url(entry, _external=False):
     date_published = entry.date_published
     year, month = date_published.year, date_published.month
     return url_for('blog.show_post',
-                   year=year, month=month, pk=entry.id, slug=entry.slug, _external=_external)
+                   year=year, month=month, pk=entry.id, slug=entry.slug,
+                   _external=_external)
 
 
 @blogm.app_template_filter()

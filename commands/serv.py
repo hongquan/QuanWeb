@@ -1,6 +1,5 @@
 from flask_script import Server
 
-from .data import app
 
 class MyServer(Server):
     ''' Our subclass, to set app.debug = True before running app '''
