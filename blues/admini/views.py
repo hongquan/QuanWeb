@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Markup
 from html3.html3 import HTML
 from urllib.parse import urlencode
-from jinja2 import contextfunction
+from jinja2 import pass_context
 from flask_login import current_user
 from flask_admin.model import typefmt
 from flask_admin.actions import action
@@ -110,7 +110,7 @@ class EntryAdmin(QAdmin):
         column_list.append(('extra', ''))
         return column_list
 
-    @contextfunction
+    @pass_context
     def get_list_value(self, context, model, name):
         if name == 'extra':
             date_published = model.date_published
