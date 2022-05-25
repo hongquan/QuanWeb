@@ -8,7 +8,8 @@ Group=quan
 
 Type=simple
 WorkingDirectory=/home/quan/QuanWeb/quanweb
-ExecStart=/home/quan/QuanWeb/venv/bin/gunicorn quanweb:app -b unix:../gunicorn.sock
+RuntimeDirectory=quanweb
+ExecStart=/home/quan/QuanWeb/venv/bin/gunicorn quanweb:app -b unix:/run/quanweb/web.sock
 TimeoutStopSec=20
 KillMode=process
 Restart=on-failure
