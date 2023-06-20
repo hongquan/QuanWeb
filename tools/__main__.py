@@ -14,6 +14,8 @@ from sqlalchemy.orm import joinedload
 from quanweb.common import db, app
 from blues.auth.models import User
 from blues.blog.models import Category, Entry
+from blues.bookshelf.models import Author, Book
+from blues.talk.models import Presentation
 
 
 logger = Logger(__name__)
@@ -172,12 +174,105 @@ def copy_posts(client: edgedb.Client):
         logger.info('r: {}', r)
 
 
+def copy_authors(client: edgedb.Client):
+    authors = db.session.query(Author).order_by('id')
+    q = '''
+    SELECT (
+        INSERT BookAuthor {
+            name := <str>$name,
+            old_id := <int16>$id,
+        } UNLESS CONFLICT ON .old_id ELSE (
+            UPDATE BookAuthor SET {
+                name := <str>$name,
+            }
+        )
+    ) {
+        name,
+    }
+    '''
+    for u in authors:
+        r = client.query(q, name=u.name, id=u.id)
+        logger.info('r: {}', r)
+
+
+def copy_books(client: edgedb.Client):
+    books = db.session.query(Book).order_by('id')
+    q = '''
+    SELECT (
+        INSERT Book {
+            title := <str>$title,
+            download_url := <optional str>$download_url,
+            author := (
+                SELECT BookAuthor FILTER .old_id = <optional int16>$old_author_id
+            ),
+            created_at := <datetime>$created_at,
+            updated_at := <optional datetime>$updated_at,
+            created_by := (
+                SELECT User FILTER .old_id = <optional int16>$old_user_id
+            ),
+            old_id := <int16>$id,
+        } UNLESS CONFLICT ON .old_id ELSE (
+            UPDATE Book SET {
+                title := <str>$title,
+                download_url := <optional str>$download_url,
+                author := (
+                    SELECT BookAuthor FILTER .old_id = <optional int16>$old_author_id
+                ),
+                created_at := <datetime>$created_at,
+                updated_at := <optional datetime>$updated_at,
+                created_by := (
+                    SELECT User FILTER .old_id = <optional int16>$old_user_id
+                ),
+            }
+        )
+    ) { title }
+    '''
+    for b in books:
+        created_at = cast(datetime | None, b.date_created)
+        if created_at and not created_at.tzinfo:
+            created_at = created_at.astimezone(TZ_VN)
+        updated_at = cast(datetime | None, b.date_modified)
+        if updated_at and not updated_at.tzinfo:
+            updated_at = updated_at.astimezone(TZ_VN)
+        input_data = dict(title=b.title, download_url=b.download_url,
+                          old_author_id=b.author_id,
+                          created_at=created_at, updated_at=updated_at,
+                          old_user_id=b.user_id, id=b.id)
+        logger.info('Create Book with: {}', input_data)
+        r = client.query(q, **input_data)
+        logger.info('r: {}', r)
+
+
+def copy_presentations(client: edgedb.Client):
+    presentations = db.session.query(Presentation).order_by('id')
+    q = '''
+    SELECT (
+        INSERT Presentation {
+            title := <str>$title,
+            url := <str>$url,
+            old_id := <int16>$id,
+        } UNLESS CONFLICT ON .old_id ELSE (
+            UPDATE Presentation SET {
+                title := <str>$title,
+                url := <str>$url,
+            }
+        )
+    ) { title }
+    '''
+    for p in presentations:
+        r = client.query(q, title=p.title, url=p.url, id=p.id)
+        logger.info('r: {}', r)
+
+
 @cli.command()
 def copy_to_edgedb():
     client = edgedb.create_client(database=DB_NAME)
     copy_users(client)
     copy_categories(client)
     copy_posts(client)
+    copy_authors(client)
+    copy_books(client)
+    copy_presentations(client)
 
 
 if __name__ == '__main__':

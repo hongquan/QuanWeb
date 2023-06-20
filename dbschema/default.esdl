@@ -95,4 +95,51 @@ module default {
         }
         index on (str_lower(.slug));
     }
+
+    type BookAuthor {
+        required property name -> str {
+            constraint exclusive;
+        }
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
+        }
+    }
+
+    type Book {
+        required property title -> str {
+            constraint max_len_value(200);
+        }
+        property download_url -> str;
+        link author -> BookAuthor {
+            on target delete allow;
+        }
+        property created_at -> datetime {
+            default := datetime_current();
+        }
+        property updated_at -> datetime {
+            default := datetime_current();
+        }
+        link created_by -> User;
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
+        }
+    }
+
+    type Presentation {
+        required property title -> str {
+            constraint max_len_value(400);
+        }
+        required property url -> str {
+            constraint max_len_value(400);
+        }
+        property event -> str {
+            constraint max_len_value(200);
+        }
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
+        }
+    }
 }

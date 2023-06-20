@@ -1,4 +1,4 @@
-CREATE MIGRATION m1tgfrptlss7upcu4hshx3e7wp5kzle45b7oiq6ig6uwjscszub76q
+CREATE MIGRATION m1ujxw2wzykinez236xgwcerxhwladyjtvumjgm7b4lpvh4pcsiq3q
     ONTO initial
 {
   CREATE FUTURE nonrecursive_access_policies;
@@ -93,6 +93,50 @@ CREATE MIGRATION m1tgfrptlss7upcu4hshx3e7wp5kzle45b7oiq6ig6uwjscszub76q
       };
       CREATE PROPERTY updated_at -> std::datetime {
           SET default := (std::datetime_current());
+      };
+  };
+  CREATE TYPE default::BookAuthor {
+      CREATE REQUIRED PROPERTY name -> std::str {
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+      };
+  };
+  CREATE TYPE default::Book {
+      CREATE LINK author -> default::BookAuthor {
+          ON TARGET DELETE ALLOW;
+      };
+      CREATE LINK created_by -> default::User;
+      CREATE PROPERTY created_at -> std::datetime {
+          SET default := (std::datetime_current());
+      };
+      CREATE PROPERTY download_url -> std::str;
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE REQUIRED PROPERTY title -> std::str {
+          CREATE CONSTRAINT std::max_len_value(200);
+      };
+      CREATE PROPERTY updated_at -> std::datetime {
+          SET default := (std::datetime_current());
+      };
+  };
+  CREATE TYPE default::Presentation {
+      CREATE PROPERTY event -> std::str {
+          CREATE CONSTRAINT std::max_len_value(200);
+      };
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE REQUIRED PROPERTY title -> std::str {
+          CREATE CONSTRAINT std::max_len_value(400);
+      };
+      CREATE REQUIRED PROPERTY url -> std::str {
+          CREATE CONSTRAINT std::max_len_value(400);
       };
   };
 };
