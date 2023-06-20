@@ -24,6 +24,10 @@ module default {
         property is_superuser -> bool {
             default := false;
         }
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
+        }
         index on (str_lower(.username));
         index on (str_lower(.email));
     }
@@ -81,7 +85,6 @@ module default {
         }
         property created_at -> datetime {
             default := datetime_current();
-            readonly := true;
         }
         property updated_at -> datetime {
             default := datetime_current();

@@ -1,4 +1,4 @@
-CREATE MIGRATION m1nxz6zrug5bsx4baf3zx7twyti44qywto3s4m4p2ffklb4enwwwkq
+CREATE MIGRATION m1tgfrptlss7upcu4hshx3e7wp5kzle45b7oiq6ig6uwjscszub76q
     ONTO initial
 {
   CREATE FUTURE nonrecursive_access_policies;
@@ -38,6 +38,10 @@ CREATE MIGRATION m1nxz6zrug5bsx4baf3zx7twyti44qywto3s4m4p2ffklb4enwwwkq
       CREATE PROPERTY last_name -> std::str {
           CREATE CONSTRAINT std::max_len_value(40);
       };
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+      };
       CREATE REQUIRED PROPERTY password -> std::str {
           CREATE CONSTRAINT std::max_len_value(100);
       };
@@ -56,7 +60,6 @@ CREATE MIGRATION m1nxz6zrug5bsx4baf3zx7twyti44qywto3s4m4p2ffklb4enwwwkq
       CREATE PROPERTY body -> std::str;
       CREATE PROPERTY created_at -> std::datetime {
           SET default := (std::datetime_current());
-          SET readonly := true;
       };
       CREATE PROPERTY excerpt -> std::str;
       CREATE PROPERTY format -> default::DocFormat {
