@@ -104,12 +104,12 @@ def copy_posts(client: edgedb.Client):
             is_published := <bool>$is_published,
             published_at := <datetime>$published_at,
             seo_description := <optional str>$seo_description,
-            seo_keywords := <optional str>$seo_keywords,
+            seo_keywords := array_unpack(<array<str>>$seo_keywords),
             og_image := <optional str>$og_image,
             created_at := <datetime>$created_at,
             updated_at := <optional datetime>$updated_at,
             author := (
-                SELECT User FILTER .old_id = <int16>$old_author_id
+                SELECT User FILTER .old_id = <optional int16>$old_author_id
             ),
             categories := (
                 SELECT BlogCategory FILTER .old_id IN array_unpack(<array<int16>>$old_category_ids)
@@ -127,12 +127,12 @@ def copy_posts(client: edgedb.Client):
                 is_published := <bool>$is_published,
                 published_at := <datetime>$published_at,
                 seo_description := <optional str>$seo_description,
-                seo_keywords := <optional str>$seo_keywords,
+                seo_keywords := array_unpack(<array<str>>$seo_keywords),
                 og_image := <optional str>$og_image,
                 created_at := <datetime>$created_at,
                 updated_at := <optional datetime>$updated_at,
                 author := (
-                    SELECT User FILTER .old_id = <int16>$old_author_id
+                    SELECT User FILTER .old_id = <optional int16>$old_author_id
                 ),
                 categories := (
                     SELECT BlogCategory FILTER .old_id IN array_unpack(<array<int16>>$old_category_ids)
@@ -150,16 +150,16 @@ def copy_posts(client: edgedb.Client):
         doc_format = 'Rst' if post.format == 'rst' else 'Md'
         old_author_id = post.author_id
         old_category_ids = [c.id for c in post.categories]
-        seo_keywords = [k.strip() for k in post.seo_keywords.split(',')] if post.seo_keywords else None
+        seo_keywords = [k.strip() for k in post.seo_keywords.split(',')] if post.seo_keywords else []
         created_at = cast(datetime | None, post.date_created)
         if created_at and not created_at.tzinfo:
-            created_at = created_at.replace(tzinfo=TZ_VN)
+            created_at = created_at.astimezone(TZ_VN)
         updated_at = cast(datetime | None, post.date_modified)
         if updated_at and not updated_at.tzinfo:
-            updated_at = updated_at.replace(tzinfo=TZ_VN)
+            updated_at = updated_at.astimezone(TZ_VN)
         published_at = cast(datetime | None, post.date_published)
         if published_at and not published_at.tzinfo:
-            published_at = published_at.replace(tzinfo=TZ_VN)
+            published_at = published_at.astimezone(TZ_VN)
         input_data = dict(title=post.title, slug=post.slug, body=post.body,
                           format=doc_format, locale=locale, excerpt=post.excerpt,
                           html=post.html, is_published=post.published,
