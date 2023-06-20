@@ -36,6 +36,10 @@ module default {
             constraint exclusive;
             constraint max_len_value(50);
         }
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
+        }
         index on (str_lower(.slug));
     }
 
@@ -81,6 +85,10 @@ module default {
         }
         property updated_at -> datetime {
             default := datetime_current();
+        }
+        property old_id -> int16 {
+            readonly := true;
+            constraint exclusive;
         }
         index on (str_lower(.slug));
     }

@@ -1,4 +1,4 @@
-CREATE MIGRATION m1nrsf62uqcvmejx5lzqqcjfmpgj35poyj5grfck3e3cjv5u6mxrqq
+CREATE MIGRATION m1nxz6zrug5bsx4baf3zx7twyti44qywto3s4m4p2ffklb4enwwwkq
     ONTO initial
 {
   CREATE FUTURE nonrecursive_access_policies;
@@ -8,6 +8,10 @@ CREATE MIGRATION m1nrsf62uqcvmejx5lzqqcjfmpgj35poyj5grfck3e3cjv5u6mxrqq
           CREATE CONSTRAINT std::max_len_value(50);
       };
       CREATE INDEX ON (std::str_lower(.slug));
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+      };
       CREATE REQUIRED PROPERTY title -> std::str {
           CREATE CONSTRAINT std::max_len_value(50);
       };
@@ -67,6 +71,10 @@ CREATE MIGRATION m1nrsf62uqcvmejx5lzqqcjfmpgj35poyj5grfck3e3cjv5u6mxrqq
       };
       CREATE PROPERTY og_image -> std::str {
           CREATE CONSTRAINT std::max_len_value(200);
+      };
+      CREATE PROPERTY old_id -> std::int16 {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
       };
       CREATE PROPERTY published_at -> std::datetime {
           SET default := (std::datetime_current());
