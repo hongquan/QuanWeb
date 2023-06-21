@@ -1,3 +1,4 @@
+mod consts;
 mod views;
 
 use std::net::SocketAddr;
