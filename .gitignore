@@ -9,3 +9,8 @@ quanweb.egg-info
 */secret.py
 DB
 .vscode
+
+
+# Added by cargo
+
+/target
