@@ -35,6 +35,5 @@ pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, St
         tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    Ok(Json(posts.into_iter().map(BlogPost::from)
-            .collect()))
+    Ok(Json(posts.into_iter().collect()))
 }

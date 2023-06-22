@@ -9,32 +9,6 @@ pub struct Paging {
     pub per_page: Option<usize>,
 }
 
-fn to_unix_micros(dt: &EDatetime) -> i64 {
-    dt.to_unix_micros()
-}
-
-
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "EDatetime")]
-pub struct IMDatetime {
-    #[serde(getter = "to_unix_micros")]
-    micros: i64,
-}
-
-impl From<IMDatetime> for EDatetime {
-    fn from(dt: IMDatetime) -> Self {
-        EDatetime::from_unix_micros(dt.micros)
-    }
-}
-
-impl From<EDatetime> for IMDatetime {
-    fn from(dt: EDatetime) -> Self {
-        IMDatetime {
-            micros: dt.to_unix_micros(),
-        }
-    }
-}
-
 #[derive(Debug, edgedb_derive::Queryable)]
 pub struct RawBlogPost {
     pub id: Uuid,
@@ -61,5 +35,12 @@ impl From<RawBlogPost> for BlogPost {
             is_published: post.is_published,
             published_at: published_at,
         }
+    }
+}
+
+impl FromIterator<RawBlogPost> for Vec<BlogPost> {
+    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
+        iter.into_iter()
+        .map(BlogPost::from).collect()
     }
 }
