@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 use axum::http::StatusCode;
 use axum::Json;
 use edgedb_errors::display::display_error_verbose;
@@ -19,6 +21,10 @@ async fn get_edgedb_client() -> Result<edgedb_tokio::Client, edgedb_tokio::Error
 
 pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, StatusCode> {
     tracing::info!("Paging: {:?}", paging);
+    let page = max(1, paging.0.page.unwrap_or(1));
+    let per_page = max(0, paging.0.per_page.unwrap_or(10));
+    let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
+    let limit = per_page as i64;
     let db_conn = get_edgedb_client().await.map_err(|e| {
         eprintln!("Error connecting to EdgeDB: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
@@ -29,9 +35,12 @@ pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, St
         title,
         is_published,
         published_at,
+        created_at,
+        updated_at,
     }
-    ORDER BY .created_at DESC EMPTY FIRST";
-    let posts: Vec<RawBlogPost> = db_conn.query(q, &()).await.map_err(|e| {
+    ORDER BY .created_at DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
+    tracing::debug!("To query: {}", q);
+    let posts: Vec<RawBlogPost> = db_conn.query(q, &(offset, limit)).await.map_err(|e| {
         tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
         StatusCode::INTERNAL_SERVER_ERROR
     })?;

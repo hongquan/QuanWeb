@@ -15,6 +15,8 @@ pub struct RawBlogPost {
     pub title: String,
     pub is_published: bool,
     pub published_at: Option<EDatetime>,
+    pub created_at: EDatetime,
+    pub updated_at: Option<EDatetime>,
 }
 
 
@@ -24,16 +26,22 @@ pub struct BlogPost {
     pub title: String,
     pub is_published: bool,
     pub published_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 impl From<RawBlogPost> for BlogPost {
     fn from(post: RawBlogPost) -> Self {
         let published_at: Option<DateTime<Utc>> = post.published_at.map(|d| d.into());
+        let created_at: DateTime<Utc> = post.created_at.into();
+        let updated_at: Option<DateTime<Utc>> = post.updated_at.map(|d| d.into());
         BlogPost {
             id: post.id,
             title: post.title,
             is_published: post.is_published,
-            published_at: published_at,
+            published_at,
+            created_at,
+            updated_at,
         }
     }
 }
