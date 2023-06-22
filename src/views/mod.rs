@@ -1,5 +1,6 @@
 pub mod api;
 pub mod base;
+pub mod structs;
 
 use axum::{routing::get, Router};
 pub use base::*;
