@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use edgedb_protocol::model::Datetime as EDatetime;
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::{DateTime, Utc};
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
@@ -43,12 +43,6 @@ pub struct RawBlogPost {
     pub published_at: Option<EDatetime>,
 }
 
-pub fn edgedb_datetime_to_chrono(dt: EDatetime) -> Option<DateTime<Utc>> {
-    let naive = NaiveDateTime::from_timestamp_micros(dt.to_unix_micros())?;
-    let chro_dt = DateTime::<Utc>::from_utc(naive, Utc);
-    Some(chro_dt)
-}
-
 
 #[derive(Serialize, Deserialize)]
 pub struct BlogPost {
@@ -60,11 +54,12 @@ pub struct BlogPost {
 
 impl From<RawBlogPost> for BlogPost {
     fn from(post: RawBlogPost) -> Self {
+        let published_at: Option<DateTime<Utc>> = post.published_at.map(|d| d.into());
         BlogPost {
             id: post.id,
             title: post.title,
             is_published: post.is_published,
-            published_at: post.published_at.map(edgedb_datetime_to_chrono).flatten(),
+            published_at: published_at,
         }
     }
 }
