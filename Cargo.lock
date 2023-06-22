@@ -936,6 +936,7 @@ dependencies = [
  "miette-derive",
  "once_cell",
  "owo-colors",
+ "serde",
  "supports-color",
  "supports-hyperlinks",
  "supports-unicode",
