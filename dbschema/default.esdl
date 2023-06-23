@@ -2,29 +2,29 @@ module default {
     scalar type DocFormat extending enum<Md, Rst>;
 
     type User {
-        required property username -> str {
+        required property username: str {
             constraint exclusive;
         }
-        required property password -> str {
+        required property password: str {
             constraint max_len_value(100);
         }
-        property first_name -> str {
+        property first_name: str {
             constraint max_len_value(40);
         }
-        property last_name -> str {
+        property last_name: str {
             constraint max_len_value(40);
         }
-        required property email -> str {
+        required property email: str {
             constraint exclusive;
             constraint max_len_value(200);
         }
-        property is_active -> bool {
+        property is_active: bool {
             default := true;
         }
-        property is_superuser -> bool {
+        property is_superuser: bool {
             default := false;
         }
-        property old_id -> int16 {
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
@@ -33,14 +33,14 @@ module default {
     }
 
     type BlogCategory {
-        required property title -> str {
+        required property title: str {
             constraint max_len_value(50);
         }
-        required property slug -> str {
+        required property slug: str {
             constraint exclusive;
             constraint max_len_value(50);
         }
-        property old_id -> int16 {
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
@@ -48,48 +48,48 @@ module default {
     }
 
     type BlogPost {
-        required property title -> str {
+        required property title: str {
             constraint max_len_value(200);
         }
-        required property slug -> str {
+        required property slug: str {
             constraint exclusive;
             constraint max_len_value(200);
         }
-        property body -> str;
-        property format -> DocFormat {
+        property body: str;
+        property format: DocFormat {
             default := DocFormat.Md;
         }
-        property locale -> str {
+        property locale: str {
             constraint max_len_value(6);
         }
-        property excerpt -> str;
-        property html -> str;
-        property is_published -> bool {
+        property excerpt: str;
+        property html: str;
+        property is_published: bool {
             default := false;
         }
-        property published_at -> datetime {
+        property published_at: datetime {
             default := datetime_current();
         };
-        link author -> User {
+        link author: User {
             on target delete allow;
         }
-        multi link categories -> BlogCategory;
-        property seo_description -> str {
+        multi link categories: BlogCategory;
+        property seo_description: str {
             constraint max_len_value(400);
         }
-        multi property seo_keywords -> str {
+        multi property seo_keywords: str {
             constraint max_len_value(40);
         }
-        property og_image -> str {
+        property og_image: str {
             constraint max_len_value(200);
         }
-        property created_at -> datetime {
+        property created_at: datetime {
             default := datetime_current();
         }
-        property updated_at -> datetime {
+        property updated_at: datetime {
             default := datetime_current();
         }
-        property old_id -> int16 {
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
@@ -97,47 +97,47 @@ module default {
     }
 
     type BookAuthor {
-        required property name -> str {
+        required property name: str {
             constraint exclusive;
         }
-        property old_id -> int16 {
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
     }
 
     type Book {
-        required property title -> str {
+        required property title: str {
             constraint max_len_value(200);
         }
-        property download_url -> str;
-        link author -> BookAuthor {
+        property download_url: str;
+        link author: BookAuthor {
             on target delete allow;
         }
-        property created_at -> datetime {
+        property created_at: datetime {
             default := datetime_current();
         }
-        property updated_at -> datetime {
+        property updated_at: datetime {
             default := datetime_current();
         }
-        link created_by -> User;
-        property old_id -> int16 {
+        link created_by: User;
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
     }
 
     type Presentation {
-        required property title -> str {
+        required property title: str {
             constraint max_len_value(400);
         }
-        required property url -> str {
+        required property url: str {
             constraint max_len_value(400);
         }
-        property event -> str {
+        property event: str {
             constraint max_len_value(200);
         }
-        property old_id -> int16 {
+        property old_id: int16 {
             readonly := true;
             constraint exclusive;
         }
