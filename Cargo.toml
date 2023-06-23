@@ -6,14 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-fred-session = "0.1.4"
+async-trait = "0.1.68"
 axum = { version = "0.6.18", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query"] }
 axum-extra = { version = "0.7.4", features = ["erased-json", "query", "typed-routing"] }
+axum-login = "0.5.0"
+axum-sessions = "0.5.0"
 chrono = { version = "0.4.26", features = ["serde"] }
 edgedb-derive = "0.5.0"
 edgedb-errors = { version = "0.4.0", features = ["miette"] }
 edgedb-protocol = { version = "0.6.0", features = ["all-types"] }
 edgedb-tokio = { version = "0.5.0", features = ["serde_json", "miette-errors"] }
+eyre = "0.6.8"
 miette = { version = "5.9.0", features = ["fancy", "serde"] }
+rand = { version = "0.8.5", features = ["min_const_gen"] }
 serde = { version = "1.0.164", features = ["serde_derive"] }
 serde_with = { version = "3.0.0", features = ["chrono"] }
 tokio = { version = "1.28.2", features = ["full"] }

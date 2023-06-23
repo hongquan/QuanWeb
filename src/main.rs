@@ -1,9 +1,20 @@
 mod consts;
 mod views;
+mod models;
+mod auth;
+mod db;
 
 use std::net::SocketAddr;
+
+use rand::Rng;
 use axum::{Router, routing::get};
+use axum_login::{
+    axum_sessions::{async_session::MemoryStore, SessionLayer},
+    AuthLayer,
+};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+use auth::store::EdgeDbStore;
 
 #[tokio::main]
 async fn main() {
@@ -14,11 +25,26 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let secret = rand::thread_rng().gen::<[u8; 64]>();
+    let client = match db::get_edgedb_client().await {
+        Ok(client) => client,
+        Err(e) => {
+            tracing::error!("Error connecting to EdgeDB: {}", e);
+            return;
+        }
+    };
+    let session_store = MemoryStore::new();
+    let session_layer = SessionLayer::new(session_store, &secret).with_secure(false);
+    let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
+    let auth_layer = AuthLayer::new(user_store, &secret);
+
     let api_router = views::get_api_router();
 
     let app = Router::new()
         .route("/", get(views::root))
-        .nest("/api", api_router);
+        .nest("/api", api_router)
+        .layer(auth_layer)
+        .layer(session_layer);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Listening on http://{}", addr);

@@ -5,18 +5,11 @@ use axum::Json;
 use axum_extra::extract::Query;
 use edgedb_errors::display::display_error_verbose;
 
-use super::super::consts::DB_NAME;
 use super::structs::{BlogPost, Paging, RawBlogPost};
+use super::super::db::get_edgedb_client;
 
 pub async fn root() -> &'static str {
     "API root"
-}
-
-async fn get_edgedb_client() -> Result<edgedb_tokio::Client, edgedb_tokio::Error> {
-    let mut builder = edgedb_tokio::Builder::new();
-    builder.database(DB_NAME)?;
-    let config = builder.build_env().await?;
-    Ok(edgedb_tokio::Client::new(&config))
 }
 
 pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, StatusCode> {
