@@ -2,11 +2,11 @@ use std::cmp::max;
 
 use axum::http::StatusCode;
 use axum::Json;
-use edgedb_errors::display::display_error_verbose;
 use axum_extra::extract::Query;
+use edgedb_errors::display::display_error_verbose;
 
 use super::super::consts::DB_NAME;
-use super::structs::{Paging, RawBlogPost, BlogPost};
+use super::structs::{BlogPost, Paging, RawBlogPost};
 
 pub async fn root() -> &'static str {
     "API root"

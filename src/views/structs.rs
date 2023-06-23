@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
-use uuid::Uuid;
-use edgedb_protocol::model::Datetime as EDatetime;
 use chrono::{DateTime, Utc};
+use edgedb_protocol::model::Datetime as EDatetime;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
@@ -19,8 +19,7 @@ pub struct RawBlogPost {
     pub updated_at: Option<EDatetime>,
 }
 
-
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BlogPost {
     pub id: Uuid,
     pub title: String,
@@ -48,7 +47,6 @@ impl From<RawBlogPost> for BlogPost {
 
 impl FromIterator<RawBlogPost> for Vec<BlogPost> {
     fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
-        iter.into_iter()
-        .map(BlogPost::from).collect()
+        iter.into_iter().map(BlogPost::from).collect()
     }
 }
