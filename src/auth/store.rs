@@ -2,17 +2,17 @@ use std::hash::Hash;
 use std::marker::PhantomData;
 
 use async_trait::async_trait;
-use axum_login::{UserStore, AuthUser};
+use axum_login::{UserStore as UserStoreTrait, AuthUser};
 use edgedb_protocol::{query_arg::ScalarArg, queryable::Queryable};
 use eyre::Error;
 
 #[derive(Clone, Debug)]
-pub struct EdgeDbStore<User> {
+pub struct EdgeDbStore<IUser> {
     client: edgedb_tokio::Client,
-    _user_type: PhantomData<User>,
+    _user_type: PhantomData<IUser>,
 }
 
-impl<User> EdgeDbStore<User> {
+impl<IUser> EdgeDbStore<IUser> {
     pub fn new(client: edgedb_tokio::Client) -> Self {
         Self {
             client,
@@ -22,16 +22,16 @@ impl<User> EdgeDbStore<User> {
 }
 
 #[async_trait]
-impl<UserId, User, Role> UserStore<UserId, Role> for EdgeDbStore<User>
+impl<UserId, IUser, Role> UserStoreTrait<UserId, Role> for EdgeDbStore<IUser>
 where
     UserId: Eq + Clone + Send + Sync + Hash + ScalarArg + 'static,
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
-    User: AuthUser<UserId, Role> + Queryable,
+    IUser: AuthUser<UserId, Role> + Queryable,
 {
-    type User = User;
+    type User = IUser;
     async fn load_user(&self, user_id: &UserId) -> Result<Option<Self::User>, Error> {
         let q = "SELECT User {id, password, is_active, is_superuser} FILTER .id = <uuid>$0";
-        let user: Option<User> = self.client.query_single(q, &(user_id,)).await?;
+        let user: Option<IUser> = self.client.query_single(q, &(user_id,)).await?;
         Ok(user)
     }
 }

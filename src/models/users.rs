@@ -13,12 +13,21 @@ pub struct User {
     pub is_superuser: bool,
 }
 
-impl AuthUser<Uuid> for User {
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub enum Role {
+    Admin,
+}
+
+impl AuthUser<Uuid, Role> for User {
     fn get_id(&self) -> Uuid {
         self.id
     }
 
     fn get_password_hash(&self) -> SecretVec<u8> {
         SecretVec::new(self.password.clone().into())
+    }
+
+    fn get_role(&self) -> Option<Role> {
+        Some(Role::Admin)
     }
 }
