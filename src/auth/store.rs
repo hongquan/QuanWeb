@@ -31,7 +31,7 @@ where
 {
     type User = IUser;
     async fn load_user(&self, user_id: &UserId) -> Result<Option<Self::User>, Error> {
-        let q = "SELECT User {id, password, is_active, is_superuser} FILTER .id = <uuid>$0";
+        let q = "SELECT User {id, username, email, password, is_active, is_superuser} FILTER .id = <uuid>$0";
         let user: Option<IUser> = self.client.query_single(q, &(user_id,)).await?;
         Ok(user)
     }

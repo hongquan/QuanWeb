@@ -2,11 +2,12 @@ pub mod api;
 pub mod base;
 pub mod structs;
 
-use axum::{routing::get, Router};
+use axum::routing::get;
+use axum_named_routes::NamedRouter;
 pub use base::*;
 
-pub fn get_api_router() -> Router {
-    Router::new()
-        .route("/", get(api::root))
-        .route("/posts", get(api::list_posts))
+pub fn get_api_router() -> NamedRouter {
+    NamedRouter::new()
+        .route("index", "/", get(api::root))
+        .route("post-list", "/posts", get(api::list_posts))
 }

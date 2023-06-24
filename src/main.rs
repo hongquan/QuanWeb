@@ -8,7 +8,8 @@ mod retrievers;
 use std::net::SocketAddr;
 
 use rand::Rng;
-use axum::{Router, routing::{get, post}};
+use axum::routing::{get, post};
+use axum_named_routes::NamedRouter;
 use axum_login::{
     axum_sessions::{async_session::MemoryStore, SessionLayer},
     AuthLayer,
@@ -41,10 +42,10 @@ async fn main() {
 
     let api_router = views::get_api_router();
 
-    let app = Router::new()
-        .route("/", get(views::root))
-        .route("/api/login", post(auth::views::login))
-        .nest("/api", api_router)
+    let app = NamedRouter::new()
+        .route("index", "/", get(views::root))
+        .route("api-login", "/api/login", post(auth::views::login))
+        .nest("api", "/api", api_router)
         .layer(auth_layer)
         .layer(session_layer);
 
