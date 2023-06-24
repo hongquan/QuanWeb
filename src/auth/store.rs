@@ -6,6 +6,7 @@ use axum_login::{UserStore as UserStoreTrait, AuthUser};
 use edgedb_protocol::{query_arg::ScalarArg, queryable::Queryable};
 use eyre::Error;
 
+
 #[derive(Clone, Debug)]
 pub struct EdgeDbStore<IUser> {
     client: edgedb_tokio::Client,
