@@ -416,6 +416,18 @@ setproctitle = ["setproctitle"]
 tornado = ["tornado (>=0.2)"]
 
 [[package]]
+name = "hashers"
+version = "0.2.2"
+description = "Password hashing library in Python using Rust backend "
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "hashers-0.2.2-cp36-abi3-manylinux2010_x86_64.whl", hash = "sha256:a727304078fdbb78a182859b63f14e123769e1c04b03b56b191591a702ef0bd6"},
+    {file = "hashers-0.2.2.tar.gz", hash = "sha256:2b8e80dd18a87bd961835cd45bafe4a3ab8841167757908a669992be20eac0c5"},
+]
+
+[[package]]
 name = "html3"
 version = "1.18"
 description = "simple, elegant HTML, XHTML and XML generation for python3 (based on html)"
@@ -1313,4 +1325,4 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "ac1b31e9221d028c6622f96dab7236b7e124646d3a773f1a7da9aa1f35e97036"
+content-hash = "785d88df7a0fd9a6cac940cc6b7a12b62ddd3403d074bfb32ce1ff1e2ac39dc2"

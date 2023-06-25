@@ -6,6 +6,7 @@ from typing import cast
 
 import click
 import edgedb
+import hashers
 from logbook import Logger, DEBUG
 from rich.logging import RichHandler
 from chameleon_log.amend import StdLoggingHandler
@@ -273,6 +274,24 @@ def copy_to_edgedb():
     copy_authors(client)
     copy_books(client)
     copy_presentations(client)
+
+
+@cli.command()
+@click.option('-e', '--email', prompt='Email', help='Email')
+@click.option('-p', '--password', prompt='Password', help='Password')
+def set_user_password_in_edgedb(email: str, password: str):
+    client = edgedb.create_client(database=DB_NAME)
+    q = '''
+    UPDATE User
+    FILTER .email = <str>$email
+    SET {
+        password := <str>$password,
+    }
+    '''
+    hashed_password = hashers.hashpw(password, "argon2")
+    logger.info('Hashed_password: {}', hashed_password)
+    r = client.query(q, email=email, password=hashed_password)
+    logger.info('r: {}', r)
 
 
 if __name__ == '__main__':

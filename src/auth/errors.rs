@@ -13,7 +13,7 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         tracing::info!("To convert ApiError: {:?}", self);
         let (status, message) = match self {
-            ApiError::JsonExtractorRejection(json_rejection) => {
+            Self::JsonExtractorRejection(json_rejection) => {
                 (json_rejection.status(), json_rejection.body_text())
             }
         };

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use serde::{Serialize, Deserialize};
-use serde::ser::{Serializer, SerializeMap};
 use serde::de::Deserializer;
+use serde::ser::{SerializeMap, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_value::Value;
 
 // Ref: https://github.com/sirgallifrey/serde_either/blob/main/src/enums.rs
@@ -30,11 +30,17 @@ impl Clone for ApiErrorDetail {
 impl Serialize for ApiErrorDetail {
     fn serialize<Se>(&self, serializer: Se) -> Result<Se::Ok, Se::Error>
     where
-    Se: Serializer,
+        Se: Serializer,
     {
         match self {
             Self::String(as_string) => serializer.serialize_str(as_string),
-            Self::HashMap(as_hashmap) => serializer.serialize_map(Some(as_hashmap.len()))?.end(),
+            Self::HashMap(as_hashmap) => {
+                let mut map = serializer.serialize_map(Some(as_hashmap.len()))?;
+                for (k, v) in as_hashmap {
+                    map.serialize_entry(k, v)?;
+                }
+                map.end()
+            }
         }
     }
 }
@@ -42,24 +48,26 @@ impl Serialize for ApiErrorDetail {
 impl<'de> Deserialize<'de> for ApiErrorDetail {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         let value = Value::deserialize(deserializer)?;
-        match  value {
+        match value {
             Value::String(as_string) => Ok(Self::String(as_string)),
             Value::Map(as_map) => {
-                let hm: HashMap<String, String> = as_map.into_iter().flat_map(|(k, v)| {
-                    let key = String::deserialize(k).ok()?;
-                    let value = String::deserialize(v).ok()?;
-                    Some((key, value))
-                }).collect();
+                let hm: HashMap<String, String> = as_map
+                    .into_iter()
+                    .flat_map(|(k, v)| {
+                        let key = String::deserialize(k).ok()?;
+                        let value = String::deserialize(v).ok()?;
+                        Some((key, value))
+                    })
+                    .collect();
                 Ok(Self::HashMap(hm))
-            },
+            }
             _ => Err(serde::de::Error::custom("expected a string or a map")),
         }
     }
 }
-
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ApiErrorShape {
