@@ -10,12 +10,13 @@ use garde::Validate;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use super::errors::ApiError;
-use super::store::EdgeDbStore;
-use super::structs::LoginReqData;
 use crate::db::get_edgedb_client;
 use crate::models;
 use crate::retrievers;
+use crate::types::ApiErrorShape;
+use super::errors::ApiError;
+use super::store::EdgeDbStore;
+use super::structs::LoginReqData;
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
 
@@ -35,17 +36,13 @@ pub async fn login(
     tracing::info!("Request data: {:?}", value);
     let valid_data: LoginReqData = serde_json::from_value(value).map_err(|e| {
         tracing::error!("Error deserializing request data: {}", e);
-        let detail = json!({
-            "detail": e.to_string(),
-        });
-        (StatusCode::UNPROCESSABLE_ENTITY, Json(detail))
+        let resp: ApiErrorShape = e.to_string().into();
+        (StatusCode::UNPROCESSABLE_ENTITY, Json(resp))
     })?;
     if let Err(e) = valid_data.validate(&()) {
         tracing::error!("Error validating request data: {}", e);
-        let detail = json!({
-            "detail": flatten_garde_errors(e),
-        });
-        return Err((StatusCode::UNPROCESSABLE_ENTITY, Json(detail)).into());
+        let resp: ApiErrorShape = flatten_garde_errors(e).into();
+        return Err((StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into());
     }
     tracing::info!("Validated request data: {:?}", valid_data);
     let client = get_edgedb_client().await.map_err(|e| {

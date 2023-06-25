@@ -4,6 +4,7 @@ mod models;
 mod auth;
 mod db;
 mod retrievers;
+mod types;
 
 use std::net::SocketAddr;
 
