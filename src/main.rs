@@ -15,6 +15,7 @@ use axum_login::{
     AuthLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tower_http::trace::TraceLayer;
 
 use auth::store::EdgeDbStore;
 
@@ -48,7 +49,8 @@ async fn main() {
         .route("api-login-short", "/api/login-short", post(auth::views::login_short))
         .nest("api", "/api", api_router)
         .layer(auth_layer)
-        .layer(session_layer);
+        .layer(session_layer)
+        .layer(TraceLayer::new_for_http());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Listening on http://{}", addr);

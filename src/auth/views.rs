@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::http::StatusCode;
 use axum::{debug_handler, Json};
 use axum_extra::extract::WithRejection;
@@ -17,7 +19,7 @@ use crate::retrievers;
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
 
-fn flatten_garde_errors(errors: garde::Errors) -> Vec<(String, String)> {
+fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
     errors
         .flatten()
         .into_iter()
