@@ -11,13 +11,14 @@ pub enum ApiError {
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
+        tracing::info!("To convert ApiError: {:?}", self);
         let (status, message) = match self {
             ApiError::JsonExtractorRejection(json_rejection) => {
                 (json_rejection.status(), json_rejection.body_text())
             }
         };
         let payload = json!({
-            "message": message,
+            "detail": message,
             "origin": "with_rejection",
         });
         (status, Json(payload)).into_response()

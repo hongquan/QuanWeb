@@ -1,12 +1,14 @@
-
 use axum::http::StatusCode;
-use axum::{Json, debug_handler};
+use axum::{debug_handler, Json};
+use axum_extra::extract::WithRejection;
 use axum_garde::WithValidation;
 use axum_login::extractors::AuthContext;
 use edgedb_errors::display::display_error_verbose;
-use uuid::Uuid;
+use garde::Validate;
 use serde_json::{json, Value};
+use uuid::Uuid;
 
+use super::errors::ApiError;
 use super::store::EdgeDbStore;
 use super::structs::LoginReqData;
 use crate::db::get_edgedb_client;
@@ -15,13 +17,35 @@ use crate::retrievers;
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
 
+fn flatten_garde_errors(errors: garde::Errors) -> Vec<(String, String)> {
+    errors
+        .flatten()
+        .into_iter()
+        .map(|(k, v)| (k, v.message.to_string()))
+        .collect()
+}
+
 #[debug_handler]
 pub async fn login(
     mut auth: Auth,
-    // WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
-    WithValidation(valid_data): WithValidation<Json<LoginReqData>>,
-) -> Result<Json<Value>, StatusCode> {
-    tracing::info!("Request data: {:?}", valid_data);
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> axum::response::Result<Json<Value>> {
+    tracing::info!("Request data: {:?}", value);
+    let valid_data: LoginReqData = serde_json::from_value(value).map_err(|e| {
+        tracing::error!("Error deserializing request data: {}", e);
+        let detail = json!({
+            "detail": e.to_string(),
+        });
+        (StatusCode::UNPROCESSABLE_ENTITY, Json(detail))
+    })?;
+    if let Err(e) = valid_data.validate(&()) {
+        tracing::error!("Error validating request data: {}", e);
+        let detail = json!({
+            "detail": flatten_garde_errors(e),
+        });
+        return Err((StatusCode::UNPROCESSABLE_ENTITY, Json(detail)).into());
+    }
+    tracing::info!("Validated request data: {:?}", valid_data);
     let client = get_edgedb_client().await.map_err(|e| {
         tracing::error!("Error connecting to EdgeDB: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
@@ -35,6 +59,19 @@ pub async fn login(
         .ok_or(StatusCode::UNAUTHORIZED)?;
     tracing::info!("Logging in user: {:?}", user);
     auth.login(&user).await.unwrap();
+    let resp = json!({
+        "success": true,
+    });
+    Ok(Json(resp))
+}
+
+#[debug_handler]
+pub async fn login_short(
+    WithValidation(login_data): WithValidation<WithRejection<Json<LoginReqData>, ApiError>>,
+) -> axum::response::Result<Json<Value>> {
+    tracing::info!("Request data: {:?}", login_data);
+    let inner = login_data.into_inner();
+    tracing::info!("Inner data: {:?}", inner);
     let resp = json!({
         "success": true,
     });

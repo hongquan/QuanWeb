@@ -45,6 +45,7 @@ async fn main() {
     let app = NamedRouter::new()
         .route("index", "/", get(views::root))
         .route("api-login", "/api/login", post(auth::views::login))
+        .route("api-login-short", "/api/login-short", post(auth::views::login_short))
         .nest("api", "/api", api_router)
         .layer(auth_layer)
         .layer(session_layer);
