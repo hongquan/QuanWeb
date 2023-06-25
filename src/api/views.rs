@@ -6,11 +6,18 @@ use axum_extra::extract::Query;
 use edgedb_errors::display::display_error_verbose;
 
 use crate::db::get_edgedb_client;
-use crate::models::{BlogPost, RawBlogPost};
+use crate::models::{BlogPost, RawBlogPost, User};
 use super::structs::Paging;
+use super::auth::Auth;
 
 pub async fn root() -> &'static str {
     "API root"
+}
+
+pub async fn show_me(auth: Auth) -> axum::response::Result<Json<User>> {
+    tracing::info!("Current user: {:?}", auth.current_user);
+    let user = auth.current_user.ok_or(StatusCode::UNAUTHORIZED)?;
+    Ok(Json(user))
 }
 
 pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, StatusCode> {

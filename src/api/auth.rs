@@ -82,6 +82,7 @@ pub async fn login(
     Ok(Json(resp))
 }
 
+#[allow(dead_code)]
 #[debug_handler]
 pub async fn login_short(
     WithValidation(login_data): WithValidation<WithRejection<Json<LoginReqData>, ApiError>>,
