@@ -3,12 +3,6 @@ use edgedb_protocol::model::Datetime as EDatetime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Deserialize, Debug)]
-pub struct Paging {
-    pub page: Option<usize>,
-    pub per_page: Option<usize>,
-}
-
 #[derive(Debug, edgedb_derive::Queryable)]
 pub struct RawBlogPost {
     pub id: Uuid,

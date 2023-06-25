@@ -14,9 +14,7 @@ use crate::db::get_edgedb_client;
 use crate::models;
 use crate::retrievers;
 use crate::types::ApiErrorShape;
-use super::errors::ApiError;
-use super::store::EdgeDbStore;
-use super::structs::LoginReqData;
+use crate::auth::{errors::ApiError, store::EdgeDbStore, structs::LoginReqData};
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
 

@@ -5,8 +5,9 @@ use axum::Json;
 use axum_extra::extract::Query;
 use edgedb_errors::display::display_error_verbose;
 
-use super::structs::{BlogPost, Paging, RawBlogPost};
-use super::super::db::get_edgedb_client;
+use crate::db::get_edgedb_client;
+use crate::models::{BlogPost, RawBlogPost};
+use super::structs::Paging;
 
 pub async fn root() -> &'static str {
     "API root"

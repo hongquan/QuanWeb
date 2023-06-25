@@ -5,11 +5,12 @@ mod auth;
 mod db;
 mod retrievers;
 mod types;
+mod api;
 
 use std::net::SocketAddr;
 
 use rand::Rng;
-use axum::routing::{get, post};
+use axum::routing::get;
 use axum_named_routes::NamedRouter;
 use axum_login::{
     axum_sessions::{async_session::MemoryStore, SessionLayer},
@@ -42,12 +43,10 @@ async fn main() {
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret);
 
-    let api_router = views::get_api_router();
+    let api_router = api::get_router();
 
     let app = NamedRouter::new()
-        .route("index", "/", get(views::root))
-        .route("api-login", "/api/login", post(auth::views::login))
-        .route("api-login-short", "/api/login-short", post(auth::views::login_short))
+        .route("index", "/", get(views::base::root))
         .nest("api", "/api", api_router)
         .layer(auth_layer)
         .layer(session_layer)
