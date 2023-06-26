@@ -50,13 +50,15 @@ async fn main() {
 
     let api_router = api::get_router(Arc::clone(&shared_state));
 
-    let app = NamedRouter::new()
+    let mut app = NamedRouter::new()
         .route("index", "/", get(views::base::root))
-        .layer(auth_layer)
-        .layer(session_layer)
-        .layer(TraceLayer::new_for_http())
         .with_state(shared_state)
         .nest("api", "/api", api_router);
+
+    app = app
+        .layer(auth_layer)
+        .layer(session_layer)
+        .layer(TraceLayer::new_for_http());
 
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
