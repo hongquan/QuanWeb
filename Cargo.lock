@@ -1760,7 +1760,9 @@ dependencies = [
  "edgedb-tokio",
  "eyre",
  "garde",
+ "http",
  "miette",
+ "querystring_tiny",
  "rand",
  "redact",
  "serde",
@@ -1772,9 +1774,14 @@ dependencies = [
  "tower-http 0.4.1",
  "tracing",
  "tracing-subscriber",
- "url",
  "uuid",
 ]
+
+[[package]]
+name = "querystring_tiny"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88b4ac702c104b328107af65720c0237d652f163ccec6007dbb9fdfed1759d58"
 
 [[package]]
 name = "quick-error"
@@ -2855,7 +2862,6 @@ dependencies = [
  "form_urlencoded",
  "idna 0.4.0",
  "percent-encoding",
- "serde",
 ]
 
 [[package]]

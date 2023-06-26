@@ -1,24 +1,25 @@
-mod consts;
-mod views;
-mod models;
+mod api;
 mod auth;
+mod consts;
 mod db;
+mod models;
 mod retrievers;
 mod types;
-mod api;
+mod utils;
+mod views;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use rand::Rng;
 use axum::routing::get;
-use axum_named_routes::NamedRouter;
 use axum_login::{
     axum_sessions::{async_session::MemoryStore, SessionLayer},
     AuthLayer,
 };
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use axum_named_routes::NamedRouter;
+use rand::Rng;
 use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use auth::store::EdgeDbStore;
 use types::AppState;
@@ -26,9 +27,10 @@ use types::AppState;
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            "quanweb=debug,tower_http=debug,axum::rejection=trace".into()
-        }))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "quanweb=debug,tower_http=debug,axum::rejection=trace".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -40,9 +42,7 @@ async fn main() {
             return;
         }
     };
-    let shared_state = Arc::new(AppState {
-        db: client.clone(),
-    });
+    let shared_state = Arc::new(AppState { db: client.clone() });
     let session_store = MemoryStore::new();
     let session_layer = SessionLayer::new(session_store, &secret).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
@@ -59,7 +59,6 @@ async fn main() {
         .layer(auth_layer)
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());
-
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Listening on http://{}", addr);
