@@ -2,11 +2,12 @@ use std::cmp::max;
 
 use axum::http::StatusCode;
 use axum::Json;
+use axum::extract::State;
 use axum_extra::extract::Query;
 use edgedb_errors::display::display_error_verbose;
 
-use crate::db::get_edgedb_client;
 use crate::models::{BlogPost, RawBlogPost, User};
+use crate::types::SharedState;
 use super::structs::Paging;
 use super::auth::Auth;
 
@@ -20,16 +21,13 @@ pub async fn show_me(auth: Auth) -> axum::response::Result<Json<User>> {
     Ok(Json(user))
 }
 
-pub async fn list_posts(paging: Query<Paging>) -> Result<Json<Vec<BlogPost>>, StatusCode> {
+pub async fn list_posts(paging: Query<Paging>, State(state): State<SharedState>) -> Result<Json<Vec<BlogPost>>, StatusCode> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
     let per_page = max(0, paging.0.per_page.unwrap_or(10));
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
-    let db_conn = get_edgedb_client().await.map_err(|e| {
-        eprintln!("Error connecting to EdgeDB: {}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let db_conn = &state.db;
     let q = "
     SELECT BlogPost {
         id,

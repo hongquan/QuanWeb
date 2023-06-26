@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
+use edgedb_tokio::Client;
 use serde::de::Deserializer;
 use serde::ser::{SerializeMap, Serializer};
 use serde::{Deserialize, Serialize};
@@ -98,3 +100,9 @@ impl Into<ApiErrorDetail> for String {
         ApiErrorDetail::String(self)
     }
 }
+
+pub struct AppState {
+    pub db: Client,
+}
+
+pub type SharedState = Arc<AppState>;

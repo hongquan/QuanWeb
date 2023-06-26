@@ -8,6 +8,7 @@ mod types;
 mod api;
 
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use rand::Rng;
 use axum::routing::get;
@@ -20,6 +21,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tower_http::trace::TraceLayer;
 
 use auth::store::EdgeDbStore;
+use types::AppState;
 
 #[tokio::main]
 async fn main() {
@@ -38,19 +40,24 @@ async fn main() {
             return;
         }
     };
+    let shared_state = Arc::new(AppState {
+        db: client.clone(),
+    });
     let session_store = MemoryStore::new();
     let session_layer = SessionLayer::new(session_store, &secret).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret);
 
-    let api_router = api::get_router();
+    let api_router = api::get_router(Arc::clone(&shared_state));
 
     let app = NamedRouter::new()
         .route("index", "/", get(views::base::root))
-        .nest("api", "/api", api_router)
         .layer(auth_layer)
         .layer(session_layer)
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .with_state(shared_state)
+        .nest("api", "/api", api_router);
+
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Listening on http://{}", addr);
