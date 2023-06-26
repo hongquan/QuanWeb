@@ -1,8 +1,9 @@
 use std::cmp::max;
+use uuid::Uuid;
 
-use axum::extract::{OriginalUri, State};
+use axum::extract::{OriginalUri, Path, State};
 use axum::http::StatusCode;
-use axum::Json;
+use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::Query;
 use edgedb_errors::display::display_error_verbose;
 
@@ -10,7 +11,7 @@ use super::auth::Auth;
 use super::paging::gen_pagination_links;
 use super::structs::{ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{RawBlogPost, User};
+use crate::models::{MinimalObject, RawBlogPost, User};
 use crate::retrievers::get_all_posts_count;
 use crate::types::SharedState;
 
@@ -18,7 +19,7 @@ pub async fn root() -> &'static str {
     "API root"
 }
 
-pub async fn show_me(auth: Auth) -> axum::response::Result<Json<User>> {
+pub async fn show_me(auth: Auth) -> AxumResult<Json<User>> {
     tracing::info!("Current user: {:?}", auth.current_user);
     let user = auth.current_user.ok_or(StatusCode::UNAUTHORIZED)?;
     Ok(Json(user))
@@ -64,4 +65,22 @@ pub async fn list_posts(
         .with_count(count)
         .with_pagination_links(links);
     Ok(Json(resp))
+}
+
+pub async fn delete_post(
+    Path(post_id): Path<Uuid>,
+    auth: Auth,
+    State(state): State<SharedState>,
+) -> AxumResult<Json<Option<MinimalObject>>> {
+    tracing::info!("Current user: {:?}", auth.current_user);
+    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    let q = "DELETE BlogPost FILTER .id = <uuid>$0";
+    tracing::debug!("To query: {}", q);
+    let db_conn = &state.db;
+    let deleted_post: Option<MinimalObject> =
+        db_conn.query_single(q, &(post_id,)).await.map_err(|e| {
+            tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+    Ok(Json(deleted_post))
 }
