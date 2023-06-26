@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use chrono::{DateTime, Utc};
+use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_tokio::Client;
 use serde::de::Deserializer;
 use serde::ser::{SerializeMap, Serializer};
@@ -106,3 +108,25 @@ pub struct AppState {
 }
 
 pub type SharedState = Arc<AppState>;
+
+/* Serde serializers to serialize EdgeDB's Datetime type */
+pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>
+where
+    Se: Serializer,
+{
+    let cdt: DateTime<Utc> = edt.into();
+    cdt.serialize(serializer)
+}
+
+pub fn serialize_optional_edge_datetime<Se>(
+    edt: &Option<EDatetime>,
+    serializer: Se,
+) -> Result<Se::Ok, Se::Error>
+where
+    Se: Serializer,
+{
+    match edt {
+        Some(edt) => serialize_edge_datetime(edt, serializer),
+        None => serializer.serialize_none(),
+    }
+}

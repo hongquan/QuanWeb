@@ -10,7 +10,7 @@ use super::auth::Auth;
 use super::paging::gen_pagination_links;
 use super::structs::{ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{BlogPost, RawBlogPost, User};
+use crate::models::{RawBlogPost, User};
 use crate::retrievers::get_all_posts_count;
 use crate::types::SharedState;
 
@@ -28,7 +28,7 @@ pub async fn list_posts(
     paging: Query<Paging>,
     OriginalUri(original_uri): OriginalUri,
     State(state): State<SharedState>,
-) -> Result<Json<ObjectListResponse<BlogPost>>, StatusCode> {
+) -> Result<Json<ObjectListResponse<RawBlogPost>>, StatusCode> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
     let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE));
@@ -43,6 +43,11 @@ pub async fn list_posts(
         published_at,
         created_at,
         updated_at,
+        categories: {
+            id,
+            title,
+            slug,
+        },
     }
     ORDER BY .created_at DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
     tracing::debug!("To query: {}", q);
@@ -50,7 +55,6 @@ pub async fn list_posts(
         tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    let posts: Vec<BlogPost> = posts.into_iter().collect();
     let count = get_all_posts_count(&db_conn).await.map_err(|e| {
         tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
         StatusCode::INTERNAL_SERVER_ERROR
