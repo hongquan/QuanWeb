@@ -8,7 +8,7 @@ use edgedb_errors::display::display_error_verbose;
 
 use crate::models::{BlogPost, RawBlogPost, User};
 use crate::types::SharedState;
-use super::structs::Paging;
+use super::structs::{Paging, ObjectListResponse};
 use super::auth::Auth;
 
 pub async fn root() -> &'static str {
@@ -21,7 +21,7 @@ pub async fn show_me(auth: Auth) -> axum::response::Result<Json<User>> {
     Ok(Json(user))
 }
 
-pub async fn list_posts(paging: Query<Paging>, State(state): State<SharedState>) -> Result<Json<Vec<BlogPost>>, StatusCode> {
+pub async fn list_posts(paging: Query<Paging>, State(state): State<SharedState>) -> Result<Json<ObjectListResponse<BlogPost>>, StatusCode> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
     let per_page = max(0, paging.0.per_page.unwrap_or(10));
@@ -43,5 +43,7 @@ pub async fn list_posts(paging: Query<Paging>, State(state): State<SharedState>)
         tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    Ok(Json(posts.into_iter().collect()))
+    let posts: Vec<BlogPost> = posts.into_iter().collect();
+    let resp = ObjectListResponse::new(posts);
+    Ok(Json(resp))
 }
