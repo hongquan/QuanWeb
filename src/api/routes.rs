@@ -11,6 +11,7 @@ pub fn get_router(state: SharedState) -> NamedRouter {
         .route("login", "/login", post(auth::login))
         .route("me", "/users/me", get(views::show_me))
         .route("post-list", "/posts/", get(views::list_posts))
+        .route("post-retrieve", "/posts/:post_id", get(views::get_post))
         .route("post-delete", "/posts/:post_id", delete(views::delete_post))
         .with_state(state)
 }

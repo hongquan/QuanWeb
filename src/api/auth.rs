@@ -11,11 +11,12 @@ use garde::Validate;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use crate::auth::{errors::ApiError, store::EdgeDbStore, structs::LoginReqData};
+use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
 use crate::db::get_edgedb_client;
 use crate::models;
 use crate::retrievers;
 use crate::types::ApiErrorShape;
+use super::errors::ApiError;
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
 
