@@ -31,7 +31,9 @@ impl<T> Default for ObjectListResponse<T> {
 }
 
 #[allow(dead_code)]
-impl<T> ObjectListResponse<T> {
+impl<T> ObjectListResponse<T>
+where T: Serialize
+{
     pub fn new(objects: Vec<T>) -> Self {
         let count = objects.len();
         Self {
@@ -39,6 +41,16 @@ impl<T> ObjectListResponse<T> {
             objects,
             ..Default::default()
         }
+    }
+
+    pub fn with_count(mut self, count: usize) -> Self {
+        self.count = count;
+        self
+    }
+
+    pub fn with_pagination_links(mut self, links: PaginationLinks) -> Self {
+        self.links = links;
+        self
     }
 
     pub fn with_next_url(mut self, next_url: String) -> Self {

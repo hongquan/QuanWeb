@@ -10,6 +10,6 @@ pub fn get_router(state: SharedState) -> NamedRouter {
         .route("index", "/", get(views::root))
         .route("login", "/login", post(auth::login))
         .route("me", "/users/me", get(views::show_me))
-        .route("post-list", "/posts", get(views::list_posts))
+        .route("post-list", "/posts/", get(views::list_posts))
         .with_state(state)
 }
