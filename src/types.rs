@@ -13,7 +13,7 @@ use serde_value::Value;
 #[derive(Debug, PartialEq)]
 pub enum ApiErrorDetail {
     String(String),
-    HashMap(std::collections::HashMap<String, String>),
+    HashMap(HashMap<String, String>),
 }
 
 impl Default for ApiErrorDetail {

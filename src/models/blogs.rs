@@ -9,16 +9,17 @@ Because EdgeDB client cannot retrieve datetime field as chrono type,
 We have to use an intermediate type to grab result from EdgeDB.
 then convert to final struct with chrono types (which can be serialized with serde).
 */
+#[serde_with::apply(
+    EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
+    Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
+)]
 #[derive(Debug, Serialize, edgedb_derive::Queryable)]
 pub struct RawBlogPost {
     pub id: Uuid,
     pub title: String,
     pub is_published: bool,
-    #[serde(serialize_with = "serialize_optional_edge_datetime")]
     pub published_at: Option<EDatetime>,
-    #[serde(serialize_with = "serialize_edge_datetime")]
     pub created_at: EDatetime,
-    #[serde(serialize_with = "serialize_optional_edge_datetime")]
     pub updated_at: Option<EDatetime>,
     pub categories: Vec<BlogCategory>,
 }
