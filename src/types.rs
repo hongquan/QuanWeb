@@ -8,6 +8,8 @@ use serde::de::Deserializer;
 use serde::ser::{SerializeMap, Serializer};
 use serde::{Deserialize, Serialize};
 use serde_value::Value;
+use serde_json::Value as JValue;
+use edgedb_protocol::value::Value as EValue;
 
 // Ref: https://github.com/sirgallifrey/serde_either/blob/main/src/enums.rs
 #[derive(Debug, PartialEq)]
@@ -128,5 +130,18 @@ where
     match edt {
         Some(edt) => serialize_edge_datetime(edt, serializer),
         None => serializer.serialize_none(),
+    }
+}
+
+pub fn json_value_to_edgedb(v: &JValue) -> EValue {
+    match v {
+        JValue::Null => EValue::Nothing,
+        JValue::Bool(b) => EValue::Bool(b.clone()),
+        // TODO: handle floats
+        JValue::Number(n) => n
+            .as_i64()
+            .map(|x| EValue::Int64(x))
+            .unwrap_or_else(|| EValue::Str(n.to_string())),
+        _ => EValue::Str(v.to_string()),
     }
 }

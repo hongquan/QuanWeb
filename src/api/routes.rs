@@ -1,4 +1,4 @@
-use axum::routing::{get, post, delete};
+use axum::routing::{get, post, delete, patch};
 use axum_named_routes::NamedRouter;
 
 use crate::types::SharedState;
@@ -13,5 +13,6 @@ pub fn get_router(state: SharedState) -> NamedRouter {
         .route("post-list", "/posts/", get(views::list_posts))
         .route("post-retrieve", "/posts/:post_id", get(views::get_post))
         .route("post-delete", "/posts/:post_id", delete(views::delete_post))
+        .route("post-update", "/posts/:post_id", patch(views::update_post_partial))
         .with_state(state)
 }

@@ -1,3 +1,4 @@
+
 use chrono::{DateTime, Utc};
 use edgedb_protocol::model::Datetime as EDatetime;
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,33 @@ pub struct RawBlogPost {
     pub created_at: EDatetime,
     pub updated_at: Option<EDatetime>,
     pub categories: Vec<BlogCategory>,
+}
+
+impl RawBlogPost {
+    pub fn type_cast_for_field<'a>(name: &'a str) -> &'a str {
+        match name {
+            "title" => "str",
+            "is_published" => "bool",
+            "published_at" => "optional datetime",
+            "updated_at" => "optional datetime",
+            _ => "json",
+        }
+    }
+}
+
+impl Default for RawBlogPost {
+    fn default() -> Self {
+        let created_at = DateTime::<Utc>::default().try_into().unwrap_or(EDatetime::MIN);
+        RawBlogPost {
+            id: Uuid::default(),
+            title: String::default(),
+            is_published: false,
+            published_at: None,
+            created_at,
+            updated_at: None,
+            categories: Vec::default(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, edgedb_derive::Queryable)]

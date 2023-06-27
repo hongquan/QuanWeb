@@ -63,3 +63,10 @@ where T: Serialize
         self
     }
 }
+
+
+#[derive(Debug, Deserialize)]
+pub struct BlogPostPatchData {
+    pub title: Option<String>,
+    pub is_published: Option<bool>,
+}

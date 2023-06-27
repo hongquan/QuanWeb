@@ -23,6 +23,7 @@ edgedb-tokio = { version = "0.5.0", features = ["serde_json", "miette-errors"] }
 eyre = "0.6.8"
 garde = "0.11.2"
 http = "0.2.9"
+indexmap = { version = "2.0.0", features = ["serde"] }
 miette = { version = "5.9.0", features = ["fancy", "serde"] }
 querystring_tiny = "0.2.1"
 rand = { version = "0.8.5", features = ["min_const_gen"] }
