@@ -117,7 +117,7 @@ pub async fn update_post_partial(
                 .map(|(i, (field_name, _v))| {
                     let etype = RawBlogPost::type_cast_for_field(field_name);
                     let index = i + 1;
-                    let statement = format!("{field_name} :=<{etype}>$<{index}>");
+                    let statement = format!("{field_name} :=<{etype}>${index}");
                     statement
                 })
                 .collect::<Vec<String>>()
