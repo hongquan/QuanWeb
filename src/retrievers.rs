@@ -44,3 +44,23 @@ pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<RawBl
     let post: Option<RawBlogPost> = client.query_single(q, &(post_id,)).await?;
     Ok(post)
 }
+
+pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+    let q = "
+    SELECT BlogPost {
+        id,
+        title,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {
+            id,
+            title,
+            slug,
+        },
+    }
+    ORDER BY .created_at DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
+    let posts: Vec<RawBlogPost> = client.query(q, &(offset, limit)).await?;
+    Ok(posts)
+}

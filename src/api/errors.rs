@@ -11,8 +11,8 @@ pub enum ApiError {
     PathRejection(#[from] PathRejection),
     #[error(transparent)]
     JsonRejection(#[from] JsonRejection),
-    #[error("Unexpected JSON shape")]
-    UnexpectedJSONShape,
+    #[error(transparent)]
+    JsonExtractionError(#[from] serde_json::Error),
     #[error(transparent)]
     EdgeDBQueryError(#[from] edgedb_errors::Error),
     #[error("Other error: {0}")]
@@ -29,16 +29,23 @@ impl IntoResponse for ApiError {
             Self::JsonRejection(json_rejection) => {
                 (json_rejection.status(), json_rejection.body_text())
             }
-            Self::UnexpectedJSONShape => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
-            Self::EdgeDBQueryError(e) => {
+            Self::JsonExtractionError(ref e) => {
+                if e.is_data() {
+                    tracing::error!("Unexpected JSON shape: {}", e);
+                    (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
+                } else {
+                    tracing::error!("Failed to parse as JSON: {}", e);
+                    (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+                }
+            },
+            Self::EdgeDBQueryError(ref e) => {
                 tracing::error!("EdgeDB error: {}", e.initial_message().unwrap_or_default());
-                (StatusCode::INTERNAL_SERVER_ERROR, "Error querying database".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
         let payload = json!({
             "detail": message,
-            "origin": "with_rejection",
         });
         (status, Json(payload)).into_response()
     }
