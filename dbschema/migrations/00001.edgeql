@@ -1,4 +1,4 @@
-CREATE MIGRATION m1wfow22xuxov4rbdlgozrukn57qu2wpyigsvuspmr4woq2cuwovrq
+CREATE MIGRATION m1ni7xwdmcqu4hz6rdwbovxzk5h5qxxnuesi4spc5h52a4kwn2wzua
     ONTO initial
 {
   CREATE FUTURE nonrecursive_access_policies;
@@ -48,7 +48,9 @@ CREATE MIGRATION m1wfow22xuxov4rbdlgozrukn57qu2wpyigsvuspmr4woq2cuwovrq
   };
   CREATE SCALAR TYPE default::DocFormat EXTENDING enum<Md, Rst>;
   CREATE TYPE default::BlogPost {
-      CREATE MULTI LINK categories: default::BlogCategory;
+      CREATE MULTI LINK categories: default::BlogCategory {
+          ON TARGET DELETE ALLOW;
+      };
       CREATE REQUIRED PROPERTY slug: std::str {
           CREATE CONSTRAINT std::exclusive;
           CREATE CONSTRAINT std::max_len_value(200);
