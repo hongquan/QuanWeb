@@ -21,6 +21,7 @@ edgedb-errors = { version = "0.4.0", features = ["miette"] }
 edgedb-protocol = { version = "0.6.0", features = ["all-types"] }
 edgedb-tokio = { version = "0.5.0", features = ["serde_json", "miette-errors"] }
 eyre = "0.6.8"
+fievar = "0.2.0"
 garde = "0.11.2"
 http = "0.2.9"
 indexmap = { version = "2.0.0", features = ["serde"] }

@@ -1,3 +1,4 @@
+use fievar::Fields;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
@@ -64,7 +65,7 @@ where T: Serialize
 }
 
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Fields)]
 pub struct BlogPostPatchData {
     pub title: Option<String>,
     pub is_published: Option<bool>,

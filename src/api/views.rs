@@ -4,7 +4,7 @@ use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::{Query, WithRejection};
 use edgedb_protocol::value::Value as EValue;
-use indexmap::indexmap;
+use indexmap::{indexmap, IndexMap};
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
@@ -15,7 +15,7 @@ use super::structs::{BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{MinimalObject, RawBlogPost, User};
 use crate::retrievers::{self, get_all_posts_count};
-use crate::types::{json_value_to_edgedb, SharedState};
+use crate::types::{json_value_to_edgedb, SharedState, build_edgedb_object};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -88,7 +88,8 @@ pub async fn update_post_partial(
 ) -> AxumResult<Json<RawBlogPost>> {
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
-    let jdata: JMap<String, Value> = serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
     let db_conn = &state.db;
     // User submit no field to update
     if jdata.is_empty() {
@@ -98,45 +99,28 @@ pub async fn update_post_partial(
         let post = post.ok_or(StatusCode::NOT_FOUND)?;
         return Ok(Json(post));
     };
-    let _patch_data: BlogPostPatchData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    // Check that data has invalid fields
+    let _patch_data: BlogPostPatchData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     let mut eql_params = indexmap! {
-        "post_id" => EValue::Uuid(post_id),
+        "id" => EValue::Uuid(post_id),
     };
-    let values_to_update = jdata.iter().map(|(field_name, v)| {
-        let value = json_value_to_edgedb(v);
-        (field_name.as_str(), value)
+    let valid_fields = BlogPostPatchData::fields();
+    let values_to_update = jdata.iter().filter_map(|(field_name, v)| {
+        valid_fields.contains(&field_name.as_str()).then(|| {
+            let value = json_value_to_edgedb(v);
+            (field_name.as_str(), value)
+        })
     });
     eql_params.extend(values_to_update);
     tracing::debug!("EQL params: {:?}", eql_params);
-    let set_clause = eql_params
-        .get_range(1..)
-        .map(|entries| {
-            entries
-                .iter()
-                .enumerate()
-                .map(|(i, (field_name, _v))| {
-                    let etype = RawBlogPost::type_cast_for_field(field_name);
-                    let index = i + 1;
-                    let statement = format!("{field_name} :=<{etype}>${index}");
-                    statement
-                })
-                .collect::<Vec<String>>()
-                .join(",\n    ")
-        })
-        .unwrap_or_default();
-    let updated_values = eql_params
-        .get_range(1..)
-        .map(|entries| {
-            entries
-                .iter()
-                .map(|(_field_name, v)| v.clone())
-                .collect::<Vec<EValue>>()
-        })
-        .unwrap_or_default();
+    // Build Value::Object to use as QueryArgs
+    let args_obj = build_edgedb_object(&eql_params);
+    let set_clause = gen_set_clause(&eql_params);
     let q = format!(
         "SELECT (
             UPDATE BlogPost
-            FILTER .id = <uuid>$0
+            FILTER .id = <uuid>$id
             SET {{
                 {set_clause}
             }}
@@ -155,21 +139,28 @@ pub async fn update_post_partial(
         }}"
     );
     tracing::debug!("To query: {}", q);
-    let values_count = updated_values.len();
-    let result = if values_count == 1 {
-        let args = (post_id, updated_values[0].clone());
-        tracing::debug!("Query with params: {:?}", args);
-        db_conn.query_single(&q, &args).await
-    } else {
-        let args = (
-            post_id,
-            updated_values[0].clone(),
-            updated_values[1].clone(),
-        );
-        tracing::debug!("Query with params: {:?}", args);
-        db_conn.query_single(&q, &args).await
-    };
-    let updated_post: Option<RawBlogPost> = result.map_err(ApiError::EdgeDBQueryError)?;
+    tracing::debug!("Query with params: {:?}", args_obj);
+    let updated_post: Option<RawBlogPost> = db_conn
+        .query_single(&q, &args_obj)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
     let updated_post = updated_post.ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(updated_post))
+}
+
+fn gen_set_clause(params: &IndexMap<&str, EValue>) -> String {
+    params
+        .get_range(1..)
+        .map(|entries| {
+            entries
+                .iter()
+                .map(|(field_name, _v)| {
+                    let etype = RawBlogPost::type_cast_for_field(field_name);
+                    let statement = format!("{field_name} := <{etype}>${field_name}");
+                    statement
+                })
+                .collect::<Vec<String>>()
+                .join(",\n    ")
+        })
+        .unwrap_or_default()
 }

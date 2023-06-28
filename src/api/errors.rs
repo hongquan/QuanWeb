@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
 use serde_json::json;
 use thiserror::Error;
+use edgedb_errors::display::display_error_verbose;
 
 #[allow(dead_code)]
 #[derive(Debug, Error)]
@@ -39,7 +40,7 @@ impl IntoResponse for ApiError {
                 }
             },
             Self::EdgeDBQueryError(ref e) => {
-                tracing::error!("EdgeDB error: {}", e.initial_message().unwrap_or_default());
+                tracing::error!("EdgeDB error: {}", display_error_verbose(e));
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)

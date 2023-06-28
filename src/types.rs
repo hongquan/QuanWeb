@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use indexmap::IndexMap;
 use chrono::{DateTime, Utc};
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_tokio::Client;
@@ -10,6 +11,8 @@ use serde::{Deserialize, Serialize};
 use serde_value::Value;
 use serde_json::Value as JValue;
 use edgedb_protocol::value::Value as EValue;
+use edgedb_protocol::codec::{ObjectShape, ShapeElement};
+use edgedb_protocol::common::Cardinality;
 
 // Ref: https://github.com/sirgallifrey/serde_either/blob/main/src/enums.rs
 #[derive(Debug, PartialEq)]
@@ -144,4 +147,23 @@ pub fn json_value_to_edgedb(v: &JValue) -> EValue {
             .unwrap_or_else(|| EValue::Str(n.to_string())),
         _ => EValue::Str(v.to_string()),
     }
+}
+
+
+pub fn build_edgedb_object(params: &IndexMap<&str, EValue>) -> EValue {
+    let capacity = params.len();
+    let mut elms = Vec::with_capacity(capacity);
+    let mut object_values = Vec::with_capacity(capacity);
+    params.iter().for_each(|(field_name, v)| {
+        let elm = ShapeElement {
+            name: field_name.to_string(),
+            cardinality: Some(Cardinality::One),
+            flag_link: false,
+            flag_link_property: false,
+            flag_implicit: false,
+        };
+        elms.push(elm);
+        object_values.push(Some(v.clone()));
+    });
+    EValue::Object { shape: ObjectShape::new(elms), fields: object_values }
 }
