@@ -18,6 +18,7 @@ then convert to final struct with chrono types (which can be serialized with ser
 pub struct RawBlogPost {
     pub id: Uuid,
     pub title: String,
+    pub slug: String,
     pub is_published: bool,
     pub published_at: Option<EDatetime>,
     pub created_at: EDatetime,
@@ -43,6 +44,7 @@ impl Default for RawBlogPost {
         RawBlogPost {
             id: Uuid::default(),
             title: String::default(),
+            slug: String::default(),
             is_published: false,
             published_at: None,
             created_at,
@@ -63,6 +65,7 @@ pub struct BlogCategory {
 pub struct BlogPost {
     pub id: Uuid,
     pub title: String,
+    pub slug: String,
     pub is_published: bool,
     pub published_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -78,6 +81,7 @@ impl From<RawBlogPost> for BlogPost {
         BlogPost {
             id: post.id,
             title: post.title,
+            slug: post.slug,
             is_published: post.is_published,
             published_at,
             created_at,

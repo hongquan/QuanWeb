@@ -29,6 +29,7 @@ pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<RawBl
     SELECT BlogPost {
         id,
         title,
+        slug,
         is_published,
         published_at,
         created_at,
@@ -50,6 +51,7 @@ pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Cli
     SELECT BlogPost {
         id,
         title,
+        slug,
         is_published,
         published_at,
         created_at,

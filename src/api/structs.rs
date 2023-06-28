@@ -68,5 +68,6 @@ where T: Serialize
 #[derive(Debug, Deserialize, Fields)]
 pub struct BlogPostPatchData {
     pub title: Option<String>,
+    pub slug: Option<String>,
     pub is_published: Option<bool>,
 }

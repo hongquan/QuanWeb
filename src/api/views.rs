@@ -127,6 +127,7 @@ pub async fn update_post_partial(
         ) {{
             id,
             title,
+            slug,
             is_published,
             published_at,
             created_at,
