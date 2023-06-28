@@ -1,7 +1,10 @@
+use std::fmt::Display;
 use http::Uri;
 use querystring_tiny::QueryString;
 
-pub fn update_entry_in_query(name: &str, value: usize, original_uri: &Uri) -> Uri {
+pub fn update_entry_in_query<T>(name: &str, value: T, original_uri: &Uri) -> Uri
+where T: Display
+{
     let mut query = original_uri
         .query()
         .map(|s| QueryString::decode(s.as_bytes()).ok())

@@ -13,9 +13,9 @@ use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{MinimalObject, RawBlogPost, User};
+use crate::models::{MinimalObject, RawBlogPost, User, BlogCategory};
 use crate::retrievers::{self, get_all_posts_count};
-use crate::types::{json_value_to_edgedb, SharedState, build_edgedb_object};
+use crate::types::{build_edgedb_object, json_value_to_edgedb, SharedState};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -34,7 +34,7 @@ pub async fn list_posts(
 ) -> AxumResult<Json<ObjectListResponse<RawBlogPost>>> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
-    let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE));
+    let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
     let db_conn = &state.db;
@@ -147,6 +147,29 @@ pub async fn update_post_partial(
         .map_err(ApiError::EdgeDBQueryError)?;
     let updated_post = updated_post.ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(updated_post))
+}
+
+pub async fn list_categories(
+    paging: Query<Paging>,
+    OriginalUri(original_uri): OriginalUri,
+    State(state): State<SharedState>,
+) -> AxumResult<Json<ObjectListResponse<BlogCategory>>> {
+    let page = max(1, paging.0.page.unwrap_or(1));
+    let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
+    let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
+    let limit = per_page as i64;
+    let db_conn = &state.db;
+    let categories = retrievers::get_blogcategories(Some(offset), Some(limit), db_conn)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let count = retrievers::get_all_categories_count(db_conn)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let links = gen_pagination_links(&paging.0, count, original_uri);
+    let resp = ObjectListResponse::new(categories)
+        .with_count(count)
+        .with_pagination_links(links);
+    Ok(Json(resp))
 }
 
 fn gen_set_clause(params: &IndexMap<&str, EValue>) -> String {

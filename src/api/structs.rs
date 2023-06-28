@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
-    pub page: Option<usize>,
-    pub per_page: Option<usize>,
+    pub page: Option<u16>,
+    pub per_page: Option<u8>,
 }
 
 #[derive(Debug, Default, Serialize)]
