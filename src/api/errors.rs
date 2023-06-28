@@ -19,6 +19,8 @@ pub enum ApiError {
     EdgeDBQueryError(#[from] edgedb_errors::Error),
     #[error("{0} not found")]
     ObjectNotFound(String),
+    #[error("Error logging in")]
+    LoginError(String),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -47,6 +49,7 @@ impl IntoResponse for ApiError {
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
             Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
+            Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
         let payload = ApiErrorShape::from(message);
