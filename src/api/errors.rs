@@ -1,9 +1,10 @@
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
-use serde_json::json;
 use thiserror::Error;
 use edgedb_errors::display::display_error_verbose;
+
+use crate::types::ApiErrorShape;
 
 #[allow(dead_code)]
 #[derive(Debug, Error)]
@@ -16,6 +17,8 @@ pub enum ApiError {
     JsonExtractionError(#[from] serde_json::Error),
     #[error(transparent)]
     EdgeDBQueryError(#[from] edgedb_errors::Error),
+    #[error("{0} not found")]
+    ObjectNotFound(String),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -43,11 +46,10 @@ impl IntoResponse for ApiError {
                 tracing::error!("EdgeDB error: {}", display_error_verbose(e));
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
+            Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
-        let payload = json!({
-            "detail": message,
-        });
+        let payload = ApiErrorShape::from(message);
         (status, Json(payload)).into_response()
     }
 }

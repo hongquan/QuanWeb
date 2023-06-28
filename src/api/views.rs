@@ -59,7 +59,7 @@ pub async fn get_post(
     let post = retrievers::get_blogpost(post_id, db_conn)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
-        .ok_or(StatusCode::NOT_FOUND)?;
+        .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(post))
 }
 
@@ -67,16 +67,16 @@ pub async fn delete_post(
     Path(post_id): Path<Uuid>,
     auth: Auth,
     State(state): State<SharedState>,
-) -> AxumResult<Json<Option<MinimalObject>>> {
+) -> AxumResult<Json<MinimalObject>> {
     tracing::info!("Current user: {:?}", auth.current_user);
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     let q = "DELETE BlogPost FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let db_conn = &state.db;
-    let deleted_post: Option<MinimalObject> = db_conn
+    let deleted_post: MinimalObject = db_conn
         .query_single(q, &(post_id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(deleted_post))
 }
 
@@ -96,7 +96,7 @@ pub async fn update_post_partial(
         let post = retrievers::get_blogpost(post_id, db_conn)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
-        let post = post.ok_or(StatusCode::NOT_FOUND)?;
+        let post = post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
         return Ok(Json(post));
     };
     // Check that data has invalid fields
@@ -145,7 +145,7 @@ pub async fn update_post_partial(
         .query_single(&q, &args_obj)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let updated_post = updated_post.ok_or(StatusCode::NOT_FOUND)?;
+    let updated_post = updated_post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(updated_post))
 }
 
@@ -180,8 +180,25 @@ pub async fn get_category(
     let category = retrievers::get_blog_category(category_id, db_conn)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
-        .ok_or(StatusCode::NOT_FOUND)?;
+        .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(category))
+}
+
+pub async fn delete_category(
+    Path(category_id): Path<Uuid>,
+    auth: Auth,
+    State(state): State<SharedState>,
+) -> AxumResult<Json<MinimalObject>> {
+    tracing::info!("Current user: {:?}", auth.current_user);
+    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    let q = "DELETE BlogCategory FILTER .id = <uuid>$0";
+    tracing::debug!("To query: {}", q);
+    let db_conn = &state.db;
+    let deleted_cat: MinimalObject = db_conn
+        .query_single(q, &(category_id,))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
+    Ok(Json(deleted_cat))
 }
 
 fn gen_set_clause(params: &IndexMap<&str, EValue>) -> String {
