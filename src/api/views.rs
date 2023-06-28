@@ -16,7 +16,7 @@ use super::paging::gen_pagination_links;
 use super::structs::{BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{MinimalObject, RawBlogPost, User};
-use crate::retrievers::get_all_posts_count;
+use crate::retrievers::{get_all_posts_count, self};
 use crate::types::{json_value_to_edgedb, SharedState};
 
 pub async fn root() -> &'static str {
@@ -76,27 +76,8 @@ pub async fn get_post(
     State(state): State<SharedState>,
 ) -> AxumResult<Json<RawBlogPost>> {
     let db_conn = &state.db;
-    let q = "
-    SELECT BlogPost {
-        id,
-        title,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {
-            id,
-            title,
-            slug,
-        },
-    }
-    FILTER .id = <uuid>$0";
-    tracing::debug!("To query: {}", q);
-    let post: Option<RawBlogPost> = db_conn.query_single(q, &(post_id,)).await.map_err(|e| {
-        tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
-    Ok(Json(post.ok_or(StatusCode::NOT_FOUND)?))
+    let post = retrievers::get_blogpost(post_id, db_conn).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(StatusCode::NOT_FOUND)?;
+    Ok(Json(post))
 }
 
 pub async fn delete_post(
@@ -110,10 +91,7 @@ pub async fn delete_post(
     tracing::debug!("To query: {}", q);
     let db_conn = &state.db;
     let deleted_post: Option<MinimalObject> =
-        db_conn.query_single(q, &(post_id,)).await.map_err(|e| {
-            tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+        db_conn.query_single(q, &(post_id,)).await.map_err(ApiError::EdgeDBQueryError)?;
     Ok(Json(deleted_post))
 }
 
@@ -122,16 +100,19 @@ pub async fn update_post_partial(
     auth: Auth,
     State(state): State<SharedState>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
-) -> AxumResult<Json<Option<MinimalObject>>> {
+) -> AxumResult<Json<RawBlogPost>> {
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> = serde_json::from_value(value.clone()).map_err(|e| {
         tracing::info!("Error parsing JSON: {}", e);
         StatusCode::UNPROCESSABLE_ENTITY
     })?;
+    let db_conn = &state.db;
     // User submit no field to update
     if jdata.is_empty() {
-        return Ok(Json(None));
+        let post = retrievers::get_blogpost(post_id, db_conn).await.map_err(ApiError::EdgeDBQueryError)?;
+        let post = post.ok_or(StatusCode::NOT_FOUND)?;
+        return Ok(Json(post));
     };
     let _patch_data: BlogPostPatchData = serde_json::from_value(value).map_err(|e| {
         tracing::info!("JSON not in expected form: {}", e);
@@ -150,7 +131,7 @@ pub async fn update_post_partial(
         entries.iter().enumerate().map(|(i, (field_name, _v))| {
             let etype = RawBlogPost::type_cast_for_field(field_name);
             let index = i + 1;
-            let statement = format!("{field_name} :=<{etype}>${index}");
+            let statement = format!("{field_name} :=<{etype}>$<{index}>");
             statement
         }).collect::<Vec<String>>().join(",\n    ")
     }).unwrap_or_default();
@@ -160,14 +141,27 @@ pub async fn update_post_partial(
         }).collect::<Vec<EValue>>()
     }).unwrap_or_default();
     let q = format!(
-        "UPDATE BlogPost
-        FILTER .id = <uuid>$0
-        SET {{
-            {set_clause}
+        "SELECT (
+            UPDATE BlogPost
+            FILTER .id = <uuid>$0
+            SET {{
+                {set_clause}
+            }}
+        ) {{
+            id,
+            title,
+            is_published,
+            published_at,
+            created_at,
+            updated_at,
+            categories: {{
+                id,
+                title,
+                slug,
+            }},
         }}"
     );
     tracing::debug!("To query: {}", q);
-    let db_conn = &state.db;
     let values_count = updated_values.len();
     let result = if values_count == 1 {
         let args = (post_id, updated_values[0].clone());
@@ -178,9 +172,7 @@ pub async fn update_post_partial(
         tracing::debug!("Query with params: {:?}", args);
         db_conn.query_single(&q, &args).await
     };
-    let updated_post: Option<MinimalObject> = result.map_err(|e| {
-        tracing::error!("Error querying EdgeDB: {}", display_error_verbose(&e));
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let updated_post: Option<RawBlogPost> = result.map_err(ApiError::EdgeDBQueryError)?;
+    let updated_post = updated_post.ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(updated_post))
 }

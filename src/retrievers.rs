@@ -1,5 +1,6 @@
+use uuid::Uuid;
 use edgedb_tokio::{Client, Error};
-use crate::models::User;
+use crate::models::{User, RawBlogPost};
 
 #[allow(dead_code)]
 pub async fn get_first_user(client: Client) -> Result<Option<User>, Error> {
@@ -21,4 +22,25 @@ pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
     tracing::debug!("To query: {}", q);
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
+}
+
+pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<RawBlogPost>, Error> {
+    let q = "
+    SELECT BlogPost {
+        id,
+        title,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {
+            id,
+            title,
+            slug,
+        },
+    }
+    FILTER .id = <uuid>$0";
+    tracing::debug!("To query: {}", q);
+    let post: Option<RawBlogPost> = client.query_single(q, &(post_id,)).await?;
+    Ok(post)
 }
