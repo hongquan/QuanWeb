@@ -145,6 +145,7 @@ pub fn json_value_to_edgedb(v: &JValue) -> EValue {
             .as_i64()
             .map(|x| EValue::Int64(x))
             .unwrap_or_else(|| EValue::Str(n.to_string())),
+        JValue::String(s) => EValue::Str(s.clone()),
         _ => EValue::Str(v.to_string()),
     }
 }
