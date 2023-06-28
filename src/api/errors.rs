@@ -4,12 +4,17 @@ use axum::{response::IntoResponse, Json};
 use serde_json::json;
 use thiserror::Error;
 
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum ApiError {
     #[error(transparent)]
     PathRejection(#[from] PathRejection),
     #[error(transparent)]
-    JsonExtractorRejection(#[from] JsonRejection),
+    JsonRejection(#[from] JsonRejection),
+    #[error("Unexpected JSON shape")]
+    UnexpectedJSONShape,
+    #[error("Other error: {0}")]
+    Other(String),
 }
 
 impl IntoResponse for ApiError {
@@ -19,9 +24,11 @@ impl IntoResponse for ApiError {
             Self::PathRejection(path_rejection) => {
                 (StatusCode::NOT_FOUND, path_rejection.body_text())
             }
-            Self::JsonExtractorRejection(json_rejection) => {
+            Self::JsonRejection(json_rejection) => {
                 (json_rejection.status(), json_rejection.body_text())
             }
+            Self::UnexpectedJSONShape => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
         let payload = json!({
             "detail": message,

@@ -7,7 +7,7 @@ use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::{Query, WithRejection};
 use edgedb_errors::display::display_error_verbose;
 use edgedb_protocol::value::Value as EValue;
-use indexmap::IndexMap;
+use indexmap::indexmap;
 use serde_json::{Map as JMap, Value};
 
 use super::auth::Auth;
@@ -17,7 +17,7 @@ use super::structs::{BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{MinimalObject, RawBlogPost, User};
 use crate::retrievers::get_all_posts_count;
-use crate::types::{SharedState, json_value_to_edgedb};
+use crate::types::{json_value_to_edgedb, SharedState};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -126,34 +126,39 @@ pub async fn update_post_partial(
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> = serde_json::from_value(value.clone()).map_err(|e| {
-        tracing::error!("Error parsing JSON: {}", e);
+        tracing::info!("Error parsing JSON: {}", e);
         StatusCode::UNPROCESSABLE_ENTITY
     })?;
+    // User submit no field to update
+    if jdata.is_empty() {
+        return Ok(Json(None));
+    };
     let _patch_data: BlogPostPatchData = serde_json::from_value(value).map_err(|e| {
-        tracing::error!("Error parsing JSON: {}", e);
-        StatusCode::UNPROCESSABLE_ENTITY
+        tracing::info!("JSON not in expected form: {}", e);
+        ApiError::UnexpectedJSONShape
     })?;
-    let params: IndexMap<String, EValue> = jdata
-        .iter()
-        .enumerate()
-        .map(|(i, (field_name, v))| {
+    let mut eql_params = indexmap! {
+        "post_id" => EValue::Uuid(post_id),
+    };
+    let values_to_update = jdata.iter().map(|(field_name, v)| {
+        let value = json_value_to_edgedb(v);
+        (field_name.as_str(), value)
+    });
+    eql_params.extend(values_to_update);
+    tracing::debug!("EQL params: {:?}", eql_params);
+    let set_clause = eql_params.get_range(1..).map(|entries| {
+        entries.iter().enumerate().map(|(i, (field_name, _v))| {
             let etype = RawBlogPost::type_cast_for_field(field_name);
-            // The index 0 is for filtering post_id
             let index = i + 1;
-            let statement = format!("{field_name} := <{etype}>${index}");
-            let value = json_value_to_edgedb(v);
-            (statement, value)
-        })
-        .collect();
-    if params.is_empty() {
-        Err(StatusCode::UNPROCESSABLE_ENTITY)?;
-    }
-    let set_clause = params
-        .keys()
-        .into_iter()
-        .map(String::from)
-        .collect::<Vec<String>>()
-        .join(", ");
+            let statement = format!("{field_name} :=<{etype}>${index}");
+            statement
+        }).collect::<Vec<String>>().join(",\n    ")
+    }).unwrap_or_default();
+    let updated_values = eql_params.get_range(1..).map(|entries| {
+        entries.iter().map(|(_field_name, v)| {
+            v.clone()
+        }).collect::<Vec<EValue>>()
+    }).unwrap_or_default();
     let q = format!(
         "UPDATE BlogPost
         FILTER .id = <uuid>$0
@@ -162,14 +167,15 @@ pub async fn update_post_partial(
         }}"
     );
     tracing::debug!("To query: {}", q);
-    let values: Vec<&EValue> = params.values().collect();
     let db_conn = &state.db;
-    let params_count = values.clone().len();
-    let result = if params_count == 1 {
-        let args = (post_id, values[0].clone());
+    let values_count = updated_values.len();
+    let result = if values_count == 1 {
+        let args = (post_id, updated_values[0].clone());
+        tracing::debug!("Query with params: {:?}", args);
         db_conn.query_single(&q, &args).await
     } else {
-        let args = (post_id, values[0].clone(), values[1].clone());
+        let args = (post_id, updated_values[0].clone(), updated_values[1].clone());
+        tracing::debug!("Query with params: {:?}", args);
         db_conn.query_single(&q, &args).await
     };
     let updated_post: Option<MinimalObject> = result.map_err(|e| {
