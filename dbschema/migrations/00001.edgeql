@@ -1,4 +1,4 @@
-CREATE MIGRATION m1ni7xwdmcqu4hz6rdwbovxzk5h5qxxnuesi4spc5h52a4kwn2wzua
+CREATE MIGRATION m1irqlfhdhhh6kplrjlcsdu2vh5iv5vyvzwvrk3wxphrwvpptu52tq
     ONTO initial
 {
   CREATE FUTURE nonrecursive_access_policies;
@@ -71,6 +71,11 @@ CREATE MIGRATION m1ni7xwdmcqu4hz6rdwbovxzk5h5qxxnuesi4spc5h52a4kwn2wzua
       CREATE PROPERTY is_published: std::bool {
           SET default := false;
       };
+      CREATE PROPERTY published_at: std::datetime {
+          CREATE REWRITE
+              UPDATE
+              USING ((std::datetime_of_statement() IF (__specified__.is_published AND .is_published) ELSE __old__.published_at));
+      };
       CREATE PROPERTY locale: std::str {
           CREATE CONSTRAINT std::max_len_value(6);
       };
@@ -80,9 +85,6 @@ CREATE MIGRATION m1ni7xwdmcqu4hz6rdwbovxzk5h5qxxnuesi4spc5h52a4kwn2wzua
       CREATE PROPERTY old_id: std::int16 {
           SET readonly := true;
           CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE PROPERTY published_at: std::datetime {
-          SET default := (std::datetime_current());
       };
       CREATE PROPERTY seo_description: std::str {
           CREATE CONSTRAINT std::max_len_value(400);
@@ -95,6 +97,9 @@ CREATE MIGRATION m1ni7xwdmcqu4hz6rdwbovxzk5h5qxxnuesi4spc5h52a4kwn2wzua
       };
       CREATE PROPERTY updated_at: std::datetime {
           SET default := (std::datetime_current());
+          CREATE REWRITE
+              UPDATE
+              USING ((std::datetime_of_statement() IF NOT (__specified__.updated_at) ELSE .updated_at));
       };
   };
   CREATE TYPE default::BookAuthor {

@@ -68,8 +68,8 @@ module default {
             default := false;
         }
         published_at: datetime {
-            default := datetime_current();
-        };
+            rewrite update using (datetime_of_statement() if __specified__.is_published and .is_published else __old__.published_at);
+        }
         link author: User {
             on target delete allow;
         }
@@ -90,6 +90,11 @@ module default {
         }
         updated_at: datetime {
             default := datetime_current();
+            rewrite update using (
+                datetime_of_statement()
+                if not __specified__.updated_at
+                else .updated_at
+            )
         }
         old_id: int16 {
             readonly := true;
