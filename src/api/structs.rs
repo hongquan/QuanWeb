@@ -73,6 +73,7 @@ pub struct BlogPostPatchData {
     pub slug: Option<String>,
     pub is_published: Option<bool>,
     pub format: Option<DocFormat>,
+    pub body: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Fields)]

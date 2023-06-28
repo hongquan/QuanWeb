@@ -16,6 +16,7 @@ use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, DetailedBlogPost, MinimalObject, RawBlogPost, User, DocFormat};
 use crate::retrievers::{self, get_all_posts_count};
 use crate::types::{build_edgedb_object, json_value_to_edgedb, SharedState};
+use crate::utils::markdown::{markdown_to_html, make_excerpt};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -101,7 +102,7 @@ pub async fn update_post_partial(
         return Ok(Json(post));
     };
     // Check that data has invalid fields
-    let _patch_data: BlogPostPatchData =
+    let patch_data: BlogPostPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     let mut eql_params = indexmap! {
         "id" => EValue::Uuid(post_id),
@@ -119,6 +120,13 @@ pub async fn update_post_partial(
         })
     });
     eql_params.extend(values_to_update);
+    patch_data.body.and_then(|body| {
+        let html = markdown_to_html(&body);
+        eql_params.insert("html", EValue::Str(html));
+        let excerpt = make_excerpt(&body);
+        eql_params.insert("excerpt", EValue::Str(excerpt));
+        Some(())
+    });
     tracing::debug!("EQL params: {:?}", eql_params);
     // Build Value::Object to use as QueryArgs
     let args_obj = build_edgedb_object(&eql_params);
@@ -281,6 +289,7 @@ pub async fn update_category_partial(
 }
 
 fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
+    let join = format!(",\n{}", " ".repeat(12));
     params
         .get_range(1..)
         .map(|entries| {
@@ -292,7 +301,7 @@ fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
                     statement
                 })
                 .collect::<Vec<String>>()
-                .join(",\n    ")
+                .join(&join)
         })
         .unwrap_or_default()
 }
@@ -307,5 +316,5 @@ fn gen_set_clause_for_blog_category(params: &IndexMap<&str, EValue>) -> String {
             format!("{field_name} := <str>${index}")
         })
         .collect::<Vec<String>>()
-        .join("\n    ")
+        .join(",\n    ")
 }

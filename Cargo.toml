@@ -15,6 +15,7 @@ axum-named-routes = "0.2.2"
 axum-sessions = "0.5.0"
 axum_garde = { version = "0.11.2", features = ["axum-extra", "axum-extra-query"] }
 chrono = { version = "0.4.26", features = ["serde"] }
+comrak = "0.18.0"
 djangohashers = { version = "1.6.7", default-features = false, features = ["with_argon2"] }
 edgedb-derive = "0.5.0"
 edgedb-errors = { version = "0.4.0", features = ["miette"] }
@@ -33,6 +34,7 @@ serde = { version = "1.0.164", features = ["serde_derive"] }
 serde-value = "0.7.0"
 serde_json = "1.0.99"
 serde_with = "3.0.0"
+syntect = { version = "5.0.0", features = ["default-fancy"] }
 thiserror = "1.0.40"
 tokio = { version = "1.28.2", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
