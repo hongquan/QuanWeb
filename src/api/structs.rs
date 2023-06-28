@@ -1,6 +1,8 @@
 use fievar::Fields;
 use serde::{Deserialize, Serialize};
 
+use crate::models::DocFormat;
+
 #[derive(Deserialize, Debug)]
 pub struct Paging {
     pub page: Option<u16>,
@@ -70,6 +72,7 @@ pub struct BlogPostPatchData {
     pub title: Option<String>,
     pub slug: Option<String>,
     pub is_published: Option<bool>,
+    pub format: DocFormat,
 }
 
 #[derive(Debug, Deserialize, Fields)]

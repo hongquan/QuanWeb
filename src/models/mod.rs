@@ -2,7 +2,7 @@ pub mod users;
 pub mod blogs;
 
 pub use users::{User, Role};
-pub use blogs::{BlogPost, RawBlogPost, BlogCategory};
+pub use blogs::{DocFormat, BlogPost, RawBlogPost, DetailedBlogPost, BlogCategory};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, edgedb_derive::Queryable)]
 pub struct MinimalObject {

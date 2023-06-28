@@ -11,9 +11,9 @@ use uuid::Uuid;
 use super::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogPostPatchData, BlogCategoryPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogCategoryPatchData, BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{MinimalObject, RawBlogPost, User, BlogCategory};
+use crate::models::{BlogCategory, DetailedBlogPost, MinimalObject, RawBlogPost, User, DocFormat};
 use crate::retrievers::{self, get_all_posts_count};
 use crate::types::{build_edgedb_object, json_value_to_edgedb, SharedState};
 
@@ -54,7 +54,7 @@ pub async fn list_posts(
 pub async fn get_post(
     WithRejection(Path(post_id), _): WithRejection<Path<Uuid>, ApiError>,
     State(state): State<SharedState>,
-) -> AxumResult<Json<RawBlogPost>> {
+) -> AxumResult<Json<DetailedBlogPost>> {
     let db_conn = &state.db;
     let post = retrievers::get_blogpost(post_id, db_conn)
         .await
@@ -76,7 +76,8 @@ pub async fn delete_post(
     let deleted_post: MinimalObject = db_conn
         .query_single(q, &(post_id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(deleted_post))
 }
 
@@ -85,7 +86,7 @@ pub async fn update_post_partial(
     auth: Auth,
     State(state): State<SharedState>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
-) -> AxumResult<Json<RawBlogPost>> {
+) -> AxumResult<Json<DetailedBlogPost>> {
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
@@ -107,9 +108,14 @@ pub async fn update_post_partial(
     };
     let valid_fields = BlogPostPatchData::fields();
     let values_to_update = jdata.iter().filter_map(|(field_name, v)| {
-        valid_fields.contains(&field_name.as_str()).then(|| {
-            let value = json_value_to_edgedb(v);
-            (field_name.as_str(), value)
+        let field_name = field_name.as_str();
+        valid_fields.contains(&field_name).then(|| {
+            let value = if field_name == "format" {
+                EValue::Enum(DocFormat::from(v).as_str().into())
+            } else {
+                json_value_to_edgedb(v)
+            };
+            (field_name, value)
         })
     });
     eql_params.extend(values_to_update);
@@ -132,16 +138,19 @@ pub async fn update_post_partial(
             published_at,
             created_at,
             updated_at,
-            categories: {{
-                id,
-                title,
-                slug,
-            }},
+            categories: {{ id, title, slug }},
+            body,
+            format,
+            locale,
+            excerpt,
+            html,
+            seo_description,
+            og_image,
         }}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args_obj);
-    let updated_post: Option<RawBlogPost> = db_conn
+    let updated_post: Option<DetailedBlogPost> = db_conn
         .query_single(&q, &args_obj)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
@@ -197,7 +206,8 @@ pub async fn delete_category(
     let deleted_cat: MinimalObject = db_conn
         .query_single(q, &(category_id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(deleted_cat))
 }
 
@@ -227,12 +237,15 @@ pub async fn update_category_partial(
         "id" => EValue::Uuid(category_id),
     };
     let valid_fields = BlogCategoryPatchData::fields();
-    let values_to_update: Vec<(&str, EValue)> = jdata.iter().filter_map(|(field_name, v)| {
-        valid_fields.contains(&field_name.as_str()).then(|| {
-            let value = json_value_to_edgedb(v);
-            (field_name.as_str(), value)
+    let values_to_update: Vec<(&str, EValue)> = jdata
+        .iter()
+        .filter_map(|(field_name, v)| {
+            valid_fields.contains(&field_name.as_str()).then(|| {
+                let value = json_value_to_edgedb(v);
+                (field_name.as_str(), value)
+            })
         })
-    }).collect();
+        .collect();
     let values_count = values_to_update.len();
     eql_params.extend(values_to_update.clone());
     tracing::debug!("EQL params: {:?}", eql_params);
@@ -253,11 +266,17 @@ pub async fn update_category_partial(
     tracing::debug!("To query: {}", q);
     let val_args: Vec<EValue> = values_to_update.into_iter().map(|(_, v)| v).collect();
     let result: Result<Option<BlogCategory>, edgedb_errors::Error> = if values_count == 1 {
-        db_conn.query_single(&q, &(category_id, val_args[0].clone())).await
+        db_conn
+            .query_single(&q, &(category_id, val_args[0].clone()))
+            .await
     } else {
-        db_conn.query_single(&q, &(category_id, val_args[0].clone(), val_args[1].clone())).await
+        db_conn
+            .query_single(&q, &(category_id, val_args[0].clone(), val_args[1].clone()))
+            .await
     };
-    let cat = result.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
+    let cat = result
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(cat))
 }
 
@@ -268,7 +287,7 @@ fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
             entries
                 .iter()
                 .map(|(field_name, _v)| {
-                    let etype = RawBlogPost::type_cast_for_field(field_name);
+                    let etype = DetailedBlogPost::type_cast_for_field(field_name);
                     let statement = format!("{field_name} := <{etype}>${field_name}");
                     statement
                 })
@@ -280,9 +299,13 @@ fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
 
 fn gen_set_clause_for_blog_category(params: &IndexMap<&str, EValue>) -> String {
     params
-        .iter().skip(1).enumerate()
+        .iter()
+        .skip(1)
+        .enumerate()
         .map(|(i, (field_name, _v))| {
             let index = i + 1;
             format!("{field_name} := <str>${index}")
-        }).collect::<Vec<String>>().join("\n    ")
+        })
+        .collect::<Vec<String>>()
+        .join("\n    ")
 }
