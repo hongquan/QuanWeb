@@ -67,7 +67,7 @@ pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Cli
     Ok(posts)
 }
 
-pub async fn get_blogcategories(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<BlogCategory>, Error> {
+pub async fn get_blog_categories(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<BlogCategory>, Error> {
     let q = "
     SELECT BlogCategory {
         id,
@@ -84,4 +84,16 @@ pub async fn get_all_categories_count(client: &Client) -> Result<usize, Error> {
     tracing::debug!("To query: {}", q);
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
+}
+
+pub async fn get_blog_category(id: Uuid, client: &Client) -> Result<Option<BlogCategory>, Error> {
+    let q = "
+    SELECT BlogCategory {
+        id,
+        title,
+        slug
+    } FILTER .id = <uuid>$0";
+    tracing::debug!("To query: {}", q);
+    let cat: Option<BlogCategory> = client.query_single(q, &(id,)).await?;
+    Ok(cat)
 }

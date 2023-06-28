@@ -159,7 +159,7 @@ pub async fn list_categories(
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
     let db_conn = &state.db;
-    let categories = retrievers::get_blogcategories(Some(offset), Some(limit), db_conn)
+    let categories = retrievers::get_blog_categories(Some(offset), Some(limit), db_conn)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let count = retrievers::get_all_categories_count(db_conn)
@@ -170,6 +170,18 @@ pub async fn list_categories(
         .with_count(count)
         .with_pagination_links(links);
     Ok(Json(resp))
+}
+
+pub async fn get_category(
+    WithRejection(Path(category_id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(state): State<SharedState>,
+) -> AxumResult<Json<BlogCategory>> {
+    let db_conn = &state.db;
+    let category = retrievers::get_blog_category(category_id, db_conn)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+    Ok(Json(category))
 }
 
 fn gen_set_clause(params: &IndexMap<&str, EValue>) -> String {
