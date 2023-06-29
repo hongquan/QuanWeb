@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 use crate::models::DocFormat;
 use crate::types::create_shape_element;
+use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
@@ -117,7 +118,10 @@ impl BlogPostCreateData {
             lines.push("is_published := <optional bool>$is_published");
         }
         if submitted_fields.iter().any(|&f| f == "body") {
+            // If user submitted "body" field, we will generate "html", "excerpt" and write, too
             lines.push("body := <optional str>$body");
+            lines.push("html := <optional str>$html");
+            lines.push("excerpt := <optional str>$excerpt");
         }
         if submitted_fields.iter().any(|&f| f == "format") {
             lines.push("format := <optional DocFormat>$format");
@@ -128,7 +132,7 @@ impl BlogPostCreateData {
             )";
             lines.push(line);
         }
-        let sep = format!(",\n{}", " ".repeat(8));
+        let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
 
@@ -145,7 +149,6 @@ impl BlogPostCreateData {
         let mut elms = vec![
             create_shape_element("title", Cardinality::One),
             create_shape_element("slug", Cardinality::One),
-            // create_shape_element("format", Cardinality::One),
         ];
         if submitted_fields.iter().any(|&f| f == "is_published") {
             object_values.push(self.is_published.map(EValue::Bool));
@@ -154,6 +157,12 @@ impl BlogPostCreateData {
         if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
             elms.push(create_shape_element("body", Cardinality::AtMostOne));
+            let html = markdown_to_html(self.body.as_ref().unwrap_or(&"".to_string()));
+            object_values.push(Some(EValue::Str(html)));
+            elms.push(create_shape_element("html", Cardinality::AtMostOne));
+            let excerpt = make_excerpt(self.body.as_ref().unwrap_or(&"".to_string()));
+            object_values.push(Some(EValue::Str(excerpt)));
+            elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
         if submitted_fields.iter().any(|&f| f == "format") {
             object_values.push(self.format.clone().map(EValue::from));
