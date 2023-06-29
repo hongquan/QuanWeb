@@ -112,7 +112,8 @@ impl BlogPostCreateData {
             "title := <str>$title",
             "slug := <str>$slug",
             "is_published := <optional bool>$is_published",
-            // "body := <optional str>$body",
+            // TODO: "format := <optional DocFormat>$format",
+            "body := <optional str>$body",
         ];
         if self.categories.is_some() {
             let line = "categories := (
@@ -130,34 +131,32 @@ impl BlogPostCreateData {
             .clone()
             .map_or(Vec::new(), |v| v.into_iter().map(EValue::Uuid).collect());
         let mut object_values = vec![
-            EValue::from(self.title.clone()),
-            EValue::from(self.slug.clone()),
-            self.is_published.map_or(EValue::Nothing, EValue::Bool),
-            // self.format.clone().map_or(EValue::Nothing, EValue::from),
-            // self.body.clone().map_or(EValue::Nothing, EValue::Str),
+            Some(EValue::from(self.title.clone())),
+            Some(EValue::from(self.slug.clone())),
+            self.is_published.map(EValue::Bool),
+            // self.format.clone().map(EValue::from),
+            self.body.clone().map(EValue::Str),
         ];
         if self.categories.is_some() {
-            object_values.push(EValue::Array(categories));
+            object_values.push(Some(EValue::Array(categories)));
         }
-        let wrapped_values = object_values.into_iter()
-        .map(Some)
-        .collect();
         let mut elms = vec![
-            create_shape_element("title", Some(Cardinality::One)),
-            create_shape_element("slug", Some(Cardinality::One)),
-            create_shape_element("is_published", None),
+            create_shape_element("title", Cardinality::One),
+            create_shape_element("slug", Cardinality::One),
+            create_shape_element("is_published", Cardinality::AtMostOne),
             // create_shape_element("format", Cardinality::One),
-            // create_shape_element("body", Cardinality::One),
+            create_shape_element("body", Cardinality::AtMostOne),
         ];
         // "categories" is a link property
         if self.categories.is_some() {
-            let mut categories_elm = create_shape_element("categories", Some(Cardinality::One));
+            let mut categories_elm = create_shape_element("categories", Cardinality::AtLeastOne);
             categories_elm.flag_link = true;
             elms.push(categories_elm);
         }
+        tracing::debug!("Wrapped values: {:?}", object_values);
         EValue::Object {
             shape: ObjectShape::new(elms),
-            fields: wrapped_values,
+            fields: object_values,
         }
     }
 }

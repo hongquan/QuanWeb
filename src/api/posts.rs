@@ -173,6 +173,7 @@ pub async fn create_post(
     // Check that data has valid fields
     let post_data: BlogPostCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    tracing::debug!("Post data: {:?}", post_data);
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
