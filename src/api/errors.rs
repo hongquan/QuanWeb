@@ -21,6 +21,8 @@ pub enum ApiError {
     ObjectNotFound(String),
     #[error("Error logging in")]
     LoginError(String),
+    #[error("Not enough data")]
+    NotEnoughData,
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -50,6 +52,7 @@ impl IntoResponse for ApiError {
             }
             Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
+            Self::NotEnoughData => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
         let payload = ApiErrorShape::from(message);

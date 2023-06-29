@@ -17,7 +17,7 @@ use crate::models::{BlogCategory, MinimalObject, User};
 use crate::retrievers;
 use crate::types::{json_value_to_edgedb, SharedState};
 
-pub use super::posts::{list_posts, get_post, delete_post, update_post_partial};
+pub use super::posts::{list_posts, get_post, delete_post, update_post_partial, create_post};
 
 pub async fn root() -> &'static str {
     "API root"

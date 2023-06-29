@@ -150,10 +150,10 @@ pub fn json_value_to_edgedb(v: &JValue) -> EValue {
     }
 }
 
-pub fn create_shape_element(name: &str, cardinality: Cardinality) -> ShapeElement {
+pub fn create_shape_element(name: &str, cardinality: Option<Cardinality>) -> ShapeElement {
     ShapeElement {
         name: name.to_string(),
-        cardinality: Some(cardinality),
+        cardinality,
         flag_link: false,
         flag_link_property: false,
         flag_implicit: false,

@@ -1,9 +1,9 @@
-use uuid::Uuid;
-use fievar::Fields;
-use serde::{Deserialize, Serialize};
-use edgedb_protocol::value::Value as EValue;
 use edgedb_protocol::codec::ObjectShape;
 use edgedb_protocol::common::Cardinality;
+use edgedb_protocol::value::Value as EValue;
+use fievar::Fields;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::models::DocFormat;
 use crate::types::create_shape_element;
@@ -39,7 +39,8 @@ impl<T> Default for ObjectListResponse<T> {
 
 #[allow(dead_code)]
 impl<T> ObjectListResponse<T>
-where T: Serialize
+where
+    T: Serialize,
 {
     pub fn new(objects: Vec<T>) -> Self {
         let count = objects.len();
@@ -71,7 +72,6 @@ where T: Serialize
     }
 }
 
-
 #[derive(Debug, Deserialize, Fields)]
 pub struct BlogPostPatchData {
     pub title: Option<String>,
@@ -94,7 +94,7 @@ pub struct BlogPostCreateData {
     pub is_published: Option<bool>,
     pub format: Option<DocFormat>,
     pub body: Option<String>,
-    pub categories: Vec<Uuid>,
+    pub categories: Option<Vec<Uuid>>,
 }
 
 #[allow(dead_code)]
@@ -108,36 +108,56 @@ impl BlogPostCreateData {
     }
 
     pub fn gen_set_clause(&self) -> String {
-        let lines = vec![
+        let mut lines = vec![
             "title := <str>$title",
             "slug := <str>$slug",
             "is_published := <optional bool>$is_published",
-            "body := <optional str>$body",
-            "categories := (
-                SELECT BlogCategory FILTER .id IN array_unpack(<array<Uuid>>$categories)
-            )",
+            // "body := <optional str>$body",
         ];
+        if self.categories.is_some() {
+            let line = "categories := (
+                SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
+            )";
+            lines.push(line);
+        }
         let sep = format!(",\n{}", " ".repeat(8));
         lines.join(&sep)
     }
 
     pub fn make_edgedb_object(&self) -> EValue {
-        let categories: Vec<EValue> = self.categories.clone().into_iter().map(EValue::Uuid).collect();
-        let object_values = vec![
+        let categories: Vec<EValue> = self
+            .categories
+            .clone()
+            .map_or(Vec::new(), |v| v.into_iter().map(EValue::Uuid).collect());
+        let mut object_values = vec![
             EValue::from(self.title.clone()),
             EValue::from(self.slug.clone()),
             self.is_published.map_or(EValue::Nothing, EValue::Bool),
-            self.format.clone().map_or(EValue::Nothing, EValue::from),
-            self.body.clone().map_or(EValue::Nothing, EValue::Str),
-            EValue::Array(categories),
-        ].into_iter().map(Some).collect();
-        let elms = vec![
-            create_shape_element("title", Cardinality::One),
-            create_shape_element("slug", Cardinality::One),
-            create_shape_element("is_published", Cardinality::AtMostOne),
-            create_shape_element("body", Cardinality::AtMostOne),
-            create_shape_element("categories", Cardinality::Many),
+            // self.format.clone().map_or(EValue::Nothing, EValue::from),
+            // self.body.clone().map_or(EValue::Nothing, EValue::Str),
         ];
-        EValue::Object { shape: ObjectShape::new(elms), fields: object_values }
+        if self.categories.is_some() {
+            object_values.push(EValue::Array(categories));
+        }
+        let wrapped_values = object_values.into_iter()
+        .map(Some)
+        .collect();
+        let mut elms = vec![
+            create_shape_element("title", Some(Cardinality::One)),
+            create_shape_element("slug", Some(Cardinality::One)),
+            create_shape_element("is_published", None),
+            // create_shape_element("format", Cardinality::One),
+            // create_shape_element("body", Cardinality::One),
+        ];
+        // "categories" is a link property
+        if self.categories.is_some() {
+            let mut categories_elm = create_shape_element("categories", Some(Cardinality::One));
+            categories_elm.flag_link = true;
+            elms.push(categories_elm);
+        }
+        EValue::Object {
+            shape: ObjectShape::new(elms),
+            fields: wrapped_values,
+        }
     }
 }

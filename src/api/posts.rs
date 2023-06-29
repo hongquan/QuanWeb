@@ -11,12 +11,12 @@ use uuid::Uuid;
 use super::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogPostPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{DetailedBlogPost, MinimalObject, RawBlogPost, DocFormat};
+use crate::models::{DetailedBlogPost, DocFormat, MinimalObject, RawBlogPost};
 use crate::retrievers::{self, get_all_posts_count};
 use crate::types::{build_edgedb_object, json_value_to_edgedb, SharedState};
-use crate::utils::markdown::{markdown_to_html, make_excerpt};
+use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
 pub async fn list_posts(
     paging: Query<Paging>,
@@ -156,6 +156,58 @@ pub async fn update_post_partial(
     Ok(Json(updated_post))
 }
 
+pub async fn create_post(
+    auth: Auth,
+    State(state): State<SharedState>,
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> AxumResult<(StatusCode, Json<DetailedBlogPost>)> {
+    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    // Collect list of submitted fields
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    let db_conn = &state.db;
+    // User submitted no field to create BlogPost
+    (!jdata.is_empty())
+        .then_some(())
+        .ok_or(ApiError::NotEnoughData)?;
+    // Check that data has valid fields
+    let post_data: BlogPostCreateData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    let set_clause = post_data.gen_set_clause();
+    let args = post_data.make_edgedb_object();
+    let q = format!(
+        "
+    SELECT (
+        INSERT BlogPost {{
+            {set_clause}
+        }}
+    ) {{
+        id,
+        title,
+        slug,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {{ id, title, slug }},
+        body,
+        format,
+        locale,
+        excerpt,
+        html,
+        seo_description,
+        og_image,
+    }}"
+    );
+    tracing::debug!("To query: {}", q);
+    tracing::debug!("Query with params: {:?}", args);
+    let created_post: DetailedBlogPost = db_conn
+        .query_single(&q, &args)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::Other("Failed to create BlogPost".into()))?;
+    Ok((StatusCode::CREATED, Json(created_post)))
+}
 
 fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
     let join = format!(",\n{}", " ".repeat(12));
