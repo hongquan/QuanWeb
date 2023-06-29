@@ -107,14 +107,18 @@ impl BlogPostCreateData {
         }
     }
 
-    pub fn gen_set_clause(&self) -> String {
+    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = vec![
             "title := <str>$title",
             "slug := <str>$slug",
-            "is_published := <optional bool>$is_published",
             // TODO: "format := <optional DocFormat>$format",
-            "body := <optional str>$body",
         ];
+        if submitted_fields.iter().any(|f| *f == "is_published") {
+            lines.push("is_published := <optional bool>$is_published");
+        }
+        if submitted_fields.iter().any(|f| *f == "body") {
+            lines.push("body := <optional str>$body");
+        }
         if self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
@@ -125,7 +129,7 @@ impl BlogPostCreateData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object(&self) -> EValue {
+    pub fn make_edgedb_object<'a>(&self, submitted_fields: &Vec<&String>) -> EValue {
         let categories: Vec<EValue> = self
             .categories
             .clone()
@@ -133,27 +137,28 @@ impl BlogPostCreateData {
         let mut object_values = vec![
             Some(EValue::from(self.title.clone())),
             Some(EValue::from(self.slug.clone())),
-            self.is_published.map(EValue::Bool),
             // self.format.clone().map(EValue::from),
-            self.body.clone().map(EValue::Str),
         ];
-        if self.categories.is_some() {
-            object_values.push(Some(EValue::Array(categories)));
-        }
         let mut elms = vec![
             create_shape_element("title", Cardinality::One),
             create_shape_element("slug", Cardinality::One),
-            create_shape_element("is_published", Cardinality::AtMostOne),
             // create_shape_element("format", Cardinality::One),
-            create_shape_element("body", Cardinality::AtMostOne),
         ];
+        if submitted_fields.iter().any(|f| *f == "is_published") {
+            object_values.push(self.is_published.map(EValue::Bool));
+            elms.push(create_shape_element("is_published", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|f| *f == "body") {
+            object_values.push(self.body.clone().map(EValue::Str));
+            elms.push(create_shape_element("body", Cardinality::AtMostOne));
+        }
         // "categories" is a link property
         if self.categories.is_some() {
-            let mut categories_elm = create_shape_element("categories", Cardinality::AtLeastOne);
+            let mut categories_elm = create_shape_element("categories", Cardinality::Many);
             categories_elm.flag_link = true;
             elms.push(categories_elm);
+            object_values.push(Some(EValue::Array(categories)));
         }
-        tracing::debug!("Wrapped values: {:?}", object_values);
         EValue::Object {
             shape: ObjectShape::new(elms),
             fields: object_values,

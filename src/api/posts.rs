@@ -174,8 +174,9 @@ pub async fn create_post(
     let post_data: BlogPostCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     tracing::debug!("Post data: {:?}", post_data);
-    let set_clause = post_data.gen_set_clause();
-    let args = post_data.make_edgedb_object();
+    let submitted_fields: Vec<&String> = jdata.keys().collect();
+    let set_clause = post_data.gen_set_clause(&submitted_fields);
+    let args = post_data.make_edgedb_object(&submitted_fields);
     let q = format!(
         "
     SELECT (
