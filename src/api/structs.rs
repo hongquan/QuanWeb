@@ -113,11 +113,14 @@ impl BlogPostCreateData {
             "slug := <str>$slug",
             // TODO: "format := <optional DocFormat>$format",
         ];
-        if submitted_fields.iter().any(|f| *f == "is_published") {
+        if submitted_fields.iter().any(|&f| f == "is_published") {
             lines.push("is_published := <optional bool>$is_published");
         }
-        if submitted_fields.iter().any(|f| *f == "body") {
+        if submitted_fields.iter().any(|&f| f == "body") {
             lines.push("body := <optional str>$body");
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            lines.push("format := <optional DocFormat>$format");
         }
         if self.categories.is_some() {
             let line = "categories := (
@@ -144,13 +147,17 @@ impl BlogPostCreateData {
             create_shape_element("slug", Cardinality::One),
             // create_shape_element("format", Cardinality::One),
         ];
-        if submitted_fields.iter().any(|f| *f == "is_published") {
+        if submitted_fields.iter().any(|&f| f == "is_published") {
             object_values.push(self.is_published.map(EValue::Bool));
             elms.push(create_shape_element("is_published", Cardinality::AtMostOne));
         }
-        if submitted_fields.iter().any(|f| *f == "body") {
+        if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
             elms.push(create_shape_element("body", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            object_values.push(self.format.clone().map(EValue::from));
+            elms.push(create_shape_element("format", Cardinality::AtMostOne));
         }
         // "categories" is a link property
         if self.categories.is_some() {
