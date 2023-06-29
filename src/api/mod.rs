@@ -1,4 +1,5 @@
 pub mod structs;
+pub mod posts;
 pub mod views;
 pub mod auth;
 pub mod paging;

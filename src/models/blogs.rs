@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
 use edgedb_protocol::model::Datetime as EDatetime;
+use edgedb_protocol::value::Value as EValue;
 use edgedb_derive::Queryable;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
@@ -9,7 +10,7 @@ use uuid::Uuid;
 
 use crate::types::{serialize_optional_edge_datetime, serialize_edge_datetime};
 
-#[derive(Debug, Default, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Queryable)]
 pub enum DocFormat {
     #[default]
     Md,
@@ -48,6 +49,12 @@ impl From<&JValue> for DocFormat {
             JValue::String(s) => DocFormat::from(s.as_str()),
             _ => DocFormat::Md,
         }
+    }
+}
+
+impl From<DocFormat> for EValue {
+    fn from(df: DocFormat) -> Self {
+        EValue::Enum(df.as_str().into())
     }
 }
 

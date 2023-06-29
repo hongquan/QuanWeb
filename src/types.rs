@@ -150,6 +150,16 @@ pub fn json_value_to_edgedb(v: &JValue) -> EValue {
     }
 }
 
+pub fn create_shape_element(name: &str, cardinality: Cardinality) -> ShapeElement {
+    ShapeElement {
+        name: name.to_string(),
+        cardinality: Some(cardinality),
+        flag_link: false,
+        flag_link_property: false,
+        flag_implicit: false,
+    }
+}
+
 
 pub fn build_edgedb_object(params: &IndexMap<&str, EValue>) -> EValue {
     let capacity = params.len();
