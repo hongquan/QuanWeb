@@ -82,6 +82,24 @@ pub struct BlogPostPatchData {
     pub body: Option<String>,
 }
 
+macro_rules! append_field {
+    ($name:literal, $card:expr, $elm_vec:ident, $val_vec:ident, $field:expr, $name_list:ident) => {
+        if $name_list.iter().any(|&f| f == $name) {
+            $val_vec.push($field.clone().map(EValue::from));
+            $elm_vec.push(create_shape_element($name, $card));
+        }
+    };
+}
+
+macro_rules! append_field_specific {
+    ($name:literal, $etype:expr, $card:expr, $elm_vec:ident, $val_vec:ident, $field:expr, $name_list:ident) => {
+        if $name_list.iter().any(|&f| f == $name) {
+            $val_vec.push($field.clone().map($etype));
+            $elm_vec.push(create_shape_element($name, $card));
+        }
+    };
+}
+
 impl BlogPostPatchData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
@@ -110,18 +128,10 @@ impl BlogPostPatchData {
         let mut object_values = vec![Some(EValue::Uuid(post_id))];
         let mut elms = vec![create_shape_element("id", Cardinality::One)];
 
-        if submitted_fields.iter().any(|&f| f == "title") {
-            object_values.push(self.title.clone().map(EValue::Str));
-            elms.push(create_shape_element("title", Cardinality::AtMostOne));
-        }
-        if submitted_fields.iter().any(|&f| f == "slug") {
-            object_values.push(self.slug.clone().map(EValue::Str));
-            elms.push(create_shape_element("slug", Cardinality::AtMostOne));
-        }
-        if submitted_fields.iter().any(|&f| f == "is_published") {
-            object_values.push(self.is_published.map(EValue::Bool));
-            elms.push(create_shape_element("is_published", Cardinality::AtMostOne));
-        }
+        append_field!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
+        append_field!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
+        append_field_specific!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
+
         if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
             elms.push(create_shape_element("body", Cardinality::AtMostOne));
@@ -132,10 +142,7 @@ impl BlogPostPatchData {
             object_values.push(Some(EValue::Str(excerpt)));
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
-        if submitted_fields.iter().any(|&f| f == "format") {
-            object_values.push(self.format.clone().map(EValue::from));
-            elms.push(create_shape_element("format", Cardinality::AtMostOne));
-        }
+        append_field!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
         EValue::Object {
             shape: ObjectShape::new(elms),
             fields: object_values,
@@ -204,16 +211,12 @@ impl BlogPostCreateData {
         let mut object_values = vec![
             Some(EValue::from(self.title.clone())),
             Some(EValue::from(self.slug.clone())),
-            // self.format.clone().map(EValue::from),
         ];
         let mut elms = vec![
             create_shape_element("title", Cardinality::One),
             create_shape_element("slug", Cardinality::One),
         ];
-        if submitted_fields.iter().any(|&f| f == "is_published") {
-            object_values.push(self.is_published.map(EValue::Bool));
-            elms.push(create_shape_element("is_published", Cardinality::AtMostOne));
-        }
+        append_field_specific!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
             elms.push(create_shape_element("body", Cardinality::AtMostOne));
@@ -224,10 +227,7 @@ impl BlogPostCreateData {
             object_values.push(Some(EValue::Str(excerpt)));
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
-        if submitted_fields.iter().any(|&f| f == "format") {
-            object_values.push(self.format.clone().map(EValue::from));
-            elms.push(create_shape_element("format", Cardinality::AtMostOne));
-        }
+        append_field!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
         // "categories" is a link property
         if self.categories.is_some() {
             let mut categories_elm = create_shape_element("categories", Cardinality::Many);
