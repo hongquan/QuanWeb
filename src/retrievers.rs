@@ -26,23 +26,7 @@ pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
 
 pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
     let q = "
-    SELECT BlogPost {
-        id,
-        title,
-        slug,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: { id, title, slug },
-        body,
-        format,
-        locale,
-        excerpt,
-        html,
-        seo_description,
-        og_image,
-    }
+    SELECT BlogPost {**}
     FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let post: Option<DetailedBlogPost> = client.query_single(q, &(post_id,)).await?;

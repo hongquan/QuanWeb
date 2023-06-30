@@ -128,23 +128,7 @@ pub async fn update_post_partial(
             SET {{
                 {set_clause}
             }}
-        ) {{
-            id,
-            title,
-            slug,
-            is_published,
-            published_at,
-            created_at,
-            updated_at,
-            categories: {{ id, title, slug }},
-            body,
-            format,
-            locale,
-            excerpt,
-            html,
-            seo_description,
-            og_image,
-        }}"
+        ) {{**}}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args_obj);
@@ -183,23 +167,7 @@ pub async fn create_post(
         INSERT BlogPost {{
             {set_clause}
         }}
-    ) {{
-        id,
-        title,
-        slug,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{ id, title, slug }},
-        body,
-        format,
-        locale,
-        excerpt,
-        html,
-        seo_description,
-        og_image,
-    }}"
+    ) {{**}}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args);
