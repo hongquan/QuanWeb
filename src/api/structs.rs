@@ -100,21 +100,21 @@ macro_rules! append_field_specific {
     };
 }
 
+macro_rules! append_set_statement {
+    ($name:literal, $etype:literal, $line_vec:ident, $name_list:ident) => {
+        if $name_list.iter().any(|&f| f == $name) {
+            $line_vec.push(concat!($name, " := <", $etype, "> $", $name));
+        }
+    };
+}
+
 impl BlogPostPatchData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
-        if submitted_fields.iter().any(|&f| f == "title") {
-            lines.push("title := <optional str>$title");
-        }
-        if submitted_fields.iter().any(|&f| f == "slug") {
-            lines.push("slug := <optional str>$slug");
-        }
-        if submitted_fields.iter().any(|&f| f == "is_published") {
-            lines.push("is_published := <optional bool>$is_published");
-        }
-        if submitted_fields.iter().any(|&f| f == "format") {
-            lines.push("format := <optional DocFormat>$format");
-        }
+        append_set_statement!("title", "optional str", lines, submitted_fields);
+        append_set_statement!("slug", "optional str", lines, submitted_fields);
+        append_set_statement!("is_published", "optional bool", lines, submitted_fields);
+        append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "body") {
             // If user submitted "body" field, we will generate "html", "excerpt" and write, too
             lines.push("body := <optional str>$body");
@@ -181,18 +181,14 @@ impl BlogPostCreateData {
             "title := <str>$title",
             "slug := <str>$slug",
         ];
-        if submitted_fields.iter().any(|&f| f == "is_published") {
-            lines.push("is_published := <optional bool>$is_published");
-        }
+        append_set_statement!("is_published", "optional bool", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "body") {
             // If user submitted "body" field, we will generate "html", "excerpt" and write, too
             lines.push("body := <optional str>$body");
             lines.push("html := <optional str>$html");
             lines.push("excerpt := <optional str>$excerpt");
         }
-        if submitted_fields.iter().any(|&f| f == "format") {
-            lines.push("format := <optional DocFormat>$format");
-        }
+        append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
         if self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)

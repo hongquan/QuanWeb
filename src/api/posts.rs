@@ -164,7 +164,7 @@ pub async fn create_post(
         published_at,
         created_at,
         updated_at,
-        categories,
+        categories: {{id, title, slug}},
         body,
         format,
         locale,
