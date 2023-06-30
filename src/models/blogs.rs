@@ -1,52 +1,39 @@
-use std::fmt::Display;
+use std::str::FromStr;
 
 use chrono::{DateTime, Utc};
+use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
-use edgedb_derive::Queryable;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
+use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
 
-use crate::types::{serialize_optional_edge_datetime, serialize_edge_datetime};
+use crate::types::{serialize_edge_datetime, serialize_optional_edge_datetime};
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Queryable)]
+#[derive(
+    Debug,
+    Eq,
+    PartialEq,
+    Default,
+    Clone,
+    EnumString,
+    Display,
+    IntoStaticStr,
+    Serialize,
+    Deserialize,
+    Queryable,
+)]
 pub enum DocFormat {
     #[default]
     Md,
     Rst,
 }
 
-impl DocFormat {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            DocFormat::Md => "Md",
-            DocFormat::Rst => "Rst",
-        }
-    }
-}
-
-impl Display for DocFormat {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-impl From<&str> for DocFormat {
-    fn from(s: &str) -> Self {
-        match s {
-            "Rst" => DocFormat::Rst,
-            "rst" => DocFormat::Rst,
-            "RST" => DocFormat::Rst,
-            _ => DocFormat::Md,
-        }
-    }
-}
-
 impl From<&JValue> for DocFormat {
     fn from(v: &JValue) -> Self {
         match v {
-            JValue::String(s) => DocFormat::from(s.as_str()),
+            JValue::String(s) => DocFormat::from_str(s.as_str()).unwrap_or_default(),
             _ => DocFormat::Md,
         }
     }
@@ -54,10 +41,10 @@ impl From<&JValue> for DocFormat {
 
 impl From<DocFormat> for EValue {
     fn from(df: DocFormat) -> Self {
-        EValue::Enum(df.as_str().into())
+        let v: &str = df.into();
+        EValue::Enum(v.into())
     }
 }
-
 
 /*
 Because EdgeDB client cannot retrieve datetime field as chrono type,

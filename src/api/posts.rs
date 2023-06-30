@@ -102,7 +102,7 @@ pub async fn update_post_partial(
         let field_name = field_name.as_str();
         valid_fields.contains(&field_name).then(|| {
             let value = if field_name == "format" {
-                EValue::Enum(DocFormat::from(v).as_str().into())
+                DocFormat::from(v).into()
             } else {
                 json_value_to_edgedb(v)
             };
