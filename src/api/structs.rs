@@ -8,6 +8,7 @@ use uuid::Uuid;
 use crate::models::DocFormat;
 use crate::types::create_shape_element;
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
+use super::macros::{append_field_general, append_field, append_set_statement};
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
@@ -82,32 +83,6 @@ pub struct BlogPostPatchData {
     pub body: Option<String>,
 }
 
-macro_rules! append_field {
-    ($name:literal, $card:expr, $elm_vec:ident, $val_vec:ident, $field:expr, $name_list:ident) => {
-        if $name_list.iter().any(|&f| f == $name) {
-            $val_vec.push($field.clone().map(EValue::from));
-            $elm_vec.push(create_shape_element($name, $card));
-        }
-    };
-}
-
-macro_rules! append_field_specific {
-    ($name:literal, $etype:expr, $card:expr, $elm_vec:ident, $val_vec:ident, $field:expr, $name_list:ident) => {
-        if $name_list.iter().any(|&f| f == $name) {
-            $val_vec.push($field.clone().map($etype));
-            $elm_vec.push(create_shape_element($name, $card));
-        }
-    };
-}
-
-macro_rules! append_set_statement {
-    ($name:literal, $etype:literal, $line_vec:ident, $name_list:ident) => {
-        if $name_list.iter().any(|&f| f == $name) {
-            $line_vec.push(concat!($name, " := <", $etype, "> $", $name));
-        }
-    };
-}
-
 impl BlogPostPatchData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
@@ -128,9 +103,9 @@ impl BlogPostPatchData {
         let mut object_values = vec![Some(EValue::Uuid(post_id))];
         let mut elms = vec![create_shape_element("id", Cardinality::One)];
 
-        append_field!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
-        append_field!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
-        append_field_specific!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
+        append_field_general!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
+        append_field_general!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
+        append_field!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
 
         if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
@@ -142,7 +117,7 @@ impl BlogPostPatchData {
             object_values.push(Some(EValue::Str(excerpt)));
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
-        append_field!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
+        append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
         EValue::Object {
             shape: ObjectShape::new(elms),
             fields: object_values,
@@ -212,7 +187,7 @@ impl BlogPostCreateData {
             create_shape_element("title", Cardinality::One),
             create_shape_element("slug", Cardinality::One),
         ];
-        append_field_specific!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
+        append_field!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "body") {
             object_values.push(self.body.clone().map(EValue::Str));
             elms.push(create_shape_element("body", Cardinality::AtMostOne));
@@ -223,7 +198,7 @@ impl BlogPostCreateData {
             object_values.push(Some(EValue::Str(excerpt)));
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
-        append_field!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
+        append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
         // "categories" is a link property
         if self.categories.is_some() {
             let mut categories_elm = create_shape_element("categories", Cardinality::Many);
