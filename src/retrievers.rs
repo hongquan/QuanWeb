@@ -25,8 +25,26 @@ pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
 }
 
 pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
+    // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
+    // does not match DetailedBlogPost.
     let q = "
-    SELECT BlogPost {**}
+    SELECT BlogPost {
+        id,
+        title,
+        slug,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {id, title, slug},
+        body,
+        format,
+        locale,
+        excerpt,
+        html,
+        seo_description,
+        og_image,
+    }
     FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let post: Option<DetailedBlogPost> = client.query_single(q, &(post_id,)).await?;

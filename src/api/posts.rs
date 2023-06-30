@@ -3,8 +3,6 @@ use std::cmp::max;
 use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::{Query, WithRejection};
-use edgedb_protocol::value::Value as EValue;
-use indexmap::{indexmap, IndexMap};
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
@@ -13,10 +11,9 @@ use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{DetailedBlogPost, DocFormat, MinimalObject, RawBlogPost};
+use crate::models::{DetailedBlogPost, MinimalObject, RawBlogPost};
 use crate::retrievers::{self, get_all_posts_count};
-use crate::types::{build_edgedb_object, json_value_to_edgedb, SharedState};
-use crate::utils::markdown::{make_excerpt, markdown_to_html};
+use crate::types::SharedState;
 
 pub async fn list_posts(
     paging: Query<Paging>,
@@ -94,33 +91,9 @@ pub async fn update_post_partial(
     // Check that data has invalid fields
     let patch_data: BlogPostPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let mut eql_params = indexmap! {
-        "id" => EValue::Uuid(post_id),
-    };
-    let valid_fields = BlogPostPatchData::fields();
-    let values_to_update = jdata.iter().filter_map(|(field_name, v)| {
-        let field_name = field_name.as_str();
-        valid_fields.contains(&field_name).then(|| {
-            let value = if field_name == "format" {
-                DocFormat::from(v).into()
-            } else {
-                json_value_to_edgedb(v)
-            };
-            (field_name, value)
-        })
-    });
-    eql_params.extend(values_to_update);
-    patch_data.body.and_then(|body| {
-        let html = markdown_to_html(&body);
-        eql_params.insert("html", EValue::Str(html));
-        let excerpt = make_excerpt(&body);
-        eql_params.insert("excerpt", EValue::Str(excerpt));
-        Some(())
-    });
-    tracing::debug!("EQL params: {:?}", eql_params);
-    // Build Value::Object to use as QueryArgs
-    let args_obj = build_edgedb_object(&eql_params);
-    let set_clause = gen_set_clause_for_blog_post(&eql_params);
+    let submitted_fields: Vec<&String> = jdata.keys().collect();
+    let set_clause = patch_data.gen_set_clause(&submitted_fields);
+    let args = patch_data.make_edgedb_object(post_id, &submitted_fields);
     let q = format!(
         "SELECT (
             UPDATE BlogPost
@@ -128,12 +101,28 @@ pub async fn update_post_partial(
             SET {{
                 {set_clause}
             }}
-        ) {{**}}"
+        ) {{
+            id,
+            title,
+            slug,
+            is_published,
+            published_at,
+            created_at,
+            updated_at,
+            categories: {{ id, title, slug }},
+            body,
+            format,
+            locale,
+            excerpt,
+            html,
+            seo_description,
+            og_image,
+        }}"
     );
     tracing::debug!("To query: {}", q);
-    tracing::debug!("Query with params: {:?}", args_obj);
+    tracing::debug!("Query with params: {:?}", args);
     let updated_post: Option<DetailedBlogPost> = db_conn
-        .query_single(&q, &args_obj)
+        .query_single(&q, &args)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let updated_post = updated_post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
@@ -167,7 +156,23 @@ pub async fn create_post(
         INSERT BlogPost {{
             {set_clause}
         }}
-    ) {{**}}"
+    ) {{
+        id,
+        title,
+        slug,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories,
+        body,
+        format,
+        locale,
+        excerpt,
+        html,
+        seo_description,
+        og_image,
+    }}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args);
@@ -177,22 +182,4 @@ pub async fn create_post(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogPost".into()))?;
     Ok((StatusCode::CREATED, Json(created_post)))
-}
-
-fn gen_set_clause_for_blog_post(params: &IndexMap<&str, EValue>) -> String {
-    let join = format!(",\n{}", " ".repeat(12));
-    params
-        .get_range(1..)
-        .map(|entries| {
-            entries
-                .iter()
-                .map(|(field_name, _v)| {
-                    let etype = DetailedBlogPost::type_cast_for_field(field_name);
-                    let statement = format!("{field_name} := <{etype}>${field_name}");
-                    statement
-                })
-                .collect::<Vec<String>>()
-                .join(&join)
-        })
-        .unwrap_or_default()
 }

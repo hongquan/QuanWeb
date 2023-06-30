@@ -82,6 +82,67 @@ pub struct BlogPostPatchData {
     pub body: Option<String>,
 }
 
+impl BlogPostPatchData {
+    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+        let mut lines = Vec::<&str>::new();
+        if submitted_fields.iter().any(|&f| f == "title") {
+            lines.push("title := <optional str>$title");
+        }
+        if submitted_fields.iter().any(|&f| f == "slug") {
+            lines.push("slug := <optional str>$slug");
+        }
+        if submitted_fields.iter().any(|&f| f == "is_published") {
+            lines.push("is_published := <optional bool>$is_published");
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            lines.push("format := <optional DocFormat>$format");
+        }
+        if submitted_fields.iter().any(|&f| f == "body") {
+            // If user submitted "body" field, we will generate "html", "excerpt" and write, too
+            lines.push("body := <optional str>$body");
+            lines.push("html := <optional str>$html");
+            lines.push("excerpt := <optional str>$excerpt");
+        }
+        lines.join(&format!(",\n{}", " ".repeat(8)))
+    }
+
+    pub fn make_edgedb_object<'a>(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+        let mut object_values = vec![Some(EValue::Uuid(post_id))];
+        let mut elms = vec![create_shape_element("id", Cardinality::One)];
+
+        if submitted_fields.iter().any(|&f| f == "title") {
+            object_values.push(self.title.clone().map(EValue::Str));
+            elms.push(create_shape_element("title", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|&f| f == "slug") {
+            object_values.push(self.slug.clone().map(EValue::Str));
+            elms.push(create_shape_element("slug", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|&f| f == "is_published") {
+            object_values.push(self.is_published.map(EValue::Bool));
+            elms.push(create_shape_element("is_published", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|&f| f == "body") {
+            object_values.push(self.body.clone().map(EValue::Str));
+            elms.push(create_shape_element("body", Cardinality::AtMostOne));
+            let html = markdown_to_html(self.body.as_ref().unwrap_or(&"".to_string()));
+            object_values.push(Some(EValue::Str(html)));
+            elms.push(create_shape_element("html", Cardinality::AtMostOne));
+            let excerpt = make_excerpt(self.body.as_ref().unwrap_or(&"".to_string()));
+            object_values.push(Some(EValue::Str(excerpt)));
+            elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            object_values.push(self.format.clone().map(EValue::from));
+            elms.push(create_shape_element("format", Cardinality::AtMostOne));
+        }
+        EValue::Object {
+            shape: ObjectShape::new(elms),
+            fields: object_values,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Fields)]
 pub struct BlogCategoryPatchData {
     pub title: Option<String>,
@@ -112,7 +173,6 @@ impl BlogPostCreateData {
         let mut lines = vec![
             "title := <str>$title",
             "slug := <str>$slug",
-            // TODO: "format := <optional DocFormat>$format",
         ];
         if submitted_fields.iter().any(|&f| f == "is_published") {
             lines.push("is_published := <optional bool>$is_published");
