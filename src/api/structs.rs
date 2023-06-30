@@ -81,6 +81,7 @@ pub struct BlogPostPatchData {
     pub is_published: Option<bool>,
     pub format: Option<DocFormat>,
     pub body: Option<String>,
+    pub categories: Option<Vec<Uuid>>,
 }
 
 impl BlogPostPatchData {
@@ -95,6 +96,12 @@ impl BlogPostPatchData {
             lines.push("body := <optional str>$body");
             lines.push("html := <optional str>$html");
             lines.push("excerpt := <optional str>$excerpt");
+        }
+        if submitted_fields.iter().any(|&f| f == "categories") && self.categories.is_some() {
+            let line = "categories := (
+                SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
+            )";
+            lines.push(line);
         }
         lines.join(&format!(",\n{}", " ".repeat(8)))
     }
@@ -118,6 +125,12 @@ impl BlogPostPatchData {
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
         append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
+        if submitted_fields.iter().any(|&f| f == "categories") {
+            if let Some(categories) = &self.categories {
+                object_values.push(Some(EValue::Array(categories.iter().map(|&c| EValue::Uuid(c)).collect())));
+                elms.push(create_shape_element("categories", Cardinality::One));
+            }
+        }
         EValue::Object {
             shape: ObjectShape::new(elms),
             fields: object_values,
@@ -175,10 +188,6 @@ impl BlogPostCreateData {
     }
 
     pub fn make_edgedb_object<'a>(&self, submitted_fields: &Vec<&String>) -> EValue {
-        let categories: Vec<EValue> = self
-            .categories
-            .clone()
-            .map_or(Vec::new(), |v| v.into_iter().map(EValue::Uuid).collect());
         let mut object_values = vec![
             Some(EValue::from(self.title.clone())),
             Some(EValue::from(self.slug.clone())),
@@ -199,11 +208,11 @@ impl BlogPostCreateData {
             elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
         }
         append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
-        // "categories" is a link property
-        if self.categories.is_some() {
-            let mut categories_elm = create_shape_element("categories", Cardinality::Many);
-            categories_elm.flag_link = true;
-            elms.push(categories_elm);
+
+        if let Some(categories) = &self.categories {
+            let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
+            let elm = create_shape_element("categories", Cardinality::One);
+            elms.push(elm);
             object_values.push(Some(EValue::Array(categories)));
         }
         EValue::Object {
