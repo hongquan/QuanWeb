@@ -3,8 +3,6 @@ use std::cmp::max;
 use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::{Query, WithRejection};
-use edgedb_protocol::value::Value as EValue;
-use indexmap::{indexmap, IndexMap};
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
@@ -15,7 +13,7 @@ use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListRe
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::retrievers;
-use crate::types::{json_value_to_edgedb, SharedState};
+use crate::types::SharedState;
 
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 
@@ -98,33 +96,19 @@ pub async fn update_category_partial(
         let post = retrievers::get_blog_category(category_id, db_conn)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
-        let post = post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
+        let post = post.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
         return Ok(Json(post));
     };
     // Check that data has invalid fields
-    let _patch_data: BlogCategoryPatchData =
+    let patch_data: BlogCategoryPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let mut eql_params = indexmap! {
-        "id" => EValue::Uuid(category_id),
-    };
-    let valid_fields = BlogCategoryPatchData::fields();
-    let values_to_update: Vec<(&str, EValue)> = jdata
-        .iter()
-        .filter_map(|(field_name, v)| {
-            valid_fields.contains(&field_name.as_str()).then(|| {
-                let value = json_value_to_edgedb(v);
-                (field_name.as_str(), value)
-            })
-        })
-        .collect();
-    let values_count = values_to_update.len();
-    eql_params.extend(values_to_update.clone());
-    tracing::debug!("EQL params: {:?}", eql_params);
-    let set_clause = gen_set_clause_for_blog_category(&eql_params);
+    let submitted_fields: Vec<&String> = jdata.keys().collect();
+    let set_clause = patch_data.gen_set_clause(&submitted_fields);
+    let args = patch_data.make_edgedb_object(category_id, &submitted_fields);
     let q = format!(
         "SELECT (
             UPDATE BlogCategory
-            FILTER .id = <uuid>$0
+            FILTER .id = <uuid>$id
             SET {{
                 {set_clause}
             }}
@@ -135,17 +119,7 @@ pub async fn update_category_partial(
         }}"
     );
     tracing::debug!("To query: {}", q);
-    let val_args: Vec<EValue> = values_to_update.into_iter().map(|(_, v)| v).collect();
-    let result: Result<Option<BlogCategory>, edgedb_errors::Error> = if values_count == 1 {
-        db_conn
-            .query_single(&q, &(category_id, val_args[0].clone()))
-            .await
-    } else {
-        db_conn
-            .query_single(&q, &(category_id, val_args[0].clone(), val_args[1].clone()))
-            .await
-    };
-    let cat = result
+    let cat = db_conn.query_single(&q, &args).await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(cat))
@@ -190,17 +164,4 @@ pub async fn create_category(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogCategory".into()))?;
     Ok((StatusCode::CREATED, Json(created_cat)))
-}
-
-fn gen_set_clause_for_blog_category(params: &IndexMap<&str, EValue>) -> String {
-    params
-        .iter()
-        .skip(1)
-        .enumerate()
-        .map(|(i, (field_name, _v))| {
-            let index = i + 1;
-            format!("{field_name} := <str>${index}")
-        })
-        .collect::<Vec<String>>()
-        .join(",\n    ")
 }
