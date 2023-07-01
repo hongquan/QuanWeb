@@ -11,13 +11,13 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "esModuleInterop": true,
     "noEmit": true,
     "jsx": "preserve",
-    "esModuleInterop":true,
 
     /* Linting */
     "strict": true,

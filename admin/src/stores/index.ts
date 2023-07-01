@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 import { User } from '@/models/user'
 
-export const useStore = defineStore('votrau', {
+export const useStore = defineStore('quanweb', {
   state: () => ({
     user: null as User | null,
   }),

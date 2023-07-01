@@ -61,12 +61,16 @@
 
 <script setup lang='ts'>
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 
 import { kyClient } from '@/common'
 import { API_LOGIN } from '@/urls'
 import { useStore } from '@/stores'
 import { UserSchema } from '@/models/user'
 
+const router = useRouter()
+const route = useRoute()
 const store = useStore()
 const email = ref('')
 const password = ref('')
@@ -75,6 +79,9 @@ async function onSubmit() {
   const resp = await kyClient.post(API_LOGIN, { json: { email: email.value, password: password.value } }).json()
   const user = UserSchema.parse(resp)
   store.user = user
+  toast.success('Login successfully')
   console.log(user)
+  const attemptUrl = route.query.attempt as string || '/'
+  await router.push(attemptUrl)
 }
 </script>
