@@ -47,7 +47,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let app = Router::new()
         .route("/", get(views::base::root))
-        .nest("/api", api_router)
+        .nest("/_api", api_router)
         .with_state(shared_state)
         .layer(auth_layer)
         .layer(session_layer)

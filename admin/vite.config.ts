@@ -20,7 +20,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      '/_api': {
         target: BACKEND_ROOT_URL,
       },
     }
