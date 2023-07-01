@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use axum::http::StatusCode;
 use axum::{debug_handler, Json, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
-use axum_login::extractors::AuthContext;
+use axum_login::{extractors::AuthContext, RequireAuthorizationLayer};
 use djangohashers::check_password;
 use garde::Validate;
 use serde_json::{json, Value};
@@ -17,6 +17,8 @@ use crate::types::ApiErrorShape;
 use super::errors::ApiError;
 
 pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
+#[allow(dead_code)]
+pub type RequireAuth = RequireAuthorizationLayer<Uuid, models::User, models::Role>;
 
 fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
     errors

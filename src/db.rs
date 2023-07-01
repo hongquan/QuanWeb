@@ -15,6 +15,7 @@ pub async fn get_redis_store() -> Result<RedisSessionStore, RedisError> {
     let pool = RedisPool::new(config, None, None, 2)?;
     pool.connect();
     pool.wait_for_connect().await?;
-    let store = RedisSessionStore::from_pool(pool, Some(DB_NAME.to_string()));
+    tracing::debug!("Connected to Redis");
+    let store = RedisSessionStore::from_pool(pool, Some(format!("{}_axum:", DB_NAME)));
     Ok(store)
 }

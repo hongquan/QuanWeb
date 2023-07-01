@@ -86,7 +86,10 @@ pub async fn update_category_partial(
     State(state): State<SharedState>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<BlogCategory>> {
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or_else(|| {
+        tracing::debug!("Not logged in!");
+        StatusCode::FORBIDDEN
+    })?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
