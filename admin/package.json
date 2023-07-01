@@ -1,7 +1,7 @@
 {
-  "name": "admin",
+  "name": "quanweb-admin",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,10 +12,17 @@
   "dependencies": {
     "@fluent/bundle": "^0.18.0",
     "@fontsource/niramit": "^5.0.3",
+    "cookieman": "^1.3.0",
     "fluent-vue": "^3.4.0",
     "get-user-locale": "^2.2.1",
+    "ky": "^0.33.3",
+    "luxon": "^3.3.0",
+    "pinia": "^2.1.4",
+    "pinia-plugin-persistedstate": "^3.1.0",
     "vue": "^3.2.47",
-    "vue-router": "^4.2.2"
+    "vue-router": "^4.2.2",
+    "vue-sonner": "^0.3.2",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/node": "^20.3.3",

@@ -6,19 +6,19 @@ use axum_extra::extract::WithRejection;
 use axum_login::{extractors::AuthContext, RequireAuthorizationLayer};
 use djangohashers::check_password;
 use garde::Validate;
-use serde_json::{json, Value};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
 use crate::db::get_edgedb_client;
-use crate::models;
+use crate::models::{User, Role};
 use crate::retrievers;
 use crate::types::ApiErrorShape;
 use super::errors::ApiError;
 
-pub type Auth = AuthContext<Uuid, models::User, EdgeDbStore<models::User>, models::Role>;
+pub type Auth = AuthContext<Uuid, User, EdgeDbStore<User>, Role>;
 #[allow(dead_code)]
-pub type RequireAuth = RequireAuthorizationLayer<Uuid, models::User, models::Role>;
+pub type RequireAuth = RequireAuthorizationLayer<Uuid, User, Role>;
 
 fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
     errors
@@ -32,7 +32,7 @@ fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
 pub async fn login(
     mut auth: Auth,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
-) -> AxumResult<Json<Value>> {
+) -> AxumResult<Json<User>> {
     let valid_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     if let Err(e) = valid_data.validate(&()) {
         tracing::info!("Data validation failed: {}", e);
@@ -61,9 +61,5 @@ pub async fn login(
         tracing::error!("Error logging in user: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    let resp = json!({
-        "success": true,
-        "email": user.email,
-    });
-    Ok(Json(resp))
+    Ok(Json(user))
 }
