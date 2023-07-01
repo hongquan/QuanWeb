@@ -8,23 +8,19 @@ mod types;
 mod utils;
 mod views;
 
+use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::error::Error;
 
+use axum::routing::{get, Router};
+use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use miette::miette;
-use axum::routing::get;
-use axum_login::{
-    axum_sessions::SessionLayer,
-    AuthLayer,
-};
-use axum_named_routes::NamedRouter;
 use rand::Rng;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use auth::store::EdgeDbStore;
-use types::AppState;
+use types::{AppState, SharedState};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -35,7 +31,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
-    let redis_store = db::get_redis_store().await.map_err(|_e| miette!("Error connecting to Redis"))?;
+    let redis_store = db::get_redis_store()
+        .await
+        .map_err(|_e| miette!("Error connecting to Redis"))?;
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
     let client = db::get_edgedb_client().await?;
@@ -44,14 +42,12 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret);
 
-    let api_router = api::get_router(Arc::clone(&shared_state));
+    let api_router: Router<SharedState> = api::get_router().with_state(Arc::clone(&shared_state));
 
-    let mut app = NamedRouter::new()
-        .route("index", "/", get(views::base::root))
+    let app = Router::new()
+        .route("/", get(views::base::root))
+        .nest("/api", api_router)
         .with_state(shared_state)
-        .nest("api", "/api", api_router);
-
-    app = app
         .layer(auth_layer)
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());

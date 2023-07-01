@@ -329,18 +329,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-named-routes"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85e3a4625e0ef75776fc8b3c2ba1cd415d5c925359609580aad4e67519f1fecf"
-dependencies = [
- "axum",
- "futures",
- "tower-layer",
- "tower-service",
-]
-
-[[package]]
 name = "axum-sessions"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2052,7 +2040,6 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-login",
- "axum-named-routes",
  "axum-sessions",
  "axum_garde",
  "chrono",
