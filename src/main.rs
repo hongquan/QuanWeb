@@ -10,8 +10,9 @@ mod views;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::error::Error;
 
-use miette::{miette, Result};
+use miette::miette;
 use axum::routing::get;
 use axum_login::{
     axum_sessions::SessionLayer,
@@ -25,7 +26,15 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use auth::store::EdgeDbStore;
 use types::AppState;
 
-async fn inner_main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "quanweb=debug,tower_http=debug,axum::rejection=trace".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
     let redis_store = db::get_redis_store().await.map_err(|_e| miette!("Error connecting to Redis"))?;
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
@@ -55,19 +64,4 @@ async fn inner_main() -> Result<()> {
         .await
         .unwrap();
     Ok(())
-}
-
-#[tokio::main]
-async fn main() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "quanweb=debug,tower_http=debug,axum::rejection=trace".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-    inner_main().await.unwrap_or_else(|e| {
-        eprintln!("{}", e);
-        std::process::exit(1);
-    });
 }
