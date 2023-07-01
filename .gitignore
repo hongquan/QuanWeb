@@ -6,12 +6,32 @@ node_modules
 *.komodoproject
 .directory
 quanweb.egg-info
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 */secret.py
 custom_settings.toml
 .secrets.toml
 DB
 .vscode
 .idea
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+dist
+dist-ssr
+*.local
+
 
 # Added by cargo
 
