@@ -96,7 +96,7 @@ impl Default for RawBlogPost {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, edgedb_derive::Queryable)]
+#[derive(Debug, Default, Serialize, Deserialize, edgedb_derive::Queryable)]
 pub struct BlogCategory {
     pub id: Uuid,
     pub title: String,

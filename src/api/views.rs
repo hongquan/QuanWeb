@@ -11,13 +11,13 @@ use uuid::Uuid;
 use super::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogCategoryPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::retrievers;
 use crate::types::{json_value_to_edgedb, SharedState};
 
-pub use super::posts::{list_posts, get_post, delete_post, update_post_partial, create_post};
+pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -149,6 +149,47 @@ pub async fn update_category_partial(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(cat))
+}
+
+pub async fn create_category(
+    auth: Auth,
+    State(state): State<SharedState>,
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> AxumResult<(StatusCode, Json<BlogCategory>)> {
+    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    // Collect list of submitted fields
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    let db_conn = &state.db;
+    // User submitted no field to create BlogPost
+    (!jdata.is_empty())
+        .then_some(())
+        .ok_or(ApiError::NotEnoughData)?;
+    // Check that data has valid fields
+    let post_data: BlogCategoryCreateData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    tracing::debug!("Post data: {:?}", post_data);
+    let set_clause = post_data.gen_set_clause();
+    let args = post_data.make_edgedb_object();
+    let q = format!(
+        "
+    SELECT (
+        INSERT BlogCategory {{
+            {set_clause}
+        }}
+    ) {{
+        id,
+        title,
+        slug,
+    }}"
+    );
+    tracing::debug!("To query: {}", q);
+    let created_cat: BlogCategory = db_conn
+        .query_single(&q, &args)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::Other("Failed to create BlogCategory".into()))?;
+    Ok((StatusCode::CREATED, Json(created_cat)))
 }
 
 fn gen_set_clause_for_blog_category(params: &IndexMap<&str, EValue>) -> String {

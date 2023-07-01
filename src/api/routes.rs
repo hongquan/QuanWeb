@@ -19,5 +19,6 @@ pub fn get_router(state: SharedState) -> NamedRouter {
         .route("category-retrieve", "/categories/:category_id", get(views::get_category))
         .route("category-delete", "/categories/:category_id", delete(views::delete_category))
         .route("category-update", "/categories/:category_id", patch(views::update_category_partial))
+        .route("category-create", "/categories/", post(views::create_category))
         .with_state(state)
 }

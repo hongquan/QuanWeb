@@ -59,6 +59,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("Listening on http://{}", addr);
 
+    // TODO: Support Unix domain socket with hyperlocal
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

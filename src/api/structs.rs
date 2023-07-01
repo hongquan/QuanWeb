@@ -138,12 +138,6 @@ impl BlogPostPatchData {
     }
 }
 
-#[derive(Debug, Deserialize, Fields)]
-pub struct BlogCategoryPatchData {
-    pub title: Option<String>,
-    pub slug: Option<String>,
-}
-
 #[derive(Debug, Default, Deserialize, Fields)]
 pub struct BlogPostCreateData {
     pub title: String,
@@ -154,16 +148,7 @@ pub struct BlogPostCreateData {
     pub categories: Option<Vec<Uuid>>,
 }
 
-#[allow(dead_code)]
 impl BlogPostCreateData {
-    pub fn new(title: String, slug: String) -> Self {
-        Self {
-            title,
-            slug,
-            ..Default::default()
-        }
-    }
-
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = vec![
             "title := <str>$title",
@@ -215,6 +200,68 @@ impl BlogPostCreateData {
             elms.push(elm);
             object_values.push(Some(EValue::Array(categories)));
         }
+        EValue::Object {
+            shape: ObjectShape::new(elms),
+            fields: object_values,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Fields)]
+pub struct BlogCategoryPatchData {
+    pub title: Option<String>,
+    pub slug: Option<String>,
+}
+
+#[allow(dead_code)]
+impl BlogCategoryPatchData {
+    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+        let mut lines = Vec::<&str>::new();
+        append_set_statement!("title", "optional str", lines, submitted_fields);
+        append_set_statement!("slug", "optional str", lines, submitted_fields);
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+        let mut object_values = vec![Some(EValue::Uuid(id))];
+        let mut elms = vec![create_shape_element("id", Cardinality::One)];
+
+        append_field_general!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
+        append_field_general!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
+        EValue::Object {
+            shape: ObjectShape::new(elms),
+            fields: object_values,
+        }
+    }
+}
+
+#[derive(Debug, Default, Deserialize, Fields)]
+pub struct BlogCategoryCreateData {
+    pub title: String,
+    pub slug: String,
+}
+
+#[allow(dead_code)]
+impl BlogCategoryCreateData {
+    pub fn gen_set_clause<'a>(&self) -> String {
+        let lines = vec![
+            "title := <str>$title",
+            "slug := <str>$slug",
+        ];
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object<'a>(&self) -> EValue {
+        let object_values = vec![
+            Some(EValue::from(self.title.clone())),
+            Some(EValue::from(self.slug.clone())),
+        ];
+        let elms = vec![
+            create_shape_element("title", Cardinality::One),
+            create_shape_element("slug", Cardinality::One),
+        ];
         EValue::Object {
             shape: ObjectShape::new(elms),
             fields: object_values,
