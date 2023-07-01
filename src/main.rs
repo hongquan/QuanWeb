@@ -53,7 +53,8 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let port = conf::get_listening_port(&config);
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("Listening on http://{}", addr);
 
     // TODO: Support Unix domain socket with hyperlocal
