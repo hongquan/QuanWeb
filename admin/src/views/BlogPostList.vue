@@ -10,6 +10,7 @@
             <th scope='col' class='px-6 py-3'>
               Slug
             </th>
+            <th scope='col' class='px-6 py-3'></th>
           </tr>
         </thead>
         <tbody>

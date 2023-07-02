@@ -1,16 +1,22 @@
 <template>
   <tr :class='classNames'>
     <th scope='row' class='px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white'>
-      {{ post.title }}
+      <RouterLink :to='editUrl' class='hover:underline'>{{ post.title }}</RouterLink>
     </th>
     <td class='px-6 py-4'>
       {{ post.slug }}
+    </td>
+    <td>
+      <button>
+        <Icon icon='heroicons-outline:trash' class='w-5 h-5' />
+      </button>
     </td>
   </tr>
 </template>
 
 <script setup lang='ts'>
 import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
 
 import { Post } from '@/models/blog'
 
@@ -27,4 +33,9 @@ const classNames = computed(() => [
   'border-b',
   'dark:border-gray-700'
 ])
+
+const editUrl = computed(() => ({
+  name: 'post.edit',
+  params: { id: props.post.id }
+}))
 </script>
