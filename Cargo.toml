@@ -25,12 +25,11 @@ eyre = "0.6.8"
 fievar = "0.2.0"
 fred = { version = "6.3.0", features = ["serde-json", "partial-tracing"] }
 garde = "0.11.2"
-hex = "0.4.3"
 http = "0.2.9"
 indexmap = { version = "2.0.0", features = ["serde"] }
+libpassgen = "1.0.3"
 miette = { version = "5.9.0", features = ["fancy", "serde"] }
 querystring_tiny = "0.2.1"
-rand = { version = "0.8.5", features = ["min_const_gen"] }
 redact = { version = "0.1.1", features = ["serde"] }
 serde = { version = "1.0.164", features = ["serde_derive"] }
 serde-value = "0.7.0"
