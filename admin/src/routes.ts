@@ -13,6 +13,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: MainWrap,
+    redirect: () => ({ name: 'post.list' }),
     children: [
       { path: 'posts', component: SimpleWrap, name: 'post', redirect: () => ({ name: 'post.list' }),
       children: [

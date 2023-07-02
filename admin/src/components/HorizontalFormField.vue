@@ -1,7 +1,7 @@
 <template>
-  <div class='sm:grid sm:grid-cols-4 sm:items-start sm:gap-4 sm:py-4'>
+  <div class='sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2'>
     <label :for='uid' class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'>{{ label }}</label>
-    <div class='mt-2 sm:col-span-3 sm:mt-0'><Input :id='uid' v-model='value' /></div>
+    <div class='mt-2 sm:col-span-3 sm:mt-0'><Input :id='uid' v-model='value' size='sm' /></div>
   </div>
 </template>
 
