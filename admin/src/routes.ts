@@ -18,7 +18,7 @@ export const routes: RouteRecordRaw[] = [
       children: [
         { path: '', component: BlogPostList, name: 'post.list' },
         { path: 'new', component: BlogPostEdit, name: 'post.new' },
-        { path: ':id', component: BlogPostEdit, name: 'post.edit' },
+        { path: ':postId', component: BlogPostEdit, name: 'post.edit', props: true },
       ]
       },
       { path: 'categories', component: BlogCategoryList, name: 'category.list' },

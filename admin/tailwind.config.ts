@@ -1,11 +1,17 @@
 import type { Config } from 'tailwindcss'
 import defaultTheme from 'tailwindcss/defaultTheme'
-// import FlowbitePlugin from 'flowbite/plugin'
+import FlowbitePlugin from 'flowbite/plugin'
 
 defaultTheme.fontFamily;
 
 export default {
-  content: ['./index.html', './src/**/*.vue'],
+  content: [
+    './index.html',
+    './src/**/*.vue',
+    'node_modules/flowbite-vue/**/*.{js,jsx,ts,tsx}',
+    'node_modules/flowbite/**/*.{js,jsx,ts,tsx}',
+  ],
+  darkMode: 'media',
   theme: {
     extend: {
       fontFamily: {
@@ -18,6 +24,6 @@ export default {
     },
   },
   plugins: [
-    // FlowbitePlugin,
+    FlowbitePlugin,
   ],
 } satisfies Config

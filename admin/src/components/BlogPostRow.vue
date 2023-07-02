@@ -36,6 +36,6 @@ const classNames = computed(() => [
 
 const editUrl = computed(() => ({
   name: 'post.edit',
-  params: { id: props.post.id }
+  params: { postId: props.post.id }
 }))
 </script>
