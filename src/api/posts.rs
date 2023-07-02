@@ -1,4 +1,5 @@
 use std::cmp::max;
+use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
@@ -32,12 +33,11 @@ pub async fn list_posts(
     let count = get_all_posts_count(&db_conn)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let total_pages = (count as f64 / per_page as f64).ceil() as u16;
+    let total_pages = NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging.0, count, original_uri);
-    let resp = ObjectListResponse::new(posts)
-        .with_count(count)
-        .with_total_pages(total_pages)
-        .with_pagination_links(links);
+    let resp = ObjectListResponse {
+        count, total_pages, links, objects: posts
+    };
     Ok(Json(resp))
 }
 

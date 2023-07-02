@@ -43,46 +43,6 @@ impl<T> Default for ObjectListResponse<T> {
     }
 }
 
-#[allow(dead_code)]
-impl<T> ObjectListResponse<T>
-where
-    T: Serialize,
-{
-    pub fn new(objects: Vec<T>) -> Self {
-        let count = objects.len();
-        Self {
-            count,
-            objects,
-            ..Default::default()
-        }
-    }
-
-    pub fn with_count(mut self, count: usize) -> Self {
-        self.count = count;
-        self
-    }
-
-    pub fn with_total_pages(mut self, number: u16) -> Self {
-        self.total_pages = NonZeroU16::new(number).unwrap_or(NonZeroU16::MIN);
-        self
-    }
-
-    pub fn with_pagination_links(mut self, links: PaginationLinks) -> Self {
-        self.links = links;
-        self
-    }
-
-    pub fn with_next_url(mut self, next_url: String) -> Self {
-        self.links.next = Some(next_url);
-        self
-    }
-
-    pub fn with_prev_url(mut self, prev_url: String) -> Self {
-        self.links.prev = Some(prev_url);
-        self
-    }
-}
-
 #[derive(Debug, Deserialize, Fields)]
 pub struct BlogPostPatchData {
     pub title: Option<String>,
