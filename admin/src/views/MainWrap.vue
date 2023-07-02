@@ -4,6 +4,7 @@
       :locale='selectedLocale'
       @locale-selected='preferLocale($event)'
     />
+    <NavTabBar class='mb-4' />
     <main class='mx-auto grow sm:w-full'>
       <RouterView />
       <hr class='my-4'>
@@ -19,6 +20,7 @@ import { getUserLocale } from 'get-user-locale'
 
 import { Language } from '@/models'
 import HeaderBar from '@/components/HeaderBar.vue'
+import NavTabBar from '@/components/NavTabBar.vue'
 import { preferLocale } from '@/translation'
 
 const selectedLocale = ref(Language.EN)

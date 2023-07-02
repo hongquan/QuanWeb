@@ -13,7 +13,7 @@
           </tr>
         </thead>
         <tbody>
-          <BlogPostRow v-for='(post, index) in posts' :key='post.id' :post='post' :isOdd='Boolean(index % 2)' />
+          <BlogCategoryRow v-for='(item, index) in categories' :key='item.id' :category='item' :isOdd='Boolean(index % 2)' />
         </tbody>
       </table>
     </div>
@@ -24,17 +24,17 @@
 import { onBeforeMount, ref } from 'vue'
 
 import { kyClient } from '@/common'
-import { API_GET_POSTS } from '@/urls'
+import { API_GET_CATEGORIES } from '@/urls'
 import { ObjectListResponseSchema } from '@/models/api'
-import { PostSchema, Post } from '@/models/blog'
-import BlogPostRow from '@/components/BlogPostRow.vue'
+import { Category, CategorySchema } from '@/models/blog'
+import BlogCategoryRow from '@/components/BlogCategoryRow.vue'
 
-const posts = ref<Post[]>([])
+const categories = ref<Category[]>([])
 
 async function fetchData() {
-  const resp = await kyClient.get(API_GET_POSTS).json()
+  const resp = await kyClient.get(API_GET_CATEGORIES).json()
   const data = ObjectListResponseSchema.parse(resp)
-  posts.value = PostSchema.array().parse(data.objects)
+  categories.value = CategorySchema.array().parse(data.objects)
 }
 
 onBeforeMount(fetchData)
