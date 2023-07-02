@@ -1,3 +1,5 @@
+use std::num::NonZeroU16;
+
 use edgedb_protocol::codec::ObjectShape;
 use edgedb_protocol::common::Cardinality;
 use edgedb_protocol::value::Value as EValue;
@@ -25,6 +27,7 @@ pub struct PaginationLinks {
 #[derive(Debug, Serialize)]
 pub struct ObjectListResponse<T> {
     pub count: usize,
+    pub total_pages: NonZeroU16,
     pub links: PaginationLinks,
     pub objects: Vec<T>,
 }
@@ -33,6 +36,7 @@ impl<T> Default for ObjectListResponse<T> {
     fn default() -> Self {
         Self {
             count: 0,
+            total_pages: NonZeroU16::MIN,
             links: Default::default(),
             objects: vec![],
         }
@@ -55,6 +59,11 @@ where
 
     pub fn with_count(mut self, count: usize) -> Self {
         self.count = count;
+        self
+    }
+
+    pub fn with_total_pages(mut self, number: u16) -> Self {
+        self.total_pages = NonZeroU16::new(number).unwrap_or(NonZeroU16::MIN);
         self
     }
 

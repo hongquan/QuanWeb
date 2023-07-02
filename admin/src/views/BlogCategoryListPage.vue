@@ -13,29 +13,50 @@
           </tr>
         </thead>
         <tbody>
-          <BlogCategoryRow v-for='(item, index) in categories' :key='item.id' :category='item' :isOdd='Boolean(index % 2)' />
+          <BlogCategoryRow v-for='(item, index) in categories' :key='item.id' :category='item'
+            :isOdd='Boolean(index % 2)' />
         </tbody>
       </table>
+    </div>
+    <div class='text-center'>
+      <Paginator :total-pages='totalPages' :current-page='currentPage' class='mt-6' />
     </div>
   </div>
 </template>
 
 <script setup lang='ts'>
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 import { kyClient } from '@/common'
 import { API_GET_CATEGORIES } from '@/urls'
 import { ObjectListResponseSchema } from '@/models/api'
 import { Category, CategorySchema } from '@/models/blog'
 import BlogCategoryRow from '@/components/BlogCategoryRow.vue'
+import Paginator from '@/components/Paginator.vue'
 
+const route = useRoute()
 const categories = ref<Category[]>([])
+const totalPages = ref(1)
+
+const currentPage = computed(() => Number(route.query.page) || 1)
 
 async function fetchData() {
-  const resp = await kyClient.get(API_GET_CATEGORIES).json()
+  const searchParams = {
+    page: currentPage.value
+  }
+  const resp = await kyClient.get(API_GET_CATEGORIES, { searchParams }).json()
   const data = ObjectListResponseSchema.parse(resp)
   categories.value = CategorySchema.array().parse(data.objects)
 }
 
 onBeforeMount(fetchData)
+
+onMounted(() => {
+  watch(
+    () => route.query,
+    fetchData,
+    { flush: 'post' }
+  )
+})
 </script>

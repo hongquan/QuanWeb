@@ -43,9 +43,11 @@ pub async fn list_categories(
     let count = retrievers::get_all_categories_count(db_conn)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
+    let total_pages = (count as f64 / per_page as f64).ceil() as u16;
     let links = gen_pagination_links(&paging.0, count, original_uri);
     let resp = ObjectListResponse::new(categories)
         .with_count(count)
+        .with_total_pages(total_pages)
         .with_pagination_links(links);
     Ok(Json(resp))
 }

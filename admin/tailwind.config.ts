@@ -10,6 +10,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Niramit', ...defaultTheme.fontFamily.sans],
+      },
+      minWidth: {
+        8: '2rem',
+        ...defaultTheme.minWidth,
       }
     },
   },

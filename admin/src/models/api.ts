@@ -7,6 +7,7 @@ export const PaginationLinksSchema = z.object({
 
 export const ObjectListResponseSchema = z.object({
   count: z.number(),
+  total_pages: z.number().min(1),
   links: PaginationLinksSchema,
   objects: z.array(z.record(z.unknown())),
 })
