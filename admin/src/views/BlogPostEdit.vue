@@ -22,6 +22,7 @@ import { kyClient } from '@/common'
 import { Post, PostSchema } from '@/models/blog'
 import { API_GET_POSTS } from '@/urls'
 import HorizontalFormField from '@/components/HorizontalFormField.vue'
+import { transformPostForPosting } from '@/utils/models'
 
 interface Props {
   postId: string
@@ -38,9 +39,13 @@ async function fetchData() {
 }
 
 async function onSubmit() {
+  if (!post.value) {
+    return
+  }
   const url = lightJoin(API_GET_POSTS, props.postId)
+  const postData = transformPostForPosting(post.value)
   const resp = await kyClient.patch(url, {
-    json: post.value,
+    json: postData,
   }).json()
   isSubmitting.value = false
   const updatedPost = PostSchema.parse(resp)
