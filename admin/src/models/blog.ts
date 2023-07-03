@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
 export const CategorySchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  slug: z.string(),
+  id: z.string().uuid().nullable().default(null),
+  title: z.string().default(''),
+  slug: z.string().default(''),
 })
 
 export const WithCategoriesSchema = z.object({

@@ -4,7 +4,12 @@
       scope='row'
       class='px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white'
     >
-      {{ category.title }}
+      <RouterLink
+        :to='editUrl'
+        class='hover:underline'
+      >
+        {{ category.title }}
+      </RouterLink>
     </th>
     <td class='px-6 py-4'>
       {{ category.slug }}
@@ -51,7 +56,15 @@ const classNames = computed(() => [
   'dark:border-gray-700',
 ])
 
+const editUrl = computed(() => ({
+  name: 'category.edit',
+  params: { categoryId: props.category.id },
+}))
+
 async function deleteCategory() {
+  if (!props.category.id) {
+    return
+  }
   const url = lightJoin(API_GET_CATEGORIES, props.category.id)
   const resp = await kyClient.delete(url)
   if (resp.status == HStatus.NO_CONTENT) {

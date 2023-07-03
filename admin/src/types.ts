@@ -1,4 +1,4 @@
 export interface SelectableEntity {
-  id: string
+  id: string | null
   title: string
 }

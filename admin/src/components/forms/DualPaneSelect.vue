@@ -8,8 +8,8 @@
         <div class='overflow'>
           <ul v-if='availableOptions.length'>
             <li
-              v-for='opt of availableOptions'
-              :key='opt.id'
+              v-for='(opt, i) in availableOptions'
+              :key='opt.id || i'
             >
               <button
                 type='button'
@@ -31,8 +31,8 @@
         <div class='overflow'>
           <ul v-if='selectedOptions.length'>
             <li
-              v-for='opt of selectedOptions'
-              :key='opt.id'
+              v-for='(opt, i) in selectedOptions'
+              :key='opt.id || i'
             >
               <button
                 type='button'
@@ -87,10 +87,10 @@ const availableOptions = computed(() => {
 })
 
 function take(object: SelectableEntity) {
-  emit('taken', object.id)
+  object.id && emit('taken', object.id)
 }
 
 function release(object: SelectableEntity) {
-  emit('released', object.id)
+  object.id && emit('released', object.id)
 }
 </script>

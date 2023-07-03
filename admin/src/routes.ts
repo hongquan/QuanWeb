@@ -8,6 +8,7 @@ const LoginPage = (): Promise<RouteComponent> => import('./views/LoginPage.vue')
 const BlogPostList = (): Promise<RouteComponent> => import('./views/BlogPostList.vue')
 const BlogPostEdit = (): Promise<RouteComponent> => import('./views/BlogPostEdit.vue')
 const BlogCategoryList = (): Promise<RouteComponent> => import('./views/BlogCategoryList.vue')
+const BlogCategoryEdit = (): Promise<RouteComponent> => import('./views/BlogCategoryEdit.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -15,14 +16,22 @@ export const routes: RouteRecordRaw[] = [
     component: MainWrap,
     redirect: () => ({ name: 'post.list' }),
     children: [
-      { path: 'posts', component: SimpleWrap, name: 'post', redirect: () => ({ name: 'post.list' }),
-      children: [
-        { path: '', component: BlogPostList, name: 'post.list' },
-        { path: 'new', component: BlogPostEdit, name: 'post.new' },
-        { path: ':postId', component: BlogPostEdit, name: 'post.edit', props: true },
-      ],
+      {
+        path: 'posts', component: SimpleWrap, name: 'post', redirect: () => ({ name: 'post.list' }),
+        children: [
+          { path: '', component: BlogPostList, name: 'post.list' },
+          { path: 'new', component: BlogPostEdit, name: 'post.new' },
+          { path: ':postId', component: BlogPostEdit, name: 'post.edit', props: true },
+        ],
       },
-      { path: 'categories', component: BlogCategoryList, name: 'category.list' },
+      {
+        path: 'categories', component: SimpleWrap, redirect: () => ({ name: 'category.list' }),
+        children: [
+          { path: '', component: BlogCategoryList, name: 'category.list' },
+          { path: 'new', component: BlogCategoryEdit, name: 'category.new' },
+          { path: ':categoryId', component: BlogCategoryEdit, name: 'category.edit', props: true },
+        ],
+      },
     ],
   },
   { path: '/login', component: LoginPage, name: 'login' },

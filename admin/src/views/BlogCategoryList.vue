@@ -22,7 +22,7 @@
         <tbody>
           <BlogCategoryRow
             v-for='(item, index) in categories'
-            :key='item.id'
+            :key='item.id || index'
             :category='item'
             :is-odd='Boolean(index % 2)'
             @deleted='onDeleted'
