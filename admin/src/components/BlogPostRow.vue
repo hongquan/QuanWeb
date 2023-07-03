@@ -17,7 +17,7 @@
     <td>
       <button>
         <Icon
-          icon='heroicons-outline:trash'
+          icon='ic:outline-delete-forever'
           class='w-5 h-5'
         />
       </button>

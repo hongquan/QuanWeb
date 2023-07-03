@@ -16,6 +16,7 @@
             >
               Slug
             </th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -24,6 +25,7 @@
             :key='item.id'
             :category='item'
             :is-odd='Boolean(index % 2)'
+            @deleted='onDeleted'
           />
         </tbody>
       </table>
@@ -62,6 +64,10 @@ async function fetchData() {
   const resp = await kyClient.get(API_GET_CATEGORIES, { searchParams }).json()
   const data = ObjectListResponseSchema.parse(resp)
   categories.value = CategorySchema.array().parse(data.objects)
+}
+
+function onDeleted(id: string) {
+  categories.value = categories.value.filter((item) => item.id !== id)
 }
 
 onBeforeMount(fetchData)
