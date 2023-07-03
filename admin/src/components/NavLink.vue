@@ -1,8 +1,17 @@
 <template>
-  <RouterLink :to='toPage' v-slot='{ isActive, href, navigate }' custom>
+  <RouterLink
+    v-slot='{ isActive, href, navigate }'
+    :to='toPage'
+    custom
+  >
     <li class='mr-2'>
-      <a :href='href' @click='navigate' class='inline-block p-4 rounded-t-lg border-b-2'
-        :class='isActive ? ACTIVE_CLASS : INACTIVE_CLASS' :aria-current='getAriaCurrent(isActive)'>
+      <a
+        :href='href'
+        class='inline-block p-4 rounded-t-lg border-b-2'
+        :class='isActive ? ACTIVE_CLASS : INACTIVE_CLASS'
+        :aria-current='getAriaCurrent(isActive)'
+        @click='navigate'
+      >
         <slot />
       </a>
     </li>

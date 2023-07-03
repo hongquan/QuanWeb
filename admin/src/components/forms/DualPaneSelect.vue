@@ -7,10 +7,21 @@
       <div class='border p-2 rounded'>
         <div class='overflow'>
           <ul v-if='availableOptions.length'>
-            <li v-for='opt of availableOptions' :key='opt.id'>
-              <button type='button' class='pl-2' :class='BUTTON_CLASS' @click='take(opt)'>
+            <li
+              v-for='opt of availableOptions'
+              :key='opt.id'
+            >
+              <button
+                type='button'
+                class='pl-2'
+                :class='BUTTON_CLASS'
+                @click='take(opt)'
+              >
                 <span>{{ opt.title }}</span>
-                <Icon class='h-5 w-5' icon='gg:move-right' />
+                <Icon
+                  class='h-5 w-5'
+                  icon='gg:move-right'
+                />
               </button>
             </li>
           </ul>
@@ -19,9 +30,20 @@
       <div class='border p-2 rounded'>
         <div class='overflow'>
           <ul v-if='selectedOptions.length'>
-            <li v-for='opt of selectedOptions' :key='opt.id'>
-              <button type='button' class='pr-2' :class='BUTTON_CLASS' @click='release(opt)'>
-                <Icon class='h-5 w-5' icon='gg:move-left' />
+            <li
+              v-for='opt of selectedOptions'
+              :key='opt.id'
+            >
+              <button
+                type='button'
+                class='pr-2'
+                :class='BUTTON_CLASS'
+                @click='release(opt)'
+              >
+                <Icon
+                  class='h-5 w-5'
+                  icon='gg:move-left'
+                />
                 <span>{{ opt.title }}</span>
               </button>
             </li>

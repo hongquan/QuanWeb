@@ -9,8 +9,7 @@
       <RouterView />
       <hr class='my-4'>
     </main>
-    <footer class='text-sm p-4 border-t border-gray-200 dark:border-gray-600 flex justify-between'>
-    </footer>
+    <footer class='text-sm p-4 border-t border-gray-200 dark:border-gray-600 flex justify-between' />
   </div>
 </template>
 

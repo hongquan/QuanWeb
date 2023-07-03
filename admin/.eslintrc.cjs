@@ -1,9 +1,12 @@
+require('@rushstack/eslint-patch/modern-module-resolution')
+
 module.exports = {
   env: {
     browser: true,
     es2021: true,
     'vue/setup-compiler-macros': true,
   },
+  ignorePatterns: [".eslintrc.cjs", "postcss.config.mjs"],
   plugins: [
     'vue',
     '@typescript-eslint',
@@ -28,7 +31,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
     'vue/script-setup-uses-vars': 'error',
     'vue/html-quotes': ['warn', 'single', { 'avoidEscape': true }],
-    'vue/multi-word-component-names': ['error', { 'ignores': ['Icon'] }],
+    'vue/multi-word-component-names': ['error', { 'ignores': ['Icon', 'Paginator'] }],
     'vue/object-curly-spacing': ['error', 'always'],
     'object-curly-spacing': ['error', 'always'],
     'vue/comma-dangle': ['warn', 'always-multiline'],

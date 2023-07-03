@@ -23,6 +23,6 @@ export default defineConfig({
       '/_api': {
         target: BACKEND_ROOT_URL,
       },
-    }
-  }
+    },
+  },
 })

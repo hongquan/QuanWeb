@@ -1,4 +1,4 @@
-import type {RequireAtLeastOne} from 'type-fest'
+import type { RequireAtLeastOne } from 'type-fest'
 import { D } from '@mobily/ts-belt'
 
 import { WithCategories } from '@/models/blog'

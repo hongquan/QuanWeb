@@ -1,19 +1,45 @@
 <template>
-  <nav class='relative z-0 inline-flex rounded-md shadow-sm -space-x-px' aria-label='Pagination'>
-    <RouterLink :to='prevRoute' class='block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>
+  <nav
+    class='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
+    aria-label='Pagination'
+  >
+    <RouterLink
+      :to='prevRoute'
+      class='block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+    >
       <span class='sr-only'>Previous</span>
-      <Icon class='h-5 w-5' icon='heroicons-solid:chevron-left' />
+      <Icon
+        class='h-5 w-5'
+        icon='heroicons-solid:chevron-left'
+      />
     </RouterLink>
-    <template v-for='(l, i) in genLinks()' :key='i'>
-      <RouterLink v-if='!l.isEllipsis' :to='getRouteForPage(l.page)' class='px-3 py-2 leading-tight min-w-8'
-        :class='l.cssClass' :aria-current="l.isCurrent ? 'page': null">
+    <template
+      v-for='(l, i) in genLinks()'
+      :key='i'
+    >
+      <RouterLink
+        v-if='!l.isEllipsis'
+        :to='getRouteForPage(l.page)'
+        class='px-3 py-2 leading-tight min-w-8'
+        :class='l.cssClass'
+        :aria-current="l.isCurrent ? 'page': null"
+      >
         {{ l.label }}
       </RouterLink>
-      <span v-else class=''>…</span>
+      <span
+        v-else
+        class=''
+      >…</span>
     </template>
-    <RouterLink :to='nextRoute' class='block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>
+    <RouterLink
+      :to='nextRoute'
+      class='block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+    >
       <span class='sr-only'>Next</span>
-      <Icon class='h-5 w-5' icon='heroicons-solid:chevron-right' />
+      <Icon
+        class='h-5 w-5'
+        icon='heroicons-solid:chevron-right'
+      />
     </RouterLink>
   </nav>
 </template>

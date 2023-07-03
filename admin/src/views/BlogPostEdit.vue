@@ -1,19 +1,40 @@
 <template>
   <div class='max-w-lg mx-auto'>
-    <form v-if='post' method='post' @submit.prevent='onSubmit'>
-      <HorizontalFormField v-model='post.title' label='Title' />
-      <HorizontalFormField v-model='post.slug' label='Slug' />
-      <DualPaneSelect label='Categories' :all-options='allCategories' :selected-options='post.categories'
-        @taken='onCategoryTaken($event)' @released='onCategoryReleased($event)' />
+    <form
+      v-if='post'
+      method='post'
+      @submit.prevent='onSubmit'
+    >
+      <HorizontalFormField
+        v-model='post.title'
+        label='Title'
+      />
+      <HorizontalFormField
+        v-model='post.slug'
+        label='Slug'
+      />
+      <DualPaneSelect
+        label='Categories'
+        :all-options='allCategories'
+        :selected-options='post.categories'
+        @taken='onCategoryTaken($event)'
+        @released='onCategoryReleased($event)'
+      />
       <div class='text-center mt-2'>
-        <FbButton type='submit' size='sm' :loading='isSubmitting'>Submit</FbButton>
+        <FbButton
+          type='submit'
+          size='sm'
+          :loading='isSubmitting'
+        >
+          Submit
+        </FbButton>
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang='ts'>
-import { ref, onBeforeMount, onMounted, watch, computed } from 'vue'
+import { ref, onBeforeMount, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
@@ -79,7 +100,7 @@ async function onSubmit() {
   isSubmitting.value = false
   const updatedPost = PostSchema.parse(resp)
   toast.success(`Post "${updatedPost.title}" is updated!`)
-  router.push({ name: 'post.list' })
+  await router.push({ name: 'post.list' })
 }
 
 onBeforeMount(fetchData)
@@ -91,7 +112,7 @@ onMounted(() => {
         post.value!.slug = slugify(title)
       }
     },
-    { flush: 'post' }
+    { flush: 'post' },
   )
 })
 </script>

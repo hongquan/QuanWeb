@@ -20,7 +20,7 @@ export const routes: RouteRecordRaw[] = [
         { path: '', component: BlogPostList, name: 'post.list' },
         { path: 'new', component: BlogPostEdit, name: 'post.new' },
         { path: ':postId', component: BlogPostEdit, name: 'post.edit', props: true },
-      ]
+      ],
       },
       { path: 'categories', component: BlogCategoryList, name: 'category.list' },
     ],
