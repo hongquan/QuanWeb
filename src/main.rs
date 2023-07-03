@@ -9,18 +9,29 @@ mod types;
 mod utils;
 mod views;
 
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::routing::{get, Router};
+use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use miette::miette;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use minijinja::{path_loader, Environment};
+use axum_template::engine::Engine;
 
 use auth::store::EdgeDbStore;
 use types::{AppState, SharedState};
+
+const TEMPLATE_DIR: &str = "minijinja";
+
+fn config_jinja() -> Environment<'static> {
+    let mut jinja = Environment::new();
+    let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(TEMPLATE_DIR);
+    jinja.set_loader(path_loader(&template_path));
+    jinja
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -38,15 +49,17 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let secret_bytes = conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
     let client = db::get_edgedb_client().await?;
-    let shared_state = Arc::new(AppState { db: client.clone() });
+    let jinja = config_jinja();
+    let shared_state = Arc::new(AppState { db: client.clone(), template_engine: Engine::new(jinja) });
     let session_layer = SessionLayer::new(redis_store, &secret_bytes).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);
 
+    let home_router: Router<SharedState> = views::routes::get_router();
     let api_router: Router<SharedState> = api::get_router().with_state(Arc::clone(&shared_state));
 
     let app = Router::new()
-        .route("/", get(views::base::root))
+        .merge(home_router)
         .nest("/_api", api_router)
         .with_state(shared_state)
         .layer(auth_layer)

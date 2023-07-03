@@ -8,6 +8,10 @@ use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
+use axum_template::engine::Engine;
+use minijinja::Environment;
+
+pub type JinjaEngine = Engine<Environment<'static>>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiErrorShape {
@@ -46,6 +50,7 @@ impl From<HashMap<String, String>> for ApiErrorShape {
 
 pub struct AppState {
     pub db: Client,
+    pub template_engine: JinjaEngine,
 }
 
 pub type SharedState = Arc<AppState>;
