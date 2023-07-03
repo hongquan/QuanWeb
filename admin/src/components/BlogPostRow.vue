@@ -14,6 +14,7 @@
     <td class='px-6 py-4'>
       {{ post.slug }}
     </td>
+    <td class='px-6 py-4'>{{ CategoriesDisplay }}</td>
     <td>
       <button
         class='hover:text-red-500'
@@ -55,6 +56,13 @@ const classNames = computed(() => [
   'border-b',
   'dark:border-gray-700',
 ])
+
+const CategoriesDisplay = computed(() => {
+  if (!props.post.categories) {
+    return ''
+  }
+  return props.post.categories.map(c => c.title).join(', ')
+})
 
 const editUrl = computed(() => ({
   name: 'post.edit',
