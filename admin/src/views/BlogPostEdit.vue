@@ -23,7 +23,6 @@
       <div class='text-center mt-2'>
         <FbButton
           type='submit'
-          size='sm'
           :loading='isSubmitting'
         >
           Save

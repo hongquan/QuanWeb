@@ -67,7 +67,7 @@ async function deleteCategory() {
   }
   const url = lightJoin(API_GET_CATEGORIES, props.category.id)
   const resp = await kyClient.delete(url)
-  if (resp.status == HStatus.NO_CONTENT) {
+  if (resp.status !== HStatus.NO_CONTENT) {
     toast.error('Failed to delete category')
     return
   }
