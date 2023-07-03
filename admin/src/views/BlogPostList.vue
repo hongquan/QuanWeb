@@ -37,6 +37,7 @@
             :key='post.id || index'
             :post='post'
             :is-odd='Boolean(index % 2)'
+            @deleted='onDeleted'
           />
         </tbody>
       </table>
@@ -76,6 +77,10 @@ async function fetchData() {
   const data = ObjectListResponseSchema.parse(resp)
   posts.value = PostSchema.array().parse(data.objects)
   totalPages.value = data.total_pages
+}
+
+function onDeleted(id: string) {
+  posts.value = posts.value.filter(item => item.id !== id)
 }
 
 onBeforeMount(fetchData)

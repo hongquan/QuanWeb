@@ -27,6 +27,8 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import lightJoin from 'light-join'
+import HStatus from 'http-status'
+import { toast } from 'vue-sonner'
 
 import { Category } from '@/models/blog'
 import { kyClient } from '@/common'
@@ -51,7 +53,12 @@ const classNames = computed(() => [
 
 async function deleteCategory() {
   const url = lightJoin(API_GET_CATEGORIES, props.category.id)
-  await kyClient.delete(url)
+  const resp = await kyClient.delete(url)
+  if (resp.status == HStatus.NO_CONTENT) {
+    toast.error('Failed to delete category')
+    return
+  }
+  toast.success(`Category ${props.category.title} is deleted!`)
   emit('deleted', props.category.id)
 }
 </script>
