@@ -53,6 +53,7 @@ const isSubmitting = ref(false)
 
 async function fetchData() {
   if (!props.categoryId) {
+    category.value = CategorySchema.parse({})
     return
   }
   const url = lightJoin(API_GET_CATEGORIES, props.categoryId)
