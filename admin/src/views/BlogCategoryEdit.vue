@@ -64,16 +64,23 @@ async function onSubmit() {
   if (!category.value) {
     return
   }
-  isSubmitting.value = true
   const isCreating = !props.categoryId
   const url = category.value.id ? lightJoin(API_GET_CATEGORIES, category.value.id) : API_GET_CATEGORIES
   const postData = D.deleteKey(category.value, 'id')
-  const resp = await kyClient(url, { json: postData, method: isCreating ? 'post' : 'patch' }).json()
-  const updatedCat = CategorySchema.parse(resp)
-  const message = isCreating ? `Category "${updatedCat.title}" is created!` : `Category "${updatedCat.title}" is updated!`
-  toast.success(message)
-  isSubmitting.value = false
-  await router.push({ name: 'category.list' })
+  isSubmitting.value = true
+  try {
+    const resp = await kyClient(url, { json: postData, method: isCreating ? 'post' : 'patch' }).json()
+    const updatedCat = CategorySchema.parse(resp)
+    const message = isCreating ? `Category "${updatedCat.title}" is created!` : `Category "${updatedCat.title}" is updated!`
+    toast.success(message)
+    await router.push({ name: 'category.list' })
+  } catch (e) {
+    console.debug(e)
+    toast.error('Failed to save!')
+  } finally {
+    isSubmitting.value = false
+  }
+
 }
 
 onBeforeMount(fetchData)

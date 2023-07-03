@@ -100,15 +100,22 @@ async function onSubmit() {
   const isCreating = !props.postId
   const url = props.postId ? lightJoin(API_GET_POSTS, props.postId) : API_GET_POSTS
   const postData = transformPostForPosting(post.value)
-  const resp = await kyClient(url, {
-    method: isCreating ? 'post' : 'patch',
-    json: postData,
-  }).json()
-  isSubmitting.value = false
-  const updatedPost = PostSchema.parse(resp)
-  const message = isCreating ? `Post "${updatedPost.title}" is created!` : `Post "${updatedPost.title}" is updated!`
-  toast.success(message)
-  await router.push({ name: 'post.list' })
+  isSubmitting.value = true
+  try {
+    const resp = await kyClient(url, {
+      method: isCreating ? 'post' : 'patch',
+      json: postData,
+    }).json()
+    const updatedPost = PostSchema.parse(resp)
+    const message = isCreating ? `Post "${updatedPost.title}" is created!` : `Post "${updatedPost.title}" is updated!`
+    toast.success(message)
+    await router.push({ name: 'post.list' })
+  } catch (e) {
+    console.debug(e)
+    toast.error('Failed to save post!')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 onBeforeMount(fetchData)
