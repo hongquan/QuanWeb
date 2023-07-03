@@ -90,13 +90,13 @@ async function onSubmit() {
 async function handleError(e: unknown) {
   if (e instanceof HTTPError) {
     const resp = await e.response.json()
-    const result1 = z.record(z.string()).safeParse(resp.detail)
+    const result1 = z.record(z.string()).safeParse(resp.fields)
     if (result1.success) {
       console.log('To show validation errors', result1.data)
       validationErrors.value = D.fromPairs(D.toPairs(result1.data).map(([k, v]) => [removeLeading(k, 'value.'), v]))
       return
     }
-    const result2 = z.string().safeParse(resp.detail)
+    const result2 = z.string().safeParse(resp.message)
     if (result2.success) {
       toast.error(result2.data)
       return
