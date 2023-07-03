@@ -57,18 +57,18 @@ pub async fn delete_post(
     Path(post_id): Path<Uuid>,
     auth: Auth,
     State(state): State<SharedState>,
-) -> AxumResult<Json<MinimalObject>> {
+) -> AxumResult<StatusCode> {
     tracing::info!("Current user: {:?}", auth.current_user);
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     let q = "DELETE BlogPost FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let db_conn = &state.db;
-    let deleted_post: MinimalObject = db_conn
+    let _deleted_post: MinimalObject = db_conn
         .query_single(q, &(post_id,))
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
-    Ok(Json(deleted_post))
+    Ok(StatusCode::NO_CONTENT)
 }
 
 pub async fn update_post_partial(

@@ -72,18 +72,18 @@ pub async fn delete_category(
     Path(category_id): Path<Uuid>,
     auth: Auth,
     State(state): State<SharedState>,
-) -> AxumResult<Json<MinimalObject>> {
+) -> AxumResult<StatusCode> {
     tracing::info!("Current user: {:?}", auth.current_user);
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     let q = "DELETE BlogCategory FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let db_conn = &state.db;
-    let deleted_cat: MinimalObject = db_conn
+    let _deleted_cat: MinimalObject = db_conn
         .query_single(q, &(category_id,))
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
-    Ok(Json(deleted_cat))
+    Ok(StatusCode::NO_CONTENT)
 }
 
 pub async fn update_category_partial(
