@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
@@ -24,6 +26,8 @@ pub enum ApiError {
     LoginError(String),
     #[error("Not enough data")]
     NotEnoughData,
+    #[error(transparent)]
+    ValidationError(#[from] garde::Errors),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -59,9 +63,21 @@ impl IntoResponse for ApiError {
             Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
             Self::NotEnoughData => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            Self::ValidationError(e) => {
+                let resp: ApiErrorShape = flatten_garde_errors(e).into();
+                return (StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into_response();
+            }
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
         };
         let payload = ApiErrorShape::from(message);
         (status, Json(payload)).into_response()
     }
+}
+
+pub fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
+    errors
+        .flatten()
+        .into_iter()
+        .map(|(k, v)| (k, v.message.to_string()))
+        .collect()
 }

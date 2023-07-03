@@ -15,8 +15,7 @@ use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListRe
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::retrievers;
-use crate::types::{SharedState, ApiErrorShape};
-use crate::utils::validation::flatten_garde_errors;
+use crate::types::SharedState;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 
 pub async fn root() -> &'static str {
@@ -155,11 +154,7 @@ pub async fn create_category(
     let post_data: BlogCategoryCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     tracing::debug!("Post data: {:?}", post_data);
-    post_data.validate(&()).map_err(|e| {
-        tracing::debug!("Validation error: {:?}", e);
-        let resp: ApiErrorShape = flatten_garde_errors(e).into();
-        (StatusCode::UNPROCESSABLE_ENTITY, Json(resp))
-    })?;
+    post_data.validate(&()).map_err(ApiError::ValidationError)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(

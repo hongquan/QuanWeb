@@ -12,7 +12,6 @@ use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
 use crate::db::get_edgedb_client;
 use crate::models::{User, Role};
 use crate::retrievers;
-use crate::utils::validation::flatten_garde_errors;
 use crate::types::ApiErrorShape;
 use super::errors::ApiError;
 
@@ -26,11 +25,7 @@ pub async fn login(
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<User>> {
     let valid_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    if let Err(e) = valid_data.validate(&()) {
-        tracing::info!("Data validation failed: {}", e);
-        let resp: ApiErrorShape = flatten_garde_errors(e).into();
-        return Err((StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into());
-    }
+    valid_data.validate(&()).map_err(ApiError::ValidationError)?;
     tracing::info!("Validated request data: {:?}", valid_data);
     let client = get_edgedb_client().await.map_err(ApiError::EdgeDBQueryError)?;
     let user = retrievers::get_user_by_email(&valid_data.email, &client)
