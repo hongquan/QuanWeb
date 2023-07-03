@@ -78,7 +78,7 @@ impl<'de> Deserialize<'de> for ApiErrorDetail {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ApiErrorShape {
     pub detail: ApiErrorDetail,
-    pub origin: Option<String>,
+    pub code: Option<String>,
 }
 
 impl From<String> for ApiErrorShape {

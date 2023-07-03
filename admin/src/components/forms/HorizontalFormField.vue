@@ -9,6 +9,7 @@
         :id='uid'
         v-model='value'
         size='sm'
+        :required='required'
       />
     </div>
   </div>
@@ -22,9 +23,11 @@ import { Input } from 'flowbite-vue'
 interface Props {
   modelValue: string
   label?: string
+  required?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   label: '',
+  required: false,
 })
 const emit = defineEmits<{
   'update:modelValue': [value: string]

@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
 use thiserror::Error;
 use edgedb_errors::display::display_error_verbose;
+use edgedb_errors::kinds as EdErrKind;
 
 use crate::types::ApiErrorShape;
 
@@ -48,7 +49,12 @@ impl IntoResponse for ApiError {
             },
             Self::EdgeDBQueryError(ref e) => {
                 tracing::error!("EdgeDB error: {}", display_error_verbose(e));
-                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+                if e.is::<EdErrKind::ConstraintViolationError>() {
+                    let detail = e.details().unwrap_or_default();
+                    (StatusCode::UNPROCESSABLE_ENTITY, detail.to_string())
+                } else {
+                    (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+                }
             }
             Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),

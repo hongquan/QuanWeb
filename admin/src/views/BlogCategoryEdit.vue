@@ -8,10 +8,12 @@
       <HorizontalFormField
         v-model='category.title'
         label='Title'
+        required
       />
       <HorizontalFormField
         v-model='category.slug'
         label='Slug'
+        required
       />
       <div class='text-center mt-2'>
         <FbButton
@@ -33,6 +35,7 @@ import { slugify } from 'transliteration'
 import { Button as FbButton } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { D } from '@mobily/ts-belt'
+import { HTTPError } from 'ky'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema } from '@/models/blog'
@@ -76,6 +79,11 @@ async function onSubmit() {
     await router.push({ name: 'category.list' })
   } catch (e) {
     console.debug(e)
+    if (e instanceof HTTPError) {
+      const eRsp = await e.response.json()
+      toast.error(eRsp.detail)
+      return
+    }
     toast.error('Failed to save!')
   } finally {
     isSubmitting.value = false
