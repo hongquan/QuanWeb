@@ -16,7 +16,7 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { ulid } from 'ulidx'
+import { nanoid } from 'nanoid'
 import { Input } from 'flowbite-vue'
 
 interface Props {
@@ -30,7 +30,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const uid = ulid()
+const uid = nanoid()
 
 const value = computed({
   get() {

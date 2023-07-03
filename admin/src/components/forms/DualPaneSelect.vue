@@ -4,7 +4,7 @@
       {{ label }}
     </label>
     <div class='mt-2 sm:col-span-3 sm:mt-0 grid grid-cols-2 gap-4 text-sm'>
-      <div class='border p-2 rounded'>
+      <div class='border p-2 rounded min-h-20'>
         <div class='overflow'>
           <ul v-if='availableOptions.length'>
             <li

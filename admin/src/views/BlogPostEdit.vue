@@ -26,7 +26,7 @@
           size='sm'
           :loading='isSubmitting'
         >
-          Submit
+          Save
         </FbButton>
       </div>
     </form>
@@ -52,9 +52,11 @@ import { transformPostForPosting } from '@/utils/models'
 import { ObjectListResponseSchema } from '@/models/api'
 
 interface Props {
-  postId: string
+  postId?: string | null
 }
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  postId: null,
+})
 const router = useRouter()
 const post = ref<Post | null>(null)
 const allCategories = ref<Category[]>([])
@@ -67,10 +69,14 @@ async function fetchCategories() {
 }
 
 async function fetchData() {
+  await fetchCategories()
+  if (!props.postId) {
+    post.value = PostSchema.parse({})
+    return
+  }
   const url = lightJoin(API_GET_POSTS, props.postId)
   const resp = await kyClient.get(url).json()
   post.value = PostSchema.parse(resp)
-  await fetchCategories()
 }
 
 function onCategoryTaken(id: string) {
@@ -92,14 +98,17 @@ async function onSubmit() {
   if (!post.value) {
     return
   }
-  const url = lightJoin(API_GET_POSTS, props.postId)
+  const isCreating = !props.postId
+  const url = props.postId ? lightJoin(API_GET_POSTS, props.postId) : API_GET_POSTS
   const postData = transformPostForPosting(post.value)
-  const resp = await kyClient.patch(url, {
+  const resp = await kyClient(url, {
+    method: isCreating ? 'post' : 'patch',
     json: postData,
   }).json()
   isSubmitting.value = false
   const updatedPost = PostSchema.parse(resp)
-  toast.success(`Post "${updatedPost.title}" is updated!`)
+  const message = isCreating ? `Post "${updatedPost.title}" is created!` : `Post "${updatedPost.title}" is updated!`
+  toast.success(message)
   await router.push({ name: 'post.list' })
 }
 

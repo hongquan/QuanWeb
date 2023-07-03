@@ -1353,11 +1353,6 @@ ky@^0.33.3:
   resolved "https://registry.yarnpkg.com/ky/-/ky-0.33.3.tgz#bf1ad322a3f2c3428c13cfa4b3af95e6c4a2f543"
   integrity sha512-CasD9OCEQSFIam2U8efFK81Yeg8vNMTBUqtMOHlrcWQHqUX3HeCl9Dr31u4toV7emlH8Mymk5+9p0lL6mKb/Xw==
 
-layerr@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/layerr/-/layerr-2.0.0.tgz#2e0e8d9af6851208a8f69251b0b6cb87c005dc68"
-  integrity sha512-d17+qA3CAekh29Z67nLQaqCXJSvoo9zKBvZAziYdDwTOeA1XdOoTuLtNOLg+TW5Tse+D9bw8VHsTQo5vU7G/kA==
-
 levn@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.4.1.tgz#ae4562c007473b932a6200d403268dd2fffc6ade"
@@ -1487,6 +1482,11 @@ nanoid@^3.3.6:
   version "3.3.6"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.6.tgz#443380c856d6e9f9824267d960b4236ad583ea4c"
   integrity sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==
+
+nanoid@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-4.0.2.tgz#140b3c5003959adbebf521c170f282c5e7f9fb9e"
+  integrity sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
@@ -1930,13 +1930,6 @@ typescript@<5.1:
   version "5.0.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.0.4.tgz#b217fd20119bd61a94d4011274e0ab369058da3b"
   integrity sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==
-
-ulidx@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/ulidx/-/ulidx-2.0.0.tgz#c6120dbf2ac717621f94af0f2c5c78400e4d5277"
-  integrity sha512-cz6HnYL8aQeR1l7qgo4qK88kLhnVQn1qLjALMoa4rtmj6/jw3yS2KUxu3r+d8GSKkeK9ctw+n8VmCygqfDtckA==
-  dependencies:
-    layerr "^2.0.0"
 
 update-browserslist-db@^1.0.11:
   version "1.0.11"

@@ -20,7 +20,11 @@ export default {
       minWidth: {
         8: '2rem',
         ...defaultTheme.minWidth,
-      }
+      },
+      minHeight: {
+        20: '5rem',
+        ...defaultTheme.minHeight,
+      },
     },
   },
   plugins: [
