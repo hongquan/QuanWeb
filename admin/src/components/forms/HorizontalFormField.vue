@@ -5,7 +5,7 @@
       class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'
     >{{ label }}</label>
     <div class='mt-2 sm:col-span-3 sm:mt-0'>
-      <Input
+      <FbInput
         :id='uid'
         v-model='value'
         size='sm'
@@ -18,7 +18,7 @@
 <script setup lang='ts'>
 import { computed } from 'vue'
 import { nanoid } from 'nanoid'
-import { Input } from 'flowbite-vue'
+import { Input as FbInput } from 'flowbite-vue'
 
 interface Props {
   modelValue: string

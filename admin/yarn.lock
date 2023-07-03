@@ -312,6 +312,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.3.3.tgz#329842940042d2b280897150e023e604d11657d6"
   integrity sha512-wheIYdr4NYML61AjC8MKj/2jrR/kDQri/CIpVoZwldwhnIrD/j9jIU5bJ8yBKuB2VhpFV7Ab6G2XkBjv9r9Zzw==
 
+"@types/pre-suf@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/pre-suf/-/pre-suf-1.1.0.tgz#7b49deee6b007a7166db3db2d81510812fdd4048"
+  integrity sha512-6PQIfXO43YPsKamPVKI/EXK4qrdfz4gkN4BiWgVqHDmvoVg02Ep3Ck69g4a9rWOhbIXlBL4pAH/qjtirT13mvw==
+
 "@types/semver@^7.3.12":
   version "7.5.0"
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.5.0.tgz#591c1ce3a702c45ee15f47a42ade72c2fd78978a"
@@ -885,6 +890,11 @@ escalade@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.1.1.tgz#d8cfdc7000965c5a0174b4a82eaa5c0552742e40"
   integrity sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==
+
+escape-string-regexp@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
+  integrity sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==
 
 escape-string-regexp@^4.0.0:
   version "4.0.0"
@@ -1680,6 +1690,13 @@ postcss@^8.1.10, postcss@^8.4.23, postcss@^8.4.24:
     nanoid "^3.3.6"
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
+
+pre-suf@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/pre-suf/-/pre-suf-1.1.1.tgz#6f9fdb28df2aad942bac1e60d4e4fa4946dc626f"
+  integrity sha512-paR08SEiZAz/IbPgbA5niGvBmRvzpPZ+qqRj/uPK/zJvRqNhT1EvJBeFEoyQdTIq9TRYxwYFhmjfGuqvFmWH1A==
+  dependencies:
+    escape-string-regexp "^1.0.5"
 
 prelude-ls@^1.2.1:
   version "1.2.1"

@@ -6,6 +6,7 @@ use edgedb_protocol::value::Value as EValue;
 use fievar::Fields;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use garde::Validate;
 
 use crate::models::DocFormat;
 use crate::types::create_shape_element;
@@ -107,13 +108,19 @@ impl BlogPostPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Fields)]
+#[derive(Debug, Default, Deserialize, Fields, Validate)]
 pub struct BlogPostCreateData {
+    #[garde(length(min=1))]
     pub title: String,
+    #[garde(length(min=1))]
     pub slug: String,
+    #[garde(skip)]
     pub is_published: Option<bool>,
+    #[garde(skip)]
     pub format: Option<DocFormat>,
+    #[garde(skip)]
     pub body: Option<String>,
+    #[garde(skip)]
     pub categories: Option<Vec<Uuid>>,
 }
 
@@ -205,9 +212,11 @@ impl BlogCategoryPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Fields)]
+#[derive(Debug, Default, Deserialize, Validate)]
 pub struct BlogCategoryCreateData {
+    #[garde(length(min=1))]
     pub title: String,
+    #[garde(length(min=1))]
     pub slug: String,
 }
 

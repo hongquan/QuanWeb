@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 
 use axum::http::StatusCode;
 use axum::{debug_handler, Json, response::Result as AxumResult};
@@ -13,20 +12,13 @@ use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
 use crate::db::get_edgedb_client;
 use crate::models::{User, Role};
 use crate::retrievers;
+use crate::utils::validation::flatten_garde_errors;
 use crate::types::ApiErrorShape;
 use super::errors::ApiError;
 
 pub type Auth = AuthContext<Uuid, User, EdgeDbStore<User>, Role>;
 #[allow(dead_code)]
 pub type RequireAuth = RequireAuthorizationLayer<Uuid, User, Role>;
-
-fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
-    errors
-        .flatten()
-        .into_iter()
-        .map(|(k, v)| (k, v.message.to_string()))
-        .collect()
-}
 
 #[debug_handler]
 pub async fn login(

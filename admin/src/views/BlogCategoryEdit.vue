@@ -36,6 +36,8 @@ import { Button as FbButton } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { D } from '@mobily/ts-belt'
 import { HTTPError } from 'ky'
+import { z } from 'zod'
+import { removeLeading } from 'pre-suf'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema } from '@/models/blog'
@@ -52,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
 const router = useRouter()
 const category = ref<Category | null>(null)
 const isSubmitting = ref(false)
+const validationErrors = ref<Record<string, string>>({})
 
 async function fetchData() {
   if (!props.categoryId) {
@@ -78,17 +81,28 @@ async function onSubmit() {
     toast.success(message)
     await router.push({ name: 'category.list' })
   } catch (e) {
-    console.debug(e)
-    if (e instanceof HTTPError) {
-      const eRsp = await e.response.json()
-      toast.error(eRsp.detail)
-      return
-    }
-    toast.error('Failed to save!')
+    await handleError(e)
   } finally {
     isSubmitting.value = false
   }
+}
 
+async function handleError(e: unknown) {
+  if (e instanceof HTTPError) {
+    const resp = await e.response.json()
+    const result1 = z.record(z.string()).safeParse(resp.detail)
+    if (result1.success) {
+      console.log('To show validation errors', result1.data)
+      validationErrors.value = D.fromPairs(D.toPairs(result1.data).map(([k, v]) => [removeLeading(k, 'value.'), v]))
+      return
+    }
+    const result2 = z.string().safeParse(resp.detail)
+    if (result2.success) {
+      toast.error(result2.data)
+      return
+    }
+  }
+  console.debug(e)
 }
 
 onBeforeMount(fetchData)
