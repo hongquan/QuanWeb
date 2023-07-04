@@ -8,6 +8,7 @@ mod retrievers;
 mod types;
 mod utils;
 mod views;
+mod errors;
 
 use std::{error::Error, path::PathBuf};
 use std::net::SocketAddr;
