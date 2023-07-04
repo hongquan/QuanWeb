@@ -1,9 +1,9 @@
 use axum::{routing::get, Router};
 
 use crate::types::AppState;
-use super::base;
+use super::home;
 
 
 pub fn get_router() -> Router<AppState> {
-    Router::new().route("/", get(base::home))
+    Router::new().route("/", get(home))
 }
