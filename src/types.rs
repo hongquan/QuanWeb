@@ -8,8 +8,12 @@ use serde::{Deserialize, Serialize};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
 use axum::extract::FromRef;
+use axum::http::{header, StatusCode};
+use axum::body::{boxed, Full};
+use axum::response::{IntoResponse, Response};
 use axum_template::engine::Engine;
 use minijinja::Environment;
+use rust_embed::RustEmbed;
 
 pub type JinjaEngine = Engine<Environment<'static>>;
 
@@ -52,6 +56,32 @@ impl From<HashMap<String, String>> for ApiErrorShape {
 pub struct AppState {
     pub db: Client,
     pub template_engine: JinjaEngine,
+}
+
+#[derive(RustEmbed)]
+#[folder = "static"]
+#[exclude = "vendor/alpine*.js"]
+#[exclude = "fonts/*"]
+pub struct Asset;
+
+pub struct StaticFile<T>(pub T);
+
+impl<T> IntoResponse for StaticFile<T>
+where
+  T: Into<String>,
+{
+  fn into_response(self) -> Response {
+    let path = self.0.into();
+
+    match Asset::get(path.as_str()) {
+      Some(content) => {
+        let body = boxed(Full::from(content.data));
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
+        Response::builder().header(header::CONTENT_TYPE, mime.as_ref()).body(body).unwrap()
+      }
+      None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
+    }
+  }
 }
 
 /* Serde serializers to serialize EdgeDB's Datetime type */

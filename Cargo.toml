@@ -30,10 +30,12 @@ http = "0.2.9"
 indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"
 miette = { version = "5.9.0", features = ["fancy", "serde"] }
+mime_guess = "2.0.4"
 minijinja = { version = "1.0.3", features = ["loader", "internal_debug"] }
 minijinja-autoreload = "1.0.3"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.1", features = ["serde"] }
+rust-embed = { version = "6.8.1", features = ["axum", "mime-guess", "include-exclude"] }
 serde = { version = "1.0.164", features = ["serde_derive"] }
 serde-value = "0.7.0"
 serde_json = "1.0.99"

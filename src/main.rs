@@ -28,6 +28,8 @@ const TEMPLATE_DIR: &str = "minijinja";
 
 fn config_jinja() -> Environment<'static> {
     let mut jinja = Environment::new();
+    #[cfg(debug_assertions)]
+    jinja.add_global("running_locally", true);
     let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(TEMPLATE_DIR);
     jinja.set_loader(path_loader(&template_path));
     jinja
