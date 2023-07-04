@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 use edgedb_protocol::model::Datetime as EDatetime;
@@ -8,6 +7,7 @@ use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
+use axum::extract::FromRef;
 use axum_template::engine::Engine;
 use minijinja::Environment;
 
@@ -48,12 +48,11 @@ impl From<HashMap<String, String>> for ApiErrorShape {
     }
 }
 
+#[derive(Debug, Clone, FromRef)]
 pub struct AppState {
     pub db: Client,
     pub template_engine: JinjaEngine,
 }
-
-pub type SharedState = Arc<AppState>;
 
 /* Serde serializers to serialize EdgeDB's Datetime type */
 pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>

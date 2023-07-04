@@ -4,9 +4,10 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::{Query, WithRejection};
+use edgedb_tokio::Client as EdgeClient;
+use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
-use garde::Validate;
 
 use super::auth::Auth;
 use super::errors::ApiError;
@@ -15,39 +16,40 @@ use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, 
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{DetailedBlogPost, MinimalObject, RawBlogPost};
 use crate::retrievers::{self, get_all_posts_count};
-use crate::types::SharedState;
 
 pub async fn list_posts(
     paging: Query<Paging>,
     OriginalUri(original_uri): OriginalUri,
-    State(state): State<SharedState>,
+    State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<RawBlogPost>>> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
     let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
-    let db_conn = &state.db;
-    let posts = retrievers::get_blogposts(Some(offset), Some(limit), db_conn)
+    let posts = retrievers::get_blogposts(Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = get_all_posts_count(&db_conn)
+    let count = get_all_posts_count(&db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let total_pages = NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    let total_pages =
+        NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging.0, count, original_uri);
     let resp = ObjectListResponse {
-        count, total_pages, links, objects: posts
+        count,
+        total_pages,
+        links,
+        objects: posts,
     };
     Ok(Json(resp))
 }
 
 pub async fn get_post(
     WithRejection(Path(post_id), _): WithRejection<Path<Uuid>, ApiError>,
-    State(state): State<SharedState>,
+    State(db): State<EdgeClient>,
 ) -> AxumResult<Json<DetailedBlogPost>> {
-    let db_conn = &state.db;
-    let post = retrievers::get_blogpost(post_id, db_conn)
+    let post = retrievers::get_blogpost(post_id, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
@@ -57,14 +59,13 @@ pub async fn get_post(
 pub async fn delete_post(
     Path(post_id): Path<Uuid>,
     auth: Auth,
-    State(state): State<SharedState>,
+    State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
     tracing::info!("Current user: {:?}", auth.current_user);
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     let q = "DELETE BlogPost FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
-    let db_conn = &state.db;
-    let _deleted_post: MinimalObject = db_conn
+    let _deleted_post: MinimalObject = db
         .query_single(q, &(post_id,))
         .await
         .map_err(ApiError::EdgeDBQueryError)?
@@ -75,17 +76,16 @@ pub async fn delete_post(
 pub async fn update_post_partial(
     WithRejection(Path(post_id), _): WithRejection<Path<Uuid>, ApiError>,
     auth: Auth,
-    State(state): State<SharedState>,
+    State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<DetailedBlogPost>> {
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
-    let db_conn = &state.db;
     // User submit no field to update
     if jdata.is_empty() {
-        let post = retrievers::get_blogpost(post_id, db_conn)
+        let post = retrievers::get_blogpost(post_id, &db)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
         let post = post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
@@ -124,7 +124,7 @@ pub async fn update_post_partial(
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args);
-    let updated_post: Option<DetailedBlogPost> = db_conn
+    let updated_post: Option<DetailedBlogPost> = db
         .query_single(&q, &args)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
@@ -134,14 +134,13 @@ pub async fn update_post_partial(
 
 pub async fn create_post(
     auth: Auth,
-    State(state): State<SharedState>,
+    State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<(StatusCode, Json<DetailedBlogPost>)> {
     auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
-    let db_conn = &state.db;
     // User submitted no field to create BlogPost
     (!jdata.is_empty())
         .then_some(())
@@ -180,7 +179,7 @@ pub async fn create_post(
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args);
-    let created_post: DetailedBlogPost = db_conn
+    let created_post: DetailedBlogPost = db
         .query_single(&q, &args)
         .await
         .map_err(ApiError::EdgeDBQueryError)?

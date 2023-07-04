@@ -11,7 +11,6 @@ mod views;
 
 use std::{error::Error, path::PathBuf};
 use std::net::SocketAddr;
-use std::sync::Arc;
 
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
@@ -22,7 +21,7 @@ use minijinja::{path_loader, Environment};
 use axum_template::engine::Engine;
 
 use auth::store::EdgeDbStore;
-use types::{AppState, SharedState};
+use types::AppState;
 
 const TEMPLATE_DIR: &str = "minijinja";
 
@@ -50,18 +49,18 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let secret_bytes = conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
     let client = db::get_edgedb_client().await?;
     let jinja = config_jinja();
-    let shared_state = Arc::new(AppState { db: client.clone(), template_engine: Engine::new(jinja) });
+    let app_state = AppState { db: client.clone(), template_engine: Engine::new(jinja) };
     let session_layer = SessionLayer::new(redis_store, &secret_bytes).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);
 
-    let home_router: Router<SharedState> = views::routes::get_router();
-    let api_router: Router<SharedState> = api::get_router().with_state(Arc::clone(&shared_state));
+    let home_router: Router<AppState> = views::routes::get_router();
+    let api_router: Router<AppState> = api::get_router().with_state(app_state.clone());
 
     let app = Router::new()
         .merge(home_router)
         .nest("/_api", api_router)
-        .with_state(shared_state)
+        .with_state(app_state)
         .layer(auth_layer)
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());

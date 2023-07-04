@@ -2,9 +2,9 @@ use axum::routing::{get, post, Router};
 
 use super::auth;
 use super::views;
-use crate::types::SharedState;
+use crate::types::AppState;
 
-pub fn get_router() -> Router<SharedState> {
+pub fn get_router() -> Router<AppState> {
     let single_post_router = get(views::get_post)
         .patch(views::update_post_partial)
         .delete(views::delete_post);
