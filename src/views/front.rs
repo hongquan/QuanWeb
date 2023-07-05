@@ -21,7 +21,6 @@ pub async fn home(State(state): State<AppState>) -> AxumResult<Html<String>> {
 }
 
 pub async fn static_handler(uri: Uri) -> impl IntoResponse {
-    tracing::debug!("To serve static file at URI {}", uri);
     // URI is like "/static/css/style.css", we need to strip to "css/style.css"
     let path = uri.path().trim_start_matches(&format!("{STATIC_URL}/")).to_string();
     StaticFile(path)

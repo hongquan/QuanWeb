@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
 use axum::extract::FromRef;
-use axum::http::{header, StatusCode};
-use axum::body::{boxed, Full};
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum::http::header::CONTENT_TYPE;
 use axum_template::engine::Engine;
 use minijinja::Environment;
 use rust_embed::RustEmbed;
@@ -62,7 +62,7 @@ pub struct AppState {
 #[folder = "static"]
 #[exclude = "vendor/alpine*.js"]
 #[exclude = "fonts/*"]
-pub struct Asset;
+pub struct Assets;
 
 pub struct StaticFile<T>(pub T);
 
@@ -73,11 +73,10 @@ where
   fn into_response(self) -> Response {
     let path = self.0.into();
 
-    match Asset::get(path.as_str()) {
+    match Assets::get(path.as_str()) {
       Some(content) => {
-        let body = boxed(Full::from(content.data));
         let mime = mime_guess::from_path(path).first_or_octet_stream();
-        Response::builder().header(header::CONTENT_TYPE, mime.as_ref()).body(body).unwrap()
+        ([(CONTENT_TYPE, mime.as_ref())], content.data).into_response()
       }
       None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
     }
