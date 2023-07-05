@@ -3,7 +3,6 @@ use std::num::NonZeroU16;
 use edgedb_protocol::codec::ObjectShape;
 use edgedb_protocol::common::Cardinality;
 use edgedb_protocol::value::Value as EValue;
-use fievar::Fields;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use garde::Validate;
@@ -44,7 +43,7 @@ impl<T> Default for ObjectListResponse<T> {
     }
 }
 
-#[derive(Debug, Deserialize, Fields)]
+#[derive(Debug, Deserialize)]
 pub struct BlogPostPatchData {
     pub title: Option<String>,
     pub slug: Option<String>,
@@ -108,7 +107,7 @@ impl BlogPostPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Fields, Validate)]
+#[derive(Debug, Default, Deserialize, Validate)]
 pub struct BlogPostCreateData {
     #[garde(length(min=1))]
     pub title: String,
@@ -183,7 +182,7 @@ impl BlogPostCreateData {
     }
 }
 
-#[derive(Debug, Deserialize, Fields)]
+#[derive(Debug, Deserialize)]
 pub struct BlogCategoryPatchData {
     pub title: Option<String>,
     pub slug: Option<String>,
