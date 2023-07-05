@@ -4,7 +4,7 @@ mod auth;
 mod consts;
 mod db;
 mod models;
-mod retrievers;
+mod stores;
 mod types;
 mod utils;
 mod views;

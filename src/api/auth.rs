@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
 use crate::db::get_edgedb_client;
 use crate::models::{User, Role};
-use crate::retrievers;
+use crate::stores;
 use crate::types::ApiErrorShape;
 use super::errors::ApiError;
 
@@ -28,7 +28,7 @@ pub async fn login(
     valid_data.validate(&()).map_err(ApiError::ValidationError)?;
     tracing::info!("Validated request data: {:?}", valid_data);
     let client = get_edgedb_client().await.map_err(ApiError::EdgeDBQueryError)?;
-    let user = retrievers::get_user_by_email(&valid_data.email, &client)
+    let user = stores::get_user_by_email(&valid_data.email, &client)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or_else(|| {
