@@ -10,7 +10,7 @@ mod utils;
 mod views;
 mod errors;
 
-use std::{error::Error, path::PathBuf};
+use std::path::PathBuf;
 use std::net::SocketAddr;
 
 use axum::routing::Router;
@@ -36,7 +36,7 @@ fn config_jinja() -> Environment<'static> {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn main() -> miette::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
