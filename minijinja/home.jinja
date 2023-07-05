@@ -1,1 +1,17 @@
 {% extends 'base.jinja' %}
+
+{% block title %}Quan web{% endblock %}
+
+{% block inner_content %}
+  {% with front=true %}
+    {% for p in posts %}
+      <div>
+        <h2>{{ p.title }}</h2>
+        <div>
+          <time datetime='{{ p.created_at }}'>{{ p.created_at|datetimeformat }}</time>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% endwith %}
+{% endblock inner_content %}

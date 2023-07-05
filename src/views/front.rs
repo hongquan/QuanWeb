@@ -6,15 +6,15 @@ use minijinja::context;
 
 use crate::consts::STATIC_URL;
 use crate::types::AppState;
-use crate::stores;
+use crate::models::blogs::JjBlogPost;
+use crate::stores::blog::get_blogposts;
 use crate::errors::PageError;
-use crate::models::BlogPost;
 use crate::types::StaticFile;
 
 pub async fn home(State(state): State<AppState>) -> AxumResult<Html<String>> {
     let AppState { db, template_engine } = state;
-    let result = stores::blog::get_blogposts(Some(0), Some(10), &db).await.map_err(PageError::EdgeDBQueryError)?;
-    let posts: Vec<BlogPost> = result.into_iter().collect();
+    let result = get_blogposts(Some(0), Some(10), &db).await.map_err(PageError::EdgeDBQueryError)?;
+    let posts: Vec<JjBlogPost> = result.into_iter().collect();
     let context = context!(posts => posts);
     let html = template_engine.render("home.jinja", context)?;
     Ok(Html(html))

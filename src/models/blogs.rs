@@ -7,8 +7,10 @@ use edgedb_protocol::value::Value as EValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
+use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
+use crate::consts::POSTGRES_EPOCH;
 use crate::types::{serialize_edge_datetime, serialize_optional_edge_datetime};
 
 #[derive(
@@ -202,4 +204,45 @@ impl FromIterator<RawBlogPost> for Vec<BlogPost> {
     fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
         iter.into_iter().map(BlogPost::from).collect()
     }
+}
+
+// BlogPost type that can be rendered with MiniJinja
+#[derive(Debug, Serialize, Deserialize)]
+pub struct JjBlogPost {
+    pub id: Uuid,
+    pub title: String,
+    pub slug: String,
+    pub is_published: Option<bool>,
+    pub published_at: Option<OffsetDateTime>,
+    pub created_at: OffsetDateTime,
+    pub updated_at: Option<OffsetDateTime>,
+}
+
+impl From<RawBlogPost> for JjBlogPost {
+    fn from(post: RawBlogPost) -> Self {
+        let published_at = post.published_at.map(edge_datime_to_time_rs);
+        let created_at = edge_datime_to_time_rs(post.created_at);
+        tracing::info!("Converted created_at: {:?}", created_at);
+        let updated_at: Option<OffsetDateTime> = post.updated_at.map(edge_datime_to_time_rs);
+        JjBlogPost {
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            is_published: post.is_published,
+            published_at,
+            created_at,
+            updated_at,
+        }
+    }
+}
+
+impl FromIterator<RawBlogPost> for Vec<JjBlogPost> {
+    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
+        iter.into_iter().map(JjBlogPost::from).collect()
+    }
+}
+
+#[allow(deprecated)]
+pub fn edge_datime_to_time_rs(dt: EDatetime) -> OffsetDateTime {
+    POSTGRES_EPOCH + Duration::microseconds(dt.to_micros())
 }
