@@ -36,6 +36,33 @@ pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<Detai
     Ok(post)
 }
 
+pub async fn get_blogpost_by_slug(slug: String, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
+    // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
+    // does not match DetailedBlogPost.
+    let q = "
+    SELECT BlogPost {
+        id,
+        title,
+        slug,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {id, title, slug},
+        body,
+        format,
+        locale,
+        excerpt,
+        html,
+        seo_description,
+        og_image,
+    }
+    FILTER .slug = <str>$0";
+    tracing::debug!("To query: {}", q);
+    let post: Option<DetailedBlogPost> = client.query_single(q, &(slug,)).await?;
+    Ok(post)
+}
+
 pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
     let q = "
     SELECT BlogPost {

@@ -8,10 +8,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use time::{Duration, OffsetDateTime};
+use time::macros::format_description;
 use uuid::Uuid;
+use minijinja::value::{StructObject, Value as MJValue};
 
 use crate::consts::POSTGRES_EPOCH;
 use crate::types::{serialize_edge_datetime, serialize_optional_edge_datetime};
+use crate::utils::conversions::datetime_to_jinja;
+
 
 #[derive(
     Debug,
@@ -207,7 +211,7 @@ impl FromIterator<RawBlogPost> for Vec<BlogPost> {
 }
 
 // BlogPost type that can be rendered with MiniJinja
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JjBlogPost {
     pub id: Uuid,
     pub title: String,
@@ -216,6 +220,47 @@ pub struct JjBlogPost {
     pub published_at: Option<OffsetDateTime>,
     pub created_at: OffsetDateTime,
     pub updated_at: Option<OffsetDateTime>,
+}
+
+impl JjBlogPost {
+    #[allow(dead_code)]
+    fn get_detail_url(&self) -> String {
+        let y = format_description!("[year]");
+        let m = format_description!("[month]");
+        format!("/post/{}/{}/{}", self.created_at.format(y).unwrap_or("1990".into()), self.created_at.format(m).unwrap_or("1".into()), self.slug)
+    }
+}
+
+impl StructObject for JjBlogPost {
+    fn get_field(&self, name: &str) -> Option<MJValue> {
+        match name {
+            "id" => Some(MJValue::from(self.id.to_string())),
+            "title" => Some(MJValue::from(self.title.as_str())),
+            "slug" => Some(MJValue::from(self.slug.as_str())),
+            "is_published" => self.is_published.map(MJValue::from),
+            "published_at" => self.published_at.map(datetime_to_jinja).flatten(),
+            "created_at" => datetime_to_jinja(self.created_at),
+            "updated_at" => self.updated_at.map(datetime_to_jinja).flatten(),
+            _ => None,
+        }
+    }
+    fn static_fields(&self) -> Option<&'static [&'static str]> {
+        Some(&["id", "title", "slug", "is_published", "published_at", "created_at", "updated_at"][..])
+    }
+
+    fn field_count(&self) -> usize { 7 }
+}
+
+// impl Into<MJValue> for JjBlogPost {
+//     fn into(self) -> MJValue {
+//         MJValue::from_struct_object(self)
+//     }
+// }
+
+impl From<JjBlogPost> for MJValue {
+    fn from(value: JjBlogPost) -> Self {
+        MJValue::from_struct_object(value)
+    }
 }
 
 impl From<RawBlogPost> for JjBlogPost {

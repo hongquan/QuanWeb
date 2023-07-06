@@ -44,7 +44,7 @@ strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
 syntect = { version = "5.0.0", features = ["default-fancy"] }
 thiserror = "1.0.40"
-time = { version = "0.3.22", features = ["serde", "serde-human-readable", "serde-well-known", "macros"] }
+time = { version = "0.3.22", features = ["serde", "serde-well-known", "macros"] }
 time-tz = { version = "1.0.3", features = ["posix-tz"] }
 tokio = { version = "1.28.2", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
