@@ -11,11 +11,8 @@ use axum::extract::FromRef;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::http::header::CONTENT_TYPE;
-use axum_template::engine::Engine;
 use minijinja::Environment;
 use rust_embed::RustEmbed;
-
-pub type JinjaEngine = Engine<Environment<'static>>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiErrorShape {
@@ -55,7 +52,7 @@ impl From<HashMap<String, String>> for ApiErrorShape {
 #[derive(Debug, Clone, FromRef)]
 pub struct AppState {
     pub db: Client,
-    pub template_engine: JinjaEngine,
+    pub jinja: Environment<'static>,
 }
 
 #[derive(RustEmbed)]

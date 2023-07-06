@@ -354,18 +354,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-template"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbbaf6e2308fa02c927b6ee5dc17cef320caa3594f3297121a02b3514dea546a"
-dependencies = [
- "axum",
- "minijinja",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "axum_garde"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2275,7 +2263,6 @@ dependencies = [
  "axum-extra",
  "axum-login",
  "axum-sessions",
- "axum-template",
  "axum_garde",
  "chrono",
  "chrono-tz",

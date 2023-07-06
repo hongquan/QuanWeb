@@ -19,7 +19,6 @@ use miette::miette;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use minijinja::{path_loader, Environment};
-use axum_template::engine::Engine;
 
 use auth::store::EdgeDbStore;
 use types::AppState;
@@ -54,7 +53,7 @@ async fn main() -> miette::Result<()> {
     let secret_bytes = conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
     let client = db::get_edgedb_client().await?;
     let jinja = config_jinja();
-    let app_state = AppState { db: client.clone(), template_engine: Engine::new(jinja) };
+    let app_state = AppState { db: client.clone(), jinja };
     let session_layer = SessionLayer::new(redis_store, &secret_bytes).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);

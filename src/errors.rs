@@ -8,6 +8,8 @@ use edgedb_errors::display::display_error_verbose;
 pub enum PageError {
     #[error(transparent)]
     EdgeDBQueryError(#[from] edgedb_errors::Error),
+    #[error(transparent)]
+    JinjaError(#[from] minijinja::Error),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -17,7 +19,11 @@ impl IntoResponse for PageError {
         tracing::debug!("To convert PageError: {:?}", self);
         let (status, message) = match self {
             Self::EdgeDBQueryError(ref e) => {
-                tracing::info!("EdgeDB error: {}", display_error_verbose(e));
+                tracing::error!("EdgeDB error: {}", display_error_verbose(e));
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+            }
+            Self::JinjaError(ref e) => {
+                tracing::error!("Jinja error: {:#}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
             Self::Other(e) => (StatusCode::INTERNAL_SERVER_ERROR, e)
