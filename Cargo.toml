@@ -14,7 +14,7 @@ axum-login = "0.5.0"
 axum-sessions = "0.5.0"
 axum-template = { version = "0.19.0", features = ["minijinja"] }
 axum_garde = { version = "0.11.2", features = ["axum-extra", "axum-extra-query"] }
-chrono = { version = "0.4.26", features = ["serde", "time"] }
+chrono = { version = "0.4.26", features = ["serde", "alloc", "clock"], default-features = false }
 chrono-tz = { version = "0.8.3", features = ["serde"] }
 comrak = "0.18.0"
 config = { version = "0.13.3", default-features = false, features = ["indexmap", "toml"] }
