@@ -1,24 +1,24 @@
-mod conf;
 mod api;
 mod auth;
+mod conf;
 mod consts;
 mod db;
+mod errors;
 mod models;
 mod stores;
 mod types;
 mod utils;
 mod views;
-mod errors;
 
-use std::path::PathBuf;
 use std::net::SocketAddr;
+use std::path::PathBuf;
 
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use miette::miette;
+use minijinja::{path_loader, Environment};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use minijinja::{path_loader, Environment};
 
 use auth::store::EdgeDbStore;
 use types::AppState;
@@ -40,8 +40,9 @@ fn config_jinja() -> Environment<'static> {
 async fn main() -> miette::Result<()> {
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "quanweb=debug,axum_login=debug,tower_http=debug,axum::rejection=trace".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "quanweb=debug,axum_login=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -50,10 +51,14 @@ async fn main() -> miette::Result<()> {
         .map_err(|_e| miette!("Error connecting to Redis"))?;
 
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
-    let secret_bytes = conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
+    let secret_bytes =
+        conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
     let client = db::get_edgedb_client().await?;
     let jinja = config_jinja();
-    let app_state = AppState { db: client.clone(), jinja };
+    let app_state = AppState {
+        db: client.clone(),
+        jinja,
+    };
     let session_layer = SessionLayer::new(redis_store, &secret_bytes).with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);

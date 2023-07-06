@@ -4,15 +4,15 @@ use chrono::{DateTime, Utc};
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
+use minijinja::value::{StructObject, Value as MJValue};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use minijinja::value::{StructObject, Value as MJValue};
 
-use crate::types::{serialize_edge_datetime, serialize_optional_edge_datetime};
-use crate::utils::conversions::{edge_datetime_to_jinja};
-
+use crate::types::conversions::{
+    edge_datetime_to_jinja, serialize_edge_datetime, serialize_optional_edge_datetime,
+};
 
 #[derive(
     Debug,
@@ -113,10 +113,22 @@ impl StructObject for RawBlogPost {
         }
     }
     fn static_fields(&self) -> Option<&'static [&'static str]> {
-        Some(&["id", "title", "slug", "is_published", "published_at", "created_at", "updated_at"][..])
+        Some(
+            &[
+                "id",
+                "title",
+                "slug",
+                "is_published",
+                "published_at",
+                "created_at",
+                "updated_at",
+            ][..],
+        )
     }
 
-    fn field_count(&self) -> usize { 7 }
+    fn field_count(&self) -> usize {
+        7
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, edgedb_derive::Queryable)]

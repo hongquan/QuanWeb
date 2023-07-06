@@ -1,9 +1,8 @@
+pub mod conversions;
+
 use std::collections::HashMap;
 
-use chrono::{DateTime, Utc};
-use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_tokio::Client;
-use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
@@ -78,28 +77,6 @@ where
       None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
     }
   }
-}
-
-/* Serde serializers to serialize EdgeDB's Datetime type */
-pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>
-where
-    Se: Serializer,
-{
-    let cdt: DateTime<Utc> = edt.into();
-    cdt.serialize(serializer)
-}
-
-pub fn serialize_optional_edge_datetime<Se>(
-    edt: &Option<EDatetime>,
-    serializer: Se,
-) -> Result<Se::Ok, Se::Error>
-where
-    Se: Serializer,
-{
-    match edt {
-        Some(edt) => serialize_edge_datetime(edt, serializer),
-        None => serializer.serialize_none(),
-    }
 }
 
 pub fn create_shape_element(name: &str, cardinality: Cardinality) -> ShapeElement {
