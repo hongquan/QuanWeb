@@ -8,7 +8,7 @@
       <div>
         <h2>{{ p.title }}</h2>
         <div>
-          <time datetime='{{ p.created_at }}'>{{ p.created_at|to_datetime }}</time>
+          <time datetime='{{ p.created_at }}'>{{ p.created_at }}</time>
           <a href='{{ post_detail_url(p.slug, p.created_at) }}' class='underline'>Read more</a>
         </div>
       </div>

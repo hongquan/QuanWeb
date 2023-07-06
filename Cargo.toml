@@ -15,6 +15,7 @@ axum-sessions = "0.5.0"
 axum-template = { version = "0.19.0", features = ["minijinja"] }
 axum_garde = { version = "0.11.2", features = ["axum-extra", "axum-extra-query"] }
 chrono = { version = "0.4.26", features = ["serde", "time"] }
+chrono-tz = { version = "0.8.3", features = ["serde"] }
 comrak = "0.18.0"
 config = { version = "0.13.3", default-features = false, features = ["indexmap", "toml"] }
 djangohashers = { version = "1.6.7", default-features = false, features = ["with_argon2"] }
@@ -32,7 +33,6 @@ miette = { version = "5.9.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.4"
 minijinja = { version = "1.0.3", features = ["loader", "internal_debug"] }
 minijinja-autoreload = "1.0.3"
-minijinja-contrib = { version = "1.0.3", features = ["datetime", "timezone"] }
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.1", features = ["serde"] }
 rust-embed = { version = "6.8.1", features = ["axum", "mime-guess", "include-exclude"] }
@@ -44,8 +44,6 @@ strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
 syntect = { version = "5.0.0", features = ["default-fancy"] }
 thiserror = "1.0.40"
-time = { version = "0.3.22", features = ["serde", "serde-well-known", "macros"] }
-time-tz = { version = "1.0.3", features = ["posix-tz"] }
 tokio = { version = "1.28.2", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
 tracing = "0.1.37"

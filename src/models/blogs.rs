@@ -7,14 +7,11 @@ use edgedb_protocol::value::Value as EValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
-use time::{Duration, OffsetDateTime};
-use time::macros::format_description;
 use uuid::Uuid;
 use minijinja::value::{StructObject, Value as MJValue};
 
-use crate::consts::POSTGRES_EPOCH;
 use crate::types::{serialize_edge_datetime, serialize_optional_edge_datetime};
-use crate::utils::conversions::datetime_to_jinja;
+use crate::utils::conversions::{edge_datetime_to_jinja};
 
 
 #[derive(
@@ -102,6 +99,26 @@ impl Default for RawBlogPost {
     }
 }
 
+impl StructObject for RawBlogPost {
+    fn get_field(&self, name: &str) -> Option<MJValue> {
+        match name {
+            "id" => Some(MJValue::from(self.id.to_string())),
+            "title" => Some(MJValue::from(self.title.as_str())),
+            "slug" => Some(MJValue::from(self.slug.as_str())),
+            "is_published" => self.is_published.map(MJValue::from),
+            "published_at" => self.published_at.map(edge_datetime_to_jinja),
+            "created_at" => Some(edge_datetime_to_jinja(self.created_at)),
+            "updated_at" => self.updated_at.map(edge_datetime_to_jinja),
+            _ => None,
+        }
+    }
+    fn static_fields(&self) -> Option<&'static [&'static str]> {
+        Some(&["id", "title", "slug", "is_published", "published_at", "created_at", "updated_at"][..])
+    }
+
+    fn field_count(&self) -> usize { 7 }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize, edgedb_derive::Queryable)]
 pub struct BlogCategory {
     pub id: Uuid,
@@ -174,6 +191,18 @@ impl Default for DetailedBlogPost {
     }
 }
 
+impl From<RawBlogPost> for MJValue {
+    fn from(value: RawBlogPost) -> Self {
+        MJValue::from_struct_object(value)
+    }
+}
+
+impl FromIterator<RawBlogPost> for Vec<MJValue> {
+    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
+        iter.into_iter().map(MJValue::from).collect()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlogPost {
     pub id: Uuid,
@@ -208,86 +237,4 @@ impl FromIterator<RawBlogPost> for Vec<BlogPost> {
     fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
         iter.into_iter().map(BlogPost::from).collect()
     }
-}
-
-// BlogPost type that can be rendered with MiniJinja
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct JjBlogPost {
-    pub id: Uuid,
-    pub title: String,
-    pub slug: String,
-    pub is_published: Option<bool>,
-    pub published_at: Option<OffsetDateTime>,
-    pub created_at: OffsetDateTime,
-    pub updated_at: Option<OffsetDateTime>,
-}
-
-impl JjBlogPost {
-    #[allow(dead_code)]
-    fn get_detail_url(&self) -> String {
-        let y = format_description!("[year]");
-        let m = format_description!("[month]");
-        format!("/post/{}/{}/{}", self.created_at.format(y).unwrap_or("1990".into()), self.created_at.format(m).unwrap_or("1".into()), self.slug)
-    }
-}
-
-impl StructObject for JjBlogPost {
-    fn get_field(&self, name: &str) -> Option<MJValue> {
-        match name {
-            "id" => Some(MJValue::from(self.id.to_string())),
-            "title" => Some(MJValue::from(self.title.as_str())),
-            "slug" => Some(MJValue::from(self.slug.as_str())),
-            "is_published" => self.is_published.map(MJValue::from),
-            "published_at" => self.published_at.map(datetime_to_jinja).flatten(),
-            "created_at" => datetime_to_jinja(self.created_at),
-            "updated_at" => self.updated_at.map(datetime_to_jinja).flatten(),
-            _ => None,
-        }
-    }
-    fn static_fields(&self) -> Option<&'static [&'static str]> {
-        Some(&["id", "title", "slug", "is_published", "published_at", "created_at", "updated_at"][..])
-    }
-
-    fn field_count(&self) -> usize { 7 }
-}
-
-// impl Into<MJValue> for JjBlogPost {
-//     fn into(self) -> MJValue {
-//         MJValue::from_struct_object(self)
-//     }
-// }
-
-impl From<JjBlogPost> for MJValue {
-    fn from(value: JjBlogPost) -> Self {
-        MJValue::from_struct_object(value)
-    }
-}
-
-impl From<RawBlogPost> for JjBlogPost {
-    fn from(post: RawBlogPost) -> Self {
-        let published_at = post.published_at.map(edge_datime_to_time_rs);
-        let created_at = edge_datime_to_time_rs(post.created_at);
-        tracing::info!("Converted created_at: {:?}", created_at);
-        let updated_at: Option<OffsetDateTime> = post.updated_at.map(edge_datime_to_time_rs);
-        JjBlogPost {
-            id: post.id,
-            title: post.title,
-            slug: post.slug,
-            is_published: post.is_published,
-            published_at,
-            created_at,
-            updated_at,
-        }
-    }
-}
-
-impl FromIterator<RawBlogPost> for Vec<JjBlogPost> {
-    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
-        iter.into_iter().map(JjBlogPost::from).collect()
-    }
-}
-
-#[allow(deprecated)]
-pub fn edge_datime_to_time_rs(dt: EDatetime) -> OffsetDateTime {
-    POSTGRES_EPOCH + Duration::microseconds(dt.to_micros())
 }

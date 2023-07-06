@@ -29,9 +29,6 @@ const TEMPLATE_DIR: &str = "minijinja";
 
 fn config_jinja() -> Environment<'static> {
     let mut jinja = Environment::new();
-    minijinja_contrib::add_to_environment(&mut jinja);
-    jinja.add_filter("debug_filter", jinja_extra::debug_filter);
-    jinja.add_filter("to_datetime", jinja_extra::to_datetime);
     jinja.add_function("post_detail_url", jinja_extra::post_detail_url);
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
