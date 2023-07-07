@@ -1,0 +1,36 @@
+{% set extra_class='mt-8 md:mt-12' if front else 'mt-8' %}
+{% set lang_attr=gen_element_attr('lang', p.locale) %}
+{% set post_url=post_detail_url(p.slug, p.created_at) %}
+<article class='post {{ extra_class }}' {{ lang_attr }}>
+  <header class='entry-header mb-4 space-y-4'>
+    {% with h1_class='text-2xl md:text-4xl' if front else 'text-3xl md:text-5xl' %}
+    <h1 class='entry-title {{ h1_class }}' >
+      {%- if not front -%}
+        {{ p.title }}
+      {%- else -%}
+      {% set url_under_category=add_url_param(post_url, 'cat', cat) if cat else post_url %}
+        <a rel='bookmark' href='{{ url_under_category }}' class='hover:text-yellow-700 dark:hover:text-yellow-300'>{{ p.title }}</a>
+      {%- endif -%}
+    </h1>
+    <div class='entry-meta text-sm text-yellow-700 flex flex-col md:flex-row md:space-x-4' x-data="{published_at: '{{ p.published_at }}'}">
+      <a rel='bookmark' title='Permalink to {{ p.title }}' href='{{ post_url }}' class='hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500'>
+        <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+        </svg>
+        {% if p.is_published %}
+          <time datetime='{{ p.published_at }}' class='entry-date'></time>
+        {% endif %}
+      </a>
+    </div>
+    {% endwith %}
+  </header>
+  <div class="entry-content prose dark:prose-invert {{ 'front' if front }}">
+    {% if not front %}
+      {% if p.html %}
+        {{ p.html|safe }}
+      {% endif %}
+    {% else %}
+      {{ p.excerpt|safe }}
+    {% endif %}
+  </div>
+</article>

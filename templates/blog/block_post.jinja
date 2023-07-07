@@ -48,9 +48,9 @@
     <footer class='entry-meta flex flex-row text-base text-yellow-700 justify-between'>
       {% with url_full=p|entry_url, url_short=p|entry_url_short %}
         <div class='link-comment'>
-          <a href='{{ url_full }}#disqus_thread' class='hover:text-yellow-600 dark:text-lime-400 hover:text-lime-600' data-disqus-identifier='{{ url_short }}'>Comments</a>
+          <a href='{{ url_full }}#disqus_thread' class='dark:text-lime-400 hover:text-lime-600' data-disqus-identifier='{{ url_short }}'>Comments</a>
         </div>
-        <a href='{{ url_full }}' class='hover:text-yellow-600 dark:text-lime-400 hover:text-lime-600'>&raquo; Read full</a>
+        <a href='{{ url_full }}' class='dark:text-lime-400 hover:text-lime-600'>&raquo; Read full</a>
       {% endwith %}
     </footer>
   {% endif %}

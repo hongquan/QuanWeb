@@ -25,8 +25,8 @@
   {% endwith %}
   <div class='flex flex-row justify-between mt-6 space-x-4'>
     {% with %}
-      {% set prev_url = prev_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else prev_entry|entry_url %}
-      {% set next_url = next_entry|entry_url|add_urlparam('cat', catslug) if cat_slug else next_entry|entry_url %}
+      {% set prev_url = prev_entry|entry_url|add_urlparam('cat', catslug) if catslug else prev_entry|entry_url %}
+      {% set next_url = next_entry|entry_url|add_urlparam('cat', catslug) if catslug else next_entry|entry_url %}
       <a href='{{ prev_url }}' title='{{ prev_entry.title }}'
          class='relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'>&larr; {{ prev_entry.short_title }}</a>
       <a href='{{ next_url }}' title='{{ next_entry.title }}'

@@ -1,5 +1,6 @@
 pub mod front;
 pub mod routes;
+pub mod structs;
 
 use serde::ser::Serialize;
 use minijinja::Environment;

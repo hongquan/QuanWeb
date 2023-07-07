@@ -29,6 +29,8 @@ const TEMPLATE_DIR: &str = "minijinja";
 fn config_jinja() -> Environment<'static> {
     let mut jinja = Environment::new();
     jinja.add_function("post_detail_url", jinja_extra::post_detail_url);
+    jinja.add_function("gen_element_attr", jinja_extra::gen_element_attr);
+    jinja.add_function("add_url_param", jinja_extra::add_url_param);
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
     let template_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(TEMPLATE_DIR);

@@ -9,7 +9,7 @@ use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
-use super::auth::Auth;
+use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, Paging};
@@ -123,7 +123,7 @@ pub async fn update_post_partial(
         }}"
     );
     tracing::debug!("To query: {}", q);
-    tracing::debug!("Query with params: {:?}", args);
+    tracing::debug!("Query with params: {:#?}", args);
     let updated_post: Option<DetailedBlogPost> = db
         .query_single(&q, &args)
         .await

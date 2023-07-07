@@ -79,7 +79,7 @@ where
   }
 }
 
-pub fn create_shape_element(name: &str, cardinality: Cardinality) -> ShapeElement {
+pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> ShapeElement {
     ShapeElement {
         name: name.to_string(),
         cardinality: Some(cardinality),

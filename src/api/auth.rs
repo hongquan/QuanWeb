@@ -2,20 +2,20 @@
 use axum::http::StatusCode;
 use axum::{debug_handler, Json, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
-use axum_login::{extractors::AuthContext, RequireAuthorizationLayer};
+use axum_login::RequireAuthorizationLayer;
 use djangohashers::check_password;
 use garde::Validate;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::auth::{store::EdgeDbStore, structs::LoginReqData};
+use crate::auth::structs::LoginReqData;
 use crate::db::get_edgedb_client;
 use crate::models::{User, Role};
 use crate::stores;
 use crate::types::ApiErrorShape;
 use super::errors::ApiError;
+use crate::auth::Auth;
 
-pub type Auth = AuthContext<Uuid, User, EdgeDbStore<User>, Role>;
 #[allow(dead_code)]
 pub type RequireAuth = RequireAuthorizationLayer<Uuid, User, Role>;
 

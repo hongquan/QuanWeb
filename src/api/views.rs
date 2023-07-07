@@ -9,7 +9,7 @@ use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
-use super::auth::Auth;
+use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
@@ -124,6 +124,7 @@ pub async fn update_category_partial(
         }}"
     );
     tracing::debug!("To query: {}", q);
+    tracing::debug!("With args: {:#?}", args);
     let cat = db
         .query_single(&q, &args)
         .await

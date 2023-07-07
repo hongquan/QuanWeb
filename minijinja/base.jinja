@@ -61,7 +61,7 @@
     {% include 'footer.jinja' %}
 
     {% block js -%}
-
+      <script src='https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js'></script>
       {% if not running_locally %}
         {% if not no_tracking %}
           {% include 'block_tracking.jinja' %}

@@ -1,2 +1,19 @@
 {% extends 'base.jinja' %}
 {% block title %}{{ post.title }}{% endblock title %}
+
+{% block inner_content %}
+  {% with p=post %}
+    {% include 'blog/block_post_content.jinja' %}
+  {% endwith %}
+  <div class='flex flex-row justify-between mt-6 space-x-4'>
+  {# TODO: Show links to next post #}
+  {% if prev_post %}
+    {% set prev_url = post_detail_url(prev_post.slug, prev_post.created_at) %}
+    <a href='{{ prev_url }}' class='relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'>&larr; {{ prev_post.title }}</a>
+  {% endif %}
+  {% if next_post %}
+    {% set next_url = post_detail_url(next_post.slug, next_post.created_at) %}
+    <a href='{{ next_url }}' class='relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'>{{ next_post.title }} &rarr;</a>
+  {% endif %}
+  </div>
+{% endblock inner_content %}
