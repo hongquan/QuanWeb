@@ -1,16 +1,16 @@
 use std::num::NonZeroU16;
 
-use edgedb_protocol::codec::ObjectShape;
 use edgedb_protocol::common::Cardinality;
 use edgedb_protocol::value::Value as EValue;
+use garde::Validate;
+use indexmap::indexmap;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use garde::Validate;
 
+use super::macros::append_set_statement;
 use crate::models::DocFormat;
-use crate::types::create_shape_element;
+use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
-use super::macros::{append_field_general, append_field, append_set_statement};
 
 #[derive(Deserialize, Debug)]
 pub struct Paging {
@@ -76,42 +76,63 @@ impl BlogPostPatchData {
     }
 
     pub fn make_edgedb_object<'a>(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut object_values = vec![Some(EValue::Uuid(post_id))];
-        let mut elms = vec![create_shape_element("id", Cardinality::One)];
-
-        append_field_general!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
-        append_field_general!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
-        append_field!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
-
+        let mut pairs = indexmap! {
+            "id" => (Some(EValue::Uuid(post_id)), Cardinality::One),
+        };
+        if submitted_fields.iter().any(|&f| f == "title") {
+            pairs.insert(
+                "title",
+                (self.title.clone().map(EValue::Str), Cardinality::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "slug") {
+            pairs.insert(
+                "slug",
+                (self.slug.clone().map(EValue::Str), Cardinality::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "is_published") {
+            pairs.insert(
+                "is_published",
+                (self.is_published.map(EValue::Bool), Cardinality::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            pairs.insert(
+                "format",
+                (
+                    self.format.clone().map(EValue::from),
+                    Cardinality::AtMostOne,
+                ),
+            );
+        }
         if submitted_fields.iter().any(|&f| f == "body") {
-            object_values.push(self.body.clone().map(EValue::Str));
-            elms.push(create_shape_element("body", Cardinality::AtMostOne));
-            let html = markdown_to_html(self.body.as_ref().unwrap_or(&"".to_string()));
-            object_values.push(Some(EValue::Str(html)));
-            elms.push(create_shape_element("html", Cardinality::AtMostOne));
-            let excerpt = make_excerpt(self.body.as_ref().unwrap_or(&"".to_string()));
-            object_values.push(Some(EValue::Str(excerpt)));
-            elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
+            let body = self.body.clone();
+            let html = body.as_ref().map(|b| markdown_to_html(b));
+            let excerpt = body.as_ref().map(|b| make_excerpt(b));
+            pairs.insert("body", (body.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert("html", (html.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert(
+                "excerpt",
+                (excerpt.map(EValue::Str), Cardinality::AtMostOne),
+            );
         }
-        append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "categories") {
-            if let Some(categories) = &self.categories {
-                object_values.push(Some(EValue::Array(categories.iter().map(|&c| EValue::Uuid(c)).collect())));
-                elms.push(create_shape_element("categories", Cardinality::One));
-            }
+        if let Some(categories) = &self.categories {
+            let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
+            pairs.insert(
+                "categories",
+                (Some(EValue::Array(categories)), Cardinality::One),
+            );
         }
-        EValue::Object {
-            shape: ObjectShape::new(elms),
-            fields: object_values,
-        }
+        edge_object_from_pairs(pairs)
     }
 }
 
 #[derive(Debug, Default, Deserialize, Validate)]
 pub struct BlogPostCreateData {
-    #[garde(length(min=1))]
+    #[garde(length(min = 1))]
     pub title: String,
-    #[garde(length(min=1))]
+    #[garde(length(min = 1))]
     pub slug: String,
     #[garde(skip)]
     pub is_published: Option<bool>,
@@ -125,10 +146,7 @@ pub struct BlogPostCreateData {
 
 impl BlogPostCreateData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
-        let mut lines = vec![
-            "title := <str>$title",
-            "slug := <str>$slug",
-        ];
+        let mut lines = vec!["title := <str>$title", "slug := <str>$slug"];
         append_set_statement!("is_published", "optional bool", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "body") {
             // If user submitted "body" field, we will generate "html", "excerpt" and write, too
@@ -148,37 +166,44 @@ impl BlogPostCreateData {
     }
 
     pub fn make_edgedb_object<'a>(&self, submitted_fields: &Vec<&String>) -> EValue {
-        let mut object_values = vec![
-            Some(EValue::from(self.title.clone())),
-            Some(EValue::from(self.slug.clone())),
-        ];
-        let mut elms = vec![
-            create_shape_element("title", Cardinality::One),
-            create_shape_element("slug", Cardinality::One),
-        ];
-        append_field!("is_published", EValue::Bool, Cardinality::AtMostOne, elms, object_values, self.is_published, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "body") {
-            object_values.push(self.body.clone().map(EValue::Str));
-            elms.push(create_shape_element("body", Cardinality::AtMostOne));
-            let html = markdown_to_html(self.body.as_ref().unwrap_or(&"".to_string()));
-            object_values.push(Some(EValue::Str(html)));
-            elms.push(create_shape_element("html", Cardinality::AtMostOne));
-            let excerpt = make_excerpt(self.body.as_ref().unwrap_or(&"".to_string()));
-            object_values.push(Some(EValue::Str(excerpt)));
-            elms.push(create_shape_element("excerpt", Cardinality::AtMostOne));
+        let mut pairs = indexmap! {
+            "title" => (Some(EValue::Str(self.title.clone())), Cardinality::One),
+            "slug" => (Some(EValue::Str(self.slug.clone())), Cardinality::One),
+        };
+        if submitted_fields.iter().any(|&f| f == "is_published") {
+            pairs.insert(
+                "is_published",
+                (self.is_published.map(EValue::Bool), Cardinality::AtMostOne),
+            );
         }
-        append_field_general!("format", Cardinality::AtMostOne, elms, object_values, self.format, submitted_fields);
-
+        if submitted_fields.iter().any(|&f| f == "body") {
+            let body = self.body.clone();
+            let html = body.as_ref().map(|v| markdown_to_html(v));
+            let excerpt = body.as_ref().map(|v| make_excerpt(v));
+            pairs.insert("body", (body.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert("html", (html.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert(
+                "excerpt",
+                (excerpt.map(EValue::Str), Cardinality::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "format") {
+            pairs.insert(
+                "format",
+                (
+                    self.format.clone().map(EValue::from),
+                    Cardinality::AtMostOne,
+                ),
+            );
+        }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
-            let elm = create_shape_element("categories", Cardinality::One);
-            elms.push(elm);
-            object_values.push(Some(EValue::Array(categories)));
+            pairs.insert(
+                "categories",
+                (Some(EValue::Array(categories)), Cardinality::One),
+            );
         }
-        EValue::Object {
-            shape: ObjectShape::new(elms),
-            fields: object_values,
-        }
+        edge_object_from_pairs(pairs)
     }
 }
 
@@ -199,49 +224,46 @@ impl BlogCategoryPatchData {
     }
 
     pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut object_values = vec![Some(EValue::Uuid(id))];
-        let mut elms = vec![create_shape_element("id", Cardinality::One)];
-
-        append_field_general!("title", Cardinality::AtMostOne, elms, object_values, self.title, submitted_fields);
-        append_field_general!("slug", Cardinality::AtMostOne, elms, object_values, self.slug, submitted_fields);
-        EValue::Object {
-            shape: ObjectShape::new(elms),
-            fields: object_values,
+        let mut pairs = indexmap!(
+            "id" => (Some(EValue::Uuid(id)), Cardinality::One),
+        );
+        if submitted_fields.iter().any(|&f| f == "title") {
+            pairs.insert(
+                "title",
+                (self.title.clone().map(EValue::Str), Cardinality::AtMostOne),
+            );
         }
+        if submitted_fields.iter().any(|&f| f == "slug") {
+            pairs.insert(
+                "slug",
+                (self.slug.clone().map(EValue::Str), Cardinality::AtMostOne),
+            );
+        }
+        edge_object_from_pairs(pairs)
     }
 }
 
 #[derive(Debug, Default, Deserialize, Validate)]
 pub struct BlogCategoryCreateData {
-    #[garde(length(min=1))]
+    #[garde(length(min = 1))]
     pub title: String,
-    #[garde(length(min=1))]
+    #[garde(length(min = 1))]
     pub slug: String,
 }
 
 #[allow(dead_code)]
 impl BlogCategoryCreateData {
     pub fn gen_set_clause<'a>(&self) -> String {
-        let lines = vec![
-            "title := <str>$title",
-            "slug := <str>$slug",
-        ];
+        let lines = vec!["title := <str>$title", "slug := <str>$slug"];
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
 
     pub fn make_edgedb_object<'a>(&self) -> EValue {
-        let object_values = vec![
-            Some(EValue::from(self.title.clone())),
-            Some(EValue::from(self.slug.clone())),
-        ];
-        let elms = vec![
-            create_shape_element("title", Cardinality::One),
-            create_shape_element("slug", Cardinality::One),
-        ];
-        EValue::Object {
-            shape: ObjectShape::new(elms),
-            fields: object_values,
-        }
+        let pairs = indexmap! {
+            "title" => Some(EValue::from(self.title.clone())),
+            "slug" => Some(EValue::from(self.slug.clone())),
+        };
+        edge_object_from_simple_pairs(pairs)
     }
 }

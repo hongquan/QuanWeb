@@ -42,11 +42,28 @@ where
 }
 
 // Ref: https://github.com/edgedb/edgedb-rust/blob/master/edgedb-protocol/src/value.rs#L100
-pub fn edge_object_from_pairs<N: ToString, V: Into<Option<EValue>>>(iter: impl IntoIterator<Item=(N, V)>) -> EValue {
+pub fn edge_object_from_simple_pairs<N: ToString, V: Into<Option<EValue>>>(iter: impl IntoIterator<Item=(N, V)>) -> EValue {
     let mut elements = Vec::new();
     let mut fields: Vec<Option<EValue>> = Vec::new();
     for (key, val) in iter.into_iter() {
         elements.push(create_shape_element(key, Cardinality::One));
+        fields.push(val.into());
+    }
+    EValue::Object {
+        shape: ObjectShape::new(elements),
+        fields,
+    }
+}
+
+pub fn edge_object_from_pairs<N, V>(iter: impl IntoIterator<Item=(N, (V, Cardinality))>) -> EValue
+where
+    N: ToString,
+    V: Into<Option<EValue>>,
+{
+    let mut elements = Vec::new();
+    let mut fields: Vec<Option<EValue>> = Vec::new();
+    for (key, (val, cardinality)) in iter.into_iter() {
+        elements.push(create_shape_element(key, cardinality));
         fields.push(val.into());
     }
     EValue::Object {

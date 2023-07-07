@@ -5,7 +5,7 @@ use edgedb_protocol::value::Value as EValue;
 use indexmap::indexmap;
 
 use crate::models::{RawBlogPost, DetailedBlogPost, BlogCategory};
-use crate::types::conversions::edge_object_from_pairs;
+use crate::types::conversions::edge_object_from_simple_pairs;
 
 pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
     let q = "SELECT count(BlogPost)";
@@ -127,14 +127,14 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
     ];
     let edatime = EValue::Datetime(created_at);
     let mut pairs = indexmap! {
-        "created_at".to_string() => Some(edatime),
+        "created_at" => Some(edatime),
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug".to_string(), Some(EValue::Str(slug)));
+        pairs.insert("slug", Some(EValue::Str(slug)));
     }
-    let filter_stm = filter_lines.join(" AND ");
-    let args = edge_object_from_pairs(pairs);
+    let filter_expr = filter_lines.join(" AND ");
+    let args = edge_object_from_simple_pairs(pairs);
 
     let q = format!("
     SELECT BlogPost {{
@@ -151,7 +151,7 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
             slug,
         }},
     }}
-    FILTER {filter_stm} ORDER BY .created_at DESC LIMIT 1");
+    FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
     let post: Option<RawBlogPost> = client.query_single(&q, &args).await?;
@@ -165,14 +165,14 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
     ];
     let edatime = EValue::Datetime(created_at);
     let mut pairs = indexmap! {
-        "created_at".to_string() => Some(edatime),
+        "created_at" => Some(edatime),
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug".to_string(), Some(EValue::Str(slug)));
+        pairs.insert("slug", Some(EValue::Str(slug)));
     }
-    let filter_stm = filter_lines.join(" AND ");
-    let args = edge_object_from_pairs(pairs);
+    let filter_expr = filter_lines.join(" AND ");
+    let args = edge_object_from_simple_pairs(pairs);
 
     let q = format!("
     SELECT BlogPost {{
@@ -189,7 +189,7 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
             slug,
         }},
     }}
-    FILTER {filter_stm} ORDER BY .created_at ASC LIMIT 1");
+    FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
     let post: Option<RawBlogPost> = client.query_single(&q, &args).await?;
