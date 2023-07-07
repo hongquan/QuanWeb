@@ -67,6 +67,19 @@
           {% include 'block_tracking.jinja' %}
         {% endif %}
       {% endif %}
+      <script>
+      document.addEventListener('alpine:init', () => {
+        Alpine.data('post_meta', (created_at = null) => ({
+          created_at: created_at ? luxon.DateTime.fromISO(created_at) : null,
+          get created_at_date_display() {
+            return this.created_at ? this.created_at.toLocaleString(luxon.DateTime.DATE_FULL) : ''
+          },
+          get created_at_full_display() {
+            return this.created_at ? this.created_at.toLocaleString(luxon.DateTime.DATETIME_FULL) : ''
+          },
+        }))
+      })
+      </script>
     {%- endblock js %}
   </body>
 </html>
