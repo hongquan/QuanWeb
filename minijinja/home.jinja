@@ -1,4 +1,5 @@
 {% extends 'base.jinja' %}
+{% from 'mmacros.jinja' import render_pagination %}
 
 {% block title %}Quan web{% endblock %}
 
@@ -9,8 +10,6 @@
     {% endfor %}
   {% endwith %}
   <div class='text-center mt-4'>
-    {% for item in pagelink_items %}
-      {{ item.page }}
-    {% endfor %}
+    {{ render_pagination(pagelink_items) }}
   </div>
 {% endblock inner_content %}

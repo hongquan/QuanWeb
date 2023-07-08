@@ -1,0 +1,20 @@
+{% macro render_pagelink_item(item) %}
+  <li>
+  {% set extra_class = 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-slate-600 dark:text-indigo-300 dark:hover:text-white' if item.is_current else 'bg-white dark:bg-slate-900 border-gray-300 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 dark:hover:text-white' %}
+  {% if item.is_ellipsis %}
+    <span class='relative inline-flex items-center px-4 py-2 border text-sm font-medium'>…</span>
+  {% else %}
+    <a href='?page={{ item.page }}' class='relative inline-flex items-center px-4 py-2 border text-sm font-medium {{ extra_class }}'>{{ item.page }}</a>
+  {% endif %}
+  </li>
+{% endmacro %}
+
+{% macro render_pagination(items) %}
+  {% if items %}
+    <ul class='relative z-0 hidden sm:inline-flex rounded-md shadow-sm -space-x-px'>
+    {% for item in items %}
+      {{ render_pagelink_item(item) }}
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
