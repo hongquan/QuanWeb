@@ -255,3 +255,15 @@ impl FromIterator<RawBlogPost> for Vec<BlogPost> {
         iter.into_iter().map(BlogPost::from).collect()
     }
 }
+
+
+#[serde_with::apply(
+    EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
+)]
+#[derive(Debug, Serialize, edgedb_derive::Queryable)]
+pub struct MiniBlogPost {
+    pub id: Uuid,
+    pub title: String,
+    pub slug: String,
+    pub created_at: EDatetime,
+}

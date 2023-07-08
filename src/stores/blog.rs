@@ -5,6 +5,7 @@ use edgedb_protocol::value::Value as EValue;
 use edgedb_protocol::common::Cardinality as Cd;
 use indexmap::indexmap;
 
+use crate::models::blogs::MiniBlogPost;
 use crate::models::{RawBlogPost, DetailedBlogPost, BlogCategory};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
@@ -262,5 +263,12 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
     let post: Option<RawBlogPost> = client.query_single(&q, &args).await?;
+    Ok(post)
+}
+
+pub async fn get_mini_post_by_old_id(old_id: u32, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
+    let q = "SELECT BlogPost {id, title, slug, created_at} FILTER .old_id = <int32>$0";
+    tracing::debug!("To query: {}", q);
+    let post: Option<MiniBlogPost> = client.query_single(q, &(old_id as i32,)).await?;
     Ok(post)
 }

@@ -128,3 +128,7 @@ pub async fn list_posts(
     let content = render_with("blog/post_list.jinja", context, jinja)?;
     Ok(Html(content))
 }
+
+pub async fn fallback_view() -> (StatusCode, &'static str) {
+    (StatusCode::NOT_FOUND, "Not found")
+}

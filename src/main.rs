@@ -71,6 +71,7 @@ async fn main() -> miette::Result<()> {
     let app = Router::new()
         .merge(home_router)
         .nest("/_api", api_router)
+        .fallback(views::front::fallback_view)
         .with_state(app_state)
         .layer(auth_layer)
         .layer(session_layer)
