@@ -5,13 +5,7 @@
 {% block inner_content %}
   {% with front=true %}
     {% for p in posts %}
-      <div>
-        <h2>{{ p.title }}</h2>
-        <div>
-          <time datetime='{{ p.created_at }}'>{{ p.created_at }}</time>
-          <a href='{{ post_detail_url(p.slug, p.created_at) }}' class='underline'>Read more</a>
-        </div>
-      </div>
+      {% include 'blog/block_post_content.jinja' %}
     {% endfor %}
   {% endwith %}
 {% endblock inner_content %}

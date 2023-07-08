@@ -63,6 +63,7 @@ pub struct RawBlogPost {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
+    pub excerpt: Option<String>,
     pub is_published: Option<bool>,
     pub published_at: Option<EDatetime>,
     pub created_at: EDatetime,
@@ -75,6 +76,7 @@ impl RawBlogPost {
         match name {
             "title" => "str",
             "slug" => "str",
+            "excerpt" => "optional str",
             "is_published" => "bool",
             "published_at" => "optional datetime",
             "updated_at" => "optional datetime",
@@ -90,6 +92,7 @@ impl Default for RawBlogPost {
             id: Uuid::default(),
             title: String::default(),
             slug: String::default(),
+            excerpt: None,
             is_published: Some(false),
             published_at: None,
             created_at,
@@ -105,6 +108,7 @@ impl StructObject for RawBlogPost {
             "id" => Some(MJValue::from(self.id.to_string())),
             "title" => Some(MJValue::from(self.title.as_str())),
             "slug" => Some(MJValue::from(self.slug.as_str())),
+            "excerpt" => self.excerpt.clone().map(MJValue::from),
             "is_published" => self.is_published.map(MJValue::from),
             "published_at" => self.published_at.map(edge_datetime_to_jinja),
             "created_at" => Some(edge_datetime_to_jinja(self.created_at)),
@@ -118,6 +122,7 @@ impl StructObject for RawBlogPost {
                 "id",
                 "title",
                 "slug",
+                "excerpt",
                 "is_published",
                 "published_at",
                 "created_at",
@@ -127,7 +132,7 @@ impl StructObject for RawBlogPost {
     }
 
     fn field_count(&self) -> usize {
-        7
+        8
     }
 }
 
