@@ -6,5 +6,7 @@ pub mod paging;
 pub mod routes;
 pub mod errors;
 pub mod macros;
+#[cfg(test)]
+pub mod tests;
 
 pub use routes::get_router;
