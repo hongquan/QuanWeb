@@ -9,7 +9,15 @@
       </RouterLink>
     </div>
 
-    <div class='relative overflow-x-auto shadow-md sm:rounded-lg'>
+    <LoadingIndicator
+      v-if='isLoading'
+      class='mt-32 w-16 h-auto mx-auto text-blue-500 fill-current'
+    />
+
+    <div
+      v-else
+      class='relative overflow-x-auto shadow-md sm:rounded-lg'
+    >
       <table class='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
         <thead class='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
           <tr>
@@ -52,6 +60,7 @@
 <script setup lang='ts'>
 import { onBeforeMount, ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import LoadingIndicator from 'svg-loaders/svg-smil-loaders/circles.svg?component'
 
 import { kyClient } from '@/common'
 import { API_GET_CATEGORIES } from '@/urls'
@@ -63,6 +72,7 @@ import Paginator from '@/components/Paginator.vue'
 const route = useRoute()
 const categories = ref<Category[]>([])
 const totalPages = ref(1)
+const isLoading = ref(true)
 
 const currentPage = computed(() => Number(route.query.page) || 1)
 
@@ -73,6 +83,8 @@ async function fetchData() {
   const resp = await kyClient.get(API_GET_CATEGORIES, { searchParams }).json()
   const data = ObjectListResponseSchema.parse(resp)
   categories.value = CategorySchema.array().parse(data.objects)
+  totalPages.value = data.total_pages
+  isLoading.value = false
 }
 
 function onDeleted(id: string) {
