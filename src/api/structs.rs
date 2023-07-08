@@ -1,6 +1,6 @@
 use std::num::NonZeroU16;
 
-use edgedb_protocol::common::Cardinality;
+use edgedb_protocol::common::Cardinality as Cd;
 use edgedb_protocol::value::Value as EValue;
 use garde::Validate;
 use indexmap::indexmap;
@@ -77,24 +77,24 @@ impl BlogPostPatchData {
 
     pub fn make_edgedb_object<'a>(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap! {
-            "id" => (Some(EValue::Uuid(post_id)), Cardinality::One),
+            "id" => (Some(EValue::Uuid(post_id)), Cd::One),
         };
         if submitted_fields.iter().any(|&f| f == "title") {
             pairs.insert(
                 "title",
-                (self.title.clone().map(EValue::Str), Cardinality::AtMostOne),
+                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "slug") {
             pairs.insert(
                 "slug",
-                (self.slug.clone().map(EValue::Str), Cardinality::AtMostOne),
+                (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "is_published") {
             pairs.insert(
                 "is_published",
-                (self.is_published.map(EValue::Bool), Cardinality::AtMostOne),
+                (self.is_published.map(EValue::Bool), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "format") {
@@ -102,7 +102,7 @@ impl BlogPostPatchData {
                 "format",
                 (
                     self.format.clone().map(EValue::from),
-                    Cardinality::AtMostOne,
+                    Cd::AtMostOne,
                 ),
             );
         }
@@ -110,18 +110,18 @@ impl BlogPostPatchData {
             let body = self.body.clone();
             let html = body.as_ref().map(|b| markdown_to_html(b));
             let excerpt = body.as_ref().map(|b| make_excerpt(b));
-            pairs.insert("body", (body.map(EValue::Str), Cardinality::AtMostOne));
-            pairs.insert("html", (html.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
+            pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
             pairs.insert(
                 "excerpt",
-                (excerpt.map(EValue::Str), Cardinality::AtMostOne),
+                (excerpt.map(EValue::Str), Cd::AtMostOne),
             );
         }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
             pairs.insert(
                 "categories",
-                (Some(EValue::Array(categories)), Cardinality::One),
+                (Some(EValue::Array(categories)), Cd::One),
             );
         }
         edge_object_from_pairs(pairs)
@@ -167,24 +167,24 @@ impl BlogPostCreateData {
 
     pub fn make_edgedb_object<'a>(&self, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap! {
-            "title" => (Some(EValue::Str(self.title.clone())), Cardinality::One),
-            "slug" => (Some(EValue::Str(self.slug.clone())), Cardinality::One),
+            "title" => (Some(EValue::Str(self.title.clone())), Cd::One),
+            "slug" => (Some(EValue::Str(self.slug.clone())), Cd::One),
         };
         if submitted_fields.iter().any(|&f| f == "is_published") {
             pairs.insert(
                 "is_published",
-                (self.is_published.map(EValue::Bool), Cardinality::AtMostOne),
+                (self.is_published.map(EValue::Bool), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "body") {
             let body = self.body.clone();
             let html = body.as_ref().map(|v| markdown_to_html(v));
             let excerpt = body.as_ref().map(|v| make_excerpt(v));
-            pairs.insert("body", (body.map(EValue::Str), Cardinality::AtMostOne));
-            pairs.insert("html", (html.map(EValue::Str), Cardinality::AtMostOne));
+            pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
+            pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
             pairs.insert(
                 "excerpt",
-                (excerpt.map(EValue::Str), Cardinality::AtMostOne),
+                (excerpt.map(EValue::Str), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "format") {
@@ -192,7 +192,7 @@ impl BlogPostCreateData {
                 "format",
                 (
                     self.format.clone().map(EValue::from),
-                    Cardinality::AtMostOne,
+                    Cd::AtMostOne,
                 ),
             );
         }
@@ -200,7 +200,7 @@ impl BlogPostCreateData {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
             pairs.insert(
                 "categories",
-                (Some(EValue::Array(categories)), Cardinality::One),
+                (Some(EValue::Array(categories)), Cd::One),
             );
         }
         edge_object_from_pairs(pairs)
@@ -225,18 +225,18 @@ impl BlogCategoryPatchData {
 
     pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap!(
-            "id" => (Some(EValue::Uuid(id)), Cardinality::One),
+            "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
         if submitted_fields.iter().any(|&f| f == "title") {
             pairs.insert(
                 "title",
-                (self.title.clone().map(EValue::Str), Cardinality::AtMostOne),
+                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "slug") {
             pairs.insert(
                 "slug",
-                (self.slug.clone().map(EValue::Str), Cardinality::AtMostOne),
+                (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         edge_object_from_pairs(pairs)

@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use chrono_tz::Asia::Ho_Chi_Minh;
+use edgedb_protocol::codec::ObjectShape;
+use edgedb_protocol::common::Cardinality;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
-use edgedb_protocol::common::Cardinality;
-use edgedb_protocol::codec::ObjectShape;
 use minijinja::value::Value as MJValue;
 use serde::ser::Serializer;
 use serde::Serialize;
@@ -42,7 +42,11 @@ where
 }
 
 // Ref: https://github.com/edgedb/edgedb-rust/blob/master/edgedb-protocol/src/value.rs#L100
-pub fn edge_object_from_simple_pairs<N: ToString, V: Into<Option<EValue>>>(iter: impl IntoIterator<Item=(N, V)>) -> EValue {
+pub fn edge_object_from_simple_pairs<N, V>(iter: impl IntoIterator<Item = (N, V)>) -> EValue
+where
+    N: ToString,
+    V: Into<Option<EValue>>,
+{
     let mut elements = Vec::new();
     let mut fields: Vec<Option<EValue>> = Vec::new();
     for (key, val) in iter.into_iter() {
@@ -55,7 +59,7 @@ pub fn edge_object_from_simple_pairs<N: ToString, V: Into<Option<EValue>>>(iter:
     }
 }
 
-pub fn edge_object_from_pairs<N, V>(iter: impl IntoIterator<Item=(N, (V, Cardinality))>) -> EValue
+pub fn edge_object_from_pairs<N, V>(iter: impl IntoIterator<Item = (N, (V, Cardinality))>) -> EValue
 where
     N: ToString,
     V: Into<Option<EValue>>,
