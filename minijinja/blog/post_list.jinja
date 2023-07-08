@@ -1,7 +1,7 @@
 {% extends 'base.jinja' %}
 {% from 'mmacros.jinja' import render_pagination %}
 
-{% block title %}Quan web{% endblock %}
+{% block title %}{{ cat.title|default('All') }}{% endblock title %}
 
 {% block inner_content %}
   {% with front=true %}

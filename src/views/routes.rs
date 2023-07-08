@@ -10,4 +10,5 @@ pub fn get_router() -> Router<AppState> {
         .route("/", get(home))
         .route(&format!("{STATIC_URL}/*file"), get(static_handler))
         .route("/post/:year/:month/:slug", get(front::show_post))
+        .route("/category/:category/", get(front::list_posts))
 }

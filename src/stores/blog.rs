@@ -2,10 +2,11 @@ use uuid::Uuid;
 use edgedb_tokio::{Client, Error};
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
+use edgedb_protocol::common::Cardinality as Cd;
 use indexmap::indexmap;
 
 use crate::models::{RawBlogPost, DetailedBlogPost, BlogCategory};
-use crate::types::conversions::edge_object_from_simple_pairs;
+use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
 pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
     let q = "SELECT count(BlogPost)";
@@ -90,6 +91,59 @@ pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Cli
     Ok(posts)
 }
 
+pub async fn get_blogposts_under_category(cat_slug: Option<String>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+    let mut filter_lines = vec![
+        ".is_published = true",
+    ];
+    let mut paging_lines: Vec<String> = Vec::with_capacity(2);
+    let mut pairs = indexmap! {};
+    if let Some(slug) = cat_slug {
+        filter_lines.push(".categories.slug = <str>$slug");
+        pairs.insert("slug", (Some(EValue::Str(slug)), Cd::One));
+    }
+    if let Some(offset) = offset {
+        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        paging_lines.push(format!("OFFSET <int64>$offset"));
+    }
+    if let Some(limit) = limit {
+        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        paging_lines.push(format!("LIMIT <int64>$limit"));
+    }
+    let filter_expr = filter_lines.join(" AND ");
+    let paging_expr = paging_lines.join(" ");
+    let args = edge_object_from_pairs(pairs);
+
+    let q = format!("
+    SELECT BlogPost {{
+        id,
+        title,
+        slug,
+        excerpt,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {{
+            id,
+            title,
+            slug,
+        }},
+    }}
+    FILTER {filter_expr} ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
+    tracing::debug!("To query: {}", q);
+    tracing::debug!("With args: {:#?}", args);
+    let posts: Vec<RawBlogPost> = client.query(&q, &args).await?;
+    Ok(posts)
+}
+
+pub async fn count_blogposts_under_category(id: Uuid, client: &Client) -> Result<usize, Error> {
+    let q = "
+    SELECT count((SELECT BlogPost FILTER .categories.id = <uuid>$0))";
+    tracing::debug!("To query: {}", q);
+    let count: i64 = client.query_required_single(q, &(id,)).await?;
+    Ok(count.try_into().unwrap_or(0))
+}
+
 pub async fn get_blog_categories(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<BlogCategory>, Error> {
     let q = "
     SELECT BlogCategory {
@@ -118,6 +172,18 @@ pub async fn get_blog_category(id: Uuid, client: &Client) -> Result<Option<BlogC
     } FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let cat: Option<BlogCategory> = client.query_single(q, &(id,)).await?;
+    Ok(cat)
+}
+
+pub async fn get_blog_category_by_slug(slug: &str, client: &Client) -> Result<Option<BlogCategory>, Error> {
+    let q = "
+    SELECT BlogCategory {
+        id,
+        title,
+        slug
+    } FILTER .slug = <str>$0";
+    tracing::debug!("To query: {}", q);
+    let cat: Option<BlogCategory> = client.query_single(q, &(slug,)).await?;
     Ok(cat)
 }
 
