@@ -15,6 +15,7 @@ pub fn get_router() -> Router<AppState> {
     Router::new()
         .route("/", get(views::root))
         .route("/login", post(auth::login))
+        .route("/logout", post(auth::logout))
         .route("/users/me", get(views::show_me))
         .route("/posts/", get(views::list_posts).post(views::create_post))
         .route("/posts/:post_id", single_post_router)

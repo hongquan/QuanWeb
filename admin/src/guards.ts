@@ -1,4 +1,6 @@
 import { RouteLocationNormalized } from 'vue-router'
+import { HTTPError } from 'ky'
+import HStatus from 'http-status'
 
 import { kyClient } from './common'
 import { useStore } from './stores'
@@ -12,7 +14,11 @@ async function getMe(): Promise<User | null> {
     const resp = await kyClient.get(API_GET_ME).json()
     return UserSchema.parse(resp)
   } catch (e) {
-    console.info('Failed to get user info', e)
+    if (e instanceof HTTPError && e.response.status === HStatus.UNAUTHORIZED) {
+      console.info('Has not logged in')
+    } else {
+      console.info('Other error:', e)
+    }
   }
   return null
 }

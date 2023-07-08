@@ -2,6 +2,7 @@
   <Toaster
     rich-colors
     position='top-right'
+    close-button
     :toast-options='toastOptions'
   />
   <RouterView />

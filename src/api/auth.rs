@@ -50,3 +50,8 @@ pub async fn login(
     })?;
     Ok(Json(user))
 }
+
+
+pub async fn logout(mut auth: Auth) {
+    auth.logout().await;
+}

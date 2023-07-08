@@ -6,6 +6,7 @@ import SimpleWrap from '@/views/SimpleWrap.vue'
 import { authRequired } from '@/guards'
 
 const LoginPage = (): Promise<RouteComponent> => import('./views/LoginPage.vue')
+const LogoutPage = (): Promise<RouteComponent> => import('./views/LogoutPage.vue')
 const BlogPostList = (): Promise<RouteComponent> => import('./views/BlogPostList.vue')
 const BlogPostEdit = (): Promise<RouteComponent> => import('./views/BlogPostEdit.vue')
 const BlogCategoryList = (): Promise<RouteComponent> => import('./views/BlogCategoryList.vue')
@@ -15,6 +16,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: MainWrap,
+    name: 'home',
     beforeEnter: authRequired,
     redirect: () => ({ name: 'post.list' }),
     children: [
@@ -37,5 +39,6 @@ export const routes: RouteRecordRaw[] = [
     ],
   },
   { path: '/login', component: LoginPage, name: 'login' },
+  { path: '/logout', component: LogoutPage, name: 'logout' },
   { path: '/:path(.*)', component: NotFound },
 ]
