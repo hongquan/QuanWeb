@@ -20,6 +20,10 @@
         @taken='onCategoryTaken($event)'
         @released='onCategoryReleased($event)'
       />
+      <div
+        ref='codeEditor'
+        class='language-markdown w-full mt-4 p-4 font-mono rounded'
+      />
       <div class='text-center mt-2'>
         <FbButton
           type='submit'
@@ -41,6 +45,10 @@ import { Button as FbButton } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A } from '@mobily/ts-belt'
+import { CodeJar } from 'codejar'
+import hljs from 'highlight.js/lib/core'
+import markdown from 'highlight.js/lib/languages/markdown'
+import 'highlight.js/styles/base16/zenburn.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
@@ -56,10 +64,14 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   postId: null,
 })
+hljs.registerLanguage('markdown', markdown)
+
 const router = useRouter()
 const post = ref<Post | null>(null)
 const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)
+const codeEditor = ref<HTMLDivElement | null>(null)
+const jar = ref<CodeJar | null>(null)
 
 async function fetchCategories() {
   const raw = await kyClient.get(API_GET_CATEGORIES).json()
@@ -76,6 +88,9 @@ async function fetchData() {
   const url = lightJoin(API_GET_POSTS, props.postId)
   const resp = await kyClient.get(url).json()
   post.value = PostSchema.parse(resp)
+  if (jar.value && post.value.body) {
+    jar.value.updateCode(post.value.body)
+  }
 }
 
 function onCategoryTaken(id: string) {
@@ -129,5 +144,18 @@ onMounted(() => {
     },
     { flush: 'post' },
   )
+  watch(codeEditor, (el) => {
+    if (el) {
+      jar.value = CodeJar(el, hljs.highlightElement)
+      if (post.value?.body) {
+        jar.value.updateCode(post.value.body)
+      }
+      jar.value.onUpdate(code => {
+        if (post.value) {
+          post.value.body = code
+        }
+      })
+    }
+  })
 })
 </script>
