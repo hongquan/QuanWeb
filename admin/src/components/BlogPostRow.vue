@@ -14,7 +14,16 @@
     <td class='px-6 py-4'>
       {{ post.slug }}
     </td>
-    <td class='px-6 py-4'>{{ CategoriesDisplay }}</td>
+    <td class='px-6 py-4'>
+      {{ CategoriesDisplay }}
+    </td>
+    <td>
+      <Icon
+        v-if='post.is_published'
+        icon='heroicons:globe-asia-australia-solid'
+        class='text-green-600 w-5 h-auto'
+      />
+    </td>
     <td>
       <button
         class='hover:text-red-500'
