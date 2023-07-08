@@ -8,4 +8,9 @@
       {% include 'blog/block_post_content.jinja' %}
     {% endfor %}
   {% endwith %}
+  <div class='text-center mt-4'>
+    {% for item in pagelink_items %}
+      {{ item.page }}
+    {% endfor %}
+  </div>
 {% endblock inner_content %}

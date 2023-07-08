@@ -1,17 +1,21 @@
 pub mod conversions;
+#[cfg(test)]
+pub mod tests;
 
 use std::collections::HashMap;
+use std::num::NonZeroU16;
 
-use edgedb_tokio::Client;
-use serde::{Deserialize, Serialize};
-use edgedb_protocol::codec::ShapeElement;
-use edgedb_protocol::common::Cardinality;
 use axum::extract::FromRef;
+use axum::http::header::CONTENT_TYPE;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::http::header::CONTENT_TYPE;
+use edgedb_protocol::codec::ShapeElement;
+use edgedb_protocol::common::Cardinality;
+use edgedb_tokio::Client;
 use minijinja::Environment;
 use rust_embed::RustEmbed;
+use serde::{Deserialize, Serialize};
+use smart_default::SmartDefault;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiErrorShape {
@@ -64,19 +68,111 @@ pub struct StaticFile<T>(pub T);
 
 impl<T> IntoResponse for StaticFile<T>
 where
-  T: Into<String>,
+    T: Into<String>,
 {
-  fn into_response(self) -> Response {
-    let path = self.0.into();
+    fn into_response(self) -> Response {
+        let path = self.0.into();
 
-    match Assets::get(path.as_str()) {
-      Some(content) => {
-        let mime = mime_guess::from_path(path).first_or_octet_stream();
-        ([(CONTENT_TYPE, mime.as_ref())], content.data).into_response()
-      }
-      None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
+        match Assets::get(path.as_str()) {
+            Some(content) => {
+                let mime = mime_guess::from_path(path).first_or_octet_stream();
+                ([(CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+            }
+            None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
+        }
     }
-  }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, SmartDefault)]
+pub struct PageLinkItem {
+    #[default(NonZeroU16::MIN)]
+    pub page: NonZeroU16,
+    pub is_current: bool,
+    pub is_ellipsis: bool,
+}
+
+impl PageLinkItem {
+    pub fn new(page: NonZeroU16, is_current: bool, is_ellipsis: bool) -> Self {
+        Self {
+            page,
+            is_current,
+            is_ellipsis,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, SmartDefault)]
+pub struct Paginator {
+    #[default(NonZeroU16::MIN)]
+    pub current_page: NonZeroU16,
+    #[default(NonZeroU16::MIN)]
+    pub total_pages: NonZeroU16,
+}
+
+#[allow(dead_code)]
+impl Paginator {
+    pub const PADDING: u16 = 3;
+    const TOTAL_DISPLAY: u16 = Self::PADDING * 2 + 1;
+    // Rule:
+    // - Current page is always surrounded by 1 to 2 pages on each side, except when it is the first or the last.
+    // - When current page is around beginning or around the end, we show one ellipsis
+    // - When current page is at the middle, we show two ellipses.
+    // - Total of items to show is always 7 or less, including ellipses.
+    pub fn generate_items(&self) -> Vec<PageLinkItem> {
+        let total_pages = self.total_pages.get();
+        if total_pages < self.current_page.get() {
+            return Vec::new();
+        }
+        if total_pages <= Self::TOTAL_DISPLAY {
+            let range = 1..=total_pages;
+            let items = range.map(|i| {
+                let page = NonZeroU16::new(i).unwrap_or(NonZeroU16::MIN);
+                PageLinkItem::new(page, page == self.current_page, false)
+            });
+            return items.collect();
+        }
+        let current_page = self.current_page.get();
+        let elli_index = if current_page == Self::PADDING {
+            current_page + 1
+        } else if current_page == total_pages - Self::PADDING + 1 {
+            Self::TOTAL_DISPLAY - Self::PADDING - 2
+        } else {
+            Self::PADDING
+        };
+        (0..Self::TOTAL_DISPLAY)
+            .map(|i| {
+                // When current page is around beginning or around the end, we show one ellipsis
+                let (is_ellipsis, page) = if current_page <= Self::PADDING
+                    || current_page > total_pages - Self::PADDING
+                {
+                    let is_ellipsis = i == elli_index;
+                    let page = if i < elli_index {
+                        i + 1
+                    } else {
+                        total_pages - 2 * Self::PADDING + i
+                    };
+                    (is_ellipsis, page)
+                } else {
+                    // When current page is at the middle, we show two ellipses.
+                    // We don't base on ellipsisIndex anymore.
+                    let page = if i == 0 {
+                        // Always show first page
+                        1
+                    } else if i == Self::TOTAL_DISPLAY - 1 {
+                        // Always show last page
+                        total_pages
+                    } else {
+                        // Show the closest neighbor pages
+                        current_page - Self::PADDING + i
+                    };
+                    let is_ellipsis = i == 1 || i == Self::TOTAL_DISPLAY - 2;
+                    (is_ellipsis, page)
+                };
+                let page = NonZeroU16::new(page).unwrap_or(NonZeroU16::MIN);
+                PageLinkItem::new(page, page == self.current_page, is_ellipsis)
+            })
+            .collect()
+    }
 }
 
 pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> ShapeElement {

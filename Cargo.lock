@@ -1915,6 +1915,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonzero_ext"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38bf9645c8b145698bb0b18a4637dcacbc421ea49bef2317e4fd8065a387cf21"
+
+[[package]]
 name = "notify"
 version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2283,6 +2289,7 @@ dependencies = [
  "mime_guess",
  "minijinja",
  "minijinja-autoreload",
+ "nonzero_ext",
  "querystring_tiny",
  "redact",
  "rust-embed",
@@ -2290,6 +2297,7 @@ dependencies = [
  "serde-value",
  "serde_json",
  "serde_with",
+ "smart-default",
  "strum",
  "strum_macros",
  "syntect",
@@ -2924,6 +2932,17 @@ name = "smallvec"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
+
+[[package]]
+name = "smart-default"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0eb01866308440fc64d6c44d9e86c5cc17adfe33c4d6eed55da9145044d0ffc1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.18",
+]
 
 [[package]]
 name = "smawk"

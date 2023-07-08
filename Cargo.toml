@@ -32,6 +32,7 @@ miette = { version = "5.9.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.4"
 minijinja = { version = "1.0.3", features = ["loader", "internal_debug"] }
 minijinja-autoreload = "1.0.3"
+nonzero_ext = "0.3.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.1", features = ["serde"] }
 rust-embed = { version = "6.8.1", features = ["axum", "mime-guess", "include-exclude"] }
@@ -39,6 +40,7 @@ serde = { version = "1.0.164", features = ["serde_derive"] }
 serde-value = "0.7.0"
 serde_json = "1.0.99"
 serde_with = "3.0.0"
+smart-default = "0.7.1"
 strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
 syntect = { version = "5.0.0", features = ["default-fancy"] }

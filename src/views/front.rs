@@ -1,3 +1,5 @@
+use std::num::NonZeroU16;
+
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Result as AxumResult};
@@ -7,21 +9,30 @@ use minijinja::context;
 use minijinja::value::Value as MJValue;
 
 use super::render_with;
-use super::structs::PostPageParams;
+use super::structs::{PostPageParams, LaxPaging};
 use crate::auth::Auth;
-use crate::consts::STATIC_URL;
+use crate::consts::{STATIC_URL, DEFAULT_PAGE_SIZE};
 use crate::errors::PageError;
-use crate::stores::blog::{get_blogpost_by_slug, get_blogposts, get_next_post, get_previous_post};
-use crate::types::AppState;
-use crate::types::StaticFile;
+use crate::stores::blog::{get_blogpost_by_slug, get_blogposts, get_next_post, get_previous_post, get_all_posts_count};
+use crate::types::{AppState, StaticFile, Paginator};
 
-pub async fn home(State(state): State<AppState>) -> AxumResult<Html<String>> {
+pub async fn home(Query(paging): Query<LaxPaging>, State(state): State<AppState>) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let result = get_blogposts(Some(0), Some(10), &db)
+    let current_page = paging.page.and_then(|p| NonZeroU16::new(p.parse().ok()?)).unwrap_or(NonZeroU16::MIN);
+    let total = get_all_posts_count(&db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?;
+    let page_size = DEFAULT_PAGE_SIZE;
+    let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    let paginator = Paginator { current_page, total_pages };
+    let pagelink_items = paginator.generate_items();
+    tracing::debug!("Pagination links: {:?}", pagelink_items);
+    let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
+    let result = get_blogposts(Some(offset), Some(page_size as i64), &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let posts: Vec<MJValue> = result.into_iter().collect();
-    let context = context!(posts => posts);
+    let context = context!(posts => posts, pagelink_items => pagelink_items);
     let content = render_with("home.jinja", context, jinja)?;
     Ok(Html(content))
 }
