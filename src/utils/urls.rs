@@ -1,10 +1,8 @@
-use std::fmt::Display;
 use http::Uri;
 use querystring_tiny::QueryString;
+use std::fmt::Display;
 
-pub fn update_entry_in_query<T>(name: &str, value: T, original_uri: &Uri) -> Uri
-where T: Display
-{
+pub fn update_entry_in_query<T: Display>(name: &str, value: T, original_uri: &Uri) -> Uri {
     let mut query = original_uri
         .query()
         .map(|s| QueryString::decode(s.as_bytes()).ok())
@@ -16,6 +14,8 @@ where T: Display
         Some(query) => format!("{path}?{query}"),
         None => path.to_string(),
     };
-    let new_uri = Uri::builder().path_and_query(&path_and_query).build().unwrap_or(original_uri.clone());
-    new_uri
+    Uri::builder()
+        .path_and_query(&path_and_query)
+        .build()
+        .unwrap_or(original_uri.clone())
 }

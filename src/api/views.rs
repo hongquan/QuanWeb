@@ -43,9 +43,12 @@ pub async fn list_categories(
     let count = get_all_categories_count(&db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
+    tracing::debug!("All categories count: {}", count);
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    tracing::debug!("Total pages: {}", total_pages);
     let links = gen_pagination_links(&paging.0, count, original_uri);
+    tracing::debug!("Links: {:?}", links);
     let resp = ObjectListResponse {
         objects: categories,
         count,
