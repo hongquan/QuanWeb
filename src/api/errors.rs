@@ -22,6 +22,8 @@ pub enum ApiError {
     EdgeDBQueryError(#[from] edgedb_errors::Error),
     #[error("{0} not found")]
     ObjectNotFound(String),
+    #[error("Please login")]
+    Unauthorized,
     #[error("Error logging in")]
     LoginError(String),
     #[error("Not enough data")]
@@ -61,6 +63,7 @@ impl IntoResponse for ApiError {
                 }
             }
             Self::ObjectNotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
+            Self::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
             Self::NotEnoughData => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             Self::ValidationError(e) => {

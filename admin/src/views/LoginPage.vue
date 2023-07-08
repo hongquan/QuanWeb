@@ -51,9 +51,14 @@
       </div>
       <button
         type='submit'
-        class='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+        class='flex items-center space-x-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
       >
-        Submit
+        <Icon
+          v-if='isSubmitting'
+          icon='line-md:loading-twotone-loop'
+          class='w-5 h-auto'
+        />
+        <span>Submit</span>
       </button>
     </form>
   </div>
@@ -63,25 +68,44 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import { HTTPError } from 'ky'
+import { Icon } from '@iconify/vue'
 
 import { kyClient } from '@/common'
 import { API_LOGIN } from '@/urls'
 import { useStore } from '@/stores'
 import { UserSchema } from '@/models/user'
+import { GeneralErrorResponseSchema } from '@/models/api'
 
 const router = useRouter()
 const route = useRoute()
 const store = useStore()
 const email = ref('')
 const password = ref('')
+const isSubmitting = ref(false)
 
 async function onSubmit() {
-  const resp = await kyClient.post(API_LOGIN, { json: { email: email.value, password: password.value } }).json()
-  const user = UserSchema.parse(resp)
-  store.user = user
-  toast.success('Login successfully')
-  console.log(user)
-  const attemptUrl = route.query.attempt as string || '/'
-  await router.push(attemptUrl)
+  isSubmitting.value = true
+  try {
+    const resp = await kyClient.post(API_LOGIN, { json: { email: email.value, password: password.value } }).json()
+    const user = UserSchema.parse(resp)
+    store.user = user
+    toast.success('Login successfully')
+    console.log(user)
+    const attemptUrl = route.query.attempt as string || '/'
+    await router.push(attemptUrl)
+  } catch (e) {
+    console.info(e)
+    if (e instanceof HTTPError) {
+      const parsedResp = GeneralErrorResponseSchema.safeParse(await e.response.json())
+      if (parsedResp.success) {
+        toast.error(parsedResp.data.message)
+        return
+      }
+    }
+    toast.error('Login failed')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>

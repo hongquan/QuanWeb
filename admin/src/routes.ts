@@ -3,6 +3,7 @@ import { RouteRecordRaw, RouteComponent } from 'vue-router'
 import NotFound from '@/views/NotFound.vue'
 import MainWrap from '@/views/MainWrap.vue'
 import SimpleWrap from '@/views/SimpleWrap.vue'
+import { authRequired } from '@/guards'
 
 const LoginPage = (): Promise<RouteComponent> => import('./views/LoginPage.vue')
 const BlogPostList = (): Promise<RouteComponent> => import('./views/BlogPostList.vue')
@@ -14,6 +15,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: MainWrap,
+    beforeEnter: authRequired,
     redirect: () => ({ name: 'post.list' }),
     children: [
       {

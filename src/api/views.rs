@@ -9,11 +9,11 @@ use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
-use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
+use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::stores::blog::{get_all_categories_count, get_blog_categories, get_blog_category};
@@ -24,7 +24,9 @@ pub async fn root() -> &'static str {
 
 pub async fn show_me(auth: Auth) -> AxumResult<Json<User>> {
     tracing::info!("Current user: {:?}", auth.current_user);
-    let user = auth.current_user.ok_or(StatusCode::UNAUTHORIZED)?;
+    let user = auth
+        .current_user
+        .ok_or(ApiError::Unauthorized)?;
     Ok(Json(user))
 }
 
