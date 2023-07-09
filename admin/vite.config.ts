@@ -1,14 +1,36 @@
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig, ViteDevServer, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
+import urlJoin from 'proper-url-join'
 
 const BACKEND_ROOT_URL = 'http://localhost:3721'
+const BACKEND_PREFIXES = ['/preview/']
 const BASE_PATH = '/admin/'
+
+const backendRedirectPlugin = {
+  name: 'backend-redirect',
+  configureServer(server: ViteDevServer) {
+    const log = server.config.logger
+    // Ref: https://github.com/senchalabs/connect#use-middleware
+    server.middlewares.use((req, res, next) => {
+      if (!req.url || !BACKEND_PREFIXES.some(item => req.url?.startsWith(item))) {
+        return next()
+      }
+      const newUrl = urlJoin(BACKEND_ROOT_URL, req.url)
+      log.info(`To redirect to ${newUrl}`)
+      // Ref: https://github.com/thenativeweb/forcedomain/blob/main/lib/forceDomain.ts
+      res.writeHead(302, {
+        Location: newUrl,
+      })
+      res.end()
+    })
+  },
+} as Plugin
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), svgLoader({ svgo: false })],
+  plugins: [vue(), svgLoader({ svgo: false }), backendRedirectPlugin],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '/src'),

@@ -10,6 +10,8 @@ pub enum PageError {
     EdgeDBQueryError(#[from] edgedb_errors::Error),
     #[error(transparent)]
     JinjaError(#[from] minijinja::Error),
+    #[error("Permission denied")]
+    PermissionDenied(String),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -26,6 +28,7 @@ impl IntoResponse for PageError {
                 tracing::error!("Jinja error: {:#}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
+            Self::PermissionDenied(e) => (StatusCode::FORBIDDEN, e.to_string()),
             Self::Other(e) => (StatusCode::INTERNAL_SERVER_ERROR, e)
         };
         (status, message).into_response()

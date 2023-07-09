@@ -18,13 +18,23 @@
       {{ CategoriesDisplay }}
     </td>
     <td>
-      <Icon
-        v-if='post.is_published'
-        icon='heroicons:globe-asia-australia-solid'
-        class='text-green-600 w-5 h-auto'
-      />
+      <div class='flex items-center space-x-4'>
+        <Icon
+          v-if='post.is_published'
+          icon='heroicons:globe-asia-australia-solid'
+          class='text-green-600 w-5 h-auto'
+        />
+        <a
+          :href='previewUrl'
+          class='hover:underline hover:text-blue-600'
+          title='Preview'
+        ><Icon
+          icon='mdi:view-in-ar'
+          class='w-5 h-auto'
+        /></a>
+      </div>
     </td>
-    <td>
+    <td class='text-right pr-4'>
       <button
         class='hover:text-red-500'
         @click='deletePost'
@@ -77,6 +87,7 @@ const editUrl = computed(() => ({
   name: 'post.edit',
   params: { postId: props.post.id },
 }))
+const previewUrl = computed(() => props.post.id ? `/preview/${props.post.id}` : '#')
 
 async function deletePost() {
   if (!props.post.id) {

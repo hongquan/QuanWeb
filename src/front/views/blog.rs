@@ -1,5 +1,6 @@
 use std::num::NonZeroU16;
 
+use uuid::Uuid;
 use axum::extract::{Path, State, OriginalUri};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
@@ -89,5 +90,25 @@ pub async fn list_posts(
         categories => categories,
         no_tracking => no_tracking);
     let content = render_with("blog/post_list.jinja", context, jinja)?;
+    Ok(Html(content))
+}
+
+pub async fn preview_post(auth: Auth, Path(id): Path<Uuid>, State(state): State<AppState>) -> AxumResult<Html<String>> {
+    let _user = auth.current_user.ok_or(PageError::PermissionDenied);
+    let AppState { db, jinja } = state;
+    let post = stores::blog::get_blogpost(id, &db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?
+        .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
+    let prev_post = get_previous_post(post.created_at, None, &db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?;
+    tracing::debug!("Previous post: {:?}", prev_post);
+    let next_post = get_next_post(post.created_at, None, &db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?;
+    tracing::debug!("Next post: {:?}", next_post);
+    let context = context!(post => post, prev_post => prev_post, next_post => next_post, no_tracking => true);
+    let content = render_with("blog/post.jinja", context, jinja)?;
     Ok(Html(content))
 }
