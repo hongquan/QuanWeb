@@ -5,7 +5,7 @@
       @locale-selected='preferLocale($event)'
     />
     <NavTabBar class='mb-4' />
-    <main class='mx-auto w-full'>
+    <main class='mx-auto w-full max-w-320'>
       <RouterView />
       <hr class='my-4'>
     </main>

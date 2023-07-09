@@ -42,6 +42,8 @@ export default {
         8: '2rem',
         20: '5rem',
         120: '30rem',
+        240: '60rem',
+        320: '80rem',
         ...defaultTheme.maxWidth,
       },
       height: {
