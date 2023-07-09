@@ -9,10 +9,12 @@ mod stores;
 mod types;
 mod utils;
 mod views;
+mod cli;
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
+use clap::Parser;
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use miette::miette;
@@ -40,6 +42,7 @@ fn config_jinja() -> Environment<'static> {
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
+    let _app_opts = cli::AppOptions::parse();
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
