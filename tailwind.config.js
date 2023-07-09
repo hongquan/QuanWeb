@@ -1,6 +1,9 @@
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 module.exports = {
   content: [
     './templates/**/*.jinja',
+    './minijinja/**/*.jinja',
   ],
   theme: {
     extend: {
@@ -32,7 +35,12 @@ module.exports = {
             }
           }
         }
-      }
+      },
+      screens: {
+        'xxs': '358px',
+        'xs': '475px',
+        ...defaultTheme.screens,
+      },
     },
   },
   variants: {

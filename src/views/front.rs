@@ -1,6 +1,6 @@
 use std::num::NonZeroU16;
 
-use axum::extract::{Path, State};
+use axum::extract::{Path, State, OriginalUri};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Result as AxumResult};
 use axum_extra::extract::Query;
@@ -21,6 +21,7 @@ use crate::types::{AppState, Paginator, StaticFile};
 
 pub async fn home(
     auth: Auth,
+    OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
@@ -41,6 +42,8 @@ pub async fn home(
     };
     let pagelink_items = paginator.generate_items();
     tracing::debug!("Pagination links: {:?}", pagelink_items);
+    let next_page_url = paginator.next_url(&current_url);
+    let prev_page_url = paginator.previous_url(&current_url);
     let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
     let result = get_blogposts(Some(offset), Some(page_size as i64), &db)
         .await
@@ -50,7 +53,13 @@ pub async fn home(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let no_tracking = auth.current_user.is_some();
-    let context = context!(posts => posts, categories => categories, pagelink_items => pagelink_items, no_tracking => no_tracking);
+    let context = context!(
+        posts => posts,
+        categories => categories,
+        pagelink_items => pagelink_items,
+        next_page_url => next_page_url,
+        prev_page_url => prev_page_url,
+        no_tracking => no_tracking);
     let content = render_with("home.jinja", context, jinja)?;
     Ok(Html(content))
 }
@@ -93,6 +102,7 @@ pub async fn show_post(
 pub async fn list_posts(
     auth: Auth,
     Path(cat_slug): Path<String>,
+    OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
@@ -120,11 +130,20 @@ pub async fn list_posts(
         total_pages,
     };
     let pagelink_items = paginator.generate_items();
+    let next_page_url = paginator.next_url(&current_url);
+    let prev_page_url = paginator.previous_url(&current_url);
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let no_tracking = auth.current_user.is_some();
-    let context = context!(posts => posts, cat => cat, pagelink_items => pagelink_items, categories => categories, no_tracking => no_tracking);
+    let context = context!(
+        posts => posts,
+        cat => cat,
+        pagelink_items => pagelink_items,
+        next_page_url => next_page_url,
+        prev_page_url => prev_page_url,
+        categories => categories,
+        no_tracking => no_tracking);
     let content = render_with("blog/post_list.jinja", context, jinja)?;
     Ok(Html(content))
 }

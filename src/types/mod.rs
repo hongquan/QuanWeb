@@ -5,6 +5,7 @@ pub mod tests;
 use std::collections::HashMap;
 use std::num::NonZeroU16;
 
+use http::Uri;
 use axum::extract::FromRef;
 use axum::http::header::CONTENT_TYPE;
 use axum::http::StatusCode;
@@ -16,6 +17,8 @@ use minijinja::Environment;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use smart_default::SmartDefault;
+
+use crate::utils::urls::update_entry_in_query;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiErrorShape {
@@ -172,6 +175,24 @@ impl Paginator {
                 PageLinkItem::new(page, page == self.current_page, is_ellipsis)
             })
             .collect()
+    }
+
+    pub fn next_url(&self, current_url: &Uri) -> Option<String> {
+        let next_page = self.current_page.saturating_add(1u16);
+        if next_page <= self.total_pages {
+            Some(update_entry_in_query("page", next_page, current_url).to_string())
+        } else {
+            None
+        }
+    }
+
+    pub fn previous_url(&self, current_url: &Uri) -> Option<String> {
+        if self.current_page > NonZeroU16::MIN {
+            let prev_page = self.current_page.get() - 1;
+            Some(update_entry_in_query("page", prev_page, current_url).to_string())
+        } else {
+            None
+        }
     }
 }
 

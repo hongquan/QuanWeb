@@ -1,20 +1,45 @@
 {% macro render_pagelink_item(item) %}
+  {% set ELLIPSIS_CLASS = 'relative hidden xs:inline-flex items-center px-4 py-2 border text-sm font-medium' %}
+  {% set ACTIVE_CLASS = 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-slate-600 dark:text-indigo-300 dark:hover:text-white' %}
+  {% set INACTIVE_CLASS = 'hidden xs:block bg-white dark:bg-slate-900 border-gray-300 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 dark:hover:text-white' %}
   <li>
-  {% set extra_class = 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-slate-600 dark:text-indigo-300 dark:hover:text-white' if item.is_current else 'bg-white dark:bg-slate-900 border-gray-300 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600 dark:hover:text-white' %}
   {% if item.is_ellipsis %}
-    <span class='relative inline-flex items-center px-4 py-2 border text-sm font-medium'>…</span>
+    <span class='{{ ELLIPSIS_CLASS }}'>…</span>
   {% else %}
-    <a href='?page={{ item.page }}' class='relative inline-flex items-center px-4 py-2 border text-sm font-medium {{ extra_class }}'>{{ item.page }}</a>
+    <a href='?page={{ item.page }}' class='relative inline-flex items-center px-4 py-2 border text-sm font-medium {{ ACTIVE_CLASS if item.is_current else INACTIVE_CLASS }}'>{{ item.page }}</a>
   {% endif %}
   </li>
 {% endmacro %}
 
 {% macro render_pagination(items) %}
   {% if items %}
-    <ul class='relative z-0 hidden sm:inline-flex rounded-md shadow-sm -space-x-px'>
-    {% for item in items %}
-      {{ render_pagelink_item(item) }}
-    {% endfor %}
+    {% set ARROW_CLASS = 'relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white dark:bg-slate-900 text-sm font-medium' %}
+    {% set ARROW_ACTIVE_CLASS = 'text-gray-500 dark:text-gray-300' %}
+    {% set ARROW_INACTIVE_CLASS = 'disabled text-gray-500 dark:text-gray-800' %}
+    {% set PREV_CLASS = ARROW_CLASS ~ ' rounded-l-md' %}
+    {% set NEXT_CLASS = ARROW_CLASS ~ ' rounded-r-md' %}
+    {% set has_next = next_page_url|bool %}
+    {% set has_prev = prev_page_url|bool %}
+    <ul class='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'>
+      <li class='{{ ARROW_ACTIVE_CLASS if has_prev else ARROW_INACTIVE_CLASS }}'>
+        <a href="{{ prev_page_url if has_prev else '#' }}" class='{{ PREV_CLASS }}' {{ 'disabled' if not has_prev }}>
+          <span class='sr-only'>Previous</span>
+          <svg class='h-5 w-5' x-description='Heroicon name: solid/chevron-left' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+            <path fill-rule='evenodd' d='M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z' clip-rule='evenodd'></path>
+          </svg>
+        </a>
+      </li>
+      {% for item in items %}
+        {{ render_pagelink_item(item) }}
+      {% endfor %}
+      <li class='{{ ARROW_ACTIVE_CLASS if has_next else ARROW_INACTIVE_CLASS }}'>
+        <a href="{{ next_page_url if has_next else '#' }}" class='{{ NEXT_CLASS }}' {{ 'disabled' if not has_next }}>
+          <span class='sr-only'>Next</span>
+          <svg class='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+            <path fill-rule='evenodd' d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z' clip-rule='evenodd' />
+          </svg>
+        </a>
+      </li>
     </ul>
   {% endif %}
 {% endmacro %}
