@@ -186,6 +186,50 @@ pub async fn count_blogposts_under_category(id: Uuid, client: &Client) -> Result
     Ok(count.try_into().unwrap_or(0))
 }
 
+pub async fn get_published_uncategorized_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+    let mut pairs = IndexMap::with_capacity(2);
+    let mut paging_lines: Vec<String> = Vec::with_capacity(2);
+    if let Some(offset) = offset {
+        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        paging_lines.push(format!("OFFSET <int64>$offset"));
+    }
+    if let Some(limit) = limit {
+        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        paging_lines.push(format!("LIMIT <int64>$limit"));
+    }
+    let paging_expr = paging_lines.join(" ");
+    let args = edge_object_from_pairs(pairs);
+    let q = format!("
+    SELECT BlogPost {{
+        id,
+        title,
+        slug,
+        excerpt,
+        is_published,
+        published_at,
+        created_at,
+        updated_at,
+        categories: {{
+            id,
+            title,
+            slug,
+        }},
+    }}
+    FILTER .is_published = true AND NOT EXISTS .categories ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
+    tracing::debug!("To query: {}", q);
+    tracing::debug!("With args: {:#?}", args);
+    let posts: Vec<RawBlogPost> = client.query(&q, &args).await?;
+    Ok(posts)
+}
+
+pub async fn count_published_uncategorized_posts(client: &Client) -> Result<usize, Error> {
+    let q = "
+    SELECT count((SELECT BlogPost FILTER .is_published = true AND NOT EXISTS .categories))";
+    tracing::debug!("To query: {}", q);
+    let count: i64 = client.query_required_single(q, &()).await?;
+    Ok(count.try_into().unwrap_or(0))
+}
+
 pub async fn get_blog_categories(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<BlogCategory>, Error> {
     let q = "
     SELECT BlogCategory {

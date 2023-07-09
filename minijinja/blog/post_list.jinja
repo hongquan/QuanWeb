@@ -1,7 +1,7 @@
 {% extends 'base.jinja' %}
 {% from 'mmacros.jinja' import render_pagination %}
 
-{% block title %}{{ cat.title|default('All') }}{% endblock title %}
+{% block title %}{{ cat.title if cat else 'All' if front else 'Uncategorized' }}{% endblock title %}
 
 {% block inner_content %}
   {% with front=true %}
