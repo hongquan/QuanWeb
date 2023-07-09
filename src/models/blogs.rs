@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
@@ -219,43 +219,6 @@ impl FromIterator<RawBlogPost> for Vec<MJValue> {
         iter.into_iter().map(MJValue::from).collect()
     }
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct BlogPost {
-    pub id: Uuid,
-    pub title: String,
-    pub slug: String,
-    pub is_published: Option<bool>,
-    pub published_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: Option<DateTime<Utc>>,
-    pub categories: Vec<BlogCategory>,
-}
-
-impl From<RawBlogPost> for BlogPost {
-    fn from(post: RawBlogPost) -> Self {
-        let published_at: Option<DateTime<Utc>> = post.published_at.map(|d| d.into());
-        let created_at: DateTime<Utc> = post.created_at.into();
-        let updated_at: Option<DateTime<Utc>> = post.updated_at.map(|d| d.into());
-        BlogPost {
-            id: post.id,
-            title: post.title,
-            slug: post.slug,
-            is_published: post.is_published,
-            published_at,
-            created_at,
-            updated_at,
-            categories: post.categories,
-        }
-    }
-}
-
-impl FromIterator<RawBlogPost> for Vec<BlogPost> {
-    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
-        iter.into_iter().map(BlogPost::from).collect()
-    }
-}
-
 
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
