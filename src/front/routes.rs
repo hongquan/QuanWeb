@@ -13,4 +13,5 @@ pub fn get_router() -> Router<AppState> {
     .route("/category/:category/", get(views::blog::list_posts))
     .route("/preview/:id", get(views::blog::preview_post))
     .route("/blog/:year/:month/:id_and_slug", get(views::old_urls::redirect_old_post_view))
+    .route("/category/:cat_slug", get(views::old_urls::redirect_old_category_view))
 }

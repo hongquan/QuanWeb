@@ -32,3 +32,12 @@ pub async fn redirect_old_post_view(
     let new_url = format!("/post/{}/{}", created_at.format("%Y/%m"), post.slug);
     Ok(Redirect::temporary(&new_url))
 }
+
+pub async fn redirect_old_category_view(Path(cat_slug): Path<String>) -> Result<Redirect> {
+    static RE_OLD_CATEGORY_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"[-\w]+").unwrap());
+    let matched = RE_OLD_CATEGORY_URL.is_match(&cat_slug);
+    if !matched {
+        return Err((StatusCode::NOT_FOUND, "Must be category slug".to_string()).into());
+    }
+    Ok(Redirect::temporary(&format!("/category/{}/", cat_slug)))
+}
