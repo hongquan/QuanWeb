@@ -1,25 +1,29 @@
 use axum::extract::{Path, State};
-use axum::response::{Redirect, Result};
+use axum::response::{Redirect, Result, Html};
 use chrono::{DateTime, Utc};
+use edgedb_tokio::Client;
 use http::StatusCode;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use minijinja::Environment;
 
 use crate::errors::PageError;
 use crate::models::blogs::MiniBlogPost;
 use crate::stores;
-use crate::types::AppState;
 
-pub async fn redirect_old_post_view(
-    Path((_y, _m, id_and_slug)): Path<(u16, u16, String)>,
-    State(state): State<AppState>,
-) -> Result<Redirect> {
-    static REGEX_OLD_POST_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(\d+)-([-\w]+)$").unwrap());
-    let capt = REGEX_OLD_POST_URL
-        .captures(&id_and_slug)
+use super::render_with;
+
+pub async fn redirect_old_blog_view(Path(rest): Path<String>, State(db): State<Client>) -> Result<Redirect> {
+    static RE_OLD_CAT_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[-\w]+/$").unwrap());
+    static RE_OLD_POST_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\d+/\d+/(\d+)-([-\w]+)$").unwrap());
+    let is_cat = RE_OLD_CAT_URL.is_match(&rest);
+    if is_cat {
+        return Ok(Redirect::temporary(&format!("/category/{}", rest)));
+    }
+    let capt = RE_OLD_POST_URL
+        .captures(&rest)
         .ok_or((StatusCode::NOT_FOUND, "URL should be \"id-slug\""))?;
     let (_, [old_id, _slug]) = capt.extract();
-    let AppState { db, jinja: _jinja } = state;
     let old_id = old_id
         .parse()
         .map_err(|_e| (StatusCode::NOT_FOUND, "ID must be number"))?;
@@ -33,11 +37,7 @@ pub async fn redirect_old_post_view(
     Ok(Redirect::temporary(&new_url))
 }
 
-pub async fn redirect_old_category_view(Path(cat_slug): Path<String>) -> Result<Redirect> {
-    static RE_OLD_CATEGORY_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"[-\w]+").unwrap());
-    let matched = RE_OLD_CATEGORY_URL.is_match(&cat_slug);
-    if !matched {
-        return Err((StatusCode::NOT_FOUND, "Must be category slug".to_string()).into());
-    }
-    Ok(Redirect::temporary(&format!("/category/{}/", cat_slug)))
+pub async fn default_for_old_views(State(jinja): State<Environment<'_>>) -> Result<Html<String>> {
+    let content = render_with("for_old_views.jinja", &(), jinja)?;
+    Ok(Html(content))
 }

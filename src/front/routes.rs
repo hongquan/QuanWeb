@@ -12,6 +12,7 @@ pub fn get_router() -> Router<AppState> {
     .route("/category/_uncategorized/", get(views::blog::list_uncategorized_posts))
     .route("/category/:category/", get(views::blog::list_posts))
     .route("/preview/:id", get(views::blog::preview_post))
-    .route("/blog/:year/:month/:id_and_slug", get(views::old_urls::redirect_old_post_view))
-    .route("/category/:cat_slug", get(views::old_urls::redirect_old_category_view))
+    .route("/blog/*rest", get(views::old_urls::redirect_old_blog_view))
+    .route("/talk/", get(views::old_urls::default_for_old_views))
+    .route("/book/", get(views::old_urls::default_for_old_views))
 }

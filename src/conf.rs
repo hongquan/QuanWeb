@@ -28,7 +28,7 @@ pub fn get_secret_bytes(config: &Config) -> Result<Vec<u8>, Report> {
     let secret_str = config
         .get_string(KEY_SECRET)
         .map_err(|e| miette!("Failed to get secret key: {e}"))?;
-    tracing::info!("Secret key: {}", secret_str);
+    tracing::debug!("Secret key: {}", secret_str);
     Ok(secret_str.as_bytes().into())
 }
 
