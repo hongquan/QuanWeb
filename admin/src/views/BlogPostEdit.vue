@@ -20,9 +20,27 @@
         @taken='onCategoryTaken($event)'
         @released='onCategoryReleased($event)'
       />
-      <div
-        ref='codeEditor'
-        class='language-markdown w-full mt-4 p-4 font-mono rounded'
+      <div class='mt-4 space-y-2'>
+        <div class='flex justify-between'>
+          <label class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'>Body</label>
+          <button type='button'>
+            Preview
+          </button>
+        </div>
+        <div class='border rounded font-mono py-4'>
+          <div class='max-h-80 overflow-y-auto'>
+            <div class='px-2'>
+              <div
+                ref='codeEditor'
+                class='language-markdown rounded p-2'
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <HorizontalFormField
+        v-model='post.is_published'
+        label='Published'
       />
       <div class='text-center mt-2'>
         <FbButton
