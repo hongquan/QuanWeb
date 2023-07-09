@@ -81,6 +81,6 @@ pub fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
     errors
         .flatten()
         .into_iter()
-        .map(|(k, v)| (k, v.message.to_string()))
+        .map(|(k, v)| (k.trim_start_matches("value.").into(), v.message.to_string()))
         .collect()
 }
