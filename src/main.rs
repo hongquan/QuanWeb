@@ -8,8 +8,8 @@ mod models;
 mod stores;
 mod types;
 mod utils;
-mod views;
 mod cli;
+mod front;
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -68,13 +68,13 @@ async fn main() -> miette::Result<()> {
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);
 
-    let home_router: Router<AppState> = views::routes::get_router();
+    let home_router: Router<AppState> = front::routes::get_router();
     let api_router: Router<AppState> = api::get_router().with_state(app_state.clone());
 
     let app = Router::new()
         .merge(home_router)
         .nest("/_api", api_router)
-        .fallback(views::front::fallback_view)
+        .fallback(front::views::fallback_view)
         .with_state(app_state)
         .layer(auth_layer)
         .layer(session_layer)
