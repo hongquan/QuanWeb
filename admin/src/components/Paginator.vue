@@ -28,7 +28,7 @@
       </RouterLink>
       <span
         v-else
-        class=''
+        :class='ELLIPSIS_CLASS'
       >…</span>
     </template>
     <RouterLink
@@ -63,8 +63,10 @@ interface Props {
   padding?: number
 }
 
+// For very small screens, hide the ellipsis and inactive links
 const ACTIVE_CLASS = 'z-10 text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white'
-const INACTIVE_CLASS = 'text-gray-500 border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+const INACTIVE_CLASS = 'hidden xxs:block text-gray-500 border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+const ELLIPSIS_CLASS = 'hidden xxs:block'
 
 const props = withDefaults(defineProps<Props>(), {
   totalPages: 1,

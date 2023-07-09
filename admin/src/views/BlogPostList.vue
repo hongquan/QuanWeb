@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class='mb-3 sm:flex justify-end'>
+    <div class='mb-3 flex justify-end'>
       <RouterLink
         to='/posts/new'
-        class='block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm p-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+        class='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm p-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
       >
         New post
       </RouterLink>
@@ -17,7 +17,7 @@
       v-else
       class='relative overflow-x-auto shadow-md sm:rounded-lg'
     >
-      <table class='w-full text-sm text-left text-gray-600 dark:text-gray-400'>
+      <table class='text-sm text-left text-gray-600 dark:text-gray-400'>
         <thead class='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
           <tr>
             <th
@@ -28,7 +28,7 @@
             </th>
             <th
               scope='col'
-              class='px-6 py-3'
+              class='px-6 py-3 min-w-60'
             >
               Slug
             </th>
