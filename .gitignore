@@ -15,6 +15,7 @@ quanweb.egg-info
 */secret.py
 custom_settings.toml
 .secrets.toml
+.env
 DB
 .vscode
 .idea

@@ -67,7 +67,7 @@ async fn main() -> miette::Result<()> {
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let secret_bytes =
         conf::get_secret_bytes(&config).map_err(|e| miette!("Error getting secret bytes: {e}"))?;
-    let client = db::get_edgedb_client().await?;
+    let client = db::get_edgedb_client(&config).await?;
     let jinja = config_jinja();
     let app_state = AppState {
         db: client.clone(),

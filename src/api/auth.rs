@@ -1,15 +1,16 @@
 
 use axum::http::StatusCode;
 use axum::{debug_handler, Json, response::Result as AxumResult};
+use axum::extract::State;
 use axum_extra::extract::WithRejection;
 use axum_login::RequireAuthorizationLayer;
 use djangohashers::check_password;
 use garde::Validate;
 use serde_json::Value;
 use uuid::Uuid;
+use edgedb_tokio::Client;
 
 use crate::auth::structs::LoginReqData;
-use crate::db::get_edgedb_client;
 use crate::models::{User, Role};
 use crate::stores;
 use crate::types::ApiErrorShape;
@@ -22,13 +23,13 @@ pub type RequireAuth = RequireAuthorizationLayer<Uuid, User, Role>;
 #[debug_handler]
 pub async fn login(
     mut auth: Auth,
+    State(db): State<Client>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<User>> {
     let valid_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     valid_data.validate(&()).map_err(ApiError::ValidationError)?;
     tracing::info!("Validated request data: {:?}", valid_data);
-    let client = get_edgedb_client().await.map_err(ApiError::EdgeDBQueryError)?;
-    let user = stores::get_user_by_email(&valid_data.email, &client)
+    let user = stores::get_user_by_email(&valid_data.email, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or_else(|| {
