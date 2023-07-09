@@ -20,11 +20,12 @@ use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use miette::miette;
 use minijinja::{path_loader, Environment};
 use tower_http::trace::TraceLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{filter::{EnvFilter, LevelFilter}, layer::SubscriberExt, util::SubscriberInitExt};
 
 use auth::store::EdgeDbStore;
 use types::AppState;
 use utils::jinja_extra;
+use cli::AppOptions;
 
 const TEMPLATE_DIR: &str = "minijinja";
 
@@ -40,17 +41,25 @@ fn config_jinja() -> Environment<'static> {
     jinja
 }
 
-#[tokio::main]
-async fn main() -> miette::Result<()> {
-    let _app_opts = cli::AppOptions::parse();
+fn config_logging(app_opt: AppOptions) {
+    let level = match app_opt.verbose {
+        0 => LevelFilter::WARN,
+        1 => LevelFilter::INFO,
+        2 => LevelFilter::DEBUG,
+        _ => LevelFilter::TRACE,
+    };
+    let command_directives = format!("quanweb={level},axum_login={level},tower_http={level}");
+    let filter = EnvFilter::builder().with_default_directive(LevelFilter::WARN.into()).parse(command_directives).unwrap();
     tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "quanweb=debug,axum_login=debug,tower_http=debug,axum::rejection=trace".into()
-            }),
-        )
+        .with(filter)
         .with(tracing_subscriber::fmt::layer())
         .init();
+}
+
+#[tokio::main]
+async fn main() -> miette::Result<()> {
+    let app_opts = cli::AppOptions::parse();
+    config_logging(app_opts);
     let redis_store = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
