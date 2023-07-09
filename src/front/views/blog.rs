@@ -60,7 +60,7 @@ pub async fn list_posts(
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    let posts = stores::blog::get_blogposts_under_category(Some(cat_slug), None, None, &db)
+    let posts = stores::blog::get_published_blogposts_under_category(Some(cat_slug), None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);

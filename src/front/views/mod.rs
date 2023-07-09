@@ -41,7 +41,7 @@ pub async fn home(
         .page
         .and_then(|p| NonZeroU16::new(p.parse().ok()?))
         .unwrap_or(NonZeroU16::MIN);
-    let total = stores::blog::get_all_posts_count(&db)
+    let total = stores::blog::count_all_published_posts(&db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let page_size = DEFAULT_PAGE_SIZE;
@@ -56,7 +56,7 @@ pub async fn home(
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
     let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
-    let result = stores::blog::get_blogposts(Some(offset), Some(page_size as i64), &db)
+    let result = stores::blog::get_published_blogposts(Some(offset), Some(page_size as i64), &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let posts: Vec<MJValue> = result.into_iter().collect();
