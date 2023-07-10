@@ -21,6 +21,7 @@ from blues.talk.models import Presentation
 
 logger = Logger(__name__)
 DB_NAME = 'quanweb'
+EDGEDB_INSTANCE = 'QuanWeb'
 TZ_VN = ZoneInfo('Asia/Ho_Chi_Minh')
 
 
@@ -267,7 +268,7 @@ def copy_presentations(client: edgedb.Client):
 
 @cli.command()
 def copy_to_edgedb():
-    client = edgedb.create_client(database=DB_NAME)
+    client = edgedb.create_client(EDGEDB_INSTANCE, database=DB_NAME).with_config()
     copy_users(client)
     copy_categories(client)
     copy_posts(client)
@@ -280,7 +281,7 @@ def copy_to_edgedb():
 @click.option('-e', '--email', prompt='Email', help='Email')
 @click.option('-p', '--password', prompt='Password', help='Password')
 def set_user_password_in_edgedb(email: str, password: str):
-    client = edgedb.create_client(database=DB_NAME)
+    client = edgedb.create_client(EDGEDB_INSTANCE, database=DB_NAME)
     q = '''
     UPDATE User
     FILTER .email = <str>$email
