@@ -1,31 +1,36 @@
 mod api;
 mod auth;
+mod cli;
 mod conf;
 mod consts;
 mod db;
 mod errors;
+mod front;
 mod models;
 mod stores;
 mod types;
 mod utils;
-mod cli;
-mod front;
 
+use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use clap::Parser;
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
+use clap::Parser;
 use miette::miette;
 use minijinja::{path_loader, Environment};
 use tower_http::trace::TraceLayer;
-use tracing_subscriber::{filter::{EnvFilter, LevelFilter}, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{
+    filter::{EnvFilter, LevelFilter},
+    layer::SubscriberExt,
+    util::SubscriberInitExt,
+};
 
 use auth::store::EdgeDbStore;
+use cli::AppOptions;
 use types::AppState;
 use utils::jinja_extra;
-use cli::AppOptions;
 
 const TEMPLATE_DIR: &str = "minijinja";
 
@@ -42,14 +47,23 @@ fn config_jinja() -> Environment<'static> {
 }
 
 fn config_logging(app_opt: AppOptions) {
-    let level = match app_opt.verbose {
-        0 => LevelFilter::WARN,
-        1 => LevelFilter::INFO,
-        2 => LevelFilter::DEBUG,
-        _ => LevelFilter::TRACE,
+    // If run by "cargo run", we want to see debug logs.
+    let run_by_cargo = env::var("CARGO").is_ok();
+    let level = if run_by_cargo {
+        LevelFilter::DEBUG
+    } else {
+        match app_opt.verbose {
+            0 => LevelFilter::WARN,
+            1 => LevelFilter::INFO,
+            2 => LevelFilter::DEBUG,
+            _ => LevelFilter::TRACE,
+        }
     };
     let command_directives = format!("quanweb={level},axum_login={level},tower_http={level}");
-    let filter = EnvFilter::builder().with_default_directive(LevelFilter::WARN.into()).parse(command_directives).unwrap();
+    let filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::WARN.into())
+        .parse(command_directives)
+        .unwrap();
     tracing_subscriber::registry()
         .with(filter)
         .with(tracing_subscriber::fmt::layer())
