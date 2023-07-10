@@ -1,0 +1,18 @@
+[Unit]
+Description=QuanWeb
+After=postgresql.service
+
+[Service]
+User=quan
+Group=quan
+
+Type=simple
+WorkingDirectory=/home/quan/QuanWeb/quanweb
+RuntimeDirectory=quanweb
+ExecStart=/home/quan/.local/bin/quanweb -vv
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
