@@ -35,7 +35,7 @@ export default defineConfig({
     vue(),
     svgLoader({ svgo: false }),
     prismjsPlugin({
-      languages: ['markdown', 'shell', 'rust', 'python'],
+      languages: ['markdown', 'shell', 'rust', 'python', 'shell-session', 'sql', 'plsql', 'toml', 'javascript', 'typescript', 'markup', 'css'],
       theme: 'dark',
     }),
     backendRedirectPlugin,
