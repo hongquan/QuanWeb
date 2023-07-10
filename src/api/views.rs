@@ -16,7 +16,7 @@ use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListRe
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
-use crate::stores::blog::{get_all_categories_count, get_blog_categories, get_blog_category};
+use crate::stores;
 
 pub async fn root() -> &'static str {
     "API root"
@@ -39,10 +39,10 @@ pub async fn list_categories(
     let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
-    let categories = get_blog_categories(Some(offset), Some(limit), &db)
+    let categories = stores::blog::get_blog_categories(Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = get_all_categories_count(&db)
+    let count = stores::blog::get_all_categories_count(&db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     tracing::debug!("All categories count: {}", count);
@@ -64,7 +64,7 @@ pub async fn get_category(
     WithRejection(Path(category_id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<BlogCategory>> {
-    let category = get_blog_category(category_id, &db)
+    let category = stores::blog::get_category(category_id, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
@@ -103,7 +103,7 @@ pub async fn update_category_partial(
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
     // User submit no field to update
     if jdata.is_empty() {
-        let post = get_blog_category(category_id, &db)
+        let post = stores::blog::get_category(category_id, &db)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
         let post = post.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;

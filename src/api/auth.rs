@@ -29,7 +29,7 @@ pub async fn login(
     let valid_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     valid_data.validate(&()).map_err(ApiError::ValidationError)?;
     tracing::info!("Validated request data: {:?}", valid_data);
-    let user = stores::get_user_by_email(&valid_data.email, &db)
+    let user = stores::user::get_user_by_email(&valid_data.email, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or_else(|| {

@@ -6,7 +6,7 @@ use edgedb_protocol::common::Cardinality as Cd;
 use indexmap::{indexmap, IndexMap};
 
 use crate::models::blogs::MiniBlogPost;
-use crate::models::{RawBlogPost, DetailedBlogPost, BlogCategory};
+use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
 pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
@@ -23,7 +23,7 @@ pub async fn count_all_published_posts(client: &Client) -> Result<usize, Error> 
     Ok(count.try_into().unwrap_or(0))
 }
 
-pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
+pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
     // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
     // does not match DetailedBlogPost.
     let q = "
@@ -50,7 +50,7 @@ pub async fn get_blogpost(post_id: Uuid, client: &Client) -> Result<Option<Detai
     Ok(post)
 }
 
-pub async fn get_blogpost_by_slug(slug: String, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
+pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
     // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
     // does not match DetailedBlogPost.
     let q = "
@@ -77,7 +77,7 @@ pub async fn get_blogpost_by_slug(slug: String, client: &Client) -> Result<Optio
     Ok(post)
 }
 
-pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
     let q = "
     SELECT BlogPost {
         id,
@@ -95,11 +95,11 @@ pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Cli
         },
     }
     ORDER BY .created_at DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
-    let posts: Vec<RawBlogPost> = client.query(q, &(offset, limit)).await?;
+    let posts: Vec<MediumBlogPost> = client.query(q, &(offset, limit)).await?;
     Ok(posts)
 }
 
-pub async fn get_published_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+pub async fn get_published_posts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
     let mut pairs = IndexMap::with_capacity(2);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
@@ -129,11 +129,11 @@ pub async fn get_published_blogposts(offset: Option<i64>, limit: Option<i64>, cl
         }},
     }}
     FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
-    let posts: Vec<RawBlogPost> = client.query(&q, &args).await?;
+    let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
 
-pub async fn get_published_blogposts_under_category(cat_slug: Option<String>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+pub async fn get_published_posts_under_category(cat_slug: Option<String>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
     let mut filter_lines = vec![
         ".is_published = true",
     ];
@@ -174,7 +174,7 @@ pub async fn get_published_blogposts_under_category(cat_slug: Option<String>, of
     FILTER {filter_expr} ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
-    let posts: Vec<RawBlogPost> = client.query(&q, &args).await?;
+    let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
 
@@ -186,7 +186,7 @@ pub async fn count_blogposts_under_category(id: Uuid, client: &Client) -> Result
     Ok(count.try_into().unwrap_or(0))
 }
 
-pub async fn get_published_uncategorized_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<RawBlogPost>, Error> {
+pub async fn get_published_uncategorized_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
     let mut pairs = IndexMap::with_capacity(2);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
@@ -218,7 +218,7 @@ pub async fn get_published_uncategorized_blogposts(offset: Option<i64>, limit: O
     FILTER .is_published = true AND NOT EXISTS .categories ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
-    let posts: Vec<RawBlogPost> = client.query(&q, &args).await?;
+    let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
 
@@ -249,7 +249,7 @@ pub async fn get_all_categories_count(client: &Client) -> Result<usize, Error> {
     Ok(count.try_into().unwrap_or(0))
 }
 
-pub async fn get_blog_category(id: Uuid, client: &Client) -> Result<Option<BlogCategory>, Error> {
+pub async fn get_category(id: Uuid, client: &Client) -> Result<Option<BlogCategory>, Error> {
     let q = "
     SELECT BlogCategory {
         id,
@@ -261,7 +261,7 @@ pub async fn get_blog_category(id: Uuid, client: &Client) -> Result<Option<BlogC
     Ok(cat)
 }
 
-pub async fn get_blog_category_by_slug(slug: &str, client: &Client) -> Result<Option<BlogCategory>, Error> {
+pub async fn get_category_by_slug(slug: &str, client: &Client) -> Result<Option<BlogCategory>, Error> {
     let q = "
     SELECT BlogCategory {
         id,
@@ -273,7 +273,7 @@ pub async fn get_blog_category_by_slug(slug: &str, client: &Client) -> Result<Op
     Ok(cat)
 }
 
-pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<RawBlogPost>, Error> {
+pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MediumBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at < <datetime>$created_at",
         ".is_published = true",
@@ -308,11 +308,11 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
     FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
-    let post: Option<RawBlogPost> = client.query_single(&q, &args).await?;
+    let post: Option<MediumBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
 }
 
-pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<RawBlogPost>, Error> {
+pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MediumBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at > <datetime>$created_at",
         ".is_published = true",
@@ -347,7 +347,7 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
     FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
-    let post: Option<RawBlogPost> = client.query_single(&q, &args).await?;
+    let post: Option<MediumBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
 }
 

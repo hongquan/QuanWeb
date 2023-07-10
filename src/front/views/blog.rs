@@ -13,7 +13,7 @@ use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::errors::PageError;
 use crate::stores;
-use crate::stores::blog::{get_blogpost_by_slug, get_next_post, get_previous_post};
+use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous_post};
 use crate::types::{AppState, Paginator};
 
 pub async fn show_post(
@@ -23,7 +23,7 @@ pub async fn show_post(
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let post = get_blogpost_by_slug(slug, &db)
+    let post = get_detailed_post_by_slug(slug, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
@@ -54,12 +54,12 @@ pub async fn list_posts(
         .page
         .and_then(|p| NonZeroU16::new(p.parse().ok()?))
         .unwrap_or(NonZeroU16::MIN);
-    let cat = stores::blog::get_blog_category_by_slug(&cat_slug, &db)
+    let cat = stores::blog::get_category_by_slug(&cat_slug, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     let posts =
-        stores::blog::get_published_blogposts_under_category(Some(cat_slug), None, None, &db)
+        stores::blog::get_published_posts_under_category(Some(cat_slug), None, None, &db)
             .await
             .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);
@@ -99,7 +99,7 @@ pub async fn preview_post(
 ) -> AxumResult<Html<String>> {
     let _user = auth.current_user.ok_or(PageError::PermissionDenied);
     let AppState { db, jinja } = state;
-    let post = stores::blog::get_blogpost(id, &db)
+    let post = stores::blog::get_post(id, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;

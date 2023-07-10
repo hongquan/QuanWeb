@@ -49,17 +49,13 @@ impl From<DocFormat> for EValue {
     }
 }
 
-/*
-Because EdgeDB client cannot retrieve datetime field as chrono type,
-We have to use an intermediate type to grab result from EdgeDB.
-then convert to final struct with chrono types (which can be serialized with serde).
-*/
+// Struct to represent a BlogPost in the database, but with just enough fields to display in a list.
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
 )]
 #[derive(Debug, Serialize, edgedb_derive::Queryable)]
-pub struct RawBlogPost {
+pub struct MediumBlogPost {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
@@ -71,7 +67,7 @@ pub struct RawBlogPost {
     pub categories: Vec<BlogCategory>,
 }
 
-impl RawBlogPost {
+impl MediumBlogPost {
     pub fn type_cast_for_field<'a>(name: &'a str) -> &'a str {
         match name {
             "title" => "str",
@@ -85,7 +81,7 @@ impl RawBlogPost {
     }
 }
 
-impl Default for RawBlogPost {
+impl Default for MediumBlogPost {
     fn default() -> Self {
         let created_at = Utc::now().try_into().unwrap_or(EDatetime::MIN);
         Self {
@@ -102,7 +98,7 @@ impl Default for RawBlogPost {
     }
 }
 
-impl StructObject for RawBlogPost {
+impl StructObject for MediumBlogPost {
     fn get_field(&self, name: &str) -> Option<MJValue> {
         match name {
             "id" => Some(MJValue::from(self.id.to_string())),
@@ -143,6 +139,7 @@ pub struct BlogCategory {
     pub slug: String,
 }
 
+// Struct to represent a BlogPost in the database, with all fields to display in a detail page.
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
@@ -208,18 +205,19 @@ impl Default for DetailedBlogPost {
     }
 }
 
-impl From<RawBlogPost> for MJValue {
-    fn from(value: RawBlogPost) -> Self {
+impl From<MediumBlogPost> for MJValue {
+    fn from(value: MediumBlogPost) -> Self {
         MJValue::from_struct_object(value)
     }
 }
 
-impl FromIterator<RawBlogPost> for Vec<MJValue> {
-    fn from_iter<T: IntoIterator<Item = RawBlogPost>>(iter: T) -> Self {
+impl FromIterator<MediumBlogPost> for Vec<MJValue> {
+    fn from_iter<T: IntoIterator<Item = MediumBlogPost>>(iter: T) -> Self {
         iter.into_iter().map(MJValue::from).collect()
     }
 }
 
+// Struct to represent a BlogPost in the database, with just a few fields enough to build links.
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
 )]

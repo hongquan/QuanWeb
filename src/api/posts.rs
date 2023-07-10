@@ -14,23 +14,23 @@ use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, Paging};
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{DetailedBlogPost, MinimalObject, RawBlogPost};
-use crate::stores::blog::{get_all_posts_count, get_blogposts, get_blogpost};
+use crate::models::{DetailedBlogPost, MinimalObject, MediumBlogPost};
+use crate::stores;
 
 pub async fn list_posts(
     paging: Query<Paging>,
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
-) -> AxumResult<Json<ObjectListResponse<RawBlogPost>>> {
+) -> AxumResult<Json<ObjectListResponse<MediumBlogPost>>> {
     tracing::info!("Paging: {:?}", paging);
     let page = max(1, paging.0.page.unwrap_or(1));
     let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
     let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
     let limit = per_page as i64;
-    let posts = get_blogposts(Some(offset), Some(limit), &db)
+    let posts = stores::blog::get_blogposts(Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = get_all_posts_count(&db)
+    let count = stores::blog::get_all_posts_count(&db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
@@ -49,7 +49,7 @@ pub async fn get_post(
     WithRejection(Path(post_id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<DetailedBlogPost>> {
-    let post = get_blogpost(post_id, &db)
+    let post = stores::blog::get_post(post_id, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
@@ -85,7 +85,7 @@ pub async fn update_post_partial(
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
     // User submit no field to update
     if jdata.is_empty() {
-        let post = get_blogpost(post_id, &db)
+        let post = stores::blog::get_post(post_id, &db)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
         let post = post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
