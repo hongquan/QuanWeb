@@ -23,7 +23,10 @@
       <div class='mt-4 space-y-2'>
         <div class='flex justify-between'>
           <label class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'>Body</label>
-          <button type='button'>
+          <button
+            type='button'
+            class='text-sm'
+          >
             Preview
           </button>
         </div>
