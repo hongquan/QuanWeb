@@ -2,7 +2,7 @@ import path from 'node:path'
 import { defineConfig, ViteDevServer, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
-import urlJoin from 'proper-url-join'
+import lightJoin from 'light-join'
 
 const BACKEND_ROOT_URL = 'http://localhost:3721'
 const BACKEND_PREFIXES = ['/preview/']
@@ -17,7 +17,7 @@ const backendRedirectPlugin = {
       if (!req.url || !BACKEND_PREFIXES.some(item => req.url?.startsWith(item))) {
         return next()
       }
-      const newUrl = urlJoin(BACKEND_ROOT_URL, req.url)
+      const newUrl = lightJoin(BACKEND_ROOT_URL, req.url)
       log.info(`To redirect to ${newUrl}`)
       // Ref: https://github.com/thenativeweb/forcedomain/blob/main/lib/forceDomain.ts
       res.writeHead(302, {
