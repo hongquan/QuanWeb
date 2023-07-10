@@ -58,18 +58,17 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onBeforeMount, onMounted, watch } from 'vue'
+import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
 import { Button as FbButton } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
-import { A } from '@mobily/ts-belt'
+import { A, F } from '@mobily/ts-belt'
 import { CodeJar } from 'codejar'
-import hljs from 'highlight.js/lib/core'
-import markdown from 'highlight.js/lib/languages/markdown'
-import 'highlight.js/styles/base16/zenburn.css'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-dark.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
@@ -85,7 +84,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   postId: null,
 })
-hljs.registerLanguage('markdown', markdown)
+Prism.manual = true
 
 const router = useRouter()
 const post = ref<Post | null>(null)
@@ -154,6 +153,16 @@ async function onSubmit() {
   }
 }
 
+const mergeCodeUpdate = F.debounce((code: string) => {
+  if (post.value) {
+    post.value.body = code
+  }
+}, 500)
+
+function highlight(element: HTMLElement) {
+  Prism.highlightElement(element)
+}
+
 onBeforeMount(fetchData)
 onMounted(() => {
   watch(
@@ -167,16 +176,17 @@ onMounted(() => {
   )
   watch(codeEditor, (el) => {
     if (el) {
-      jar.value = CodeJar(el, hljs.highlightElement)
+      jar.value = CodeJar(el, highlight)
       if (post.value?.body) {
         jar.value.updateCode(post.value.body)
       }
-      jar.value.onUpdate(code => {
-        if (post.value) {
-          post.value.body = code
-        }
-      })
+      jar.value.onUpdate(mergeCodeUpdate)
     }
   })
+})
+onBeforeUnmount(() => {
+  if (jar.value) {
+    jar.value.destroy()
+  }
 })
 </script>
