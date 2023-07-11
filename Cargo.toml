@@ -9,6 +9,7 @@ edition = "2021"
 strip="debuginfo"
 
 [dependencies]
+ammonia = "3.3.0"
 async-fred-session = "0.1.4"
 async-trait = "0.1.68"
 axum = { version = "0.6.18", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query", "original-uri"] }

@@ -32,3 +32,8 @@ pub fn add_url_param(url: String, name: String, value: String) -> String {
         url
     }
 }
+
+pub fn striptags(html: String) -> String {
+    let re = regex::Regex::new(r"<[^>]*>").unwrap();
+    re.replace_all(&html, "").to_string()
+}

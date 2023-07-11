@@ -1,6 +1,14 @@
 {% extends 'base.jinja' %}
 {% block title %}{{ post.title }}{% endblock title %}
 
+{% block meta_og %}
+  <meta property='og:type' content='article' />
+  {% if post.og_image %}
+    <meta property='og:image' content='{{ post.og_image }}' />
+  {% endif %}
+  <meta property='og:description' content='{{ post.excerpt|striptags }}' />
+{% endblock meta_og %}
+
 {% block inner_content %}
   {% with p=post %}
     {% include 'blog/block_post_content.jinja' %}
