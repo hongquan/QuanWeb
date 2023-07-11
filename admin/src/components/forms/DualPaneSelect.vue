@@ -4,7 +4,8 @@
       {{ label }}
     </label>
     <div class='mt-2 sm:col-span-3 sm:mt-0 grid grid-cols-2 gap-4 text-sm'>
-      <div class='border p-2 rounded min-h-20'>
+      <div class='border border-gray-300 dark:border-gray-600 p-2 rounded min-h-20 space-y-2'>
+        <label class='text-xs'>Available</label>
         <div class='overflow'>
           <ul v-if='availableOptions.length'>
             <li
@@ -27,9 +28,13 @@
           </ul>
         </div>
       </div>
-      <div class='border p-2 rounded'>
+      <div class='border border-gray-300 dark:border-gray-600 p-2 rounded space-y-2'>
+        <label class='text-xs'>Selected</label>
         <div class='overflow'>
-          <ul v-if='selectedOptions.length'>
+          <ul
+            v-if='selectedOptions.length'
+            class='dark:text-white'
+          >
             <li
               v-for='(opt, i) in selectedOptions'
               :key='opt.id || i'

@@ -35,7 +35,7 @@
             <div class='px-2'>
               <div
                 ref='codeEditor'
-                class='language-markdown rounded p-2'
+                class='language-markdown rounded p-2 dark:text-gray-200'
               />
             </div>
           </div>
