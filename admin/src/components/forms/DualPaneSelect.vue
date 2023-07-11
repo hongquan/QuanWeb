@@ -4,9 +4,9 @@
       {{ label }}
     </label>
     <div class='mt-2 sm:col-span-3 sm:mt-0 grid grid-cols-2 gap-4 text-sm'>
-      <div class='border border-gray-300 dark:border-gray-600 p-2 rounded min-h-20 space-y-2'>
+      <div class='border border-gray-300 dark:border-gray-600 p-2 pt-0 rounded min-h-20 space-y-2'>
         <label class='text-xs'>Available</label>
-        <div class='overflow'>
+        <div class='overflow-y-auto max-h-20'>
           <ul v-if='availableOptions.length'>
             <li
               v-for='(opt, i) in availableOptions'
@@ -28,7 +28,7 @@
           </ul>
         </div>
       </div>
-      <div class='border border-gray-300 dark:border-gray-600 p-2 rounded space-y-2'>
+      <div class='border border-gray-300 dark:border-gray-600 p-2 pt-0 rounded space-y-2'>
         <label class='text-xs'>Selected</label>
         <div class='overflow'>
           <ul
