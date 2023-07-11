@@ -97,6 +97,13 @@ async function fetchCategories() {
   const raw = await kyClient.get(API_GET_CATEGORIES).json()
   const resp = ObjectListResponseSchema.parse(raw)
   allCategories.value = z.array(CategorySchema).parse(resp.objects)
+  let nextUrl = resp.links.next
+  while (nextUrl) {
+    const raw = await kyClient.get(nextUrl).json()
+    const resp = ObjectListResponseSchema.parse(raw)
+    allCategories.value = allCategories.value.concat(z.array(CategorySchema).parse(resp.objects))
+    nextUrl = resp.links.next
+  }
 }
 
 async function fetchData() {
