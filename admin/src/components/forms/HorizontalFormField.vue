@@ -5,8 +5,15 @@
       class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'
     >{{ label }}</label>
     <div class='mt-2 sm:col-span-3 sm:mt-0'>
+      <FbSelect
+        v-if='(G.isString(value) || G.isNullable(value)) && choices.length'
+        :id='uid'
+        v-model='selectedValue'
+        :options='choices'
+        :required='required'
+      />
       <FbInput
-        v-if='G.isString(value)'
+        v-else-if='G.isString(value)'
         :id='uid'
         v-model='value'
         size='sm'
@@ -28,19 +35,27 @@
 import { computed } from 'vue'
 import { nanoid } from 'nanoid'
 import { Input as FbInput } from 'flowbite-vue'
+import { Select as FbSelect } from 'flowbite-vue'
 import { G } from '@mobily/ts-belt'
 
+export interface SelectOption {
+  name: string
+  value: string
+}
+
 interface Props {
-  modelValue: string | boolean
+  modelValue: string | boolean | null
   label?: string
   required?: boolean
+  choices?: SelectOption[]
 }
 const props = withDefaults(defineProps<Props>(), {
   label: '',
   required: false,
+  choices: () => [],
 })
 const emit = defineEmits<{
-  'update:modelValue': [value: string | boolean]
+  'update:modelValue': [value: string | boolean | null]
 }>()
 
 const uid = nanoid()
@@ -49,8 +64,20 @@ const value = computed({
   get() {
     return props.modelValue
   },
-  set(v: string | boolean) {
+  set(v: string | boolean | null) {
     emit('update:modelValue', v)
+  },
+})
+
+const selectedValue = computed({
+  get() {
+    if (G.isBoolean(props.modelValue)) {
+      return props.modelValue ? 'true' : 'false'
+    }
+    return props.modelValue || undefined
+  },
+  set(v: string | undefined) {
+    emit('update:modelValue', v || null)
   },
 })
 </script>

@@ -42,6 +42,11 @@
         </div>
       </div>
       <HorizontalFormField
+        v-model='post.locale'
+        label='Locale'
+        :choices='locales'
+      />
+      <HorizontalFormField
         v-model='post.is_published'
         label='Published'
       />
@@ -87,6 +92,7 @@ const props = withDefaults(defineProps<Props>(), {
 Prism.manual = true
 
 const router = useRouter()
+const locales = [{ name: 'English', value: 'en' }, { name: 'Tiếng Việt', value: 'vi' }]
 const post = ref<Post | null>(null)
 const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)

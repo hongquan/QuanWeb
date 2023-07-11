@@ -16,6 +16,7 @@ export const PostSchema = z.object({
   title: z.string().default(''),
   slug: z.string().default(''),
   body: z.string().nullable().default(null),
+  locale: z.string().nullable().default(null),
   is_published: z.boolean().default(false),
   categories: z.array(CategorySchema).default([]),
 })
