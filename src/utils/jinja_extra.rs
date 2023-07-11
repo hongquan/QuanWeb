@@ -1,6 +1,8 @@
 use std::str::FromStr;
 
+use once_cell::sync::Lazy;
 use http::Uri;
+use regex::Regex;
 use chrono::DateTime;
 
 use crate::utils::urls::update_entry_in_query;
@@ -33,7 +35,11 @@ pub fn add_url_param(url: String, name: String, value: String) -> String {
     }
 }
 
+// Ref: https://github.com/pallets/markupsafe/blob/main/src/markupsafe/__init__.py
 pub fn striptags(html: String) -> String {
-    let re = regex::Regex::new(r"<[^>]*>").unwrap();
-    re.replace_all(&html, "").to_string()
+    static RE_COMMENTS: Lazy<Regex> = Lazy::new(|| Regex::new(r"<!--.*?-->").unwrap());
+    static RE_TAGS: Lazy<Regex> = Lazy::new(|| Regex::new(r"<[^>]*>").unwrap());
+    let stripped = RE_COMMENTS.replace_all(&html, "");
+    let stripped = RE_TAGS.replace_all(&stripped, "");
+    stripped.to_string()
 }
