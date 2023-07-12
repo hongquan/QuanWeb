@@ -34,7 +34,7 @@ indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"
 miette = { version = "5.9.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.4"
-minijinja = { version = "1.0.3", features = ["loader", "internal_debug"] }
+minijinja = { version = "1.0.4", features = ["loader", "internal_debug"] }
 once_cell = "1.18.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.1", features = ["serde"] }
