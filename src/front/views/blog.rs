@@ -37,6 +37,7 @@ pub async fn show_post(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("Next post: {:?}", next_post);
+    tracing::info!("Post: {:?}", post);
     let context = context!(post => post, prev_post => prev_post, next_post => next_post, no_tracking => no_tracking);
     let content = render_with("blog/post.jinja", context, jinja)?;
     Ok(Html(content))
