@@ -50,6 +50,7 @@ pub struct BlogPostPatchData {
     pub is_published: Option<bool>,
     pub format: Option<DocFormat>,
     pub body: Option<String>,
+    pub locale: Option<String>,
     pub categories: Option<Vec<Uuid>>,
 }
 
@@ -66,6 +67,7 @@ impl BlogPostPatchData {
             lines.push("html := <optional str>$html");
             lines.push("excerpt := <optional str>$excerpt");
         }
+        append_set_statement!("locale", "optional str", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "categories") && self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
@@ -117,6 +119,12 @@ impl BlogPostPatchData {
                 (excerpt.map(EValue::Str), Cd::AtMostOne),
             );
         }
+        if submitted_fields.iter().any(|&f| f == "locale") {
+            pairs.insert(
+                "locale",
+                (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
             pairs.insert(
@@ -141,6 +149,8 @@ pub struct BlogPostCreateData {
     #[garde(skip)]
     pub body: Option<String>,
     #[garde(skip)]
+    pub locale: Option<String>,
+    #[garde(skip)]
     pub categories: Option<Vec<Uuid>>,
 }
 
@@ -155,6 +165,7 @@ impl BlogPostCreateData {
             lines.push("excerpt := <optional str>$excerpt");
         }
         append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
+        append_set_statement!("locale", "optional str", lines, submitted_fields);
         if self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
@@ -194,6 +205,12 @@ impl BlogPostCreateData {
                     self.format.clone().map(EValue::from),
                     Cd::AtMostOne,
                 ),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "locale") {
+            pairs.insert(
+                "locale",
+                (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         if let Some(categories) = &self.categories {
