@@ -6,16 +6,16 @@
     >{{ label }}</label>
     <div class='mt-2 sm:col-span-3 sm:mt-0'>
       <FbSelect
-        v-if='(G.isString(value) || G.isNullable(value)) && choices.length'
+        v-if='(G.isString(value) || G.isNull(value)) && choices.length'
         :id='uid'
-        v-model='selectedValue'
+        v-model='htmlAttrValue'
         :options='choices'
         :required='required'
       />
       <FbInput
-        v-else-if='G.isString(value)'
+        v-else-if='G.isString(value) || G.isNull(value)'
         :id='uid'
-        v-model='value'
+        v-model='htmlAttrValue'
         size='sm'
         :required='required'
       />
@@ -69,7 +69,7 @@ const value = computed({
   },
 })
 
-const selectedValue = computed({
+const htmlAttrValue = computed({
   get() {
     if (G.isBoolean(props.modelValue)) {
       return props.modelValue ? 'true' : 'false'

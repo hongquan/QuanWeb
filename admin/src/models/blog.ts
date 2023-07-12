@@ -19,6 +19,7 @@ export const PostSchema = z.object({
   locale: z.string().nullable().default(null),
   is_published: z.boolean().default(false),
   categories: z.array(CategorySchema).default([]),
+  og_image: z.string().nullable().default(null),
 })
 
 export type Post = z.infer<typeof PostSchema>

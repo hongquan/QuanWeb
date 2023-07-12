@@ -50,6 +50,10 @@
         v-model='post.is_published'
         label='Published'
       />
+      <HorizontalFormField
+        v-model='post.og_image'
+        label='OpenGraph image'
+      />
       <div class='text-center mt-2'>
         <FbButton
           type='submit'

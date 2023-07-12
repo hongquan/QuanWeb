@@ -52,6 +52,7 @@ pub struct BlogPostPatchData {
     pub body: Option<String>,
     pub locale: Option<String>,
     pub categories: Option<Vec<Uuid>>,
+    pub og_image: Option<String>,
 }
 
 impl BlogPostPatchData {
@@ -68,6 +69,7 @@ impl BlogPostPatchData {
             lines.push("excerpt := <optional str>$excerpt");
         }
         append_set_statement!("locale", "optional str", lines, submitted_fields);
+        append_set_statement!("og_image", "optional str", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "categories") && self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
@@ -125,6 +127,12 @@ impl BlogPostPatchData {
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
+        if submitted_fields.iter().any(|&f| f == "og_image") {
+            pairs.insert(
+                "og_image",
+                (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
             pairs.insert(
@@ -152,6 +160,8 @@ pub struct BlogPostCreateData {
     pub locale: Option<String>,
     #[garde(skip)]
     pub categories: Option<Vec<Uuid>>,
+    #[garde(skip)]
+    pub og_image: Option<String>,
 }
 
 impl BlogPostCreateData {
@@ -166,6 +176,7 @@ impl BlogPostCreateData {
         }
         append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
         append_set_statement!("locale", "optional str", lines, submitted_fields);
+        append_set_statement!("og_image", "optional str", lines, submitted_fields);
         if self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
@@ -211,6 +222,12 @@ impl BlogPostCreateData {
             pairs.insert(
                 "locale",
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "og_image") {
+            pairs.insert(
+                "og_image",
+                (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         if let Some(categories) = &self.categories {
