@@ -370,11 +370,6 @@
   resolved "https://registry.yarnpkg.com/@fluent/sequence/-/sequence-0.8.0.tgz#dd3da353a0635f1efa5f27e6d4fc59e01f162372"
   integrity sha512-eV5QlEEVV/wR3AFQLXO67x4yPRPQXyqke0c8yucyMSeW36B3ecZyVFlY1UprzrfFV8iPJB4TAehDy/dLGbvQ1Q==
 
-"@fontsource/niramit@^5.0.3":
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/@fontsource/niramit/-/niramit-5.0.3.tgz#f9ab026eb4a6425d5735a6a8c98be22438b009bf"
-  integrity sha512-cGdjPA97ulL5M4vAxjYHsG4h1/P99L98HdGePx836JYZQtiqW+62v7O0MlbRBwO+2tFI2bhBZECB+MRHCxYftw==
-
 "@humanwhocodes/config-array@^0.11.10":
   version "0.11.10"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.10.tgz#5a3ffe32cc9306365fb3fd572596cd602d5e12d2"
@@ -473,6 +468,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@openfonts/niramit_vietnamese@^1.44.3":
+  version "1.44.3"
+  resolved "https://registry.yarnpkg.com/@openfonts/niramit_vietnamese/-/niramit_vietnamese-1.44.3.tgz#c9a60d2c5c9ec5d8ec789a5f7621d032cf75ba4f"
+  integrity sha512-7eTD66l5CHIqdeVMGxoxcEto1xqvV8J+TjIMcBRY+y8diVkFQX4X9p8/iASQTM0zcS4xlKRSfTxdDbD+SPDVSQ==
 
 "@popperjs/core@^2.9.3":
   version "2.11.8"

@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import '@fontsource/niramit/vietnamese.css'
+import '@openfonts/niramit_vietnamese'
 
 import './style.pcss'
 import App from './App.vue'

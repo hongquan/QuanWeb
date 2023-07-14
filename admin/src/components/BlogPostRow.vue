@@ -19,31 +19,38 @@
     </td>
     <td>
       <div class='flex items-center space-x-4'>
-        <Icon
+        <a
           v-if='post.is_published'
-          icon='heroicons:globe-asia-australia-solid'
-          class='text-green-600 w-5 h-auto'
-        />
+          class='text-green-600 hover:text-green-400'
+          :href='publicUrl'
+        >
+          <Icon
+            icon='heroicons:globe-asia-australia-solid'
+            class='w-5 h-auto'
+          />
+        </a>
+      </div>
+    </td>
+    <td class='text-right pr-4'>
+      <div class='flex space-x-4'>
         <a
           :href='previewUrl'
-          class='hover:underline hover:text-blue-600'
+          class='hover:text-blue-600'
           title='Preview'
         ><Icon
           icon='mdi:view-in-ar'
           class='w-5 h-auto'
         /></a>
+        <button
+          class='hover:text-red-500'
+          @click='deletePost'
+        >
+          <Icon
+            icon='ic:outline-delete-forever'
+            class='w-5 h-5'
+          />
+        </button>
       </div>
-    </td>
-    <td class='text-right pr-4'>
-      <button
-        class='hover:text-red-500'
-        @click='deletePost'
-      >
-        <Icon
-          icon='ic:outline-delete-forever'
-          class='w-5 h-5'
-        />
-      </button>
     </td>
   </tr>
 </template>
@@ -88,6 +95,7 @@ const editUrl = computed(() => ({
   params: { postId: props.post.id },
 }))
 const previewUrl = computed(() => props.post.id ? `/preview/${props.post.id}` : '#')
+const publicUrl = computed(() => props.post.id ? `/post/${props.post.created_at.getFullYear()}/${props.post.created_at.getMonth()}/${props.post.slug}` : '#')
 
 async function deletePost() {
   if (!props.post.id) {

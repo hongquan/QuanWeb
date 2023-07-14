@@ -18,6 +18,7 @@ export const PostSchema = z.object({
   body: z.string().nullable().default(null),
   locale: z.string().nullable().default(null),
   is_published: z.boolean().default(false),
+  created_at: z.coerce.date(),
   categories: z.array(CategorySchema).default([]),
   og_image: z.string().nullable().default(null),
 })
