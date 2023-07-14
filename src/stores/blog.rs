@@ -272,7 +272,7 @@ pub async fn get_category_by_slug(slug: &str, client: &Client) -> Result<Option<
     Ok(cat)
 }
 
-pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
+pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<&str>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at < <datetime>$created_at",
         ".is_published = true",
@@ -283,7 +283,7 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug", Some(EValue::Str(slug)));
+        pairs.insert("slug", Some(EValue::Str(slug.to_string())));
     }
     let filter_expr = filter_lines.join(" AND ");
     let args = edge_object_from_simple_pairs(pairs);
@@ -301,7 +301,7 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
     Ok(post)
 }
 
-pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
+pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<&str>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at > <datetime>$created_at",
         ".is_published = true",
@@ -312,7 +312,7 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug", Some(EValue::Str(slug)));
+        pairs.insert("slug", Some(EValue::Str(slug.to_string())));
     }
     let filter_expr = filter_lines.join(" AND ");
     let args = edge_object_from_simple_pairs(pairs);

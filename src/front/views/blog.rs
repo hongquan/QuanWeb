@@ -30,10 +30,16 @@ pub async fn show_post(
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     let user = auth.current_user;
     let no_tracking = !post.is_published.unwrap_or(false) || user.is_some();
-    let prev_post = get_previous_post(post.created_at, None, &db)
+    let cat = match params.cat {
+        Some(slug) => stores::blog::get_category_by_slug(&slug, &db).await.map_err(PageError::EdgeDBQueryError)?,
+        None => None,
+    };
+    let cat_slug = cat.as_ref().map(|c| c.slug.as_str());
+
+    let prev_post = get_previous_post(post.created_at, cat_slug, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let next_post = get_next_post(post.created_at, None, &db)
+    let next_post = get_next_post(post.created_at, cat_slug, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let categories = stores::blog::get_blog_categories(None, None, &db)
@@ -46,13 +52,8 @@ pub async fn show_post(
         "categories" => MJValue::from_serializable(&categories),
         "no_tracking" => MJValue::from(no_tracking),
     };
-    if let Some(slug) = params.cat {
-        stores::blog::get_category_by_slug(&slug, &db)
-            .await
-            .map_err(PageError::EdgeDBQueryError)?
-            .map(|cat| {
-                vcontext.insert("cat", MJValue::from_struct_object(cat));
-            });
+    if let Some(cat) = cat {
+        vcontext.insert("cat", MJValue::from_struct_object(cat));
     }
     let content = render_with("blog/post.jinja", vcontext, jinja)?;
     Ok(Html(content))
