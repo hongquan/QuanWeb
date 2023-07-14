@@ -8,7 +8,7 @@
       {%- if not front -%}
         {{ p.title }}
       {%- else -%}
-      {% set url_under_category=add_url_param(post_url, 'cat', cat) if cat else post_url %}
+        {% set url_under_category=add_url_param(post_url, 'cat', cat.slug) if cat else post_url %}
         <a rel='bookmark' href='{{ url_under_category }}' class='hover:text-yellow-700 dark:hover:text-yellow-300'>{{ p.title }}</a>
       {%- endif -%}
     </h1>

@@ -4,7 +4,8 @@ use axum::extract::{OriginalUri, Path, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
 use axum_extra::extract::Query;
-use minijinja::context;
+use indexmap::indexmap;
+use minijinja::{context, value::Value as MJValue};
 use uuid::Uuid;
 
 use super::super::structs::{LaxPaging, PostPageParams};
@@ -19,7 +20,7 @@ use crate::types::{AppState, Paginator};
 pub async fn show_post(
     auth: Auth,
     Path((_y, _m, slug)): Path<(u16, u16, String)>,
-    _params: Query<PostPageParams>,
+    Query(params): Query<PostPageParams>,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -35,8 +36,21 @@ pub async fn show_post(
     let next_post = get_next_post(post.created_at, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let context = context!(post => post, prev_post => prev_post, next_post => next_post, no_tracking => no_tracking);
-    let content = render_with("blog/post.jinja", context, jinja)?;
+    let mut vcontext = indexmap! {
+        "post" => MJValue::from_struct_object(post),
+        "prev_post" => MJValue::from_serializable(&prev_post),
+        "next_post" => MJValue::from_serializable(&next_post),
+        "no_tracking" => MJValue::from(no_tracking),
+    };
+    if let Some(slug) = params.cat {
+        stores::blog::get_category_by_slug(&slug, &db)
+            .await
+            .map_err(PageError::EdgeDBQueryError)?
+            .map(|cat| {
+                vcontext.insert("cat", MJValue::from_struct_object(cat));
+            });
+    }
+    let content = render_with("blog/post.jinja", vcontext, jinja)?;
     Ok(Html(content))
 }
 
@@ -56,10 +70,9 @@ pub async fn list_posts(
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    let posts =
-        stores::blog::get_published_posts_under_category(Some(cat_slug), None, None, &db)
-            .await
-            .map_err(PageError::EdgeDBQueryError)?;
+    let posts = stores::blog::get_published_posts_under_category(Some(cat_slug), None, None, &db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);
     let total = stores::blog::count_blogposts_under_category(cat.id, &db)
         .await
@@ -140,10 +153,13 @@ pub async fn list_uncategorized_posts(
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
     let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
-    let posts =
-        stores::blog::get_published_uncategorized_blogposts(Some(offset), Some(page_size as i64), &db)
-            .await
-            .map_err(PageError::EdgeDBQueryError)?;
+    let posts = stores::blog::get_published_uncategorized_blogposts(
+        Some(offset),
+        Some(page_size as i64),
+        &db,
+    )
+    .await
+    .map_err(PageError::EdgeDBQueryError)?;
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
