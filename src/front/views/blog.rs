@@ -36,10 +36,14 @@ pub async fn show_post(
     let next_post = get_next_post(post.created_at, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
+    let categories = stores::blog::get_blog_categories(None, None, &db)
+        .await
+        .map_err(PageError::EdgeDBQueryError)?;
     let mut vcontext = indexmap! {
         "post" => MJValue::from_struct_object(post),
         "prev_post" => MJValue::from_serializable(&prev_post),
         "next_post" => MJValue::from_serializable(&next_post),
+        "categories" => MJValue::from_serializable(&categories),
         "no_tracking" => MJValue::from(no_tracking),
     };
     if let Some(slug) = params.cat {
