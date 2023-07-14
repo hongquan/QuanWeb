@@ -32,12 +32,9 @@ pub async fn show_post(
     let prev_post = get_previous_post(post.created_at, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    tracing::debug!("Previous post: {:?}", prev_post);
     let next_post = get_next_post(post.created_at, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    tracing::debug!("Next post: {:?}", next_post);
-    tracing::info!("Post: {:?}", post);
     let context = context!(post => post, prev_post => prev_post, next_post => next_post, no_tracking => no_tracking);
     let content = render_with("blog/post.jinja", context, jinja)?;
     Ok(Html(content))

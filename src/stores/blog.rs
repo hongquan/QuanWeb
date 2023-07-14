@@ -5,8 +5,7 @@ use edgedb_protocol::value::Value as EValue;
 use edgedb_protocol::common::Cardinality as Cd;
 use indexmap::{indexmap, IndexMap};
 
-use crate::models::blogs::MiniBlogPost;
-use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory};
+use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
 pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
@@ -273,7 +272,7 @@ pub async fn get_category_by_slug(slug: &str, client: &Client) -> Result<Option<
     Ok(cat)
 }
 
-pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MediumBlogPost>, Error> {
+pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at < <datetime>$created_at",
         ".is_published = true",
@@ -294,25 +293,15 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<String>, 
         id,
         title,
         slug,
-        excerpt,
-        is_published,
-        published_at,
         created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
     }}
     FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
     tracing::debug!("To query: {}", q);
-    tracing::debug!("With args: {:#?}", args);
-    let post: Option<MediumBlogPost> = client.query_single(&q, &args).await?;
+    let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
 }
 
-pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MediumBlogPost>, Error> {
+pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
     let mut filter_lines = vec![
         ".created_at > <datetime>$created_at",
         ".is_published = true",
@@ -333,21 +322,11 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<String>, clie
         id,
         title,
         slug,
-        excerpt,
-        is_published,
-        published_at,
         created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
     }}
     FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
     tracing::debug!("To query: {}", q);
-    tracing::debug!("With args: {:#?}", args);
-    let post: Option<MediumBlogPost> = client.query_single(&q, &args).await?;
+    let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
 }
 
