@@ -86,7 +86,7 @@
     >
       <template #body>
         <div
-          class='overflow-y-auto max-h-96 text-sm'
+          class='overflow-y-auto max-h-96 text-sm html-preview'
           v-html='previewHtml'
         />
       </template>
