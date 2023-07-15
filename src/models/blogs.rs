@@ -109,6 +109,7 @@ impl StructObject for MediumBlogPost {
             "published_at" => self.published_at.map(edge_datetime_to_jinja),
             "created_at" => Some(edge_datetime_to_jinja(self.created_at)),
             "updated_at" => self.updated_at.map(edge_datetime_to_jinja),
+            "categories" => Some(self.categories.clone().into_iter().collect()),
             _ => None,
         }
     }
@@ -123,12 +124,13 @@ impl StructObject for MediumBlogPost {
                 "published_at",
                 "created_at",
                 "updated_at",
+                "categories",
             ][..],
         )
     }
 
     fn field_count(&self) -> usize {
-        8
+        9
     }
 }
 
@@ -233,7 +235,7 @@ impl StructObject for DetailedBlogPost {
             "published_at" => self.published_at.map(edge_datetime_to_jinja),
             "created_at" => Some(edge_datetime_to_jinja(self.created_at)),
             "updated_at" => self.updated_at.map(edge_datetime_to_jinja),
-            "categories" => Some(self.categories.clone().into_iter().map(|c| MJValue::from_struct_object(c)).collect()),
+            "categories" => Some(self.categories.clone().into_iter().collect()),
             "body" => self.body.clone().map(MJValue::from),
             "format" => Some(MJValue::from(self.format.to_string())),
             "locale" => self.locale.clone().map(MJValue::from),
@@ -283,14 +285,24 @@ impl FromIterator<MediumBlogPost> for Vec<MJValue> {
     }
 }
 
+impl From<BlogCategory> for MJValue {
+    fn from(value: BlogCategory) -> Self {
+        MJValue::from_struct_object(value)
+    }
+}
+
+impl FromIterator<BlogCategory> for Vec<MJValue> {
+    fn from_iter<T: IntoIterator<Item = BlogCategory>>(iter: T) -> Self {
+        iter.into_iter().map(MJValue::from).collect()
+    }
+}
+
 // Struct to represent a BlogPost in the database, with just a few fields enough to build links.
-#[serde_with::apply(
-    EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
-)]
 #[derive(Debug, Serialize, Queryable)]
 pub struct MiniBlogPost {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
+    #[serde(serialize_with = "serialize_edge_datetime")]
     pub created_at: EDatetime,
 }

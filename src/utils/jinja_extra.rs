@@ -26,6 +26,10 @@ pub fn post_detail_url(slug: String, created_at: String) -> String {
     }
 }
 
+pub fn category_url(slug: String) -> String {
+    format!("/category/{}/", slug)
+}
+
 pub fn gen_element_attr(name: &str, value: MJValue) -> String {
     match value.as_str() {
         Some(value) => format!("{}=\"{}\"", name, value),

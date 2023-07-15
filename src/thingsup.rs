@@ -9,7 +9,7 @@ use tracing_subscriber::{
 };
 use minijinja::{path_loader, Environment};
 
-use crate::consts::TEMPLATE_DIR;
+use crate::consts::{TEMPLATE_DIR, UNCATEGORIZED_URL};
 use crate::utils::jinja_extra;
 
 #[derive(Debug, Clone, Parser)]
@@ -66,9 +66,11 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     let mut jinja = Environment::new();
     jinja.add_filter("debug_value", jinja_extra::debug_value);
     jinja.add_function("post_detail_url", jinja_extra::post_detail_url);
+    jinja.add_filter("category_url", jinja_extra::category_url);
     jinja.add_function("gen_element_attr", jinja_extra::gen_element_attr);
     jinja.add_function("add_url_param", jinja_extra::add_url_param);
     jinja.add_filter("striptags", jinja_extra::striptags);
+    jinja.add_global("UNCATEGORIZED_URL", UNCATEGORIZED_URL);
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
     let template_dir = env::current_dir()?.join(TEMPLATE_DIR);

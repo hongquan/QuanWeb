@@ -9,7 +9,6 @@ use http::{StatusCode, Uri};
 use axum::extract::{Query, State, OriginalUri};
 use axum::response::{Html, IntoResponse, Result as AxumResult};
 use minijinja::context;
-use minijinja::value::Value as MJValue;
 
 pub use crate::errors::PageError;
 use crate::auth::Auth;
@@ -56,10 +55,9 @@ pub async fn home(
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
     let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
-    let result = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
+    let posts = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let posts: Vec<MJValue> = result.into_iter().collect();
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
