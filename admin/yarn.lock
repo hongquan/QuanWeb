@@ -1425,10 +1425,10 @@ floating-vue@^2.0.0-beta.20:
     "@floating-ui/dom" "~1.1.1"
     vue-resize "^2.0.0-alpha.1"
 
-flowbite-vue@^0.0.14:
-  version "0.0.14"
-  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.14.tgz#933dfc1cb3e41adc26f4c58506fe3655b1016c7f"
-  integrity sha512-2/6C4hinjY/98C4PHYUD8t1FwA4RuDBnmlY+ncnBOzfTBQzsYxLdfKFZTDWydIh39GqN8/UTT9RGezugcUepVA==
+flowbite-vue@^0.0.15:
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.15.tgz#250d4ff4f10904518d4d1efafe82eff6cf095690"
+  integrity sha512-fNh1Dd2oehWBsHCvoFA3I4qBHEGVdSkfOSQjwh9a4UJYk94L6kHKwWLuZwazxZiLbdcAGGKRq68fo5WkyJf3kg==
   dependencies:
     "@vueuse/core" "9.3.0"
     classnames "2.3.2"
@@ -1446,10 +1446,10 @@ flowbite@1.5.4:
     "@popperjs/core" "^2.9.3"
     mini-svg-data-uri "^1.4.3"
 
-flowbite@^1.6.6:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/flowbite/-/flowbite-1.6.6.tgz#6c7579fffb6fad270c8471c2898eb7c57fe8ce3e"
-  integrity sha512-T+IaFikHELo1PBKfT/axDqhAmKQLfm/dxVch2r07TZ+IcKwkorZjzwkVuw3OslTETniRIUf2qQvEhxk3bQCaew==
+flowbite@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/flowbite/-/flowbite-1.7.0.tgz#82359dbd5e3b2b9591eaf18ea929fb77871346b2"
+  integrity sha512-OTTmnhRgv85Rs+mcMaVU7zB6EvRQs7BaQziyMUsZLRjW9aUpeQyqKjLmxsVMMCdr8isYPCLd6UL7X1IaSVI0WQ==
   dependencies:
     "@popperjs/core" "^2.9.3"
     mini-svg-data-uri "^1.4.3"

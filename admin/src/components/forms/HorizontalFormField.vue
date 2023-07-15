@@ -9,7 +9,6 @@
         :id='inputId'
         v-model='value'
         type='checkbox'
-        size='sm'
         :required='required'
       >
       <FbInput

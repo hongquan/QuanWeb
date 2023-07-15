@@ -3,6 +3,7 @@ use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
+use axum::response::Html;
 use axum_extra::extract::{Query, WithRejection};
 use edgedb_tokio::Client as EdgeClient;
 use garde::Validate;
@@ -17,6 +18,7 @@ use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::stores;
+use crate::utils::markdown::markdown_to_html;
 
 pub async fn root() -> &'static str {
     "API root"
@@ -177,4 +179,9 @@ pub async fn create_category(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogCategory".into()))?;
     Ok((StatusCode::CREATED, Json(created_cat)))
+}
+
+pub async fn convert_to_html(body: String) -> AxumResult<Html<String>> {
+    let html = markdown_to_html(&body);
+    Ok(Html(html))
 }

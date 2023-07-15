@@ -31,6 +31,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
     'vue/script-setup-uses-vars': 'error',
     'vue/html-quotes': ['warn', 'single', { 'avoidEscape': true }],
+    'vue/no-v-html': 'off',
     'vue/multi-word-component-names': ['error', { 'ignores': ['Icon', 'Paginator'] }],
     'vue/object-curly-spacing': ['error', 'always'],
     'object-curly-spacing': ['error', 'always'],

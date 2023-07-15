@@ -11,37 +11,42 @@
       />
       <HorizontalFormField
         v-model='post.slug'
+        class='mt-2'
         label='Slug'
       />
       <DualPaneSelect
+        class='mt-2'
         label='Categories'
         :all-options='allCategories'
         :selected-options='post.categories'
         @taken='onCategoryTaken($event)'
         @released='onCategoryReleased($event)'
       />
-      <div class='space-y-2'>
+      <div class='mt-2 space-y-2'>
         <div class='flex justify-between'>
           <label class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'>Body</label>
-          <button
+          <FbButton
             type='button'
-            class='text-sm'
+            size='xs'
+            outline
+            color='dark'
+            @click='getHtmlPreview'
           >
             Preview
-          </button>
+          </FbButton>
         </div>
         <div class='border rounded font-mono py-4'>
           <div class='max-h-80 overflow-y-auto'>
             <div class='px-2'>
               <div
                 ref='codeEditor'
-                class='language-markdown rounded p-2 dark:text-gray-200'
+                class='language-markdown rounded p-2 dark:text-gray-200 text-sm'
               />
             </div>
           </div>
         </div>
       </div>
-      <HorizontalFormFieldWrap>
+      <HorizontalFormFieldWrap class='mt-2'>
         <template #label>
           Locale
         </template>
@@ -55,11 +60,13 @@
       </HorizontalFormFieldWrap>
       <HorizontalFormField
         v-model='post.is_published'
+        class='mt-2'
         widget-type='checkbox'
         label='Published'
       />
       <HorizontalFormField
         v-model='post.og_image'
+        class='mt-2'
         widget-type='url'
         label='OpenGraph image'
       />
@@ -72,6 +79,18 @@
         </FbButton>
       </div>
     </form>
+    <FbModal
+      v-if='previewHtml'
+      :persistent='false'
+      @close='previewHtml = null'
+    >
+      <template #body>
+        <div
+          class='overflow-y-auto max-h-96 text-sm'
+          v-html='previewHtml'
+        />
+      </template>
+    </FbModal>
   </div>
 </template>
 
@@ -80,8 +99,7 @@ import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed } from 
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
-import { Button as FbButton } from 'flowbite-vue'
-import { Select as FbSelect } from 'flowbite-vue'
+import { Button as FbButton, Select as FbSelect, Modal as FbModal } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'
@@ -91,7 +109,7 @@ import 'prismjs/themes/prism-dark.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
-import { API_GET_CATEGORIES, API_GET_POSTS } from '@/urls'
+import { API_GET_CATEGORIES, API_GET_POSTS, API_MARKDOWN_TO_HTML } from '@/urls'
 import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
 import DualPaneSelect from '@/components/forms/DualPaneSelect.vue'
@@ -113,6 +131,7 @@ const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
 const jar = ref<CodeJar | null>(null)
+const previewHtml = ref<string | null>(null)
 
 const postLocale = computed({
   get() {
@@ -200,6 +219,14 @@ const mergeCodeUpdate = F.debounce((code: string) => {
 
 function highlight(element: HTMLElement) {
   Prism.highlightElement(element)
+}
+
+async function getHtmlPreview() {
+  if (!post.value) {
+    return
+  }
+  const resp = await kyClient.post(API_MARKDOWN_TO_HTML, { body: post.value.body }).text()
+  previewHtml.value = resp
 }
 
 onBeforeMount(fetchData)
