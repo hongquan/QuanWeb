@@ -41,17 +41,26 @@
           </div>
         </div>
       </div>
-      <HorizontalFormField
-        v-model='post.locale'
-        label='Locale'
-        :choices='locales'
-      />
+      <HorizontalFormFieldWrap>
+        <template #label>
+          Locale
+        </template>
+        <template #default='{ inputId }'>
+          <FbSelect
+            :id='inputId'
+            v-model='postLocale'
+            :options='locales'
+          />
+        </template>
+      </HorizontalFormFieldWrap>
       <HorizontalFormField
         v-model='post.is_published'
+        widget-type='checkbox'
         label='Published'
       />
       <HorizontalFormField
         v-model='post.og_image'
+        widget-type='url'
         label='OpenGraph image'
       />
       <div class='text-center mt-2'>
@@ -67,11 +76,12 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
 import { Button as FbButton } from 'flowbite-vue'
+import { Select as FbSelect } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'
@@ -83,6 +93,7 @@ import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
 import { API_GET_CATEGORIES, API_GET_POSTS } from '@/urls'
 import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
+import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
 import DualPaneSelect from '@/components/forms/DualPaneSelect.vue'
 import { transformPostForPosting } from '@/utils/models'
 import { ObjectListResponseSchema } from '@/models/api'
@@ -102,6 +113,17 @@ const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
 const jar = ref<CodeJar | null>(null)
+
+const postLocale = computed({
+  get() {
+    return post.value?.locale || undefined
+  },
+  set(val) {
+    if (post.value) {
+      post.value.locale = (val || null)
+    }
+  },
+})
 
 async function fetchCategories() {
   const raw = await kyClient.get(API_GET_CATEGORIES).json()
