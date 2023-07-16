@@ -6,6 +6,8 @@ use syntect::html::{ClassStyle, css_for_theme_with_class_style};
 use syntect::highlighting::ThemeSet;
 use miette::{miette, Result, IntoDiagnostic};
 
+use quanweb::consts::SYNTECT_THEME;
+
 const OUTPUT_PATH: &str = "static/css/syntect.css";
 
 /// Some tools for QuanWeb
@@ -25,7 +27,7 @@ enum Commands {
 
 fn gen_syntect_css() -> Result<()> {
     let theme_set = ThemeSet::load_defaults();
-    let theme = theme_set.themes.get("base16-ocean.dark").ok_or(miette!("Theme not found"))?;
+    let theme = theme_set.themes.get(SYNTECT_THEME).ok_or(miette!("Theme not found"))?;
     let content = css_for_theme_with_class_style(theme, ClassStyle::SpacedPrefixed { prefix: "st-" }).map_err(|e| miette!("{e}"))?;
     let path = PathBuf::from(OUTPUT_PATH);
     if path.exists() {
