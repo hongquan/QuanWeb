@@ -6,9 +6,10 @@ use syntect::html::css_for_theme_with_class_style;
 use syntect::highlighting::ThemeSet;
 use miette::{miette, Result, IntoDiagnostic};
 
-use quanweb::consts::{SYNTECT_THEME, SYNTECT_CLASS_STYLE};
+use quanweb::consts::SYNTECT_CLASS_STYLE;
 
 const OUTPUT_PATH: &str = "static/css/syntect.css";
+const SYNTECT_THEME: &str = "base16-ocean.dark";
 
 /// Some tools for QuanWeb
 #[derive(Debug, Clone, Parser)]

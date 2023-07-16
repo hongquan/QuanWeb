@@ -1,12 +1,11 @@
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
-use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
 use syntect::html::ClassedHTMLGenerator;
 use syntect::parsing::{SyntaxSet, SyntaxReference};
 use syntect::util::LinesWithEndings;
 
-use crate::consts::{SYNTECT_THEME, SYNTECT_CLASS_STYLE};
+use crate::consts::SYNTECT_CLASS_STYLE;
 
 pub struct CssSyntectAdapter {
     syntax_set: SyntaxSet,
@@ -77,15 +76,6 @@ impl SyntaxHighlighterAdapter for CssSyntectAdapter {
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {
-    let options = ComrakOptions::default();
-    let mut plugins = ComrakPlugins::default();
-    let adapter = SyntectAdapter::new(SYNTECT_THEME);
-    plugins.render.codefence_syntax_highlighter = Some(&adapter);
-    markdown_to_html_with_plugins(markdown, &options, &plugins)
-}
-
-#[allow(dead_code)]
-pub fn markdown_to_classed_html(markdown: &str) -> String {
     let options = ComrakOptions::default();
     let mut plugins = ComrakPlugins::default();
     let adapter = CssSyntectAdapter::new();

@@ -51,6 +51,9 @@ export default defineConfig({
     exclude: ['vue-demi'],
   },
   server: {
+    fs: {
+      allow: ['..'],
+    },
     proxy: {
       '/_api': {
         target: BACKEND_ROOT_URL,
