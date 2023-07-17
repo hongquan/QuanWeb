@@ -4,28 +4,18 @@ use edgedb_protocol::codec::ObjectShape;
 use edgedb_protocol::common::Cardinality;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
-use minijinja::value::Value as MJValue;
 use serde::ser::Serializer;
 use serde::Serialize;
 
 use super::create_shape_element;
-
-pub fn edge_datetime_to_jinja(dt: EDatetime) -> MJValue {
-    let chrono: DateTime<Utc> = dt.into();
-    chrono
-        .with_timezone(&Ho_Chi_Minh)
-        .format("%+")
-        .to_string()
-        .into()
-}
 
 /* Serde serializers to serialize EdgeDB's Datetime type */
 pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>
 where
     Se: Serializer,
 {
-    let cdt: DateTime<Utc> = edt.into();
-    cdt.serialize(serializer)
+    let chrono: DateTime<Utc> = edt.into();
+    chrono.with_timezone(&Ho_Chi_Minh).serialize(serializer)
 }
 
 pub fn serialize_optional_edge_datetime<Se>(
