@@ -4,6 +4,7 @@ use axum::extract::{OriginalUri, Path, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
 use axum_extra::extract::Query;
+use axum_sessions::extractors::ReadableSession;
 use indexmap::indexmap;
 use minijinja::{context, value::Value as MJValue};
 use uuid::Uuid;
@@ -11,7 +12,7 @@ use uuid::Uuid;
 use super::super::structs::{LaxPaging, PostPageParams};
 use super::render_with;
 use crate::auth::Auth;
-use crate::consts::DEFAULT_PAGE_SIZE;
+use crate::consts::{DEFAULT_PAGE_SIZE, KEY_LANG, DEFAULT_LANG};
 use crate::errors::PageError;
 use crate::stores;
 use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous_post};
@@ -21,6 +22,7 @@ pub async fn show_post(
     auth: Auth,
     Path((_y, _m, slug)): Path<(u16, u16, String)>,
     Query(params): Query<PostPageParams>,
+    session: ReadableSession,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -45,11 +47,13 @@ pub async fn show_post(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
+    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
     let mut vcontext = indexmap! {
         "post" => MJValue::from_serializable(&post),
         "prev_post" => MJValue::from_serializable(&prev_post),
         "next_post" => MJValue::from_serializable(&next_post),
         "categories" => MJValue::from_serializable(&categories),
+        "lang" => MJValue::from(lang),
         "no_tracking" => MJValue::from(no_tracking),
     };
     if let Some(cat) = cat {
@@ -64,6 +68,7 @@ pub async fn list_posts(
     Path(cat_slug): Path<String>,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
+    session: ReadableSession,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -95,6 +100,7 @@ pub async fn list_posts(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
+    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
     let no_tracking = auth.current_user.is_some();
     let context = context!(
         posts => posts,
@@ -103,6 +109,7 @@ pub async fn list_posts(
         next_page_url => next_page_url,
         prev_page_url => prev_page_url,
         categories => categories,
+        lang => lang,
         no_tracking => no_tracking);
     let content = render_with("blog/post_list.jinja", context, jinja)?;
     Ok(Html(content))
@@ -111,6 +118,7 @@ pub async fn list_posts(
 pub async fn preview_post(
     auth: Auth,
     Path(id): Path<Uuid>,
+    session: ReadableSession,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let _user = auth.current_user.ok_or(PageError::PermissionDenied);
@@ -127,8 +135,9 @@ pub async fn preview_post(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("Next post: {:?}", next_post);
+    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
     let context =
-        context!(post => post, prev_post => prev_post, next_post => next_post, no_tracking => true);
+        context!(post => post, prev_post => prev_post, next_post => next_post, lang => lang, no_tracking => true);
     let content = render_with("blog/post.jinja", context, jinja)?;
     Ok(Html(content))
 }
@@ -137,6 +146,7 @@ pub async fn list_uncategorized_posts(
     auth: Auth,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
+    session: ReadableSession,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -168,6 +178,7 @@ pub async fn list_uncategorized_posts(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
+    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
     let no_tracking = auth.current_user.is_some();
     let context = context!(
         posts => posts,
@@ -175,6 +186,7 @@ pub async fn list_uncategorized_posts(
         next_page_url => next_page_url,
         prev_page_url => prev_page_url,
         categories => categories,
+        lang => lang,
         no_tracking => no_tracking);
     let content = render_with("blog/post_list.jinja", context, jinja)?;
     Ok(Html(content))

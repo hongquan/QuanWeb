@@ -4,10 +4,7 @@
       <a href='/' class='title-font font-medium items-center text-white md:mb-0 text-4xl'>Quân</a>
       <div class='grow'></div>
       <form class='text-right md:hidden mr-4' method='post' action='/api/set-lang'>
-        <select name='lang' class='bg-transparent border-yellow-800 text-sm py-1 pl-1 pr-8' hx-post='/api/set-lang'>
-          <option value='en-US'>English</option>
-          <option value='vi'>Tiếng Việt</option>
-        </select>
+        {% include 'lang_switcher.jinja' %}
       </form>
       <button class='md:hidden rounded-lg focus:outline-none focus:shadow-outline hover:text-red-200' x-on:click='mobileMenuShown = !mobileMenuShown'>
         <svg fill='currentColor' viewBox='0 0 20 20' class='w-6 h-6'>
@@ -55,10 +52,7 @@
 
     <div class='grow'></div>
     <form class='text-right hidden md:block' method='post' action='/api/set-lang'>
-      <select name='lang' class='bg-transparent text-sm py-1 pl-1 pr-8 border-yellow-800' hx-post='/api/set-lang'>
-        <option value='en-US'>English</option>
-        <option value='vi'>Tiếng Việt</option>
-      </select>
+      {% include 'lang_switcher.jinja' %}
     </form>
 
   </nav>

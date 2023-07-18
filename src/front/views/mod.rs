@@ -3,7 +3,7 @@ pub mod old_urls;
 
 use std::num::NonZeroU16;
 
-use axum_sessions::extractors::WritableSession;
+use axum_sessions::extractors::{WritableSession, ReadableSession};
 use axum::extract::Form;
 use serde::ser::Serialize;
 use minijinja::Environment;
@@ -18,7 +18,7 @@ use crate::auth::Auth;
 use crate::types::{AppState, Paginator, StaticFile};
 use super::structs::{LaxPaging, SetLangReq};
 use crate::stores;
-use crate::consts::{DEFAULT_PAGE_SIZE, STATIC_URL};
+use crate::consts::{DEFAULT_PAGE_SIZE, STATIC_URL, KEY_LANG, DEFAULT_LANG};
 
 pub fn render_with<S: Serialize>(template_name: &str, context: S, engine: Environment) -> Result<String, PageError> {
     let tpl = engine.get_template(template_name)?;
@@ -36,6 +36,7 @@ pub async fn home(
     auth: Auth,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
+    session: ReadableSession,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -65,7 +66,9 @@ pub async fn home(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let no_tracking = auth.current_user.is_some();
+    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
     let context = context!(
+        lang => lang,
         posts => posts,
         categories => categories,
         pagelink_items => pagelink_items,
@@ -90,7 +93,7 @@ type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
 pub async fn set_lang(mut session: WritableSession, Form(payload): Form<SetLangReq>) -> AxumResult<HTMXResponse>
 {
     let li: LanguageIdentifier = payload.lang.parse().map_err(|_e| StatusCode::UNPROCESSABLE_ENTITY)?;
-    session.insert("lang", li.clone()).map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
+    session.insert(KEY_LANG, li.clone()).map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
     let lang_code = li.to_string();
     let header_name = HeaderName::from_static("hx-refresh");
     let r = ([(header_name, "true")], Html(lang_code));
