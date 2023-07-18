@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { DateTime } from 'luxon'
+
+export const DateFromString = z.string().datetime({ offset: true }).transform((s) => DateTime.fromISO(s).toJSDate())
 
 export const CategorySchema = z.object({
   id: z.string().uuid().nullable().default(null),
@@ -18,7 +21,7 @@ export const PostSchema = z.object({
   body: z.string().nullable().default(null),
   locale: z.string().nullable().default(null),
   is_published: z.boolean().default(false),
-  created_at: z.coerce.date(),
+  created_at: DateFromString,
   categories: z.array(CategorySchema).default([]),
   og_image: z.string().nullable().default(null),
 })
