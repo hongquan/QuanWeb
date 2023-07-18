@@ -96,9 +96,9 @@ const editUrl = computed(() => ({
 }))
 const previewUrl = computed(() => props.post.id ? `/preview/${props.post.id}` : '#')
 const publicUrl = computed(() => {
-  const createdAt = props.post.created_at as Date | null
-  const y = createdAt ? createdAt.getFullYear() : 'y'
-  const m = createdAt? createdAt.getMonth() : 'm'
+  const createdAt = props.post.created_at
+  const y = createdAt.getFullYear()
+  const m = createdAt.getMonth() + 1
   return props.post.id ? `/post/${y}/${m}/${props.post.slug}` : '#'
 })
 
