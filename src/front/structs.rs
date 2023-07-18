@@ -10,3 +10,8 @@ pub struct PostPageParams {
 pub struct LaxPaging {
     pub page: Option<String>,
 }
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SetLangReq {
+    pub lang: String,
+}

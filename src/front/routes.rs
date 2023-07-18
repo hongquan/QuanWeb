@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{routing::{get, post}, Router};
 
 use crate::types::AppState;
 use crate::consts::STATIC_URL;
@@ -15,4 +15,5 @@ pub fn get_router() -> Router<AppState> {
     .route("/blog/*rest", get(views::old_urls::redirect_old_blog_view))
     .route("/talk/", get(views::old_urls::default_for_old_views))
     .route("/book/", get(views::old_urls::default_for_old_views))
+    .route("/api/set-lang", post(views::set_lang))
 }

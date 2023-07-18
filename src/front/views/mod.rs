@@ -3,17 +3,20 @@ pub mod old_urls;
 
 use std::num::NonZeroU16;
 
+use axum_sessions::extractors::WritableSession;
+use axum::extract::Form;
 use serde::ser::Serialize;
 use minijinja::Environment;
-use http::{StatusCode, Uri};
+use http::{StatusCode, Uri, HeaderName};
 use axum::extract::{Query, State, OriginalUri};
 use axum::response::{Html, IntoResponse, Result as AxumResult};
 use minijinja::context;
+use unic_langid::LanguageIdentifier;
 
 pub use crate::errors::PageError;
 use crate::auth::Auth;
 use crate::types::{AppState, Paginator, StaticFile};
-use super::structs::LaxPaging;
+use super::structs::{LaxPaging, SetLangReq};
 use crate::stores;
 use crate::consts::{DEFAULT_PAGE_SIZE, STATIC_URL};
 
@@ -80,4 +83,16 @@ pub async fn static_handler(uri: Uri) -> impl IntoResponse {
         .trim_start_matches(&format!("{STATIC_URL}/"))
         .to_string();
     StaticFile(path)
+}
+
+type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
+
+pub async fn set_lang(mut session: WritableSession, Form(payload): Form<SetLangReq>) -> AxumResult<HTMXResponse>
+{
+    let li: LanguageIdentifier = payload.lang.parse().map_err(|_e| StatusCode::UNPROCESSABLE_ENTITY)?;
+    session.insert("lang", li.clone()).map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
+    let lang_code = li.to_string();
+    let header_name = HeaderName::from_static("hx-refresh");
+    let r = ([(header_name, "true")], Html(lang_code));
+    Ok(r)
 }

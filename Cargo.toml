@@ -10,10 +10,10 @@ default-run = "quanweb"
 strip="debuginfo"
 
 [dependencies]
-async-fred-session = "0.1.4"
-async-trait = "0.1.68"
-axum = { version = "0.6.18", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query", "original-uri"] }
-axum-extra = { version = "0.7.4", features = ["erased-json", "query"] }
+async-fred-session = "0.1.5"
+async-trait = "0.1.71"
+axum = { version = "0.6.19", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query", "original-uri"] }
+axum-extra = { version = "0.7.5", features = ["erased-json", "query"] }
 axum-login = "0.5.0"
 axum-sessions = "0.5.0"
 chrono = { version = "0.4.26", features = ["serde", "alloc", "clock"], default-features = false }
@@ -33,7 +33,7 @@ garde = "0.11.2"
 http = "0.2.9"
 indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"
-miette = { version = "5.9.0", features = ["fancy", "serde"] }
+miette = { version = "5.10.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.4"
 minijinja = { version = "1.0.4", features = ["loader", "internal_debug"] }
 once_cell = "1.18.0"
@@ -49,13 +49,14 @@ smart-default = "0.7.1"
 strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
 syntect = { version = "5.0.0", features = ["default-fancy"] }
-thiserror = "1.0.40"
-tokio = { version = "1.28.2", features = ["full"] }
+thiserror = "1.0.43"
+tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
 tracing = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-journald = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-subscriber = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald", features = ["env-filter"] }
-uuid = { version = "1.3.4", features = ["v1", "serde"] }
+unic-langid = { version = "0.9.1", features = ["serde"] }
+uuid = { version = "1.4.1", features = ["v1", "serde"] }
 
 [dev-dependencies]
 nonzero = "0.1.0"
