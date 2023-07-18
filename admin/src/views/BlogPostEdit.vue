@@ -115,6 +115,7 @@ import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.
 import DualPaneSelect from '@/components/forms/DualPaneSelect.vue'
 import { transformPostForPosting } from '@/utils/models'
 import { ObjectListResponseSchema } from '@/models/api'
+import '../../../static/css/syntect.css'
 
 interface Props {
   postId?: string | null

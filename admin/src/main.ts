@@ -5,7 +5,6 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import '@openfonts/niramit_vietnamese'
 
 import './style.pcss'
-import '../../static/css/syntect.css'
 import App from './App.vue'
 import { routes } from './routes'
 
