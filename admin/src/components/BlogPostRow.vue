@@ -95,7 +95,12 @@ const editUrl = computed(() => ({
   params: { postId: props.post.id },
 }))
 const previewUrl = computed(() => props.post.id ? `/preview/${props.post.id}` : '#')
-const publicUrl = computed(() => props.post.id ? `/post/${props.post.created_at.getFullYear()}/${props.post.created_at.getMonth()}/${props.post.slug}` : '#')
+const publicUrl = computed(() => {
+  const createdAt = props.post.created_at as Date | null
+  const y = createdAt ? createdAt.getFullYear() : 'y'
+  const m = createdAt? createdAt.getMonth() : 'm'
+  return props.post.id ? `/post/${y}/${m}/${props.post.slug}` : '#'
+})
 
 async function deletePost() {
   if (!props.post.id) {

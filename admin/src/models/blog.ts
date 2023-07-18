@@ -21,6 +21,7 @@ export const PostSchema = z.object({
   body: z.string().nullable().default(null),
   locale: z.string().nullable().default(null),
   is_published: z.boolean().default(false),
+  // Have to add nullable here because ZodEffects make other fields optional
   created_at: DateFromString.nullable(),
   categories: z.array(CategorySchema).default([]),
   og_image: z.string().nullable().default(null),
