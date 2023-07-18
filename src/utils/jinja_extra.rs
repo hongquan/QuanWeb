@@ -20,7 +20,7 @@ pub fn post_detail_url(slug: String, created_at: String) -> String {
             format!("/post/{}/{}", x.format("%Y/%m"), slug)
         },
         Err(e) => {
-            tracing::error!("Failed to parse datetime: {:?}", e);
+            tracing::error!("Failed to parse {} as datetime: {:?}", created_at, e);
             format!("/post/y/m/{}", slug)
         }
     }

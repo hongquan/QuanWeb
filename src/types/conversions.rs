@@ -15,7 +15,8 @@ where
     Se: Serializer,
 {
     let chrono: DateTime<Utc> = edt.into();
-    chrono.with_timezone(&Ho_Chi_Minh).serialize(serializer)
+    let dt_string = chrono.with_timezone(&Ho_Chi_Minh).format("%+").to_string();
+    dt_string.serialize(serializer)
 }
 
 pub fn serialize_optional_edge_datetime<Se>(
