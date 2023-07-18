@@ -4,9 +4,14 @@ use once_cell::sync::Lazy;
 use http::Uri;
 use regex::Regex;
 use chrono::DateTime;
+use minijinja::State;
 use minijinja::value::Value as MJValue;
+use fluent_templates::Loader;
+use unic_langid::LanguageIdentifier;
 
+use crate::consts::{KEY_LANG, DEFAULT_LANG};
 use crate::utils::urls::update_entry_in_query;
+use crate::thingsup::LOCALES;
 
 pub fn debug_value(value: MJValue) -> &'static str {
     tracing::debug!("MiniJinja value: {:?}", value);
@@ -52,4 +57,13 @@ pub fn striptags(html: String) -> String {
     let stripped = RE_COMMENTS.replace_all(&html, "");
     let stripped = RE_TAGS.replace_all(&stripped, "");
     stripped.to_string()
+}
+
+pub fn fluent(state: &State, key: &str) -> String {
+    let lang_in_context = state.lookup(KEY_LANG).and_then(|v| v.as_str().map(|s| s.to_string())).unwrap_or(DEFAULT_LANG.into());
+    let li = LanguageIdentifier::from_str(&lang_in_context).unwrap_or_else(|e| {
+        tracing::error!("Failed to parse {} as LanguageIdentifier. Error: {}", lang_in_context, e);
+        LanguageIdentifier::default()
+    });
+    LOCALES.lookup(&li, key).unwrap_or_else(|| key.to_string())
 }

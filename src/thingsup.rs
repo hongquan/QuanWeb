@@ -8,6 +8,7 @@ use tracing_subscriber::{
     util::SubscriberInitExt,
 };
 use minijinja::{path_loader, Environment};
+use fluent_templates::static_loader;
 
 use crate::consts::{TEMPLATE_DIR, UNCATEGORIZED_URL};
 use crate::utils::jinja_extra;
@@ -71,6 +72,7 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     jinja.add_function("add_url_param", jinja_extra::add_url_param);
     jinja.add_filter("striptags", jinja_extra::striptags);
     jinja.add_global("UNCATEGORIZED_URL", UNCATEGORIZED_URL);
+    jinja.add_function("_f", jinja_extra::fluent);
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
     let template_dir = env::current_dir()?.join(TEMPLATE_DIR);
@@ -86,4 +88,14 @@ pub fn get_listening_addr() -> [u8; 4] {
         Ok(_) => [0, 0, 0, 0],
         Err(_) => [127, 0, 0, 1],
     }
+}
+
+static_loader! {
+    pub static LOCALES = {
+        locales: "./locales",
+        fallback_language: "en",
+        customise: |bundle| {
+            bundle.set_use_isolating(false);
+        },
+    };
 }
