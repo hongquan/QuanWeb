@@ -21,7 +21,7 @@ use tower_http::trace::TraceLayer;
 
 use auth::store::EdgeDbStore;
 use types::AppState;
-use thingsup::{AppOptions, config_jinja, config_logging};
+use thingsup::{AppOptions, config_jinja, config_logging, get_listening_addr};
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
@@ -57,7 +57,7 @@ async fn main() -> miette::Result<()> {
         .layer(TraceLayer::new_for_http());
 
     let port = conf::get_listening_port(&config);
-    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    let addr = SocketAddr::from((get_listening_addr(), port));
     tracing::info!("Listening on http://{}", addr);
 
     // TODO: Support Unix domain socket with hyperlocal

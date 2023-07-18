@@ -80,3 +80,10 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     jinja.set_loader(path_loader(&template_dir));
     Ok(jinja)
 }
+
+pub fn get_listening_addr() -> [u8; 4] {
+    match env::var("CARGO") {
+        Ok(_) => [0, 0, 0, 0],
+        Err(_) => [127, 0, 0, 1],
+    }
+}
