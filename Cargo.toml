@@ -61,3 +61,6 @@ uuid = { version = "1.4.1", features = ["v1", "serde"] }
 
 [dev-dependencies]
 nonzero = "0.1.0"
+
+[build-dependencies]
+crate-git-revision = "0.0.6"

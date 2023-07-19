@@ -70,9 +70,10 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     jinja.add_filter("category_url", jinja_extra::category_url);
     jinja.add_function("gen_element_attr", jinja_extra::gen_element_attr);
     jinja.add_function("add_url_param", jinja_extra::add_url_param);
+    jinja.add_function("_f", jinja_extra::fluent);
     jinja.add_filter("striptags", jinja_extra::striptags);
     jinja.add_global("UNCATEGORIZED_URL", UNCATEGORIZED_URL);
-    jinja.add_function("_f", jinja_extra::fluent);
+    jinja.add_global("GIT_REVISION", env!("GIT_REVISION"));
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
     let template_dir = env::current_dir()?.join(TEMPLATE_DIR);

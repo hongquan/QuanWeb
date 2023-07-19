@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'sans': ['Niramit', ...defaultTheme.fontFamily.sans],
+      },
       typography: {
         DEFAULT: {
           css: {

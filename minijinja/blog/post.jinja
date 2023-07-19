@@ -10,7 +10,7 @@
 {% endblock meta_og %}
 
 {% block inner_content %}
-  {% set LINK_CLASS = 'relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50' %}
+  {% set LINK_CLASS = 'relative inline-flex items-center px-2 md:px-4 py-2 border border-gray-300 font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800' %}
   {% with p=post %}
     {% include 'blog/block_post_content.jinja' %}
   {% endwith %}

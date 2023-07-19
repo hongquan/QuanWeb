@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class='h-full'>
+<html class='h-full text-[18px]'>
   <head>
   {% block head -%}
     <title>{% block title -%}{%- endblock title %}</title>
@@ -14,21 +14,15 @@
 
     {% block css -%}
       <link rel='icon' href='/static/img/favicon.png'>
-      <link href='/static/vendor/tailwind.css' rel='stylesheet' media='screen'>
-      <link rel='preconnect' href='https://fonts.gstatic.com'>
-      <link href='https://fonts.googleapis.com/css2?family=Niramit:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap' rel='stylesheet'>
+      <link href='/static/vendor/tailwind.css?v={{ GIT_REVISION }}' rel='stylesheet' media='screen'>
+      <link rel='preconnect' href='https://fonts.googleapis.com'>
+      <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+      <link href='https://fonts.googleapis.com/css2?family=Niramit' rel='stylesheet'>
       <link href='//fonts.googleapis.com/css?family=Convergence' rel='stylesheet'>
-      <link href='//fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
       <link rel='stylesheet' href='/static/css/custom.css'>
       <link rel='stylesheet' href='/static/css/pygments-css/material.css'>
       <link rel='stylesheet' href='/static/css/syntect.css'>
       <style>
-        body {
-          font-family: 'Niramit', sans-serif;
-        }
-        html {
-          font-size: 18px;
-        }
         [x-cloak] {
           display: none;
         }
@@ -37,7 +31,7 @@
 
     {% block headjs -%}
     <script src='https://unpkg.com/alpinejs' defer></script>
-    <script src='https://unpkg.com/htmx.org@1.9.3'></script>
+    <script src='https://unpkg.com/htmx.org@1.9.3' defer></script>
     {%- endblock headjs %}
   {%- endblock head %}
   </head>
