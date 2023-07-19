@@ -31,7 +31,7 @@
 
     {% block headjs -%}
     <script src='https://unpkg.com/alpinejs' defer></script>
-    <script src='https://unpkg.com/htmx.org@1.9.3' defer></script>
+    <script src='https://unpkg.com/htmx.org@1.9.3/dist/htmx.min.js' defer></script>
     {%- endblock headjs %}
   {%- endblock head %}
   </head>
@@ -57,7 +57,7 @@
     {% include 'footer.jinja' %}
 
     {% block js -%}
-      <script src='https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js'></script>
+      <script src="https://cdn.jsdelivr.net/npm/minitz/dist/minitz.min.js"></script>
       {% if not running_locally %}
         {% if not no_tracking %}
           {% include 'block_tracking.jinja' %}
@@ -66,13 +66,15 @@
       <script>
       var LANG = '{{ lang }}';
       document.addEventListener('alpine:init', () => {
+        const shortFormatter = new Intl.DateTimeFormat(LANG, { dateStyle: 'medium' });
+        const longFormatter = new Intl.DateTimeFormat(LANG, { dateStyle: 'long', timeStyle: 'full'});
         Alpine.data('post_meta', (created_at = null) => ({
-          created_at: created_at ? luxon.DateTime.fromISO(created_at) : null,
+          created_at: created_at ? minitz.fromTZISO(created_at) : null,
           get created_at_date_display() {
-            return this.created_at ? this.created_at.setLocale(LANG).toLocaleString(luxon.DateTime.DATE_FULL) : ''
+            return this.created_at ? shortFormatter.format(this.created_at) : ''
           },
           get created_at_full_display() {
-            return this.created_at ? this.created_at.setLocale(LANG).toLocaleString(luxon.DateTime.DATETIME_FULL) : ''
+            return this.created_at ? longFormatter.format(this.created_at) : ''
           },
         }))
       })
