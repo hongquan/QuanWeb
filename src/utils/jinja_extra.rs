@@ -5,13 +5,14 @@ use http::Uri;
 use regex::Regex;
 use chrono::DateTime;
 use minijinja::State;
-use minijinja::value::Value as MJValue;
+use minijinja::value::{Value as MJValue, Kwargs};
 use fluent_templates::Loader;
 use unic_langid::LanguageIdentifier;
 
 use crate::consts::{KEY_LANG, DEFAULT_LANG};
 use crate::utils::urls::update_entry_in_query;
 use crate::thingsup::LOCALES;
+use crate::types::conversions::jinja_kwargs_to_fluent_args;
 
 pub fn debug_value(value: MJValue) -> &'static str {
     tracing::debug!("MiniJinja value: {:?}", value);
@@ -59,11 +60,16 @@ pub fn striptags(html: String) -> String {
     stripped.to_string()
 }
 
-pub fn fluent(state: &State, key: &str) -> String {
+// Function to provide translation via Fluent
+pub fn fluent(state: &State, key: &str, kwargs: Kwargs) -> String {
+    let fluent_args = jinja_kwargs_to_fluent_args(kwargs);
+    if fluent_args.is_some() {
+        tracing::debug!("Args to pass to fluent message: {:?}", fluent_args);
+    }
     let lang_in_context = state.lookup(KEY_LANG).and_then(|v| v.as_str().map(|s| s.to_string())).unwrap_or(DEFAULT_LANG.into());
     let li = LanguageIdentifier::from_str(&lang_in_context).unwrap_or_else(|e| {
         tracing::error!("Failed to parse {} as LanguageIdentifier. Error: {}", lang_in_context, e);
         LanguageIdentifier::default()
     });
-    LOCALES.lookup(&li, key).unwrap_or_else(|| key.to_string())
+    LOCALES.lookup_complete(&li, key, fluent_args.as_ref()).unwrap_or_else(|| key.to_string())
 }
