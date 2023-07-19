@@ -161,7 +161,7 @@ async function fetchCategories() {
 async function fetchData() {
   await fetchCategories()
   if (!props.postId) {
-    post.value = PostSchema.parse({})
+    post.value = PostSchema.parse({created_at: new Date().toISOString()})
     return
   }
   const url = lightJoin(API_GET_POSTS, props.postId)
