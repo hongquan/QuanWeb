@@ -235,8 +235,9 @@ onMounted(() => {
   watch(
     () => post.value?.title,
     (title) => {
-      if (title) {
-        post.value!.slug = slugify(title)
+      // Don't regenerate slug, to avoid breaking URL
+      if (post.value && title && !post.value.slug) {
+        post.value.slug = slugify(title)
       }
     },
     { flush: 'post' },

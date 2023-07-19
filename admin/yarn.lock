@@ -1521,7 +1521,7 @@ flatted@^3.1.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.7.tgz#609f39207cb614b89d0765b477cb2d437fbf9787"
   integrity sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==
 
-floating-vue@^2.0.0-beta.20:
+floating-vue@2.0.0-beta.24:
   version "2.0.0-beta.24"
   resolved "https://registry.yarnpkg.com/floating-vue/-/floating-vue-2.0.0-beta.24.tgz#ad4775c55581f8a3c219cf614d8e24a6ae4846e0"
   integrity sha512-URSzP6YXaF4u1oZ9XGL8Sn8puuM7ivp5jkOUrpy5Q1mfo9BfGppJOn+ierTmsSUfJEeHBae8KT7r5DeI3vQIEw==
@@ -1529,14 +1529,14 @@ floating-vue@^2.0.0-beta.20:
     "@floating-ui/dom" "~1.1.1"
     vue-resize "^2.0.0-alpha.1"
 
-flowbite-vue@^0.0.15:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.15.tgz#250d4ff4f10904518d4d1efafe82eff6cf095690"
-  integrity sha512-fNh1Dd2oehWBsHCvoFA3I4qBHEGVdSkfOSQjwh9a4UJYk94L6kHKwWLuZwazxZiLbdcAGGKRq68fo5WkyJf3kg==
+flowbite-vue@^0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.16.tgz#421461632f8d8c64313cdd5d2d68eda62b2e8b90"
+  integrity sha512-vPfVj+fbSGja+wWQLAyGcbYQErHYMJ6MOOiQakQ4IVe/QwHxZbaA8qpAbwncF3PV2xZdfhXuBlV3b6xV7zL2Jg==
   dependencies:
     "@vueuse/core" "9.3.0"
     classnames "2.3.2"
-    floating-vue "^2.0.0-beta.20"
+    floating-vue "2.0.0-beta.24"
     flowbite "1.5.4"
     lodash-es "4.17.21"
     nanoid "4.0.0"

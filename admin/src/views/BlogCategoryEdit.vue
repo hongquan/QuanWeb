@@ -110,8 +110,8 @@ onMounted(() => {
   watch(
     () => category.value?.title,
     (title) => {
-      if (title) {
-        category.value!.slug = slugify(title)
+      if (category.value && title && !category.value.slug) {
+        category.value.slug = slugify(title)
       }
     },
     { flush: 'post' },
