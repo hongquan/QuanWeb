@@ -1,4 +1,5 @@
 pub mod blog;
+pub mod minors;
 pub mod old_urls;
 
 use std::num::NonZeroU16;

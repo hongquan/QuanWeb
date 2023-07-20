@@ -62,9 +62,6 @@ pub fn striptags(html: String) -> String {
 // Function to provide translation via Fluent
 pub fn fluent(state: &State, key: &str, kwargs: Kwargs) -> String {
     let fluent_args = jinja_kwargs_to_fluent_args(kwargs);
-    if fluent_args.is_some() {
-        tracing::debug!("Args to pass to fluent message: {:?}", fluent_args);
-    }
     let lang_in_context = state.lookup(KEY_LANG).and_then(|v| v.as_str().map(|s| s.to_string())).unwrap_or(DEFAULT_LANG.into());
     let li = LanguageIdentifier::from_str(&lang_in_context).unwrap_or_else(|e| {
         tracing::error!("Failed to parse {} as LanguageIdentifier. Error: {}", lang_in_context, e);

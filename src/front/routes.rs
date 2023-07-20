@@ -13,7 +13,7 @@ pub fn get_router() -> Router<AppState> {
     .route("/category/:category/", get(views::blog::list_posts))
     .route("/preview/:id", get(views::blog::preview_post))
     .route("/blog/*rest", get(views::old_urls::redirect_old_blog_view))
-    .route("/talk/", get(views::old_urls::default_for_old_views))
+    .route("/talk/", get(views::minors::list_talks))
     .route("/book/", get(views::old_urls::default_for_old_views))
     .route("/api/set-lang", post(views::set_lang))
 }
