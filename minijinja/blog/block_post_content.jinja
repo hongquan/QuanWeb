@@ -1,4 +1,4 @@
-{% set extra_class='mt-8 md:mt-12' if front else 'mt-8' %}
+{% set extra_class='mt-8 md:mt-12' if front else 'mt-8 pb-8 border-b-2' %}
 {% set lang_attr=gen_element_attr('lang', p.locale) %}
 {% set post_url=p|post_detail_url %}
 <article class='post {{ extra_class }}' {{ lang_attr }}>
