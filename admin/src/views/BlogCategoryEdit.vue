@@ -53,6 +53,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const router = useRouter()
 const category = ref<Category | null>(null)
+const oldSlug = ref<string | null>(null)
 const isSubmitting = ref(false)
 const validationErrors = ref<Record<string, string>>({})
 
@@ -64,6 +65,7 @@ async function fetchData() {
   const url = lightJoin(API_GET_CATEGORIES, props.categoryId)
   const raw = await kyClient.get(url).json()
   category.value = CategorySchema.parse(raw)
+  oldSlug.value = category.value.slug
 }
 
 async function onSubmit() {
@@ -110,7 +112,7 @@ onMounted(() => {
   watch(
     () => category.value?.title,
     (title) => {
-      if (category.value && title && !category.value.slug) {
+      if (category.value && title && !oldSlug.value) {
         category.value.slug = slugify(title)
       }
     },

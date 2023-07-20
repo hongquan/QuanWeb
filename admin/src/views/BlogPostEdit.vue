@@ -128,6 +128,7 @@ Prism.manual = true
 const router = useRouter()
 const locales = [{ name: 'English', value: 'en' }, { name: 'Tiếng Việt', value: 'vi' }]
 const post = ref<Post | null>(null)
+const oldSlug = ref<string | null>(null)
 const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
@@ -167,6 +168,7 @@ async function fetchData() {
   const url = lightJoin(API_GET_POSTS, props.postId)
   const resp = await kyClient.get(url).json()
   post.value = PostSchema.parse(resp)
+  oldSlug.value = post.value.slug
   if (jar.value && post.value.body) {
     jar.value.updateCode(post.value.body)
   }
@@ -236,7 +238,7 @@ onMounted(() => {
     () => post.value?.title,
     (title) => {
       // Don't regenerate slug, to avoid breaking URL
-      if (post.value && title && !post.value.slug) {
+      if (post.value && title && !oldSlug.value) {
         post.value.slug = slugify(title)
       }
     },
