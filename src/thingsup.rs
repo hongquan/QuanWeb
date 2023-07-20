@@ -66,7 +66,7 @@ pub fn config_logging(app_opt: AppOptions) {
 pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     let mut jinja = Environment::new();
     jinja.add_filter("debug_value", jinja_extra::debug_value);
-    jinja.add_function("post_detail_url", jinja_extra::post_detail_url);
+    jinja.add_filter("post_detail_url", jinja_extra::post_detail_url);
     jinja.add_filter("category_url", jinja_extra::category_url);
     jinja.add_function("gen_element_attr", jinja_extra::gen_element_attr);
     jinja.add_function("add_url_param", jinja_extra::add_url_param);

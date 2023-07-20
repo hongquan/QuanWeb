@@ -4,8 +4,8 @@ use once_cell::sync::Lazy;
 use http::Uri;
 use regex::Regex;
 use chrono::DateTime;
-use minijinja::State;
-use minijinja::value::{Value as MJValue, Kwargs};
+use minijinja::{State, Error, ErrorKind};
+use minijinja::value::{Value as MJValue, Kwargs, ValueKind};
 use fluent_templates::Loader;
 use unic_langid::LanguageIdentifier;
 
@@ -20,16 +20,15 @@ pub fn debug_value(value: MJValue) -> &'static str {
     ""
 }
 
-pub fn post_detail_url(slug: String, created_at: String) -> String {
-    match DateTime::parse_from_rfc3339(&created_at) {
-        Ok(x) => {
-            format!("/post/{}/{}", x.format("%Y/%m"), slug)
-        },
-        Err(e) => {
-            tracing::error!("Failed to parse {} as datetime: {:?}", created_at, e);
-            format!("/post/y/m/{}", slug)
-        }
+pub fn post_detail_url(post: MJValue) -> Result<String, Error> {
+    if post.kind() != ValueKind::Map {
+        return Ok("#".into());
     }
+    let created_at: String = post.get_attr("created_at")?.as_str().ok_or(Error::new(ErrorKind::NonPrimitive, "created_at is not a string"))?.into();
+    let created_at = DateTime::parse_from_rfc3339(&created_at)
+        .map_err(|_e| Error::new(ErrorKind::BadSerialization, "Expect RFC3339 datetime string"))?;
+    let slug: String = post.get_attr("slug")?.as_str().ok_or(Error::new(ErrorKind::NonPrimitive, "slug is not a string"))?.into();
+    Ok(format!("/post/{}/{}", created_at.format("%Y/%m"), slug))
 }
 
 pub fn category_url(slug: String) -> String {

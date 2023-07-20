@@ -16,13 +16,13 @@
   {% endwith %}
   <div class='flex flex-row justify-between mt-6 space-x-4'>
   {% if prev_post %}
-    {% set prev_url = post_detail_url(prev_post.slug, prev_post.created_at) %}
+    {% set prev_url = prev_post|post_detail_url %}
     {% with post_url = add_url_param(prev_url, 'cat', cat.slug) if cat else prev_url %}
       <a href='{{ post_url }}' class='{{ LINK_CLASS }}'>&larr; {{ prev_post.title }}</a>
     {% endwith %}
   {% endif %}
   {% if next_post %}
-    {% set next_url = post_detail_url(next_post.slug, next_post.created_at) %}
+    {% set next_url = next_post|post_detail_url %}
     {% with post_url = add_url_param(next_url, 'cat', cat.slug) if cat else next_url %}
       <a href='{{ post_url }}' class='{{ LINK_CLASS }}'>{{ next_post.title }} &rarr;</a>
     {% endwith %}
