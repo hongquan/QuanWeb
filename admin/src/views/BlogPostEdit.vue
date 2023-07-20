@@ -9,6 +9,20 @@
         v-model='post.title'
         label='Title'
       />
+      <HorizontalFormFieldWrap>
+        <template #label>
+          Slug
+        </template>
+        <template #default>
+          <FbInput v-model='post.slug' size='sm'>
+            <template v-if='oldSlug' #suffix>
+              <FbButton type='button' pill outline size='xs' color='dark' class='absolute -bottom-0.5 right-0' @click='regenerateSlug'>
+                <Icon icon='mingcute:refresh-2-line' class='h-3 w-auto' />
+              </FbButton>
+            </template>
+          </FbInput>
+        </template>
+      </HorizontalFormFieldWrap>
       <HorizontalFormField
         v-model='post.slug'
         class='mt-2'
@@ -99,11 +113,12 @@ import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed } from 
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
-import { Button as FbButton, Select as FbSelect, Modal as FbModal } from 'flowbite-vue'
+import { Button as FbButton, Select as FbSelect, Modal as FbModal, Input as FbInput } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'
 import { CodeJar } from 'codejar'
+import { Icon } from '@iconify/vue'
 import Prism from 'prismjs'
 import 'prismjs/themes/prism-dark.css'
 
@@ -171,6 +186,12 @@ async function fetchData() {
   oldSlug.value = post.value.slug
   if (jar.value && post.value.body) {
     jar.value.updateCode(post.value.body)
+  }
+}
+
+function regenerateSlug() {
+  if (post.value) {
+    post.value.slug = slugify(post.value.title)
   }
 }
 
