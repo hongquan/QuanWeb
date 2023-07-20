@@ -1,9 +1,9 @@
 use std::cmp::max;
 use std::num::NonZeroU16;
 
-use axum::extract::{OriginalUri, Path, State};
+use axum::extract::{OriginalUri, Path, Query, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
-use axum_extra::extract::{Query, WithRejection};
+use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
 use garde::Validate;
 use serde_json::{Map as JMap, Value};

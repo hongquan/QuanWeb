@@ -1,9 +1,8 @@
 use std::num::NonZeroU16;
 
-use axum::extract::{OriginalUri, Path, State};
+use axum::extract::{OriginalUri, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
-use axum_extra::extract::Query;
 use axum_sessions::extractors::ReadableSession;
 use indexmap::indexmap;
 use minijinja::{context, value::Value as MJValue};
