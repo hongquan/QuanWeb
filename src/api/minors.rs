@@ -5,6 +5,7 @@ use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
 use garde::Validate;
+use http::StatusCode;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
@@ -13,7 +14,7 @@ use super::paging::gen_pagination_links;
 use super::structs::{NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::Presentation;
+use crate::models::{Presentation, MinimalObject};
 use crate::stores;
 
 pub async fn list_presentations(
@@ -133,4 +134,18 @@ pub async fn create_presentation(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create Presentation".into()))?;
     Ok(Json(p))
+}
+
+pub async fn delete_presentation(
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    auth: Auth,
+    State(db): State<EdgeClient>,
+) -> AxumResult<StatusCode> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    let q = "DELETE Presentation FILTER .id = <uuid>$0";
+    let _p: MinimalObject = db.query_single(q, &(id,))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
+    Ok(StatusCode::NO_CONTENT)
 }

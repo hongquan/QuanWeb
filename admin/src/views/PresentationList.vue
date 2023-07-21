@@ -42,6 +42,7 @@
             :key='item.id || index'
             :presentation='item'
             :is-odd='Boolean(index % 2)'
+            @deleted='onDeleted'
           />
         </tbody>
       </table>
@@ -70,6 +71,10 @@ async function fetchData() {
   presentations.value = PresentationSchema.array().parse(data.objects)
   totalPages.value = data.total_pages
   isLoading.value = false
+}
+
+function onDeleted(id: string) {
+  presentations.value = presentations.value.filter((item) => item.id !== id)
 }
 
 onMounted(async () => {

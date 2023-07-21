@@ -2,8 +2,8 @@ use std::cmp::max;
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
-use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum::response::Html;
+use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
 use garde::Validate;
@@ -11,9 +11,12 @@ use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
 use super::errors::ApiError;
+pub use super::minors::{
+    create_presentation, delete_presentation, get_presentation, list_presentations,
+    update_presentation_partial,
+};
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-pub use super::minors::{list_presentations, get_presentation, update_presentation_partial, create_presentation};
 use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
@@ -27,9 +30,7 @@ pub async fn root() -> &'static str {
 
 pub async fn show_me(auth: Auth) -> AxumResult<Json<User>> {
     tracing::info!("Current user: {:?}", auth.current_user);
-    let user = auth
-        .current_user
-        .ok_or(ApiError::Unauthorized)?;
+    let user = auth.current_user.ok_or(ApiError::Unauthorized)?;
     Ok(Json(user))
 }
 

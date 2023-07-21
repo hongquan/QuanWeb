@@ -12,8 +12,9 @@ pub fn get_router() -> Router<AppState> {
         .patch(views::update_category_partial)
         .delete(views::delete_category);
 
-    let single_presentation_router =
-        get(views::get_presentation).patch(views::update_presentation_partial);
+    let single_presentation_router = get(views::get_presentation)
+        .patch(views::update_presentation_partial)
+        .delete(views::delete_presentation);
 
     Router::new()
         .route("/", get(views::root))
@@ -27,7 +28,10 @@ pub fn get_router() -> Router<AppState> {
             get(views::list_categories).post(views::create_category),
         )
         .route("/categories/:category_id", single_category_router)
-        .route("/presentations/", get(views::list_presentations).post(views::create_presentation))
+        .route(
+            "/presentations/",
+            get(views::list_presentations).post(views::create_presentation),
+        )
         .route("/presentations/:id", single_presentation_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }
