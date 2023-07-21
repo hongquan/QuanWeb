@@ -262,7 +262,6 @@ pub struct BlogCategoryPatchData {
     pub slug: Option<String>,
 }
 
-#[allow(dead_code)]
 impl BlogCategoryPatchData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
@@ -300,7 +299,6 @@ pub struct BlogCategoryCreateData {
     pub slug: String,
 }
 
-#[allow(dead_code)]
 impl BlogCategoryCreateData {
     pub fn gen_set_clause<'a>(&self) -> String {
         let lines = vec!["title := <str>$title", "slug := <str>$slug"];
@@ -314,5 +312,48 @@ impl BlogCategoryCreateData {
             "slug" => Some(EValue::from(self.slug.clone())),
         };
         edge_object_from_simple_pairs(pairs)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PresentationPatchData {
+    pub title: Option<String>,
+    pub url: Option<String>,
+    pub event: Option<String>,
+}
+
+impl PresentationPatchData {
+    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+        let mut lines = Vec::<&str>::new();
+        append_set_statement!("title", "optional str", lines, submitted_fields);
+        append_set_statement!("url", "optional str", lines, submitted_fields);
+        append_set_statement!("event", "optional str", lines, submitted_fields);
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+        let mut pairs = indexmap!(
+            "id" => (Some(EValue::Uuid(id)), Cd::One),
+        );
+        if submitted_fields.iter().any(|&f| f == "title") {
+            pairs.insert(
+                "title",
+                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "url") {
+            pairs.insert(
+                "url",
+                (self.url.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "event") {
+            pairs.insert(
+                "event",
+                (self.event.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        edge_object_from_pairs(pairs)
     }
 }

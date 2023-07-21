@@ -12,7 +12,8 @@ pub fn get_router() -> Router<AppState> {
         .patch(views::update_category_partial)
         .delete(views::delete_category);
 
-    let single_presentation_router = get(views::get_presentation);
+    let single_presentation_router =
+        get(views::get_presentation).patch(views::update_presentation_partial);
 
     Router::new()
         .route("/", get(views::root))
