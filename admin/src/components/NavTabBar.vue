@@ -9,6 +9,9 @@
       <NavLink route-name='category.list'>
         Categories
       </NavLink>
+      <NavLink route-name='presentation.list'>
+        Presentations
+      </NavLink>
     </ul>
   </nav>
 </template>
