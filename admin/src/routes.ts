@@ -42,6 +42,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'presentations', component: SimpleWrap,
         children: [
           { path: '', component: PresentationList, name: 'presentation.list' },
+          { path: 'new', component: PresentationEdit, name: 'presentation.new' },
           { path: ':id', component: PresentationEdit, name: 'presentation.edit', props: true },
         ],
       },

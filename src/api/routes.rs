@@ -27,7 +27,7 @@ pub fn get_router() -> Router<AppState> {
             get(views::list_categories).post(views::create_category),
         )
         .route("/categories/:category_id", single_category_router)
-        .route("/presentations/", get(views::list_presentations))
+        .route("/presentations/", get(views::list_presentations).post(views::create_presentation))
         .route("/presentations/:id", single_presentation_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }

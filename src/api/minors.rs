@@ -1,15 +1,16 @@
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
-use axum::{http::StatusCode, response::Result as AxumResult, Json};
+use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
+use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{NPaging, ObjectListResponse, PresentationPatchData};
+use super::structs::{NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::Presentation;
@@ -60,10 +61,7 @@ pub async fn update_presentation_partial(
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<Presentation>> {
-    auth.current_user.ok_or_else(|| {
-        tracing::debug!("Not logged in!");
-        StatusCode::FORBIDDEN
-    })?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -96,4 +94,43 @@ pub async fn update_presentation_partial(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
     Ok(Json(presentation))
+}
+
+pub async fn create_presentation(
+    auth: Auth,
+    State(db): State<EdgeClient>,
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> AxumResult<Json<Presentation>> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    // Collect list of submitted fields
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    // User submit no field to create Presentation
+    (!jdata.is_empty())
+        .then_some(())
+        .ok_or(ApiError::NotEnoughData)?;
+    let post_data: PresentationCreateData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let set_clause = post_data.gen_set_clause();
+    let args = post_data.make_edgedb_object();
+    let q = format!(
+        "
+    SELECT (
+        INSERT Presentation {{
+            {set_clause}
+        }}
+    ) {{
+        id,
+        title,
+        url,
+        event,
+    }}"
+    );
+    let p: Presentation = db
+        .query_single(&q, &args)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::Other("Failed to create Presentation".into()))?;
+    Ok(Json(p))
 }

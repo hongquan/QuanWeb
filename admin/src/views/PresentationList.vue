@@ -1,5 +1,14 @@
 <template>
   <div>
+    <div class='mb-3 sm:flex justify-end'>
+      <RouterLink
+        to='/presentations/new'
+        class='block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm p-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+      >
+        New presentation
+      </RouterLink>
+    </div>
+
     <LoadingIndicator
       v-if='isLoading'
       class='mt-32 w-16 h-auto mx-auto text-blue-500 fill-current'

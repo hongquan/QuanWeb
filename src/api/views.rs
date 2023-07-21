@@ -13,7 +13,7 @@ use uuid::Uuid;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-pub use super::minors::{list_presentations, get_presentation, update_presentation_partial};
+pub use super::minors::{list_presentations, get_presentation, update_presentation_partial, create_presentation};
 use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;

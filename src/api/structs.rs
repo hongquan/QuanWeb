@@ -357,3 +357,34 @@ impl PresentationPatchData {
         edge_object_from_pairs(pairs)
     }
 }
+
+#[derive(Debug, Default, Deserialize, Validate)]
+pub struct PresentationCreateData {
+    #[garde(length(min = 1))]
+    pub title: String,
+    #[garde(length(min = 7))]
+    pub url: String,
+    #[garde(skip)]
+    pub event: Option<String>,
+}
+
+impl PresentationCreateData {
+    pub fn gen_set_clause(&self) -> String {
+        let lines = vec![
+            "title := <str>$title",
+            "url := <str>$url",
+            "event := <optional str>$event",
+        ];
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object(&self) -> EValue {
+        let pairs = indexmap! {
+            "title" => (Some(EValue::from(self.title.clone())), Cd::One),
+            "url" => (Some(EValue::from(self.url.clone())), Cd::One),
+            "event" => (self.event.clone().map(EValue::from), Cd::AtMostOne),
+        };
+        edge_object_from_pairs(pairs)
+    }
+}
