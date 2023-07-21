@@ -1,17 +1,14 @@
 use axum::extract::{Path, State};
-use axum::response::{Redirect, Result, Html};
+use axum::response::{Redirect, Result};
 use chrono::{DateTime, Utc};
 use edgedb_tokio::Client;
 use http::StatusCode;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use minijinja::Environment;
 
 use crate::errors::PageError;
 use crate::models::blogs::MiniBlogPost;
 use crate::stores;
-
-use super::render_with;
 
 pub async fn redirect_old_blog_view(Path(rest): Path<String>, State(db): State<Client>) -> Result<Redirect> {
     static RE_OLD_CAT_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[-\w]+/$").unwrap());
@@ -35,9 +32,4 @@ pub async fn redirect_old_blog_view(Path(rest): Path<String>, State(db): State<C
     let created_at: DateTime<Utc> = post.created_at.into();
     let new_url = format!("/post/{}/{}", created_at.format("%Y/%m"), post.slug);
     Ok(Redirect::temporary(&new_url))
-}
-
-pub async fn default_for_old_views(State(jinja): State<Environment<'_>>) -> Result<Html<String>> {
-    let content = render_with("for_old_views.jinja", &(), jinja)?;
-    Ok(Html(content))
 }
