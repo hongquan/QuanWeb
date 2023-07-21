@@ -12,6 +12,8 @@ pub fn get_router() -> Router<AppState> {
         .patch(views::update_category_partial)
         .delete(views::delete_category);
 
+    let single_presentation_router = get(views::get_presentation);
+
     Router::new()
         .route("/", get(views::root))
         .route("/login", post(auth::login))
@@ -25,5 +27,6 @@ pub fn get_router() -> Router<AppState> {
         )
         .route("/categories/:category_id", single_category_router)
         .route("/presentations/", get(views::list_presentations))
+        .route("/presentations/:id", single_presentation_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }

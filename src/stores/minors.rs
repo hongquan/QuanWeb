@@ -1,3 +1,4 @@
+use uuid::Uuid;
 use edgedb_tokio::{Client, Error};
 
 use crate::models::minors::{Presentation, Book};
@@ -45,4 +46,10 @@ pub async fn get_all_presentations_count(client: &Client) -> Result<u16, Error> 
     SELECT count(Presentation)";
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
+}
+
+pub async fn get_presentation(id: Uuid, client: &Client) -> Result<Option<Presentation>, Error> {
+    let q = "SELECT Presentation { id, title, url, event } FILTER .id = <uuid>$0";
+    let object = client.query_single(q, &(id,)).await?;
+    Ok(object)
 }

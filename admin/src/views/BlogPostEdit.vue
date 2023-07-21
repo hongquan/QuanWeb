@@ -14,10 +14,27 @@
           Slug
         </template>
         <template #default>
-          <FbInput v-model='post.slug' size='sm'>
-            <template v-if='oldSlug' #suffix>
-              <FbButton type='button' pill outline size='xs' color='dark' class='absolute -bottom-0.5 right-0' @click='regenerateSlug'>
-                <Icon icon='mingcute:refresh-2-line' class='h-3 w-auto' />
+          <FbInput
+            v-model='post.slug'
+            size='sm'
+          >
+            <template
+              v-if='oldSlug'
+              #suffix
+            >
+              <FbButton
+                type='button'
+                pill
+                outline
+                size='xs'
+                color='dark'
+                class='absolute -bottom-0.5 right-0'
+                @click='regenerateSlug'
+              >
+                <Icon
+                  icon='mingcute:refresh-2-line'
+                  class='h-3 w-auto'
+                />
               </FbButton>
             </template>
           </FbInput>
@@ -177,7 +194,7 @@ async function fetchCategories() {
 async function fetchData() {
   await fetchCategories()
   if (!props.postId) {
-    post.value = PostSchema.parse({created_at: new Date().toISOString()})
+    post.value = PostSchema.parse({ created_at: new Date().toISOString() })
     return
   }
   const url = lightJoin(API_GET_POSTS, props.postId)

@@ -15,10 +15,27 @@
           Slug
         </template>
         <template #default>
-          <FbInput v-model='category.slug' size='sm'>
-            <template v-if='oldSlug' #suffix>
-              <FbButton type='button' pill outline size='xs' color='dark' class='absolute -bottom-0.5 right-0' @click='regenerateSlug'>
-                <Icon icon='mingcute:refresh-2-line' class='h-3 w-auto' />
+          <FbInput
+            v-model='category.slug'
+            size='sm'
+          >
+            <template
+              v-if='oldSlug'
+              #suffix
+            >
+              <FbButton
+                type='button'
+                pill
+                outline
+                size='xs'
+                color='dark'
+                class='absolute -bottom-0.5 right-0'
+                @click='regenerateSlug'
+              >
+                <Icon
+                  icon='mingcute:refresh-2-line'
+                  class='h-3 w-auto'
+                />
               </FbButton>
             </template>
           </FbInput>

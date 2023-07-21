@@ -4,13 +4,17 @@
       scope='row'
       class='px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white'
     >
+      <RouterLink
+        :to='editUrl'
+        class='hover:underline'
+      >
         {{ presentation.title }}
+      </RouterLink>
     </th>
     <td class='px-6 py-4'>
       {{ presentation.event }}
     </td>
-    <td>
-    </td>
+    <td />
   </tr>
 </template>
 
@@ -31,4 +35,9 @@ const classNames = computed(() => [
   'border-b',
   'dark:border-gray-700',
 ])
+
+const editUrl = computed(() => ({
+  name: 'presentation.edit',
+  params: { id: props.presentation.id },
+}))
 </script>

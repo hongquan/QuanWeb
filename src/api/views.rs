@@ -205,6 +205,14 @@ pub async fn list_presentations(
     Ok(Json(resp))
 }
 
+pub async fn get_presentation(
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<Presentation>> {
+    let presentation = stores::minors::get_presentation(id, &db).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
+    Ok(Json(presentation))
+}
+
 pub async fn convert_to_html(body: String) -> AxumResult<Html<String>> {
     let html = markdown_to_html(&body);
     Ok(Html(html))

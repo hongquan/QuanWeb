@@ -32,7 +32,8 @@
             v-for='(item, index) in presentations'
             :key='item.id || index'
             :presentation='item'
-            :is-odd='Boolean(index % 2)' />
+            :is-odd='Boolean(index % 2)'
+          />
         </tbody>
       </table>
     </div>
@@ -41,7 +42,6 @@
 
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import LoadingIndicator from 'svg-loaders/svg-smil-loaders/circles.svg?component'
 
 import { kyClient } from '@/common'
@@ -50,7 +50,6 @@ import { PresentationSchema, Presentation } from '@/models/minors'
 import { ObjectListResponseSchema } from '@/models/api'
 import PresentationRow from '@/components/PresentationRow.vue'
 
-const route = useRoute()
 const presentations = ref<Presentation[]>([])
 const totalPages = ref(1)
 const isLoading = ref(true)

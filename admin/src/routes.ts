@@ -12,6 +12,7 @@ const BlogPostEdit = (): Promise<RouteComponent> => import('./views/BlogPostEdit
 const BlogCategoryList = (): Promise<RouteComponent> => import('./views/BlogCategoryList.vue')
 const BlogCategoryEdit = (): Promise<RouteComponent> => import('./views/BlogCategoryEdit.vue')
 const PresentationList = (): Promise<RouteComponent> => import('./views/PresentationList.vue')
+const PresentationEdit = (): Promise<RouteComponent> => import('./views/PresentationEdit.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -40,9 +41,10 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'presentations', component: SimpleWrap,
         children: [
-          { path: '', component: PresentationList, name: 'presentation.list' }
-        ]
-      }
+          { path: '', component: PresentationList, name: 'presentation.list' },
+          { path: ':id', component: PresentationEdit, name: 'presentation.edit', props: true },
+        ],
+      },
     ],
   },
   { path: '/login', component: LoginPage, name: 'login' },
