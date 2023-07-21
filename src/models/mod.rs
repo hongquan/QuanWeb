@@ -4,6 +4,7 @@ pub mod minors;
 
 pub use users::{User, Role};
 pub use blogs::{DocFormat, MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
+pub use minors::Presentation;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, edgedb_derive::Queryable)]
 pub struct MinimalObject {

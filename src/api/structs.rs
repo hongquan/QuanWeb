@@ -18,6 +18,21 @@ pub struct Paging {
     pub per_page: Option<u8>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct NPaging {
+    pub page: Option<NonZeroU16>,
+    pub per_page: Option<u8>,
+}
+
+impl From<NPaging> for Paging {
+    fn from(npaging: NPaging) -> Self {
+        Self {
+            page: npaging.page.map(|i| i.get()),
+            per_page: npaging.per_page,
+        }
+    }
+}
+
 #[derive(Debug, Default, Serialize)]
 pub struct PaginationLinks {
     pub prev: Option<String>,

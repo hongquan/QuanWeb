@@ -13,10 +13,10 @@ use uuid::Uuid;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging, NPaging};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{BlogCategory, MinimalObject, User};
+use crate::models::{BlogCategory, MinimalObject, User, Presentation};
 use crate::stores;
 use crate::utils::markdown::markdown_to_html;
 
@@ -179,6 +179,30 @@ pub async fn create_category(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogCategory".into()))?;
     Ok((StatusCode::CREATED, Json(created_cat)))
+}
+
+pub async fn list_presentations(
+    Query(paging): Query<NPaging>,
+    OriginalUri(original_uri): OriginalUri,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<ObjectListResponse<Presentation>>> {
+    let NPaging { page, per_page } = paging;
+    let page = page.unwrap_or(NonZeroU16::MIN);
+    let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
+    let offset = ((page.get() - 1) * (per_page as u16)) as i64;
+    let limit = per_page as i64;
+    let presentations = stores::minors::get_presentations(Some(offset), Some(limit), &db).await.map_err(ApiError::EdgeDBQueryError)?;
+    let count = stores::minors::get_all_presentations_count(&db).await.map_err(ApiError::EdgeDBQueryError)?;
+    let total_pages =
+        NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let resp = ObjectListResponse {
+        objects: presentations,
+        count: count as usize,
+        total_pages,
+        links,
+    };
+    Ok(Json(resp))
 }
 
 pub async fn convert_to_html(body: String) -> AxumResult<Html<String>> {
