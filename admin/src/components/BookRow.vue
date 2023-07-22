@@ -8,16 +8,20 @@
         :to='editUrl'
         class='hover:underline'
       >
-        {{ category.title }}
+        {{ book.title }}
       </RouterLink>
     </th>
     <td class='px-6 py-4'>
-      {{ category.slug }}
+      <a
+        v-if='book.download_url'
+        class='truncate hover:underline'
+        :href='book.download_url'
+      >{{ book.download_url }}</a>
     </td>
     <td>
       <button
         class='hover:text-red-500'
-        @click='deleteCategory'
+        @click='deleteBook'
       >
         <Icon
           icon='ic:outline-delete-forever'
@@ -30,22 +34,24 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { Icon } from '@iconify/vue'
 import lightJoin from 'light-join'
-import HStatus from 'http-status'
+import httpStatus from 'http-status'
+import { Icon } from '@iconify/vue'
 import { toast } from 'vue-sonner'
 
-import { Category } from '@/models/blog'
+import { Book } from '@/models/minors'
+import { API_GET_BOOK_AUTHORS } from '@/urls'
 import { kyClient } from '@/common'
-import { API_GET_CATEGORIES } from '@/urls'
 
 interface Props {
-  category: Category
+  book: Book
   isOdd?: boolean
 }
+
 const props = withDefaults(defineProps<Props>(), {
   isOdd: false,
 })
+
 const emit = defineEmits<{
   deleted: [id: string],
 }>()
@@ -57,21 +63,24 @@ const classNames = computed(() => [
 ])
 
 const editUrl = computed(() => ({
-  name: 'category.edit',
-  params: { categoryId: props.category.id },
+  name: 'book.edit',
+  params: {
+    id: props.book.id,
+  },
 }))
 
-async function deleteCategory() {
-  if (!props.category.id) {
+async function deleteBook() {
+  if (!props.book.id) {
     return
   }
-  const url = lightJoin(API_GET_CATEGORIES, props.category.id)
+  const url = lightJoin(API_GET_BOOK_AUTHORS, props.book.id)
   const resp = await kyClient.delete(url)
-  if (resp.status !== HStatus.NO_CONTENT) {
-    toast.error('Failed to delete category')
+  if (resp.status !== httpStatus.NO_CONTENT) {
+    toast.error('Failed to delete the presentation')
     return
   }
-  toast.success(`Category ${props.category.title} is deleted!`)
-  emit('deleted', props.category.id)
+  toast.success(`Book "${props.book.title}" is deleted.`)
+  emit('deleted', props.book.id)
 }
+
 </script>

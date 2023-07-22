@@ -37,7 +37,7 @@ import { API_GET_BOOK_AUTHORS } from '@/urls'
 import { kyClient } from '@/common'
 
 interface Props {
-  author: BookAuthor,
+  author: BookAuthor
   isOdd?: boolean
 }
 

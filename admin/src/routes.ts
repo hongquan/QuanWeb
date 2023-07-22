@@ -16,6 +16,8 @@ const PresentationList = (): Promise<RouteComponent> => import('./views/Presenta
 const PresentationEdit = (): Promise<RouteComponent> => import('./views/PresentationEdit.vue')
 const BookAuthorList = (): Promise<RouteComponent> => import('./views/BookAuthorList.vue')
 const BookAuthorEdit = (): Promise<RouteComponent> => import('./views/BookAuthorEdit.vue')
+const BookList = (): Promise<RouteComponent> => import('./views/BookList.vue')
+const BookEdit = (): Promise<RouteComponent> => import('./views/BookEdit.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -58,6 +60,14 @@ export const routes: RouteRecordRaw[] = [
               { path: '', component: BookAuthorList, name: 'book-author.list' },
               { path: 'new', component: BookAuthorEdit, name: 'book-author.new' },
               { path: ':id', component: BookAuthorEdit, name: 'book-author.edit', props: true },
+            ],
+          },
+          {
+            path: 'books', component: SimpleWrap, redirect: () => ({ name: 'book.list' }),
+            children: [
+              { path: '', component: BookList, name: 'book.list' },
+              { path: 'new', component: BookEdit, name: 'book.new' },
+              { path: ':id', component: BookEdit, name: 'book.edit', props: true },
             ],
           },
         ],

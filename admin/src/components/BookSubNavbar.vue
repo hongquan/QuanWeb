@@ -9,6 +9,12 @@
       >
         Authors
       </NavLink>
+      <NavLink
+        route-name='book.list'
+        size='sm'
+      >
+        Books
+      </NavLink>
     </ul>
   </nav>
 </template>

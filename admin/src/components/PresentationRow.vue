@@ -40,7 +40,7 @@ import { API_GET_PRESENTATIONS } from '@/urls'
 import { kyClient } from '@/common'
 
 interface Props {
-  presentation: Presentation,
+  presentation: Presentation
   isOdd?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {

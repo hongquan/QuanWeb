@@ -67,7 +67,7 @@ import { API_GET_POSTS } from '@/urls'
 import { kyClient } from '@/common'
 
 interface Props {
-  post: Post,
+  post: Post
   isOdd?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
