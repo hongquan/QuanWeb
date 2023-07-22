@@ -1,12 +1,14 @@
+use std::collections::HashMap;
 
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
-use indexmap::IndexMap;
-use thiserror::Error;
 use edgedb_errors::display::display_error_verbose;
 use edgedb_errors::kinds as EdErrKind;
+use indexmap::IndexMap;
+use thiserror::Error;
 use validify::ValidationError as VE;
+use serde_json::value::Value;
 
 use crate::types::ApiErrorShape;
 
@@ -53,7 +55,7 @@ impl IntoResponse for ApiError {
                     tracing::error!("Failed to parse as JSON: {}", e);
                     (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
                 }
-            },
+            }
             Self::EdgeDBQueryError(ref e) => {
                 tracing::error!("EdgeDB error: {}", display_error_verbose(e));
                 if e.is::<EdErrKind::ConstraintViolationError>() {
@@ -68,28 +70,65 @@ impl IntoResponse for ApiError {
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
             Self::NotEnoughData => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             Self::ValidationErrors(e) => {
-                tracing::debug!("Validation errors: {:?}", e);
                 let resp: ApiErrorShape = flatten_validation_errors(e).into();
                 return (StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into_response();
             }
-            Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message)
+            Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message),
         };
         let payload = ApiErrorShape::from(message);
         (status, Json(payload)).into_response()
     }
 }
 
-pub fn flatten_validation_errors(errors: validify::ValidationErrors) -> IndexMap<&'static str, String> {
+pub fn flatten_validation_errors(
+    errors: validify::ValidationErrors,
+) -> IndexMap<&'static str, String> {
     let mut hm: IndexMap<&str, String> = IndexMap::new();
-    let schema_errors: Vec<String> = errors.schema_errors().iter().filter_map(|e| e.message()).collect();
-    schema_errors.first().and_then(|f| hm.insert("_schema_", f.to_string()));
+    let schema_errors: Vec<String> = errors
+        .schema_errors()
+        .iter()
+        .filter_map(|e| e.message())
+        .collect();
+    schema_errors
+        .first()
+        .and_then(|f| hm.insert("_schema_", f.to_string()));
     let field_errors = errors.field_errors();
-    let field_errors = field_errors.into_iter().filter_map(|e| {
-        match e {
-            VE::Schema { .. } => None,
-            VE::Field { field, message, .. } => Some((field, message.unwrap_or("Please check again".into()))),
-        }
+    let field_errors = field_errors.into_iter().filter_map(|e| match e {
+        VE::Schema { .. } => None,
+        VE::Field {
+            field,
+            code,
+            params,
+            message,
+            ..
+        } => Some((
+            field,
+            message
+                .or_else(|| deduce_message(code, params))
+                .unwrap_or("Please check again".into()),
+        )),
     });
     hm.extend(field_errors);
     hm
+}
+
+pub fn deduce_message(code: &str, params: Box<HashMap<&str, Value>>) -> Option<String> {
+    if code == "url" {
+        return Some("Must be a valid URL".into());
+    }
+    params
+        .get("min")
+        .map(|cond| {
+            params
+                .get("value")
+                .map(|input_value| {
+                    if input_value.is_string() {
+                        format!("Must be at least {cond} characters long")
+                    } else {
+                        format!("Must be at least {cond} elements")
+                    }
+                })
+                .or(Some(format!("Must be at least {cond}")))
+        })
+        .flatten()
 }

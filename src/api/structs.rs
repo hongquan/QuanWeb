@@ -161,16 +161,16 @@ impl BlogPostPatchData {
 
 #[derive(Debug, Default, Deserialize, Validify)]
 pub struct BlogPostCreateData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub title: String,
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub slug: String,
     pub is_published: Option<bool>,
     pub format: Option<DocFormat>,
     pub body: Option<String>,
     pub locale: Option<String>,
     pub categories: Option<Vec<Uuid>>,
-    #[validate(url(message="Must be a valid URL"))]
+    #[validate(url)]
     pub og_image: Option<String>,
 }
 
@@ -288,9 +288,9 @@ impl BlogCategoryPatchData {
 
 #[derive(Debug, Default, Deserialize, Validify)]
 pub struct BlogCategoryCreateData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub title: String,
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub slug: String,
 }
 
@@ -355,11 +355,11 @@ impl PresentationPatchData {
 
 #[derive(Debug, Default, Deserialize, Validify)]
 pub struct PresentationCreateData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub title: String,
-    #[validate(url(message="Must be a valid URL"))]
+    #[validate(url)]
     pub url: String,
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub event: Option<String>,
 }
 
@@ -386,15 +386,15 @@ impl PresentationCreateData {
 
 #[derive(Debug, Default, Deserialize, Validify)]
 pub struct BookAuthorPatchData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub name: String,
 }
 
 #[derive(Debug, Deserialize, Validify)]
 pub struct BookPatchData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub title: Option<String>,
-    #[validate(url(message="Must be a valid URL"))]
+    #[validate(url)]
     pub download_url: Option<String>,
     pub author: Option<Uuid>,
 }
@@ -442,9 +442,9 @@ impl BookPatchData {
 
 #[derive(Debug, Deserialize, Validify)]
 pub struct BookCreateData {
-    #[validate(length(min = 2, message="Must be at least 2 characters"))]
+    #[validate(length(min = 2))]
     pub title: String,
-    #[validate(url(message="Must be a valid URL"))]
+    #[validate(url)]
     pub download_url: String,
     pub author: Option<Uuid>,
 }
