@@ -76,3 +76,9 @@ pub async fn get_all_book_authors_count(client: &Client) -> Result<usize, Error>
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
 }
+
+pub async fn get_book_author(id: Uuid, client: &Client) -> Result<Option<BookAuthor>, Error> {
+    let q = "SELECT BookAuthor { id, name } FILTER .id = <uuid>$0";
+    let object = client.query_single(q, &(id,)).await?;
+    Ok(object)
+}

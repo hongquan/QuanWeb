@@ -16,6 +16,8 @@ pub fn get_router() -> Router<AppState> {
         .patch(views::update_presentation_partial)
         .delete(views::delete_presentation);
 
+    let single_book_author_router = get(views::get_book_author).patch(views::update_book_author_partial);
+
     Router::new()
         .route("/", get(views::root))
         .route("/login", post(auth::login))
@@ -34,5 +36,6 @@ pub fn get_router() -> Router<AppState> {
         )
         .route("/presentations/:id", single_presentation_router)
         .route("/book-authors/", get(views::list_book_authors))
+        .route("/book-authors/:id", single_book_author_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }

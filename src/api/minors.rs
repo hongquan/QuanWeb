@@ -11,11 +11,13 @@ use uuid::Uuid;
 
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData};
+use super::structs::{
+    BookAuthorPatchData, NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData,
+};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::minors::BookAuthor;
-use crate::models::{Presentation, MinimalObject};
+use crate::models::{MinimalObject, Presentation};
 use crate::stores;
 
 pub async fn list_presentations(
@@ -144,7 +146,8 @@ pub async fn delete_presentation(
 ) -> AxumResult<StatusCode> {
     auth.current_user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE Presentation FILTER .id = <uuid>$0";
-    let _p: MinimalObject = db.query_single(q, &(id,))
+    let _p: MinimalObject = db
+        .query_single(q, &(id,))
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
@@ -164,7 +167,8 @@ pub async fn list_book_authors(
     let authors = stores::minors::get_book_authors(Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::minors::get_all_book_authors_count(&db).await
+    let count = stores::minors::get_all_book_authors_count(&db)
+        .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
@@ -176,4 +180,37 @@ pub async fn list_book_authors(
         links,
     };
     Ok(Json(resp))
+}
+
+pub async fn get_book_author(
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<BookAuthor>> {
+    let author = stores::minors::get_book_author(id, &db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
+    Ok(Json(author))
+}
+
+pub async fn update_book_author_partial(
+    auth: Auth,
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+    WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
+) -> AxumResult<Json<BookAuthor>> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let q = "SELECT (
+        UPDATE BookAuthor FILTER .id = <uuid>$0 SET {
+            name := <str>$1,
+        }
+    ) { id, name }
+    ";
+    let author: BookAuthor = db
+        .query_single(q, &(id, &post_data.name))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
+    Ok(Json(author))
 }

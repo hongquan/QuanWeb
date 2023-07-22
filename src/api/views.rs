@@ -14,7 +14,7 @@ use super::errors::ApiError;
 pub use super::minors::{
     create_presentation, delete_presentation, get_presentation, list_presentations,
     update_presentation_partial,
-    list_book_authors,
+    list_book_authors, get_book_author, update_book_author_partial,
 };
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};

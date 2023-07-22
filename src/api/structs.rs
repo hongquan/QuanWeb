@@ -388,3 +388,9 @@ impl PresentationCreateData {
         edge_object_from_pairs(pairs)
     }
 }
+
+#[derive(Debug, Default, Deserialize, Validate)]
+pub struct BookAuthorPatchData {
+    #[garde(length(min = 1))]
+    pub name: String,
+}
