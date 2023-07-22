@@ -30,7 +30,7 @@ impl validify::Validate for LoginReqData {
                 errors.add(err);
             }
         };
-        (!errors.is_empty()).then_some(()).ok_or(errors)
+        errors.is_empty().then_some(()).ok_or(errors)
     }
 }
 
