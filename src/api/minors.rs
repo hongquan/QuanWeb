@@ -16,7 +16,7 @@ use super::structs::{
 };
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::minors::BookAuthor;
+use crate::models::minors::{BookAuthor, Book};
 use crate::models::{MinimalObject, Presentation};
 use crate::stores;
 
@@ -249,4 +249,58 @@ pub async fn create_book_author(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::Other("Failed to create BookAuthor".into()))?;
     Ok(Json(author))
+}
+
+pub async fn list_books(
+    Query(paging): Query<NPaging>,
+    OriginalUri(original_uri): OriginalUri,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<ObjectListResponse<Book>>> {
+    let NPaging { page, per_page } = paging;
+    let page = page.unwrap_or(NonZeroU16::MIN);
+    let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
+    let offset = ((page.get() - 1) * (per_page as u16)) as i64;
+    let limit = per_page as i64;
+    let books = stores::minors::get_books(Some(offset), Some(limit), &db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let count = stores::minors::get_all_books_count(&db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let total_pages =
+        NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let resp = ObjectListResponse {
+        objects: books,
+        count: count as usize,
+        total_pages,
+        links,
+    };
+    Ok(Json(resp))
+}
+
+pub async fn get_book(
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<Book>> {
+    let book = stores::minors::get_book(id, &db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("Book".into()))?;
+    Ok(Json(book))
+}
+
+pub async fn delete_book(
+    auth: Auth,
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+) -> AxumResult<StatusCode> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    let q = "DELETE Book FILTER .id = <uuid>$0";
+    let _p: MinimalObject = db
+        .query_single(q, &(id,))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("Book".into()))?;
+    Ok(StatusCode::NO_CONTENT)
 }

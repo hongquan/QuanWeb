@@ -82,3 +82,42 @@ pub async fn get_book_author(id: Uuid, client: &Client) -> Result<Option<BookAut
     let object = client.query_single(q, &(id,)).await?;
     Ok(object)
 }
+
+pub async fn get_books(
+    offset: Option<i64>,
+    limit: Option<i64>,
+    client: &Client,
+) -> Result<Vec<Book>, Error> {
+    let q = "
+    SELECT Book {
+        id,
+        title,
+        download_url,
+        author: {
+            id,
+            name,
+        }
+    } ORDER BY .title ASC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
+    let books: Vec<Book> = client.query(q, &(offset, limit)).await?;
+    Ok(books)
+}
+
+pub async fn get_all_books_count(client: &Client) -> Result<usize, Error> {
+    let q = "SELECT count(Book)";
+    let count: i64 = client.query_required_single(q, &()).await?;
+    Ok(count.try_into().unwrap_or(0))
+}
+
+pub async fn get_book(id: Uuid, client: &Client) -> Result<Option<Book>, Error> {
+    let q = "SELECT Book {
+        id,
+        title,
+        download_url,
+        author: {
+            id,
+            name,
+        }
+    } FILTER .id = <uuid>$0";
+    let object = client.query_single(q, &(id,)).await?;
+    Ok(object)
+}
