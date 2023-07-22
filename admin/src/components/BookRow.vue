@@ -12,6 +12,9 @@
       </RouterLink>
     </th>
     <td class='px-6 py-4'>
+      {{ book.author?.name || '--' }}
+    </td>
+    <td class='px-6 py-4'>
       <a
         v-if='book.download_url'
         class='truncate hover:underline'

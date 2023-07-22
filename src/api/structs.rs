@@ -394,3 +394,65 @@ pub struct BookAuthorPatchData {
     #[garde(length(min = 1))]
     pub name: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct BookPatchData {
+    pub title: Option<String>,
+    pub download_url: Option<String>,
+}
+
+impl BookPatchData {
+    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+        let mut lines = Vec::<&str>::new();
+        append_set_statement!("title", "optional str", lines, submitted_fields);
+        append_set_statement!("download_url", "optional str", lines, submitted_fields);
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+        let mut pairs = indexmap!(
+            "id" => (Some(EValue::Uuid(id)), Cd::One),
+        );
+        if submitted_fields.iter().any(|&f| f == "title") {
+            pairs.insert(
+                "title",
+                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "download_url") {
+            pairs.insert(
+                "download_url",
+                (self.download_url.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        edge_object_from_pairs(pairs)
+    }
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct BookCreateData {
+    #[garde(length(min = 1))]
+    pub title: String,
+    #[garde(length(min = 7))]
+    pub download_url: String,
+}
+
+impl BookCreateData {
+    pub fn gen_set_clause(&self) -> String {
+        let lines = vec![
+            "title := <str>$title",
+            "download_url := <str>$download_url",
+        ];
+        let sep = format!(",\n{}", " ".repeat(12));
+        lines.join(&sep)
+    }
+
+    pub fn make_edgedb_object(&self) -> EValue {
+        let pairs = indexmap! {
+            "title" => (Some(EValue::from(self.title.clone())), Cd::One),
+            "download_url" => (Some(EValue::from(self.download_url.clone())), Cd::One),
+        };
+        edge_object_from_pairs(pairs)
+    }
+}

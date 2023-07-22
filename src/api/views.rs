@@ -16,6 +16,7 @@ pub use super::minors::{
     update_presentation_partial,
     list_book_authors, get_book_author, update_book_author_partial, delete_book_author,
     create_book_author, list_books, get_book, delete_book,
+    update_book_partial, create_book,
 };
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};

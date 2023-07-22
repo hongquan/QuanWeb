@@ -12,7 +12,7 @@ use uuid::Uuid;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{
-    BookAuthorPatchData, NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData,
+    BookAuthorPatchData, NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData, BookPatchData, BookCreateData,
 };
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
@@ -303,4 +303,76 @@ pub async fn delete_book(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn update_book_partial(
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    auth: Auth,
+    State(db): State<EdgeClient>,
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> AxumResult<Json<Book>> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    // Collect list of submitted fields
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    // User submit no field to update
+    if jdata.is_empty() {
+        let obj = stores::minors::get_book(id, &db)
+            .await
+            .map_err(ApiError::EdgeDBQueryError)?
+            .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
+        return Ok(Json(obj));
+    }
+    let patch_data: BookPatchData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    let submitted_fields: Vec<&String> = jdata.keys().collect();
+    let set_clause = patch_data.gen_set_clause(&submitted_fields);
+    let args = patch_data.make_edgedb_object(id, &submitted_fields);
+    let q = format!(
+        "SELECT (
+            UPDATE Book FILTER .id = <uuid>$id SET {{ {set_clause} }}
+        ) {{
+            id,
+            title,
+            download_url,
+            author: {{ id, name }},
+        }}"
+    );
+    let book = db.query_single(&q, &args).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("Book".into()))?;
+    Ok(Json(book))
+}
+
+pub async fn create_book(
+    auth: Auth,
+    State(db): State<EdgeClient>,
+    WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
+) -> AxumResult<Json<Book>> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    // Collect list of submitted fields
+    let jdata: JMap<String, Value> =
+        serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
+    // User submit no field to create Book
+    (!jdata.is_empty())
+        .then_some(())
+        .ok_or(ApiError::NotEnoughData)?;
+    let post_data: BookCreateData =
+        serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let set_clause = post_data.gen_set_clause();
+    let args = post_data.make_edgedb_object();
+    let q = format!(
+        "
+    SELECT (
+        INSERT Book {{
+            {set_clause}
+        }}
+    ) {{
+        id,
+        title,
+        download_url,
+        author: {{ id, name }},
+    }}"
+    );
+    let book = db.query_single(&q, &args).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::Other("Failed to create Book".into()))?;
+    Ok(Json(book))
 }

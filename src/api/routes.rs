@@ -16,10 +16,13 @@ pub fn get_router() -> Router<AppState> {
         .patch(views::update_presentation_partial)
         .delete(views::delete_presentation);
 
-    let single_book_author_router = get(views::get_book_author).patch(views::update_book_author_partial)
+    let single_book_author_router = get(views::get_book_author)
+        .patch(views::update_book_author_partial)
         .delete(views::delete_book_author);
 
-    let single_book_router = get(views::get_book).delete(views::delete_book);
+    let single_book_router = get(views::get_book)
+        .delete(views::delete_book)
+        .patch(views::update_book_partial);
 
     Router::new()
         .route("/", get(views::root))
@@ -38,9 +41,12 @@ pub fn get_router() -> Router<AppState> {
             get(views::list_presentations).post(views::create_presentation),
         )
         .route("/presentations/:id", single_presentation_router)
-        .route("/book-authors/", get(views::list_book_authors).post(views::create_book_author))
+        .route(
+            "/book-authors/",
+            get(views::list_book_authors).post(views::create_book_author),
+        )
         .route("/book-authors/:id", single_book_author_router)
-        .route("/books/", get(views::list_books))
+        .route("/books/", get(views::list_books).post(views::create_book))
         .route("/books/:id", single_book_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }

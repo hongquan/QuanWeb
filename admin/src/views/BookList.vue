@@ -30,6 +30,12 @@
               scope='col'
               class='px-6 py-3'
             >
+              Author
+            </th>
+            <th
+              scope='col'
+              class='px-6 py-3'
+            >
               Download URL
             </th>
             <th />
