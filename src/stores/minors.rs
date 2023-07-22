@@ -67,7 +67,7 @@ pub async fn get_book_authors(
         id,
         name,
     }
-    ORDER BY .name DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
+    ORDER BY .name ASC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
     client.query(q, &(offset, limit)).await
 }
 

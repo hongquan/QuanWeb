@@ -1,5 +1,13 @@
 <template>
   <div>
+    <div class='mb-3 sm:flex justify-end'>
+      <RouterLink
+        to='/books/authors/new'
+        class='block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm p-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
+      >
+        New author
+      </RouterLink>
+    </div>
     <LoadingIndicator
       v-if='isLoading'
       class='mt-32 w-16 h-auto mx-auto text-blue-500 fill-current'
@@ -27,6 +35,7 @@
             :key='item.id || index'
             :is-odd='Boolean(index % 2)'
             :author='item'
+            @deleted='onDeleted'
           />
         </tbody>
       </table>
@@ -55,6 +64,10 @@ async function fethData() {
   authors.value = BookAuthorSchema.array().parse(data.objects)
   totalPages.value = data.total_pages
   isLoading.value = false
+}
+
+function onDeleted(id: string) {
+  authors.value = authors.value.filter((item) => item.id !== id)
 }
 
 onBeforeMount(async () => {

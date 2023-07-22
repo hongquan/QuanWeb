@@ -15,6 +15,7 @@ const BlogCategoryEdit = (): Promise<RouteComponent> => import('./views/BlogCate
 const PresentationList = (): Promise<RouteComponent> => import('./views/PresentationList.vue')
 const PresentationEdit = (): Promise<RouteComponent> => import('./views/PresentationEdit.vue')
 const BookAuthorList = (): Promise<RouteComponent> => import('./views/BookAuthorList.vue')
+const BookAuthorEdit = (): Promise<RouteComponent> => import('./views/BookAuthorEdit.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -55,6 +56,8 @@ export const routes: RouteRecordRaw[] = [
             path: 'authors', component: SimpleWrap, redirect: () => ({ name: 'book-author.list' }),
             children: [
               { path: '', component: BookAuthorList, name: 'book-author.list' },
+              { path: 'new', component: BookAuthorEdit, name: 'book-author.new' },
+              { path: ':id', component: BookAuthorEdit, name: 'book-author.edit', props: true },
             ],
           },
         ],

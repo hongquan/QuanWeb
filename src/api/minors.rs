@@ -214,3 +214,39 @@ pub async fn update_book_author_partial(
         .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
     Ok(Json(author))
 }
+
+pub async fn delete_book_author(
+    auth: Auth,
+    WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
+    State(db): State<EdgeClient>,
+) -> AxumResult<StatusCode> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    let q = "DELETE BookAuthor FILTER .id = <uuid>$0";
+    let _p: MinimalObject = db
+        .query_single(q, &(id,))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn create_book_author(
+    auth: Auth,
+    State(db): State<EdgeClient>,
+    WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
+) -> AxumResult<Json<BookAuthor>> {
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let q = "SELECT (
+        INSERT BookAuthor {
+            name := <str>$0,
+        }
+    ) { id, name }
+    ";
+    let author: BookAuthor = db
+        .query_single(q, &(post_data.name,))
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::Other("Failed to create BookAuthor".into()))?;
+    Ok(Json(author))
+}
