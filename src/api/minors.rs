@@ -8,6 +8,7 @@ use garde::Validate;
 use http::StatusCode;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
+use validify::Validify;
 
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
@@ -325,6 +326,7 @@ pub async fn update_book_partial(
     }
     let patch_data: BookPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    let patch_data = BookPatchData::validify(patch_data.into()).map_err(ApiError::ValidationErrors)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
     let args = patch_data.make_edgedb_object(id, &submitted_fields);

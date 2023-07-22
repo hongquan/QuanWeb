@@ -6,6 +6,7 @@ use garde::Validate;
 use indexmap::indexmap;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validify::Validify;
 
 use super::macros::append_set_statement;
 use crate::models::DocFormat;
@@ -395,9 +396,11 @@ pub struct BookAuthorPatchData {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validify)]
 pub struct BookPatchData {
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub title: Option<String>,
+    #[validate(url(message="Must be a valid URL"))]
     pub download_url: Option<String>,
     pub author: Option<Uuid>,
 }

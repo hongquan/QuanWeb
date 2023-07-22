@@ -13,6 +13,7 @@ use axum::response::{IntoResponse, Response};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
 use edgedb_tokio::Client;
+use indexmap::IndexMap;
 use minijinja::Environment;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
@@ -50,6 +51,15 @@ impl From<HashMap<String, String>> for ApiErrorShape {
     fn from(fields: HashMap<String, String>) -> Self {
         Self {
             fields: Some(fields),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<IndexMap<&str, String>> for ApiErrorShape {
+    fn from(value: IndexMap<&str, String>) -> Self {
+        Self {
+            fields: Some(value.into_iter().map(|(k, v)| (k.to_string(), v)).collect()),
             ..Default::default()
         }
     }
