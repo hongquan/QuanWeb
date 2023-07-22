@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
@@ -30,8 +29,6 @@ pub enum ApiError {
     LoginError(String),
     #[error("Not enough data")]
     NotEnoughData,
-    #[error(transparent)]
-    ValidationError(#[from] garde::Errors),
     #[error(transparent)]
     ValidationErrors(#[from] validify::ValidationErrors),
     #[error("Other error: {0}")]
@@ -70,10 +67,6 @@ impl IntoResponse for ApiError {
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
             Self::LoginError(e) => (StatusCode::UNAUTHORIZED, e.to_string()),
             Self::NotEnoughData => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
-            Self::ValidationError(e) => {
-                let resp: ApiErrorShape = flatten_garde_errors(e).into();
-                return (StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into_response();
-            }
             Self::ValidationErrors(e) => {
                 tracing::debug!("Validation errors: {:?}", e);
                 let resp: ApiErrorShape = flatten_validation_errors(e).into();
@@ -84,14 +77,6 @@ impl IntoResponse for ApiError {
         let payload = ApiErrorShape::from(message);
         (status, Json(payload)).into_response()
     }
-}
-
-pub fn flatten_garde_errors(errors: garde::Errors) -> HashMap<String, String> {
-    errors
-        .flatten()
-        .into_iter()
-        .map(|(k, v)| (k.trim_start_matches("value.").into(), v.message.to_string()))
-        .collect()
 }
 
 pub fn flatten_validation_errors(errors: validify::ValidationErrors) -> IndexMap<&'static str, String> {

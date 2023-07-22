@@ -1362,34 +1362,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "garde"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d959ef7bda0bda7cc0f6fbebfbac6202f810394f50e07059eeea8ec31e69e4b0"
-dependencies = [
- "card-validate",
- "garde_derive",
- "idna 0.3.0",
- "once_cell",
- "phonenumber",
- "regex",
- "serde",
- "url",
-]
-
-[[package]]
-name = "garde_derive"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e89f7fce035bb3a3718e23efff13709a0b21b694c4eae20a32e1a3e4e27c6a2"
-dependencies = [
- "proc-macro2",
- "quote",
- "regex",
- "syn 2.0.26",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2371,7 +2343,6 @@ dependencies = [
  "fluent-bundle",
  "fluent-templates",
  "fred",
- "garde",
  "http",
  "indexmap 2.0.0",
  "libpassgen",

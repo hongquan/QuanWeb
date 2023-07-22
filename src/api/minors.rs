@@ -4,7 +4,6 @@ use axum::extract::{OriginalUri, Path, Query, State};
 use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
-use garde::Validate;
 use http::StatusCode;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
@@ -116,7 +115,7 @@ pub async fn create_presentation(
         .ok_or(ApiError::NotEnoughData)?;
     let post_data: PresentationCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = PresentationCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
@@ -201,7 +200,7 @@ pub async fn update_book_author_partial(
     WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
     auth.current_user.ok_or(ApiError::Unauthorized)?;
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         UPDATE BookAuthor FILTER .id = <uuid>$0 SET {
             name := <str>$1,
@@ -237,7 +236,7 @@ pub async fn create_book_author(
     WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
     auth.current_user.ok_or(ApiError::Unauthorized)?;
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         INSERT BookAuthor {
             name := <str>$0,
@@ -361,7 +360,7 @@ pub async fn create_book(
         .ok_or(ApiError::NotEnoughData)?;
     let post_data: BookCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = BookCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(

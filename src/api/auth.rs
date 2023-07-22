@@ -5,7 +5,7 @@ use axum::extract::State;
 use axum_extra::extract::WithRejection;
 use axum_login::RequireAuthorizationLayer;
 use djangohashers::check_password;
-use garde::Validate;
+use validify::Validate;
 use serde_json::Value;
 use uuid::Uuid;
 use edgedb_tokio::Client;
@@ -26,10 +26,10 @@ pub async fn login(
     State(db): State<Client>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<User>> {
-    let valid_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    valid_data.validate(&()).map_err(ApiError::ValidationError)?;
-    tracing::info!("Validated request data: {:?}", valid_data);
-    let user = stores::user::get_user_by_email(&valid_data.email, &db)
+    let login_data: LoginReqData = serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
+    login_data.validate().map_err(ApiError::ValidationErrors)?;
+    tracing::info!("Validated request data: {:?}", login_data);
+    let user = stores::user::get_user_by_email(&login_data.email, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or_else(|| {
@@ -37,7 +37,7 @@ pub async fn login(
             let resp: ApiErrorShape = "User not found".to_string().into();
             (StatusCode::UNAUTHORIZED, Json(resp))
         })?;
-    let passwd_check = check_password(&valid_data.password.expose_secret(), &user.password)
+    let passwd_check = check_password(&login_data.password.expose_secret(), &user.password)
         .map_err(|e| {
             tracing::error!("Error checking password: {:?}", e);
             ApiError::LoginError("Wrong password".into())

@@ -5,9 +5,9 @@ use axum::extract::{OriginalUri, Path, Query, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
-use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
+use validify::Validify;
 
 use crate::auth::Auth;
 use super::errors::ApiError;
@@ -148,7 +148,7 @@ pub async fn create_post(
     // Check that data has valid fields
     let post_data: BlogPostCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = BlogPostCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     tracing::debug!("Post data: {:?}", post_data);
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = post_data.gen_set_clause(&submitted_fields);

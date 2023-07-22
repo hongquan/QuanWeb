@@ -2,7 +2,6 @@ pub mod conversions;
 #[cfg(test)]
 pub mod tests;
 
-use std::collections::HashMap;
 use std::num::NonZeroU16;
 
 use http::Uri;
@@ -24,7 +23,7 @@ use crate::utils::urls::update_entry_in_query;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiErrorShape {
     pub message: String,
-    pub fields: Option<HashMap<String, String>>,
+    pub fields: Option<IndexMap<String, String>>,
     pub code: Option<String>,
 }
 
@@ -42,15 +41,6 @@ impl From<String> for ApiErrorShape {
     fn from(message: String) -> Self {
         Self {
             message,
-            ..Default::default()
-        }
-    }
-}
-
-impl From<HashMap<String, String>> for ApiErrorShape {
-    fn from(fields: HashMap<String, String>) -> Self {
-        Self {
-            fields: Some(fields),
             ..Default::default()
         }
     }

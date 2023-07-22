@@ -2,7 +2,6 @@ use std::num::NonZeroU16;
 
 use edgedb_protocol::common::Cardinality as Cd;
 use edgedb_protocol::value::Value as EValue;
-use garde::Validate;
 use indexmap::indexmap;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -160,23 +159,18 @@ impl BlogPostPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Validate)]
+#[derive(Debug, Default, Deserialize, Validify)]
 pub struct BlogPostCreateData {
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub title: String,
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub slug: String,
-    #[garde(skip)]
     pub is_published: Option<bool>,
-    #[garde(skip)]
     pub format: Option<DocFormat>,
-    #[garde(skip)]
     pub body: Option<String>,
-    #[garde(skip)]
     pub locale: Option<String>,
-    #[garde(skip)]
     pub categories: Option<Vec<Uuid>>,
-    #[garde(skip)]
+    #[validate(url(message="Must be a valid URL"))]
     pub og_image: Option<String>,
 }
 
@@ -292,11 +286,11 @@ impl BlogCategoryPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Validate)]
+#[derive(Debug, Default, Deserialize, Validify)]
 pub struct BlogCategoryCreateData {
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub title: String,
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub slug: String,
 }
 
@@ -359,13 +353,13 @@ impl PresentationPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Validate)]
+#[derive(Debug, Default, Deserialize, Validify)]
 pub struct PresentationCreateData {
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub title: String,
-    #[garde(length(min = 7))]
+    #[validate(url(message="Must be a valid URL"))]
     pub url: String,
-    #[garde(skip)]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub event: Option<String>,
 }
 
@@ -390,9 +384,9 @@ impl PresentationCreateData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Validate)]
+#[derive(Debug, Default, Deserialize, Validify)]
 pub struct BookAuthorPatchData {
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub name: String,
 }
 
@@ -446,13 +440,12 @@ impl BookPatchData {
     }
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validify)]
 pub struct BookCreateData {
-    #[garde(length(min = 1))]
+    #[validate(length(min = 2, message="Must be at least 2 characters"))]
     pub title: String,
-    #[garde(length(min = 7))]
+    #[validate(url(message="Must be a valid URL"))]
     pub download_url: String,
-    #[garde(skip)]
     pub author: Option<Uuid>,
 }
 

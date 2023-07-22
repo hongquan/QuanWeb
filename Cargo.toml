@@ -31,7 +31,6 @@ faccess = "0.2.4"
 fluent-bundle = "0.15.2"
 fluent-templates = "0.8.0"
 fred = { version = "6.3.0", features = ["serde-json", "partial-tracing"] }
-garde = "0.11.2"
 http = "0.2.9"
 indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"

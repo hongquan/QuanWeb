@@ -6,9 +6,9 @@ use axum::response::Html;
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
-use garde::Validate;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
+use validify::Validify;
 
 use super::errors::ApiError;
 pub use super::minors::{
@@ -162,7 +162,7 @@ pub async fn create_category(
     let post_data: BlogCategoryCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     tracing::debug!("Post data: {:?}", post_data);
-    post_data.validate(&()).map_err(ApiError::ValidationError)?;
+    let post_data = BlogCategoryCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
