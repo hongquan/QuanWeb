@@ -52,7 +52,7 @@ export const routes: RouteRecordRaw[] = [
         ],
       },
       {
-        path: 'books', component: BookPageWrap, name: 'books', redirect: () => ({ name: 'book-author.list' }),
+        path: 'books', component: BookPageWrap, name: 'books', redirect: () => ({ name: 'book.list' }),
         children: [
           {
             path: 'authors', component: SimpleWrap, redirect: () => ({ name: 'book-author.list' }),

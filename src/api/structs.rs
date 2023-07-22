@@ -399,6 +399,7 @@ pub struct BookAuthorPatchData {
 pub struct BookPatchData {
     pub title: Option<String>,
     pub download_url: Option<String>,
+    pub author: Option<Uuid>,
 }
 
 impl BookPatchData {
@@ -406,6 +407,12 @@ impl BookPatchData {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("download_url", "optional str", lines, submitted_fields);
+        if submitted_fields.iter().any(|&f| f == "author") {
+            let line = "author := (
+                SELECT BookAuthor FILTER .id = <uuid>$author
+            )";
+            lines.push(line);
+        }
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
@@ -426,6 +433,12 @@ impl BookPatchData {
                 (self.download_url.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
+        if submitted_fields.iter().any(|&f| f == "author") {
+            pairs.insert(
+                "author",
+                (self.author.map(EValue::Uuid), Cd::One),
+            );
+        }
         edge_object_from_pairs(pairs)
     }
 }
@@ -436,23 +449,37 @@ pub struct BookCreateData {
     pub title: String,
     #[garde(length(min = 7))]
     pub download_url: String,
+    #[garde(skip)]
+    pub author: Option<Uuid>,
 }
 
 impl BookCreateData {
     pub fn gen_set_clause(&self) -> String {
-        let lines = vec![
+        let mut lines = vec![
             "title := <str>$title",
             "download_url := <str>$download_url",
         ];
+        if self.author.is_some() {
+            let line = "author := (
+                SELECT BookAuthor FILTER .id = <uuid>$author
+            )";
+            lines.push(line);
+        }
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
 
     pub fn make_edgedb_object(&self) -> EValue {
-        let pairs = indexmap! {
+        let mut pairs = indexmap! {
             "title" => (Some(EValue::from(self.title.clone())), Cd::One),
             "download_url" => (Some(EValue::from(self.download_url.clone())), Cd::One),
         };
+        if self.author.is_some() {
+            pairs.insert(
+                "author",
+                (self.author.map(EValue::Uuid), Cd::One),
+            );
+        }
         edge_object_from_pairs(pairs)
     }
 }

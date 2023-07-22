@@ -42,7 +42,7 @@ import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button as FbButton, Select as FbSelect } from 'flowbite-vue'
 import lightJoin from 'light-join'
-import { D, A } from '@mobily/ts-belt'
+import { A } from '@mobily/ts-belt'
 import { toast } from 'vue-sonner'
 
 import { Book, BookAuthor, BookAuthorSchema, BookSchema } from '@/models/minors'
@@ -52,6 +52,7 @@ import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
 import { handleApiError } from '@/utils/api'
 import { ObjectListResponseSchema } from '@/models/api'
+import { transformBookForPosting } from '@/utils/models'
 
 interface Props {
   id?: string | null
@@ -119,7 +120,7 @@ async function onSubmit() {
   isSubmitting.value = true
   const isCreating = !props.id
   const url = isCreating ? API_GET_BOOKS : lightJoin(API_GET_BOOKS, props.id)
-  const postData = D.deleteKey(book.value, 'id')
+  const postData = transformBookForPosting(book.value)
   try {
     const resp = await kyClient(url, { method: isCreating ? 'post' : 'patch', json: postData }).json()
     const updatedBook = BookSchema.parse(resp)

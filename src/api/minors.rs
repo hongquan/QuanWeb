@@ -320,7 +320,7 @@ pub async fn update_book_partial(
         let obj = stores::minors::get_book(id, &db)
             .await
             .map_err(ApiError::EdgeDBQueryError)?
-            .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
+            .ok_or(ApiError::ObjectNotFound("Book".into()))?;
         return Ok(Json(obj));
     }
     let patch_data: BookPatchData =
@@ -338,6 +338,8 @@ pub async fn update_book_partial(
             author: {{ id, name }},
         }}"
     );
+    tracing::debug!("Query: {}", q);
+    tracing::debug!("Args: {:#?}", args);
     let book = db.query_single(&q, &args).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(Json(book))
 }

@@ -4,16 +4,16 @@
   >
     <ul class='flex flex-wrap -mb-px'>
       <NavLink
-        route-name='book-author.list'
-        size='sm'
-      >
-        Authors
-      </NavLink>
-      <NavLink
         route-name='book.list'
         size='sm'
       >
         Books
+      </NavLink>
+      <NavLink
+        route-name='book-author.list'
+        size='sm'
+      >
+        Authors
       </NavLink>
     </ul>
   </nav>

@@ -43,7 +43,7 @@ import { Icon } from '@iconify/vue'
 import { toast } from 'vue-sonner'
 
 import { Book } from '@/models/minors'
-import { API_GET_BOOK_AUTHORS } from '@/urls'
+import { API_GET_BOOKS } from '@/urls'
 import { kyClient } from '@/common'
 
 interface Props {
@@ -76,7 +76,7 @@ async function deleteBook() {
   if (!props.book.id) {
     return
   }
-  const url = lightJoin(API_GET_BOOK_AUTHORS, props.book.id)
+  const url = lightJoin(API_GET_BOOKS, props.book.id)
   const resp = await kyClient.delete(url)
   if (resp.status !== httpStatus.NO_CONTENT) {
     toast.error('Failed to delete the presentation')
