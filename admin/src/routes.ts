@@ -3,6 +3,7 @@ import { RouteRecordRaw, RouteComponent } from 'vue-router'
 import NotFound from '@/views/NotFound.vue'
 import MainWrap from '@/views/MainWrap.vue'
 import SimpleWrap from '@/views/SimpleWrap.vue'
+import BookPageWrap from '@/views/BookPageWrap.vue'
 import { authRequired } from '@/guards'
 
 const LoginPage = (): Promise<RouteComponent> => import('./views/LoginPage.vue')
@@ -13,6 +14,7 @@ const BlogCategoryList = (): Promise<RouteComponent> => import('./views/BlogCate
 const BlogCategoryEdit = (): Promise<RouteComponent> => import('./views/BlogCategoryEdit.vue')
 const PresentationList = (): Promise<RouteComponent> => import('./views/PresentationList.vue')
 const PresentationEdit = (): Promise<RouteComponent> => import('./views/PresentationEdit.vue')
+const BookAuthorList = (): Promise<RouteComponent> => import('./views/BookAuthorList.vue')
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -44,6 +46,17 @@ export const routes: RouteRecordRaw[] = [
           { path: '', component: PresentationList, name: 'presentation.list' },
           { path: 'new', component: PresentationEdit, name: 'presentation.new' },
           { path: ':id', component: PresentationEdit, name: 'presentation.edit', props: true },
+        ],
+      },
+      {
+        path: 'books', component: BookPageWrap, name: 'books', redirect: () => ({ name: 'book-author.list' }),
+        children: [
+          {
+            path: 'authors', component: SimpleWrap, redirect: () => ({ name: 'book-author.list' }),
+            children: [
+              { path: '', component: BookAuthorList, name: 'book-author.list' },
+            ],
+          },
         ],
       },
     ],

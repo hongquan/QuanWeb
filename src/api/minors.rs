@@ -14,6 +14,7 @@ use super::paging::gen_pagination_links;
 use super::structs::{NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
+use crate::models::minors::BookAuthor;
 use crate::models::{Presentation, MinimalObject};
 use crate::stores;
 
@@ -148,4 +149,31 @@ pub async fn delete_presentation(
         .map_err(ApiError::EdgeDBQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn list_book_authors(
+    Query(paging): Query<NPaging>,
+    OriginalUri(original_uri): OriginalUri,
+    State(db): State<EdgeClient>,
+) -> AxumResult<Json<ObjectListResponse<BookAuthor>>> {
+    let NPaging { page, per_page } = paging;
+    let page = page.unwrap_or(NonZeroU16::MIN);
+    let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
+    let offset = ((page.get() - 1) * (per_page as u16)) as i64;
+    let limit = per_page as i64;
+    let authors = stores::minors::get_book_authors(Some(offset), Some(limit), &db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let count = stores::minors::get_all_book_authors_count(&db).await
+        .map_err(ApiError::EdgeDBQueryError)?;
+    let total_pages =
+        NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
+    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let resp = ObjectListResponse {
+        objects: authors,
+        count: count as usize,
+        total_pages,
+        links,
+    };
+    Ok(Json(resp))
 }

@@ -1,7 +1,7 @@
-use uuid::Uuid;
 use edgedb_tokio::{Client, Error};
+use uuid::Uuid;
 
-use crate::models::minors::{Presentation, Book};
+use crate::models::minors::{Book, BookAuthor, Presentation};
 
 pub async fn get_all_talks(client: &Client) -> Result<Vec<Presentation>, Error> {
     let q = "
@@ -28,7 +28,11 @@ pub async fn get_all_books(client: &Client) -> Result<Vec<Book>, Error> {
     client.query(q, &()).await
 }
 
-pub async fn get_presentations(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<Presentation>, Error> {
+pub async fn get_presentations(
+    offset: Option<i64>,
+    limit: Option<i64>,
+    client: &Client,
+) -> Result<Vec<Presentation>, Error> {
     let q = "
     SELECT Presentation {
         id,
@@ -42,8 +46,7 @@ pub async fn get_presentations(offset: Option<i64>, limit: Option<i64>, client: 
 }
 
 pub async fn get_all_presentations_count(client: &Client) -> Result<u16, Error> {
-    let q = "
-    SELECT count(Presentation)";
+    let q = "SELECT count(Presentation)";
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
 }
@@ -52,4 +55,24 @@ pub async fn get_presentation(id: Uuid, client: &Client) -> Result<Option<Presen
     let q = "SELECT Presentation { id, title, url, event } FILTER .id = <uuid>$0";
     let object = client.query_single(q, &(id,)).await?;
     Ok(object)
+}
+
+pub async fn get_book_authors(
+    offset: Option<i64>,
+    limit: Option<i64>,
+    client: &Client,
+) -> Result<Vec<BookAuthor>, Error> {
+    let q = "
+    SELECT BookAuthor {
+        id,
+        name,
+    }
+    ORDER BY .name DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
+    client.query(q, &(offset, limit)).await
+}
+
+pub async fn get_all_book_authors_count(client: &Client) -> Result<usize, Error> {
+    let q = "SELECT count(BookAuthor)";
+    let count: i64 = client.query_required_single(q, &()).await?;
+    Ok(count.try_into().unwrap_or(0))
 }

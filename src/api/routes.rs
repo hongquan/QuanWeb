@@ -33,5 +33,6 @@ pub fn get_router() -> Router<AppState> {
             get(views::list_presentations).post(views::create_presentation),
         )
         .route("/presentations/:id", single_presentation_router)
+        .route("/book-authors/", get(views::list_book_authors))
         .route("/markdown-to-html/", post(views::convert_to_html))
 }
