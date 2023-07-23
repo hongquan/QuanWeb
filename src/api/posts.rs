@@ -61,8 +61,7 @@ pub async fn delete_post(
     auth: Auth,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    tracing::info!("Current user: {:?}", auth.current_user);
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE BlogPost FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let _deleted_post: MinimalObject = db
@@ -79,7 +78,7 @@ pub async fn update_post_partial(
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<DetailedBlogPost>> {
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -137,7 +136,7 @@ pub async fn create_post(
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<(StatusCode, Json<DetailedBlogPost>)> {
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;

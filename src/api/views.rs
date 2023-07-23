@@ -83,8 +83,7 @@ pub async fn delete_category(
     auth: Auth,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    tracing::info!("Current user: {:?}", auth.current_user);
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE BlogCategory FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let _deleted_cat: MinimalObject = db
@@ -101,10 +100,7 @@ pub async fn update_category_partial(
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<BlogCategory>> {
-    auth.current_user.ok_or_else(|| {
-        tracing::debug!("Not logged in!");
-        StatusCode::FORBIDDEN
-    })?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -150,7 +146,7 @@ pub async fn create_category(
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<(StatusCode, Json<BlogCategory>)> {
-    auth.current_user.ok_or(StatusCode::FORBIDDEN)?;
+    auth.current_user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
