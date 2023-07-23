@@ -12,25 +12,10 @@ use crate::models::DocFormat;
 use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
-#[derive(Deserialize, Debug)]
-pub struct Paging {
-    pub page: Option<u16>,
-    pub per_page: Option<u8>,
-}
-
 #[derive(Debug, Deserialize)]
 pub struct NPaging {
     pub page: Option<NonZeroU16>,
     pub per_page: Option<u8>,
-}
-
-impl From<NPaging> for Paging {
-    fn from(npaging: NPaging) -> Self {
-        Self {
-            page: npaging.page.map(|i| i.get()),
-            per_page: npaging.per_page,
-        }
-    }
 }
 
 #[derive(Debug, Default, Serialize)]

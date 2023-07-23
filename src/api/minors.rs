@@ -38,7 +38,7 @@ pub async fn list_presentations(
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
-    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let links = gen_pagination_links(&paging, count as usize, original_uri);
     let resp = ObjectListResponse {
         objects: presentations,
         count: count as usize,
@@ -172,7 +172,7 @@ pub async fn list_book_authors(
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
-    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let links = gen_pagination_links(&paging, count as usize, original_uri);
     let resp = ObjectListResponse {
         objects: authors,
         count: count as usize,
@@ -269,7 +269,7 @@ pub async fn list_books(
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
-    let links = gen_pagination_links(&paging.into(), count as usize, original_uri);
+    let links = gen_pagination_links(&paging, count as usize, original_uri);
     let resp = ObjectListResponse {
         objects: books,
         count: count as usize,

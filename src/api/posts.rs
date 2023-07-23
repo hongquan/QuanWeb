@@ -1,4 +1,3 @@
-use std::cmp::max;
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
@@ -12,20 +11,21 @@ use validify::Validify;
 use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, NPaging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{DetailedBlogPost, MinimalObject, MediumBlogPost};
 use crate::stores;
 
 pub async fn list_posts(
-    paging: Query<Paging>,
+    Query(paging): Query<NPaging>,
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<MediumBlogPost>>> {
     tracing::info!("Paging: {:?}", paging);
-    let page = max(1, paging.0.page.unwrap_or(1));
-    let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
-    let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
+    let NPaging { page, per_page } = paging;
+    let page = page.unwrap_or(NonZeroU16::MIN);
+    let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
+    let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
     let posts = stores::blog::get_blogposts(Some(offset), Some(limit), &db)
         .await
@@ -35,7 +35,7 @@ pub async fn list_posts(
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
-    let links = gen_pagination_links(&paging.0, count, original_uri);
+    let links = gen_pagination_links(&paging, count, original_uri);
     let resp = ObjectListResponse {
         count,
         total_pages,

@@ -1,4 +1,3 @@
-use std::cmp::max;
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
@@ -20,7 +19,7 @@ pub use super::minors::{
 };
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, Paging};
+use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, NPaging};
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
@@ -38,13 +37,14 @@ pub async fn show_me(auth: Auth) -> AxumResult<Json<User>> {
 }
 
 pub async fn list_categories(
-    paging: Query<Paging>,
+    Query(paging): Query<NPaging>,
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<BlogCategory>>> {
-    let page = max(1, paging.0.page.unwrap_or(1));
-    let per_page = max(0, paging.0.per_page.unwrap_or(DEFAULT_PAGE_SIZE)) as u16;
-    let offset: i64 = ((page - 1) * per_page).try_into().unwrap_or(0);
+    let NPaging { page, per_page } = paging;
+    let page = page.unwrap_or(NonZeroU16::MIN);
+    let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
+    let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
     let categories = stores::blog::get_blog_categories(Some(offset), Some(limit), &db)
         .await
@@ -56,7 +56,7 @@ pub async fn list_categories(
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     tracing::debug!("Total pages: {}", total_pages);
-    let links = gen_pagination_links(&paging.0, count, original_uri);
+    let links = gen_pagination_links(&paging, count, original_uri);
     tracing::debug!("Links: {:?}", links);
     let resp = ObjectListResponse {
         objects: categories,

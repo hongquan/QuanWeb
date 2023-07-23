@@ -1,18 +1,20 @@
+use std::num::NonZeroU16;
+
 use axum::http::Uri;
 
-use super::structs::{PaginationLinks, Paging};
+use super::structs::{PaginationLinks, NPaging};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::utils::urls::update_entry_in_query;
 
-pub fn gen_pagination_links(paging: &Paging, total: usize, original_uri: Uri) -> PaginationLinks {
-    let current_page = paging.page.unwrap_or(1) as usize;
+pub fn gen_pagination_links(paging: &NPaging, total: usize, original_uri: Uri) -> PaginationLinks {
+    let current_page = paging.page.unwrap_or(NonZeroU16::MIN).get();
     let per_page = paging.per_page.unwrap_or(DEFAULT_PAGE_SIZE) as usize;
     let prev_page = if current_page > 1 {
         Some(current_page - 1)
     } else {
         None
     };
-    let next_page = if current_page * per_page < total {
+    let next_page = if (current_page as usize * per_page) < total {
         Some(current_page + 1)
     } else {
         None
