@@ -2,13 +2,13 @@ use std::env;
 use std::process::Command;
 
 fn main() {
-    // Build frontend also if we are in release mode
+    // Build the CSS file also if we are in release mode
     if env::var("PROFILE") == Ok("release".into()) {
-        eprintln!("To build frontend in admin...");
+        eprintln!("To build static files...");
         Command::new("yarn")
-            .args(&["--cwd", "admin", "build"])
+            .args(&["build-tailwind"])
             .status()
-            .expect("Failed to build frontend");
+            .expect("Failed to build static files!");
     }
     crate_git_revision::init();
 }
