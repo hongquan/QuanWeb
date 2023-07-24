@@ -1,7 +1,6 @@
 use std::{env, io};
 
 use clap::Parser;
-use faccess::PathExt;
 use tracing_subscriber::{
     filter::{EnvFilter, LevelFilter},
     layer::SubscriberExt,
@@ -10,7 +9,7 @@ use tracing_subscriber::{
 use minijinja::Environment;
 use fluent_templates::static_loader;
 
-use crate::consts::{TEMPLATE_DIR, UNCATEGORIZED_URL};
+use crate::consts::UNCATEGORIZED_URL;
 use crate::utils::jinja_extra;
 
 #[derive(Debug, Clone, Parser)]
@@ -76,10 +75,6 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     jinja.add_global("GIT_REVISION", env!("GIT_REVISION"));
     #[cfg(debug_assertions)]
     jinja.add_global("running_locally", true);
-    let template_dir = env::current_dir()?.join(TEMPLATE_DIR);
-    if !(template_dir.is_dir() && template_dir.readable()) {
-        return Err(io::Error::from(io::ErrorKind::PermissionDenied))
-    }
     jinja.set_loader(jinja_extra::get_embedded_template);
     Ok(jinja)
 }
