@@ -3,7 +3,6 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use edgedb_errors::display::display_error_verbose;
 
-#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum PageError {
     #[error(transparent)]
@@ -12,8 +11,6 @@ pub enum PageError {
     JinjaError(#[from] minijinja::Error),
     #[error("Permission denied")]
     PermissionDenied(String),
-    #[error("Other error: {0}")]
-    Other(String),
 }
 
 impl IntoResponse for PageError {
@@ -29,7 +26,6 @@ impl IntoResponse for PageError {
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
             Self::PermissionDenied(e) => (StatusCode::FORBIDDEN, e.to_string()),
-            Self::Other(e) => (StatusCode::INTERNAL_SERVER_ERROR, e)
         };
         (status, message).into_response()
     }

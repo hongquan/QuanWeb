@@ -114,7 +114,6 @@ pub struct Paginator {
     pub total_pages: NonZeroU16,
 }
 
-#[allow(dead_code)]
 impl Paginator {
     pub const PADDING: u16 = 3;
     const TOTAL_DISPLAY: u16 = Self::PADDING * 2 + 1;

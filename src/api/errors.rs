@@ -12,7 +12,6 @@ use serde_json::value::Value;
 
 use crate::types::ApiErrorShape;
 
-#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum ApiError {
     #[error(transparent)]
