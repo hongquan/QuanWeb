@@ -12,7 +12,7 @@ quanweb.egg-info
 *.njsproj
 *.sln
 *.sw?
-*/secret.py
+secret.py
 custom_settings.toml
 .secrets.toml
 .env
