@@ -83,7 +83,7 @@ const selectedAuthorId = computed({
     if (!book.value || !book.value.author) {
       return ''
     }
-    return book.value.author?.id || ''
+    return book.value.author.id || ''
   },
   set(value: string) {
     if (!book.value) {
