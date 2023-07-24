@@ -8,6 +8,12 @@ article .entry-content h2 {
     font-size: initial;
 }
 
+.genericon:before, .menu-toggle:after, .featured-post:before, .date a:before, .entry-meta .author a:before, .format-audio .entry-content:before, .comments-link a:before, .tags-links a:first-child:before, .categories-links a:first-child:before, .edit-link a:before, .attachment , .attachment-meta:before, .attachment-meta a:before, .comment-awaiting-moderation:before, .comment-reply-link:before, .comment-reply-login:before, .comment-reply-title small a:before, .bypostauthor > .comment-body .fn:before, .error404 .page-title:before {
+    display: inline-block;
+    font: 16px/1 Genericons;
+    vertical-align: text-bottom;
+}
+
 .entry-content {
   word-wrap: break-word;
   max-width: unset;

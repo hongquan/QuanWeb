@@ -6,7 +6,7 @@
   "author": "Nguyễn Hồng Quân <ng.hong.quan@gmail.com>",
   "private": true,
   "scripts": {
-    "build-tailwind": "NODE_ENV=production tailwindcss build -o static/vendor/tailwind.css"
+    "build-tailwind": "NODE_ENV=production tailwindcss build -o static/css/tailwind.css"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.0",
