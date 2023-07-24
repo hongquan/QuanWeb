@@ -6,14 +6,14 @@
   "author": "Nguyễn Hồng Quân <ng.hong.quan@gmail.com>",
   "private": true,
   "scripts": {
-    "build-tailwind": "NODE_ENV=production tailwindcss build -o static/css/tailwind.css"
+    "build-tailwind": "NODE_ENV=production tailwindcss build -o static/css/built-tailwind.css"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/typography": "^0.5.2",
-    "autoprefixer": "^10.4.5",
-    "tailwindcss": "^3.0.24"
+    "autoprefixer": "^10.4.14",
+    "tailwindcss": "^3.3.3"
   },
   "dependencies": {}
 }

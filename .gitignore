@@ -31,6 +31,8 @@ lerna-debug.log*
 
 dist
 dist-ssr
+vite-built
+built-tailwind.css
 *.local
 
 
