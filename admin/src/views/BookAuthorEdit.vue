@@ -8,6 +8,7 @@
       <HorizontalFormField
         v-model='author.name'
         label='Name'
+        :error-message='getValidationError("name")'
       />
       <div class='text-center mt-2'>
         <FbButton
@@ -58,6 +59,10 @@ async function fetchData() {
   author.value = BookAuthorSchema.parse(resp)
 }
 
+function getValidationError(field: string) {
+  return validationErrors.value[field] || ''
+}
+
 async function onSubmit() {
   if (!author.value) {
     return
@@ -73,7 +78,7 @@ async function onSubmit() {
     toast.success(message)
     await router.push({ name: 'book-author.list' })
   } catch (e) {
-    console.log(e)
+    console.debug(e)
     validationErrors.value = await handleApiError(e)
   } finally {
     isSubmitting.value = false

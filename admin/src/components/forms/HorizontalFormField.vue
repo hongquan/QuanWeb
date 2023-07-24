@@ -20,6 +20,12 @@
         :required='required'
       />
     </template>
+    <template
+      v-if='errorMessage'
+      #validationMessage
+    >
+      <span class='text-red-600 dark:text-red-500 text-sm'>{{ errorMessage }}</span>
+    </template>
   </HorizontalFormFieldWrap>
 </template>
 
@@ -40,13 +46,15 @@ interface Props {
   widgetType?: 'number' | 'hidden' | 'color' | 'text' | 'search' | 'image' | 'button' | 'checkbox' | 'date' | 'datetime-local' | 'email' | 'file' | 'month' | 'password' | 'radio' | 'range' | 'reset' | 'submit' | 'tel' | 'time' | 'url' | 'week'
   label?: string
   required?: boolean
-  choices?: SelectOption[]
+  choices?: SelectOption[],
+  errorMessage?: string,
 }
 const props = withDefaults(defineProps<Props>(), {
   label: '',
   widgetType: 'text',
   required: false,
   choices: () => [],
+  errorMessage: '',
 })
 const emit = defineEmits<{
   'update:modelValue': [value: string | boolean | null]

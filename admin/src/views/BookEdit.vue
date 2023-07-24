@@ -8,6 +8,7 @@
       <HorizontalFormField
         v-model='book.title'
         label='Name'
+        :error-message='getValidationError("title")'
       />
       <HorizontalFormField
         v-model='book.download_url'
@@ -113,6 +114,10 @@ async function fetchData() {
   book.value = BookSchema.parse(resp)
 }
 
+function getValidationError(field: string) {
+  return validationErrors.value[field] || ''
+}
+
 async function onSubmit() {
   if (!book.value) {
     return
@@ -128,7 +133,7 @@ async function onSubmit() {
     toast.success(message)
     await router.push({ name: 'book.list' })
   } catch (e) {
-    console.log(e)
+    console.debug(e)
     validationErrors.value = await handleApiError(e)
   } finally {
     isSubmitting.value = false

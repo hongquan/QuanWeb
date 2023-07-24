@@ -9,6 +9,7 @@
         v-model='category.title'
         label='Title'
         required
+        :error-message='getValidationError("title")'
       />
       <HorizontalFormFieldWrap>
         <template #label>
@@ -61,9 +62,6 @@ import { slugify } from 'transliteration'
 import { Button as FbButton, Input as FbInput } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { D } from '@mobily/ts-belt'
-import { HTTPError } from 'ky'
-import { z } from 'zod'
-import { removeLeading } from 'pre-suf'
 import { Icon } from '@iconify/vue'
 
 import { kyClient } from '@/common'
@@ -71,6 +69,7 @@ import { Category, CategorySchema } from '@/models/blog'
 import { API_GET_CATEGORIES } from '@/urls'
 import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
+import { handleApiError } from '@/utils/api'
 
 interface Props {
   categoryId?: string | null
@@ -117,28 +116,14 @@ async function onSubmit() {
     toast.success(message)
     await router.push({ name: 'category.list' })
   } catch (e) {
-    await handleError(e)
+    await handleApiError(e)
   } finally {
     isSubmitting.value = false
   }
 }
 
-async function handleError(e: unknown) {
-  if (e instanceof HTTPError) {
-    const resp = await e.response.json()
-    const result1 = z.record(z.string()).safeParse(resp.fields)
-    if (result1.success) {
-      console.log('To show validation errors', result1.data)
-      validationErrors.value = D.fromPairs(D.toPairs(result1.data).map(([k, v]) => [removeLeading(k, 'value.'), v]))
-      return
-    }
-    const result2 = z.string().safeParse(resp.message)
-    if (result2.success) {
-      toast.error(result2.data)
-      return
-    }
-  }
-  console.debug(e)
+function getValidationError(field: string) {
+  return validationErrors.value[field] || ''
 }
 
 onBeforeMount(fetchData)

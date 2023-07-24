@@ -6,6 +6,7 @@
     ><slot name='label' /></label>
     <div class='mt-2 sm:col-span-3 sm:mt-0'>
       <slot :input-id='uid' />
+      <slot name='validationMessage' />
     </div>
   </div>
 </template>

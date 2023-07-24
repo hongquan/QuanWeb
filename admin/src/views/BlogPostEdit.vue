@@ -8,6 +8,7 @@
       <HorizontalFormField
         v-model='post.title'
         label='Title'
+        :error-message='getValidationError("title")'
       />
       <HorizontalFormFieldWrap>
         <template #label>
@@ -44,6 +45,7 @@
         v-model='post.slug'
         class='mt-2'
         label='Slug'
+        :error-message='getValidationError("slug")'
       />
       <DualPaneSelect
         class='mt-2'
@@ -100,6 +102,7 @@
         class='mt-2'
         widget-type='url'
         label='OpenGraph image'
+        :error-message='getValidationError("og_image")'
       />
       <div class='text-center mt-2'>
         <FbButton
@@ -146,6 +149,7 @@ import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
 import DualPaneSelect from '@/components/forms/DualPaneSelect.vue'
 import { transformPostForPosting } from '@/utils/models'
+import { handleApiError } from '@/utils/api'
 import { ObjectListResponseSchema } from '@/models/api'
 import '../../../static/css/syntect.css'
 
@@ -166,6 +170,7 @@ const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
 const jar = ref<CodeJar | null>(null)
 const previewHtml = ref<string | null>(null)
+const validationErrors = ref<Record<string, string>>({})
 
 const postLocale = computed({
   get() {
@@ -212,6 +217,10 @@ function regenerateSlug() {
   }
 }
 
+function getValidationError(field: string) {
+  return validationErrors.value[field] || ''
+}
+
 function onCategoryTaken(id: string) {
   let cat = A.getBy(allCategories.value, c => c.id === id)
   if (cat && post.value) {
@@ -246,7 +255,7 @@ async function onSubmit() {
     await router.push({ name: 'post.list' })
   } catch (e) {
     console.debug(e)
-    toast.error('Failed to save post!')
+    validationErrors.value = await handleApiError(e)
   } finally {
     isSubmitting.value = false
   }
