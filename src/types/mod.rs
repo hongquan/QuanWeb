@@ -88,6 +88,10 @@ where
     }
 }
 
+#[derive(RustEmbed)]
+#[folder = "minijinja"]
+pub struct BundledTemplates;
+
 #[derive(Debug, Clone, PartialEq, Serialize, SmartDefault)]
 pub struct PageLinkItem {
     #[default(NonZeroU16::MIN)]

@@ -7,7 +7,7 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-use minijinja::{path_loader, Environment};
+use minijinja::Environment;
 use fluent_templates::static_loader;
 
 use crate::consts::{TEMPLATE_DIR, UNCATEGORIZED_URL};
@@ -80,7 +80,7 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     if !(template_dir.is_dir() && template_dir.readable()) {
         return Err(io::Error::from(io::ErrorKind::PermissionDenied))
     }
-    jinja.set_loader(path_loader(&template_dir));
+    jinja.set_loader(jinja_extra::get_embedded_template);
     Ok(jinja)
 }
 
