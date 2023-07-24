@@ -5,15 +5,17 @@ pub mod conversions;
 pub mod tests;
 
 use std::num::NonZeroU16;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use http::Uri;
 use axum::extract::FromRef;
-use axum::http::header::CONTENT_TYPE;
+use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use chrono::{DateTime, Utc};
 use edgedb_protocol::codec::ShapeElement;
 use edgedb_protocol::common::Cardinality;
 use edgedb_tokio::Client;
+use http::Uri;
 use indexmap::IndexMap;
 use minijinja::Environment;
 use rust_embed::RustEmbed;
@@ -79,9 +81,19 @@ where
         let path = self.0.into();
 
         match Assets::get(path.as_str()) {
-            Some(content) => {
+            Some(file) => {
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
-                ([(CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+                let last_modified = file.metadata.last_modified();
+                let last_modified: DateTime<Utc> = last_modified
+                    .map(|t| UNIX_EPOCH.checked_add(Duration::from_secs(t)))
+                    .flatten()
+                    .unwrap_or(SystemTime::now())
+                    .into();
+                let headers = [
+                    (CONTENT_TYPE, mime.to_string()),
+                    (LAST_MODIFIED, last_modified.to_rfc2822()),
+                ];
+                (headers, file.data).into_response()
             }
             None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
         }
