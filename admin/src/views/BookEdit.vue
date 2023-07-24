@@ -8,12 +8,14 @@
       <HorizontalFormField
         v-model='book.title'
         label='Name'
+        required
         :error-message='getValidationError("title")'
       />
       <HorizontalFormField
         v-model='book.download_url'
         label='Download URL'
         widget-type='url'
+        required
       />
       <HorizontalFormFieldWrap>
         <template #label>
