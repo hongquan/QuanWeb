@@ -48,13 +48,14 @@ serde_with = "3.0.0"
 smart-default = "0.7.1"
 strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
-syntect = { version = "5.0.0", features = ["default-fancy"] }
+syntect = { version = "5.0.0", default-features = false, features = ["fancy-regex", "html"] }
 thiserror = "1.0.43"
 tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
 tracing = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-journald = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-subscriber = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald", features = ["env-filter"] }
+two-face = "0.1.1"
 unic-langid = { version = "0.9.1", features = ["serde"] }
 uuid = { version = "1.4.1", features = ["v1", "serde"] }
 validify = "1.0.11"
