@@ -11,13 +11,14 @@ use validify::Validify;
 use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, NPaging};
+use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, NPaging, OtherQuery};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{DetailedBlogPost, MinimalObject, MediumBlogPost};
 use crate::stores;
 
 pub async fn list_posts(
     Query(paging): Query<NPaging>,
+    Query(other_query): Query<OtherQuery>,
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<MediumBlogPost>>> {
@@ -27,10 +28,11 @@ pub async fn list_posts(
     let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
     let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
-    let posts = stores::blog::get_blogposts(Some(offset), Some(limit), &db)
+    let other_query = OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
+    let posts = stores::blog::get_blogposts(other_query.q.as_deref(), Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::blog::get_all_posts_count(&db)
+    let count = stores::blog::count_search_result_posts(other_query.q.as_deref(), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =

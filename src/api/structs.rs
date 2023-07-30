@@ -18,6 +18,12 @@ pub struct NPaging {
     pub per_page: Option<u8>,
 }
 
+#[derive(Debug, Deserialize, Validify)]
+pub struct OtherQuery {
+    #[modify(trim)]
+    pub q: Option<String>,
+}
+
 #[derive(Debug, Default, Serialize)]
 pub struct PaginationLinks {
     pub prev: Option<String>,

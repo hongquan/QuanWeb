@@ -8,10 +8,21 @@ use indexmap::{indexmap, IndexMap};
 use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
-pub async fn get_all_posts_count(client: &Client) -> Result<usize, Error> {
-    let q = "SELECT count(BlogPost)";
+pub async fn count_search_result_posts<'a>(search: Option<&'a str>, client: &Client) -> Result<usize, Error> {
+    let search_tokens = search.map(|s| s.split_whitespace().collect::<Vec<&str>>());
+    let filter_line = if search_tokens.is_some() {
+        "FILTER contains(BlogPost.title, array_unpack(<array<str>>$0))"
+    } else {
+        ""
+    };
+    let q = format!("SELECT count((SELECT BlogPost {filter_line}))");
     tracing::debug!("To query: {}", q);
-    let count: i64 = client.query_required_single(q, &()).await?;
+    let count: i64 = if let Some(tokens) = search_tokens {
+        tracing::debug!("With args: {:?}", tokens);
+        client.query_required_single(&q, &(tokens,)).await?
+    } else {
+        client.query_required_single(&q, &()).await?
+    };
     Ok(count.try_into().unwrap_or(0))
 }
 
@@ -76,9 +87,31 @@ pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<
     Ok(post)
 }
 
-pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
-    let q = "
-    SELECT BlogPost {
+pub async fn get_blogposts<'a>(search: Option<&'a str>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
+    let tokens: Option<Vec<&str>> = search.map(|s| s.split_whitespace().collect());
+    let filter_line = if tokens.is_some() {
+        "FILTER contains(.title, array_unpack(<array<str>>$tokens))"
+    } else {
+        ""
+    };
+    let mut pairs = IndexMap::with_capacity(3);
+    let mut paging_lines: Vec<String> = Vec::with_capacity(2);
+    if let Some(ss) = tokens {
+        let search: Vec<EValue> = ss.into_iter().map(|s| EValue::Str(s.into())).collect();
+        pairs.insert("tokens", (Some(EValue::Array(search)), Cd::One));
+    }
+    if let Some(offset) = offset {
+        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        paging_lines.push(format!("OFFSET <int64>$offset"));
+    }
+    if let Some(limit) = limit {
+        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        paging_lines.push(format!("LIMIT <int64>$limit"));
+    }
+    let paging_expr = paging_lines.join(" ");
+    let args = edge_object_from_pairs(pairs);
+    let q = format!("
+    SELECT BlogPost {{
         id,
         title,
         slug,
@@ -87,14 +120,17 @@ pub async fn get_blogposts(offset: Option<i64>, limit: Option<i64>, client: &Cli
         published_at,
         created_at,
         updated_at,
-        categories: {
+        categories: {{
             id,
             title,
             slug,
-        },
-    }
-    ORDER BY .created_at DESC EMPTY FIRST OFFSET <optional int64>$0 LIMIT <optional int64>$1";
-    let posts: Vec<MediumBlogPost> = client.query(q, &(offset, limit)).await?;
+        }},
+    }}
+    {filter_line}
+    ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
+    tracing::debug!("To query: {}", q);
+    tracing::debug!("With args: {:?}", args);
+    let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
 
