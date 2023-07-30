@@ -15,6 +15,7 @@ use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, 
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{DetailedBlogPost, MinimalObject, MediumBlogPost};
 use crate::stores;
+use crate::utils::split_search_query;
 
 pub async fn list_posts(
     Query(paging): Query<NPaging>,
@@ -29,10 +30,11 @@ pub async fn list_posts(
     let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
     let other_query = OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
-    let posts = stores::blog::get_blogposts(other_query.q.as_deref(), Some(offset), Some(limit), &db)
+    let search_tokens = split_search_query(other_query.q.as_deref());
+    let posts = stores::blog::get_blogposts(search_tokens.clone(), Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::blog::count_search_result_posts(other_query.q.as_deref(), &db)
+    let count = stores::blog::count_search_result_posts(search_tokens, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
