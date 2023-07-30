@@ -41,12 +41,6 @@
           </FbInput>
         </template>
       </HorizontalFormFieldWrap>
-      <HorizontalFormField
-        v-model='post.slug'
-        class='mt-2'
-        label='Slug'
-        :error-message='getValidationError("slug")'
-      />
       <DualPaneSelect
         class='mt-2'
         label='Categories'
