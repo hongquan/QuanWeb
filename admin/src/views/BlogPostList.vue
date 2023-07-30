@@ -1,6 +1,22 @@
 <template>
   <div>
-    <div class='mb-3 flex justify-end'>
+    <div class='mb-6 flex justify-between'>
+      <form method='get'>
+        <FbInput
+          v-model.trim='search'
+          name='q'
+          placeholder='Search'
+          class='w-64'
+          size='sm'
+        >
+          <template #prefix>
+            <Icon
+              icon='pajamas:search'
+              class='h-4 w-auto'
+            />
+          </template>
+        </FbInput>
+      </form>
       <RouterLink
         to='/posts/new'
         class='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm p-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'
@@ -22,29 +38,30 @@
           <tr>
             <th
               scope='col'
-              class='px-6 py-3'
+              :class='CELL_CLASSES'
             >
               Title
             </th>
             <th
               scope='col'
-              class='px-6 py-3 min-w-60'
+              class='min-w-60'
+              :class='CELL_CLASSES'
             >
               Slug
             </th>
             <th
               scope='col'
-              class='px-6 py-3'
+              :class='CELL_CLASSES'
             >
               Categories
             </th>
             <th
               scope='col'
-              class='px-6 py-3'
+              :class='CELL_CLASSES'
             />
             <th
               scope='col'
-              class='px-6 py-3'
+              :class='CELL_CLASSES'
             />
           </tr>
         </thead>
@@ -75,6 +92,8 @@
 <script setup lang='ts'>
 import { computed, onBeforeMount, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { Input as FbInput } from 'flowbite-vue'
+import { Icon } from '@iconify/vue'
 import LoadingIndicator from 'svg-loaders/svg-smil-loaders/circles.svg?component'
 
 import { kyClient } from '@/common'
@@ -84,10 +103,13 @@ import { PostSchema, Post } from '@/models/blog'
 import BlogPostRow from '@/components/BlogPostRow.vue'
 import Paginator from '@/components/Paginator.vue'
 
+const CELL_CLASSES = 'px-4 py-3'
+
 const route = useRoute()
 const posts = ref<Post[]>([])
 const totalPages = ref(1)
 const isLoading = ref(true)
+const search = ref('')
 
 const currentPage = computed(() => Number(route.query.page) || 1)
 

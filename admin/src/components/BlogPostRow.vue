@@ -2,7 +2,8 @@
   <tr :class='classNames'>
     <th
       scope='row'
-      class='px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white'
+      class='font-medium text-gray-900 whitespace-nowrap dark:text-white'
+      :class='CELL_CLASSES'
     >
       <RouterLink
         :to='editUrl'
@@ -11,10 +12,10 @@
         {{ post.title }}
       </RouterLink>
     </th>
-    <td class='px-6 py-4'>
+    <td :class='CELL_CLASSES'>
       {{ post.slug }}
     </td>
-    <td class='px-6 py-4'>
+    <td :class='CELL_CLASSES'>
       {{ CategoriesDisplay }}
     </td>
     <td>
@@ -76,6 +77,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   deleted: [id: string],
 }>()
+
+const CELL_CLASSES = 'px-4 py-2'
 
 const classNames = computed(() => [
   props.isOdd ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800',
