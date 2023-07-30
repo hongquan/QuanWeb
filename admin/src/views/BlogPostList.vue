@@ -6,7 +6,7 @@
         @submit.prevent='startSearch'
       >
         <FbInput
-          v-model.trim='search'
+          v-model='search'
           name='q'
           placeholder='Search'
           class='w-64'
@@ -17,6 +17,21 @@
               icon='pajamas:search'
               class='h-4 w-auto'
             />
+          </template>
+          <template
+            v-if='search'
+            #suffix
+          >
+            <button
+              type='button'
+              class='hover:text-white hover:bg-gray-900 dark:hover:text-white dark:hover:bg-gray-600 p-1 rounded absolute -bottom-0.5 right-0'
+              @click='clearSearch'
+            >
+              <Icon
+                icon='mdi:clear-box-outline'
+                class='h-4 w-auto'
+              />
+            </button>
           </template>
         </FbInput>
       </form>
@@ -134,9 +149,14 @@ function onDeleted(id: string) {
   posts.value = posts.value.filter(item => item.id !== id)
 }
 
+async function clearSearch() {
+  search.value = ''
+  await fetchData()
+}
+
 async function startSearch() {
-  const newQuery = D.set(route.query, 'q', search.value)
-  await router.push({ query: newQuery })
+  const newQuery = search.value ? D.set(route.query, 'q', search.value) : D.deleteKey(route.query, 'q')
+  await router.push({ query: D.deleteKey(newQuery, 'page') })
 }
 
 onBeforeMount(fetchData)

@@ -48,6 +48,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
+import { D } from '@mobily/ts-belt'
 
 interface PageLinkItem {
   label: string
@@ -83,8 +84,9 @@ const nextRoute = computed(() => ({
 }))
 
 function getRouteForPage(p: number) {
+  const newQuery = D.set(route.query, 'page', p)
   return {
-    query: Object.assign({}, route.query, { page: p }),
+    query: newQuery,
   }
 }
 
