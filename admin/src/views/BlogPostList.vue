@@ -134,10 +134,10 @@ const search = ref(route.query.q?.toString() || '')
 const currentPage = computed(() => Number(route.query.page) || 1)
 
 async function fetchData() {
-  const searchParams = {
+  const searchParams: Record<string, string | number> = {
     page: currentPage.value,
-    q: search.value,
   }
+  if (search.value) searchParams.q = search.value
   const resp = await kyClient.get(API_GET_POSTS, { searchParams }).json()
   const data = ObjectListResponseSchema.parse(resp)
   posts.value = PostSchema.array().parse(data.objects)
