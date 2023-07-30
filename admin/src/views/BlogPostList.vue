@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class='mb-6 flex justify-between'>
-      <form method='get'>
+      <form
+        method='get'
+        @submit.prevent='startSearch'
+      >
         <FbInput
           v-model.trim='search'
           name='q'
@@ -91,9 +94,10 @@
 
 <script setup lang='ts'>
 import { computed, onBeforeMount, ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Input as FbInput } from 'flowbite-vue'
 import { Icon } from '@iconify/vue'
+import { D } from '@mobily/ts-belt'
 import LoadingIndicator from 'svg-loaders/svg-smil-loaders/circles.svg?component'
 
 import { kyClient } from '@/common'
@@ -106,16 +110,18 @@ import Paginator from '@/components/Paginator.vue'
 const CELL_CLASSES = 'px-4 py-3'
 
 const route = useRoute()
+const router = useRouter()
 const posts = ref<Post[]>([])
 const totalPages = ref(1)
 const isLoading = ref(true)
-const search = ref('')
+const search = ref(route.query.q?.toString() || '')
 
 const currentPage = computed(() => Number(route.query.page) || 1)
 
 async function fetchData() {
   const searchParams = {
     page: currentPage.value,
+    q: search.value,
   }
   const resp = await kyClient.get(API_GET_POSTS, { searchParams }).json()
   const data = ObjectListResponseSchema.parse(resp)
@@ -126,6 +132,11 @@ async function fetchData() {
 
 function onDeleted(id: string) {
   posts.value = posts.value.filter(item => item.id !== id)
+}
+
+async function startSearch() {
+  const newQuery = D.set(route.query, 'q', search.value)
+  await router.push({ query: newQuery })
 }
 
 onBeforeMount(fetchData)
