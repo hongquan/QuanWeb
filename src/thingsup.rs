@@ -1,4 +1,5 @@
 use std::{env, io};
+use std::net::{SocketAddr, AddrParseError};
 
 use clap::Parser;
 use tracing_subscriber::{
@@ -15,7 +16,9 @@ use crate::utils::jinja_extra;
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
-    #[arg(short, action = clap::ArgAction::Count)]
+    #[arg(short, long, help = "Network address to bind, just port or ip:port")]
+    pub bind: Option<String>,
+    #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
     pub verbose: u8,
 }
 
@@ -30,7 +33,7 @@ pub fn is_journald_connected() -> bool {
     !term_available
 }
 
-pub fn config_logging(app_opt: AppOptions) {
+pub fn config_logging(app_opt: &AppOptions) {
     // If run by "cargo run", we want to see debug logs.
     let run_by_cargo = env::var("CARGO").is_ok();
     let level = if run_by_cargo {
@@ -83,6 +86,15 @@ pub fn get_listening_addr() -> [u8; 4] {
     match env::var("CARGO") {
         Ok(_) => [0, 0, 0, 0],
         Err(_) => [127, 0, 0, 1],
+    }
+}
+
+pub fn get_binding_addr<'a>(bind_opt: &'a str) -> Result<SocketAddr, AddrParseError> {
+    if bind_opt.contains(":") {
+        bind_opt.parse::<SocketAddr>()
+    } else {
+        let auto_addr = format!("127.0.0.1:{bind_opt}");
+        auto_addr.parse::<SocketAddr>()
     }
 }
 

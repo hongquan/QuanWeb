@@ -21,12 +21,12 @@ use tower_http::trace::TraceLayer;
 
 use auth::store::EdgeDbStore;
 use types::AppState;
-use thingsup::{AppOptions, config_jinja, config_logging, get_listening_addr};
+use thingsup::{AppOptions, config_jinja, config_logging, get_listening_addr, get_binding_addr};
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
     let app_opts = AppOptions::parse();
-    config_logging(app_opts);
+    config_logging(&app_opts);
     let redis_store = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
@@ -56,8 +56,15 @@ async fn main() -> miette::Result<()> {
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());
 
-    let port = conf::get_listening_port(&config);
-    let addr = SocketAddr::from((get_listening_addr(), port));
+    let addr = match app_opts.bind {
+        Some(saddr) => {
+            get_binding_addr(&saddr).map_err(|_e| miette!("Binding address must be port or ip:port"))?
+        },
+        None => {
+            let port = conf::get_listening_port(&config);
+            SocketAddr::from((get_listening_addr(), port))
+        },
+    };
     tracing::info!("Listening on http://{}", addr);
 
     // TODO: Support Unix domain socket with hyperlocal
