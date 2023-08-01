@@ -31,6 +31,7 @@ fluent-bundle = "0.15.2"
 fluent-templates = "0.8.0"
 fred = { version = "6.3.0", features = ["serde-json", "partial-tracing"] }
 http = "0.2.9"
+hyperlocal = { version = "0.8.0", default-features = false, features = ["server"] }
 indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"
 miette = { version = "5.10.0", features = ["fancy", "serde"] }

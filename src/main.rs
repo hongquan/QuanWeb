@@ -12,12 +12,14 @@ mod utils;
 mod thingsup;
 
 use std::net::SocketAddr;
+use std::path::Path;
 
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
 use clap::Parser;
 use miette::{miette, IntoDiagnostic};
 use tower_http::trace::TraceLayer;
+use hyperlocal::UnixServerExt;
 
 use auth::store::EdgeDbStore;
 use types::AppState;
@@ -56,21 +58,30 @@ async fn main() -> miette::Result<()> {
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());
 
-    let addr = match app_opts.bind {
+    let addr_result = match &app_opts.bind {
         Some(saddr) => {
-            get_binding_addr(&saddr).map_err(|_e| miette!("Binding address must be port or ip:port"))?
+            get_binding_addr(saddr)
         },
         None => {
             let port = conf::get_listening_port(&config);
-            SocketAddr::from((get_listening_addr(), port))
+            Ok(SocketAddr::from((get_listening_addr(), port)))
         },
     };
-    tracing::info!("Listening on http://{}", addr);
-
-    // TODO: Support Unix domain socket with hyperlocal
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let main_service = app.into_make_service();
+    match addr_result {
+        Ok(addr) => {
+            tracing::info!("Listening on http://{}", addr);
+            axum::Server::bind(&addr).serve(main_service).await.into_diagnostic()?;
+        },
+        _ => {
+            let original_bind = app_opts.bind.unwrap_or("web.sock".into());
+            let path = Path::new(&original_bind);
+            if path.exists() {
+                std::fs::remove_file(path).into_diagnostic()?;
+            }
+            tracing::info!("Listening on unix:{}", path.display());
+            axum::Server::bind_unix(path).into_diagnostic()?.serve(main_service).await.into_diagnostic()?;
+        },
+    }
     Ok(())
 }

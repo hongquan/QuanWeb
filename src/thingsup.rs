@@ -16,7 +16,7 @@ use crate::utils::jinja_extra;
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
-    #[arg(short, long, help = "Network address to bind, just port or ip:port")]
+    #[arg(short, long, help = "Network address to bind, can be <port>, <ip:port> or Unix socket path")]
     pub bind: Option<String>,
     #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
     pub verbose: u8,
