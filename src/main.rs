@@ -12,7 +12,8 @@ mod utils;
 mod thingsup;
 
 use std::net::SocketAddr;
-use std::path::Path;
+use std::{fs, path::Path};
+use std::os::unix::fs::PermissionsExt;
 
 use axum::routing::Router;
 use axum_login::{axum_sessions::SessionLayer, AuthLayer};
@@ -80,7 +81,10 @@ async fn main() -> miette::Result<()> {
                 std::fs::remove_file(path).into_diagnostic()?;
             }
             tracing::info!("Listening on unix:{}", path.display());
-            axum::Server::bind_unix(path).into_diagnostic()?.serve(main_service).await.into_diagnostic()?;
+            let server = axum::Server::bind_unix(path).into_diagnostic()?;
+            let perm = fs::Permissions::from_mode(0o664);
+            fs::set_permissions(path, perm).into_diagnostic()?;
+            server.serve(main_service).await.into_diagnostic()?;
         },
     }
     Ok(())
