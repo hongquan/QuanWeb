@@ -133,8 +133,6 @@ import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'
 import { CodeJar } from 'codejar'
 import { Icon } from '@iconify/vue'
-import Prism from 'prismjs'
-import 'prismjs/themes/prism-dark.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
@@ -153,7 +151,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   postId: null,
 })
-Prism.manual = true
 
 const router = useRouter()
 const locales = [{ name: 'English', value: 'en' }, { name: 'Tiếng Việt', value: 'vi' }]
@@ -261,10 +258,6 @@ const mergeCodeUpdate = F.debounce((code: string) => {
   }
 }, 500)
 
-function highlight(element: HTMLElement) {
-  Prism.highlightElement(element)
-}
-
 async function getHtmlPreview() {
   if (!post.value) {
     return
@@ -287,7 +280,7 @@ onMounted(() => {
   )
   watch(codeEditor, (el) => {
     if (el) {
-      jar.value = CodeJar(el, highlight)
+      jar.value = CodeJar(el, () => void 0)
       if (post.value?.body) {
         jar.value.updateCode(post.value.body)
       }
