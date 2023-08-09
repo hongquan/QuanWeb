@@ -8,8 +8,8 @@ use indexmap::{indexmap, IndexMap};
 use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
-pub async fn count_search_result_posts(lower_search_tokens: Option<Vec<String>>, client: &Client) -> Result<usize, Error> {
-    // let search_tokens = search.map(|s| s.split_whitespace().collect::<Vec<&str>>());
+pub async fn count_search_result_posts(lower_search_tokens: Option<&Vec<String>>, client: &Client) -> Result<usize, Error> {
+    let lower_search_tokens: Option<Vec<&str>> = lower_search_tokens.map(|v| v.iter().map(|s| s.as_str()).collect());
     let filter_line = if lower_search_tokens.is_some() {
         "FILTER contains(str_lower(BlogPost.title), array_unpack(<array<str>>$0))"
     } else {
@@ -87,7 +87,7 @@ pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<
     Ok(post)
 }
 
-pub async fn get_blogposts(lower_search_tokens: Option<Vec<String>>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
+pub async fn get_blogposts(lower_search_tokens: Option<&Vec<String>>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
     let filter_line = if lower_search_tokens.is_some() {
         "FILTER contains(str_lower(.title), array_unpack(<array<str>>$tokens))"
     } else {

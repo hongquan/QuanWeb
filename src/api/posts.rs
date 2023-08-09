@@ -31,10 +31,10 @@ pub async fn list_posts(
     let other_query = OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
     let search_tokens = split_search_query(other_query.q.as_deref());
     let lower_search_tokens: Option<Vec<String>> = search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
-    let posts = stores::blog::get_blogposts(lower_search_tokens.clone(), Some(offset), Some(limit), &db)
+    let posts = stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::blog::count_search_result_posts(lower_search_tokens, &db)
+    let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
