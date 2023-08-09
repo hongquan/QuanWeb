@@ -101,6 +101,7 @@ module default {
             constraint exclusive;
         }
         index on (str_lower(.slug));
+        index on (str_lower(.title));
     }
 
     type BookAuthor {

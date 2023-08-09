@@ -23,7 +23,6 @@ pub async fn list_posts(
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<MediumBlogPost>>> {
-    tracing::info!("Paging: {:?}", paging);
     let NPaging { page, per_page } = paging;
     let page = page.unwrap_or(NonZeroU16::MIN);
     let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
@@ -31,10 +30,11 @@ pub async fn list_posts(
     let limit = per_page as i64;
     let other_query = OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
     let search_tokens = split_search_query(other_query.q.as_deref());
-    let posts = stores::blog::get_blogposts(search_tokens.clone(), Some(offset), Some(limit), &db)
+    let lower_search_tokens: Option<Vec<String>> = search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
+    let posts = stores::blog::get_blogposts(lower_search_tokens.clone(), Some(offset), Some(limit), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::blog::count_search_result_posts(search_tokens, &db)
+    let count = stores::blog::count_search_result_posts(lower_search_tokens, &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =

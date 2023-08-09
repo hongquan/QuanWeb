@@ -8,16 +8,16 @@ use indexmap::{indexmap, IndexMap};
 use crate::models::{MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
 use crate::types::conversions::{edge_object_from_simple_pairs, edge_object_from_pairs};
 
-pub async fn count_search_result_posts<'a>(search_tokens: Option<Vec<&'a str>>, client: &Client) -> Result<usize, Error> {
+pub async fn count_search_result_posts(lower_search_tokens: Option<Vec<String>>, client: &Client) -> Result<usize, Error> {
     // let search_tokens = search.map(|s| s.split_whitespace().collect::<Vec<&str>>());
-    let filter_line = if search_tokens.is_some() {
-        "FILTER contains(BlogPost.title, array_unpack(<array<str>>$0))"
+    let filter_line = if lower_search_tokens.is_some() {
+        "FILTER contains(str_lower(BlogPost.title), array_unpack(<array<str>>$0))"
     } else {
         ""
     };
     let q = format!("SELECT count((SELECT BlogPost {filter_line}))");
     tracing::debug!("To query: {}", q);
-    let count: i64 = if let Some(tokens) = search_tokens {
+    let count: i64 = if let Some(tokens) = lower_search_tokens {
         tracing::debug!("With args: {:?}", tokens);
         client.query_required_single(&q, &(tokens,)).await?
     } else {
@@ -87,15 +87,15 @@ pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<
     Ok(post)
 }
 
-pub async fn get_blogposts<'a>(search_tokens: Option<Vec<&'a str>>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
-    let filter_line = if search_tokens.is_some() {
-        "FILTER contains(.title, array_unpack(<array<str>>$tokens))"
+pub async fn get_blogposts(lower_search_tokens: Option<Vec<String>>, offset: Option<i64>, limit: Option<i64>, client: &Client) -> Result<Vec<MediumBlogPost>, Error> {
+    let filter_line = if lower_search_tokens.is_some() {
+        "FILTER contains(str_lower(.title), array_unpack(<array<str>>$tokens))"
     } else {
         ""
     };
     let mut pairs = IndexMap::with_capacity(3);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
-    if let Some(ss) = search_tokens {
+    if let Some(ss) = lower_search_tokens {
         let search: Vec<EValue> = ss.into_iter().map(|s| EValue::Str(s.into())).collect();
         pairs.insert("tokens", (Some(EValue::Array(search)), Cd::One));
     }
