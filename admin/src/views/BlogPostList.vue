@@ -151,7 +151,8 @@ function onDeleted(id: string) {
 
 async function clearSearch() {
   search.value = ''
-  await fetchData()
+  const newQuery = D.deleteKeys(route.query, ['q', 'page'])
+  await router.push({ query: newQuery })
 }
 
 async function startSearch() {
