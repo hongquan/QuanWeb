@@ -3,6 +3,7 @@ import { defineConfig, ViteDevServer, Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
 import lightJoin from 'light-join'
+import { prismjsPlugin } from 'vite-plugin-prismjs'
 
 const BACKEND_ROOT_URL = 'http://localhost:3721'
 const BACKEND_PREFIXES = ['/preview/']
@@ -33,6 +34,10 @@ export default defineConfig({
   plugins: [
     vue(),
     svgLoader({ svgo: false }),
+    prismjsPlugin({
+      languages: ['markdown', 'shell', 'rust', 'python', 'shell-session', 'sql', 'plsql', 'toml', 'javascript', 'typescript', 'markup', 'css'],
+      theme: 'dark',
+    }),
     backendRedirectPlugin,
   ],
   resolve: {

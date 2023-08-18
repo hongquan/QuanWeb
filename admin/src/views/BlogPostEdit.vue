@@ -63,13 +63,11 @@
           </FbButton>
         </div>
         <div class='border rounded font-mono py-4'>
-          <div class='max-h-80 overflow-y-auto'>
-            <div class='px-2'>
-              <div
-                ref='codeEditor'
-                class='language-markdown rounded p-2 dark:text-gray-200 text-sm'
-              />
-            </div>
+          <div class='px-2'>
+            <div
+              ref='codeEditor'
+              class='language-markdown rounded p-2 dark:text-gray-200 text-sm h-80'
+            />
           </div>
         </div>
       </div>
@@ -131,8 +129,11 @@ import { Button as FbButton, Select as FbSelect, Modal as FbModal, Input as FbIn
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'
-import { CodeJar } from 'codejar'
 import { Icon } from '@iconify/vue'
+import type { KullnaEditor } from '@kullna/editor'
+import { createEditor } from '@kullna/editor'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-dark.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
@@ -152,6 +153,9 @@ const props = withDefaults(defineProps<Props>(), {
   postId: null,
 })
 
+Prism.manual = true
+Prism.languages.console = Prism.languages['shell-session']
+
 const router = useRouter()
 const locales = [{ name: 'English', value: 'en' }, { name: 'Tiếng Việt', value: 'vi' }]
 const post = ref<Post | null>(null)
@@ -159,7 +163,7 @@ const oldSlug = ref<string | null>(null)
 const allCategories = ref<Category[]>([])
 const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
-const jar = ref<CodeJar | null>(null)
+const kullnaEditor = ref<KullnaEditor | null>(null)
 const previewHtml = ref<string | null>(null)
 const validationErrors = ref<Record<string, string>>({})
 
@@ -197,8 +201,8 @@ async function fetchData() {
   const resp = await kyClient.get(url).json()
   post.value = PostSchema.parse(resp)
   oldSlug.value = post.value.slug
-  if (jar.value && post.value.body) {
-    jar.value.updateCode(post.value.body)
+  if (kullnaEditor.value && post.value.body) {
+    kullnaEditor.value.code = post.value.body
   }
 }
 
@@ -280,17 +284,18 @@ onMounted(() => {
   )
   watch(codeEditor, (el) => {
     if (el) {
-      jar.value = CodeJar(el, () => void 0)
+      kullnaEditor.value = createEditor(el, { highlightElement: Prism.highlightElement })
+      kullnaEditor.value.wrapsText = true
       if (post.value?.body) {
-        jar.value.updateCode(post.value.body)
+        kullnaEditor.value.code = post.value.body
       }
-      jar.value.onUpdate(mergeCodeUpdate)
+      kullnaEditor.value.onUpdate(mergeCodeUpdate)
     }
   })
 })
 onBeforeUnmount(() => {
-  if (jar.value) {
-    jar.value.destroy()
+  if (kullnaEditor.value) {
+    kullnaEditor.value.destroy()
   }
 })
 </script>
