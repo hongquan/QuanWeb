@@ -76,6 +76,10 @@ async function deleteBook() {
   if (!props.book.id) {
     return
   }
+  const sure = confirm(`Are you sure you want to delete "${props.book.title}" book?`)
+  if (!sure) {
+    return
+  }
   const url = lightJoin(API_GET_BOOKS, props.book.id)
   const resp = await kyClient.delete(url)
   if (resp.status !== httpStatus.NO_CONTENT) {

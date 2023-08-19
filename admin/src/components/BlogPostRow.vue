@@ -109,6 +109,10 @@ async function deletePost() {
   if (!props.post.id) {
     return
   }
+  const sure = confirm(`Are you sure to delete "${props.post.title}" post?`)
+  if (!sure) {
+    return
+  }
   const url = lightJoin(API_GET_POSTS, props.post.id)
   let resp = await kyClient.delete(url)
   if (resp.status !== HStatus.NO_CONTENT) {

@@ -66,6 +66,10 @@ async function deleteAuthor() {
   if (!props.author.id) {
     return
   }
+  const sure = confirm(`Are you sure you want to delete "${props.author.name}" author?`)
+  if (!sure) {
+    return
+  }
   const url = lightJoin(API_GET_BOOK_AUTHORS, props.author.id)
   const resp = await kyClient.delete(url)
   if (resp.status !== HStatus.NO_CONTENT) {

@@ -65,6 +65,10 @@ async function deletePresentation() {
   if (!props.presentation.id) {
     return
   }
+  const sure = confirm(`Are you sure you want to delete "${props.presentation.title}" presentation?`)
+  if (!sure) {
+    return
+  }
   const title = props.presentation.title || 'Untitled'
   const url = lightJoin(API_GET_PRESENTATIONS, props.presentation.id)
   const resp = await kyClient.delete(url)

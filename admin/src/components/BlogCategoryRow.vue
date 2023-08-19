@@ -65,6 +65,10 @@ async function deleteCategory() {
   if (!props.category.id) {
     return
   }
+  const sure = confirm(`Are you sure you want to delete "${props.category.title}" category?`)
+  if (!sure) {
+    return
+  }
   const url = lightJoin(API_GET_CATEGORIES, props.category.id)
   const resp = await kyClient.delete(url)
   if (resp.status !== HStatus.NO_CONTENT) {
