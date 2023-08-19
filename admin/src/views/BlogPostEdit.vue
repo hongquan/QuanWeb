@@ -66,7 +66,7 @@
           <div class='px-2'>
             <div
               ref='codeEditor'
-              class='language-markdown rounded p-2 dark:text-gray-200 text-sm h-80'
+              class='language-markdown relative rounded p-2 dark:text-gray-200 text-sm h-80'
             />
           </div>
         </div>
