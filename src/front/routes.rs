@@ -15,5 +15,6 @@ pub fn get_router() -> Router<AppState> {
     .route("/blog/*rest", get(views::old_urls::redirect_old_blog_view))
     .route("/talk/", get(views::minors::list_talks))
     .route("/book/", get(views::minors::list_books))
+    .route("/feeds.atom", get(views::feeds::gen_atom_feeds))
     .route("/api/set-lang", post(views::set_lang))
 }

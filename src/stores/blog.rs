@@ -145,7 +145,11 @@ pub async fn get_published_posts(offset: Option<i64>, limit: Option<i64>, client
         paging_lines.push(format!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
-    let args = edge_object_from_pairs(pairs);
+    let args = if pairs.is_empty() {
+        EValue::Nothing
+    } else {
+        edge_object_from_pairs(pairs)
+    };
     let q = format!("
     SELECT BlogPost {{
         id,
@@ -163,6 +167,7 @@ pub async fn get_published_posts(offset: Option<i64>, limit: Option<i64>, client
         }},
     }}
     FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
+    tracing::info!("To query: {}", q);
     let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
@@ -329,6 +334,7 @@ pub async fn get_previous_post(created_at: EDatetime, cat_slug: Option<&str>, cl
         title,
         slug,
         created_at,
+        updated_at,
     }}
     FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
     tracing::debug!("To query: {}", q);
@@ -358,10 +364,25 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<&str>, client
         title,
         slug,
         created_at,
+        updated_at,
     }}
     FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
     tracing::debug!("To query: {}", q);
     let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
+    Ok(post)
+}
+
+pub async fn get_latest_post(client: &Client) -> Result<Option<MiniBlogPost>, Error> {
+    let q = "
+    SELECT BlogPost {
+        id,
+        title,
+        slug,
+        created_at,
+        updated_at,
+    } FILTER .is_published = true ORDER BY .created_at DESC LIMIT 1";
+    tracing::debug!("To query: {}", q);
+    let post: Option<MiniBlogPost> = client.query_single(q, &()).await?;
     Ok(post)
 }
 

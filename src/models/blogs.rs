@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use chrono::Utc;
+use chrono::{Utc, DateTime};
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
+use atom_syndication::{Entry as AtomEntry, EntryBuilder, LinkBuilder, Category as AtomCategory, CategoryBuilder};
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
@@ -83,11 +84,63 @@ impl Default for MediumBlogPost {
     }
 }
 
+impl From<MediumBlogPost> for AtomEntry {
+    fn from(value: MediumBlogPost) -> Self {
+        let MediumBlogPost {
+            id,
+            title,
+            slug,
+            excerpt,
+            published_at,
+            created_at,
+            updated_at,
+            categories,
+            ..
+        } = value;
+        let entry_id = format!("urn:uuid:{id}");
+        let updated_at: DateTime<Utc> = updated_at.unwrap_or(created_at).into();
+        let created_at: DateTime<Utc> = created_at.into();
+        // let published_at: Option<DateTime<Utc>> = published_at.map(|d| d.into());
+        let url_path = format!("/post/{}/{}", created_at.format("%Y/%m"), slug);
+        let link = LinkBuilder::default()
+            .href(url_path)
+            .mime_type(Some("text/html".into()))
+            .build();
+        let categories: Vec<AtomCategory> = categories.into_iter().collect();
+        let mut builder = EntryBuilder::default();
+        builder.title(title)
+            .id(entry_id)
+            .summary(excerpt.map(|s| s.into()))
+            .links(vec![link])
+            .published(published_at.map(|d| DateTime::<Utc>::from(d).into()))
+            .updated(updated_at)
+            .categories(categories);
+        builder.build()
+    }
+}
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Queryable)]
 pub struct BlogCategory {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
+}
+
+impl From<BlogCategory> for AtomCategory {
+    fn from(value: BlogCategory) -> Self {
+        let BlogCategory { title, slug, .. } = value;
+        CategoryBuilder::default()
+            .scheme(Some(format!("/category/{slug}/")))
+            .term(slug)
+            .label(Some(title))
+            .build()
+    }
+}
+
+impl FromIterator<BlogCategory> for Vec<AtomCategory> {
+    fn from_iter<T: IntoIterator<Item = BlogCategory>>(iter: T) -> Self {
+        iter.into_iter().map(AtomCategory::from).collect()
+    }
 }
 
 // Struct to represent a BlogPost in the database, with all fields to display in a detail page.
@@ -145,4 +198,6 @@ pub struct MiniBlogPost {
     pub slug: String,
     #[serde(serialize_with = "serialize_edge_datetime")]
     pub created_at: EDatetime,
+    #[serde(serialize_with = "serialize_optional_edge_datetime")]
+    pub updated_at: Option<EDatetime>,
 }
