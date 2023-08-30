@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder};
+use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text};
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
@@ -142,7 +142,7 @@ impl From<MediumBlogPost> for AtomEntry {
         let mut builder = EntryBuilder::default();
         builder.title(title)
             .id(entry_id)
-            .summary(excerpt.map(|s| s.into()))
+            .summary(excerpt.map(Text::html))
             .links(vec![link])
             .published(published_at.map(|d| DateTime::<Utc>::from(d).into()))
             .updated(updated_at)
