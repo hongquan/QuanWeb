@@ -4,11 +4,12 @@ use chrono::{Utc, DateTime};
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
+use http::Uri;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use atom_syndication::{Entry as AtomEntry, EntryBuilder, LinkBuilder, Category as AtomCategory, CategoryBuilder};
+use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder};
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
@@ -54,7 +55,7 @@ impl From<DocFormat> for EValue {
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
 )]
-#[derive(Debug, Serialize, Queryable)]
+#[derive(Debug, Clone, Serialize, Queryable)]
 pub struct MediumBlogPost {
     pub id: Uuid,
     pub title: String,
@@ -65,6 +66,40 @@ pub struct MediumBlogPost {
     pub created_at: EDatetime,
     pub updated_at: Option<EDatetime>,
     pub categories: Vec<BlogCategory>,
+}
+
+impl MediumBlogPost {
+    pub fn get_view_url(&self, base_url: Option<&Uri>) -> String {
+        let created_at: DateTime<Utc> = self.created_at.into();
+        let url_path = format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug);
+        let host = base_url.map(|u| u.authority()).flatten();
+        if let Some(host) = host {
+            let scheme = base_url.map(|u| u.scheme_str()).flatten().unwrap_or("https");
+            format!("{scheme}://{host}{url_path}")
+        } else {
+            url_path
+        }
+    }
+
+    pub fn to_atom_entry(&self, host: Option<&str>) -> AtomEntry {
+        let mut entry = AtomEntry::from(self.clone());
+        if let Some(host) = host {
+            let links = entry.links();
+            let absolute_links: Vec<Link> = links.into_iter().map(|l| {
+                let mut link = l.clone();
+                if l.href().starts_with("/") {
+                    let path = l.href();
+                    let scheme = if host == "localhost" { "http" } else { "https" };
+                    link.set_href(format!("{scheme}://{host}{path}"));
+                    link
+                } else {
+                    link
+                }
+            }).collect();
+            entry.set_links(absolute_links);
+        };
+        entry
+    }
 }
 
 impl Default for MediumBlogPost {
@@ -86,10 +121,10 @@ impl Default for MediumBlogPost {
 
 impl From<MediumBlogPost> for AtomEntry {
     fn from(value: MediumBlogPost) -> Self {
+        let url = value.get_view_url(None);
         let MediumBlogPost {
             id,
             title,
-            slug,
             excerpt,
             published_at,
             created_at,
@@ -99,11 +134,8 @@ impl From<MediumBlogPost> for AtomEntry {
         } = value;
         let entry_id = format!("urn:uuid:{id}");
         let updated_at: DateTime<Utc> = updated_at.unwrap_or(created_at).into();
-        let created_at: DateTime<Utc> = created_at.into();
-        // let published_at: Option<DateTime<Utc>> = published_at.map(|d| d.into());
-        let url_path = format!("/post/{}/{}", created_at.format("%Y/%m"), slug);
         let link = LinkBuilder::default()
-            .href(url_path)
+            .href(url)
             .mime_type(Some("text/html".into()))
             .build();
         let categories: Vec<AtomCategory> = categories.into_iter().collect();
@@ -130,7 +162,6 @@ impl From<BlogCategory> for AtomCategory {
     fn from(value: BlogCategory) -> Self {
         let BlogCategory { title, slug, .. } = value;
         CategoryBuilder::default()
-            .scheme(Some(format!("/category/{slug}/")))
             .term(slug)
             .label(Some(title))
             .build()

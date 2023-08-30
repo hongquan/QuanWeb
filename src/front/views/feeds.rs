@@ -1,5 +1,5 @@
 use atom_syndication::{Entry, FeedBuilder};
-use axum::extract::{Query, State};
+use axum::extract::{Query, State, Host};
 use axum::response::{Result as AxumResult, IntoResponseParts};
 use chrono::{TimeZone, Utc};
 use edgedb_tokio::Client as EdgeClient;
@@ -13,13 +13,14 @@ use crate::stores;
 const SITE_UUID: &str = "4543aea6-ab17-5c18-9279-19e73529594d";
 
 pub async fn gen_atom_feeds(
+    Host(host): Host,
     Query(_paging): Query<LaxPaging>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<(impl IntoResponseParts, String)> {
     let posts = stores::blog::get_published_posts(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let entries: Vec<Entry> = posts.into_iter().map(Entry::from).collect();
+    let entries: Vec<Entry> = posts.iter().map(|p| p.to_atom_entry(Some(&host))).collect();
     let latest_post = stores::blog::get_latest_post(&db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
