@@ -34,5 +34,5 @@ pub async fn gen_atom_feeds(
         .updated(updated_at)
         .entries(entries)
         .build();
-    Ok(([(CONTENT_TYPE, "application/atom+xml")], feed.to_string()))
+    Ok(([(CONTENT_TYPE, "application/atom+xml; charset=utf-8")], feed.to_string()))
 }
