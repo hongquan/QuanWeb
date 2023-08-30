@@ -211,6 +211,14 @@ impl Paginator {
             None
         }
     }
+
+    pub fn first_url(&self, current_url: &Uri) -> String {
+        update_entry_in_query("page", 1, current_url).to_string()
+    }
+
+    pub fn last_url(&self, current_url: &Uri) -> String {
+        update_entry_in_query("page", self.total_pages, current_url).to_string()
+    }
 }
 
 pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> ShapeElement {
