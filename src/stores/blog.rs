@@ -124,6 +124,11 @@ pub async fn get_blogposts(lower_search_tokens: Option<&Vec<String>>, offset: Op
             title,
             slug,
         }},
+        author: {{
+            id,
+            username,
+            email,
+        }},
     }}
     {filter_line}
     ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
@@ -164,6 +169,11 @@ pub async fn get_published_posts(offset: Option<i64>, limit: Option<i64>, client
             id,
             title,
             slug,
+        }},
+        author: {{
+            id,
+            username,
+            email,
         }},
     }}
     FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
@@ -208,6 +218,11 @@ pub async fn get_published_posts_under_category(cat_slug: Option<String>, offset
             id,
             title,
             slug,
+        }},
+        author: {{
+            id,
+            username,
+            email,
         }},
     }}
     FILTER {filter_expr} ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");

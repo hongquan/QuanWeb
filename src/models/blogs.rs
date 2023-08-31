@@ -9,11 +9,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text};
+use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text, Person};
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
 };
+use super::users::MiniUser;
 
 #[derive(
     Debug,
@@ -66,6 +67,7 @@ pub struct MediumBlogPost {
     pub created_at: EDatetime,
     pub updated_at: Option<EDatetime>,
     pub categories: Vec<BlogCategory>,
+    pub author: Option<MiniUser>,
 }
 
 impl MediumBlogPost {
@@ -115,6 +117,7 @@ impl Default for MediumBlogPost {
             created_at,
             updated_at: None,
             categories: Vec::default(),
+            author: None,
         }
     }
 }
@@ -130,6 +133,7 @@ impl From<MediumBlogPost> for AtomEntry {
             created_at,
             updated_at,
             categories,
+            author,
             ..
         } = value;
         let entry_id = format!("urn:uuid:{id}");
@@ -139,6 +143,11 @@ impl From<MediumBlogPost> for AtomEntry {
             .mime_type(Some("text/html".into()))
             .build();
         let categories: Vec<AtomCategory> = categories.into_iter().collect();
+        let authors = if let Some(author) = author {
+            vec![Person::from(author)]
+        } else {
+            vec![]
+        };
         let mut builder = EntryBuilder::default();
         builder.title(title)
             .id(entry_id)
@@ -146,7 +155,8 @@ impl From<MediumBlogPost> for AtomEntry {
             .links(vec![link])
             .published(published_at.map(|d| DateTime::<Utc>::from(d).into()))
             .updated(updated_at)
-            .categories(categories);
+            .categories(categories)
+            .authors(authors);
         builder.build()
     }
 }
