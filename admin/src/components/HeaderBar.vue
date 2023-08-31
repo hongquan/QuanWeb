@@ -6,6 +6,10 @@
       Admin
     </h1>
     <div class='py-4 text-right space-x-4'>
+      <a
+        href='/'
+        class='text-sm hover:underline'
+      >View site</a>
       <select
         class='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
         @change='onLocaleSwitch'

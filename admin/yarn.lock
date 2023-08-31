@@ -1555,10 +1555,10 @@ floating-vue@2.0.0-beta.24:
     "@floating-ui/dom" "~1.1.1"
     vue-resize "^2.0.0-alpha.1"
 
-flowbite-vue@^0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.16.tgz#421461632f8d8c64313cdd5d2d68eda62b2e8b90"
-  integrity sha512-vPfVj+fbSGja+wWQLAyGcbYQErHYMJ6MOOiQakQ4IVe/QwHxZbaA8qpAbwncF3PV2xZdfhXuBlV3b6xV7zL2Jg==
+flowbite-vue@^0.0.17-next.2:
+  version "0.0.17-next.2"
+  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.17-next.2.tgz#443f8bbb5476fcb5d143e1ae646dbd4ccc8b7412"
+  integrity sha512-1qoAxz6rwZWJFGD28/JhQNDO33wnQ0+L1PCNOc347AMKdPBsX/z/D99LEyKa9l1RyubyH3s4Z9byDEywSM26IA==
   dependencies:
     "@vueuse/core" "9.3.0"
     classnames "2.3.2"
@@ -1623,7 +1623,7 @@ get-caller-file@^2.0.5:
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-2.0.5.tgz#4f94412a82db32f36e3b0b9741f8a97feb031f7e"
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
 
-get-user-locale@^2.2.1:
+get-user-locale@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/get-user-locale/-/get-user-locale-2.3.0.tgz#7656315a963a824048883f7dab4d7dc74773d1e0"
   integrity sha512-I3rQvAUwu2nauRD9YyQBSXVFJZixNouwA+eZld51Sn4Pn0N1qFbgcgOi/nPigJPQlNY519mT95fiSPRgflQiTA==
@@ -2616,10 +2616,10 @@ vue-router@^4.2.2:
   dependencies:
     "@vue/devtools-api" "^6.5.0"
 
-vue-sonner@^0.3.2:
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/vue-sonner/-/vue-sonner-0.3.3.tgz#10d68b4a60ac41ae5c4d8f7bece33fe51d70d9e9"
-  integrity sha512-lcLvlHJIRzVN1rV92yfvHYajeysbG1zGDQVzvnI+yFcbWW7QyinVoJTs79dnk8TrhPzuKUdWeoEMUBSOallEBg==
+vue-sonner@^0.4.4:
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/vue-sonner/-/vue-sonner-0.4.4.tgz#1e549b9a48aac30b55f40e64bcc77ceb2a73935e"
+  integrity sha512-Cu8IqjpZF+B7KWu0FHkNTWpTuufn92S0s2c3YuCUG4dL4KNWvAv0Ox+TPWN525gJ1mijG2UUIccEx0lVNga58A==
 
 vue-template-compiler@^2.7.14:
   version "2.7.14"
