@@ -51,11 +51,7 @@ pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedB
         locale,
         excerpt,
         html,
-        author: {
-            id,
-            username,
-            email,
-        },
+        author: {id, username, email},
         seo_description,
         og_image,
     }
@@ -83,11 +79,7 @@ pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<
         locale,
         excerpt,
         html,
-        author: {
-            id,
-            username,
-            email,
-        },
+        author: {id, username, email},
         seo_description,
         og_image,
     }

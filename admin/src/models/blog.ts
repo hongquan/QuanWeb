@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { DateTime } from 'luxon'
 
+import { UserSchema } from './user'
+
 export const DateFromString = z.string().datetime({ offset: true }).transform((s) => DateTime.fromISO(s).toJSDate())
 
 export const CategorySchema = z.object({
@@ -24,6 +26,7 @@ export const PostSchema = z.object({
   // Have to add nullable here because ZodEffects make other fields optional
   created_at: DateFromString,
   categories: z.array(CategorySchema).default([]),
+  author: UserSchema.nullable().default(null),
   og_image: z.string().nullable().default(null),
 })
 

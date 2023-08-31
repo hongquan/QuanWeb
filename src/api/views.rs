@@ -17,6 +17,7 @@ pub use super::minors::{
     create_book_author, list_books, get_book, delete_book,
     update_book_partial, create_book,
 };
+pub use super::users::list_users;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, NPaging};

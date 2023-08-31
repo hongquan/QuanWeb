@@ -58,6 +58,7 @@ pub struct BlogPostPatchData {
     pub body: Option<String>,
     pub locale: Option<String>,
     pub categories: Option<Vec<Uuid>>,
+    pub author: Option<Uuid>,
     pub og_image: Option<String>,
 }
 
@@ -75,6 +76,7 @@ impl BlogPostPatchData {
             lines.push("excerpt := <optional str>$excerpt");
         }
         append_set_statement!("locale", "optional str", lines, submitted_fields);
+        append_set_statement!("author", "optional User", lines, submitted_fields);
         append_set_statement!("og_image", "optional str", lines, submitted_fields);
         if submitted_fields.iter().any(|&f| f == "categories") && self.categories.is_some() {
             let line = "categories := (
@@ -133,6 +135,12 @@ impl BlogPostPatchData {
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
+        if submitted_fields.iter().any(|&f| f == "author") {
+            pairs.insert(
+                "author",
+                (self.author.map(EValue::Uuid), Cd::AtMostOne),
+            );
+        }
         if submitted_fields.iter().any(|&f| f == "og_image") {
             pairs.insert(
                 "og_image",
@@ -161,6 +169,7 @@ pub struct BlogPostCreateData {
     pub body: Option<String>,
     pub locale: Option<String>,
     pub categories: Option<Vec<Uuid>>,
+    pub author: Option<Uuid>,
     #[validate(url)]
     pub og_image: Option<String>,
 }
@@ -177,6 +186,7 @@ impl BlogPostCreateData {
         }
         append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
         append_set_statement!("locale", "optional str", lines, submitted_fields);
+        append_set_statement!("author", "optional User", lines, submitted_fields);
         append_set_statement!("og_image", "optional str", lines, submitted_fields);
         if self.categories.is_some() {
             let line = "categories := (
@@ -223,6 +233,12 @@ impl BlogPostCreateData {
             pairs.insert(
                 "locale",
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
+            );
+        }
+        if submitted_fields.iter().any(|&f| f == "author") {
+            pairs.insert(
+                "author",
+                (self.author.map(EValue::Uuid), Cd::AtMostOne),
             );
         }
         if submitted_fields.iter().any(|&f| f == "og_image") {

@@ -83,6 +83,20 @@
           />
         </template>
       </HorizontalFormFieldWrap>
+      <HorizontalFormFieldWrap class='mt-2'>
+        <template #label>
+          Author
+        </template>
+        <template #default='{ inputId }'>
+          <FbSelect
+            :id='inputId'
+            v-model='postAuthorId'
+            :options='allAuthorChoices'
+            :option-label='(author: User) => author.email'
+            :option-value='(author: User) => author.id'
+          />
+        </template>
+      </HorizontalFormFieldWrap>
       <HorizontalFormField
         v-model='post.is_published'
         class='mt-2'
@@ -137,7 +151,7 @@ import 'prismjs/themes/prism-dark.css'
 
 import { kyClient } from '@/common'
 import { Category, CategorySchema, Post, PostSchema } from '@/models/blog'
-import { API_GET_CATEGORIES, API_GET_POSTS, API_MARKDOWN_TO_HTML } from '@/urls'
+import { API_GET_CATEGORIES, API_GET_POSTS, API_GET_USERS, API_MARKDOWN_TO_HTML } from '@/urls'
 import HorizontalFormField from '@/components/forms/HorizontalFormField.vue'
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'
 import DualPaneSelect from '@/components/forms/DualPaneSelect.vue'
@@ -145,6 +159,7 @@ import { transformPostForPosting } from '@/utils/models'
 import { handleApiError } from '@/utils/api'
 import { ObjectListResponseSchema } from '@/models/api'
 import '../../../static/css/syntect.css'
+import { User, UserSchema } from '@/models/user'
 
 interface Props {
   postId?: string | null
@@ -161,6 +176,7 @@ const locales = [{ name: 'English', value: 'en' }, { name: 'Tiếng Việt', val
 const post = ref<Post | null>(null)
 const oldSlug = ref<string | null>(null)
 const allCategories = ref<Category[]>([])
+const allAuthors = ref<User[]>([])
 const isSubmitting = ref(false)
 const codeEditor = ref<HTMLDivElement | null>(null)
 const kullnaEditor = ref<KullnaEditor | null>(null)
@@ -178,6 +194,19 @@ const postLocale = computed({
   },
 })
 
+const allAuthorChoices = computed(() => allAuthors.value.map(a => ({ name: a.email, value: a.id })))
+
+const postAuthorId = computed({
+  get() {
+    return post.value?.author?.id || undefined
+  },
+  set(val) {
+    if (post.value) {
+      post.value.author = allAuthors.value.find(a => a.id === val) || null
+    }
+  },
+})
+
 async function fetchCategories() {
   const raw = await kyClient.get(API_GET_CATEGORIES).json()
   const resp = ObjectListResponseSchema.parse(raw)
@@ -191,8 +220,14 @@ async function fetchCategories() {
   }
 }
 
+async function fetchAuthors() {
+  const raw = await kyClient.get(API_GET_USERS).json()
+  allAuthors.value = z.array(UserSchema).parse(raw)
+}
+
 async function fetchData() {
   await fetchCategories()
+  await fetchAuthors()
   if (!props.postId) {
     post.value = PostSchema.parse({ created_at: new Date().toISOString() })
     return

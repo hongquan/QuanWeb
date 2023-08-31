@@ -3,11 +3,13 @@ import { D } from '@mobily/ts-belt'
 
 import { WithCategories } from '@/models/blog'
 import { Book } from '@/models/minors'
+import { User } from '@/models/user'
 
-export function transformPostForPosting(origData: RequireAtLeastOne<WithCategories, 'categories'> & { created_at: Date } ) {
+export function transformPostForPosting(origData: RequireAtLeastOne<WithCategories, 'categories'> & { author: User | null, created_at: Date } ) {
   const categoriesIds = origData.categories.map((c) => c.id)
-  const stripped = D.deleteKeys(origData, ['id', 'categories', 'created_at'])
-  const postData = D.set(stripped, 'categories', categoriesIds)
+  const authorId = origData.author ? origData.author.id : null
+  const stripped = D.deleteKeys(origData, ['id', 'categories', 'author', 'created_at'])
+  const postData = D.merge(stripped, { author: authorId, categories: categoriesIds })
   return postData
 }
 

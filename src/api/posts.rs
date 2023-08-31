@@ -121,6 +121,7 @@ pub async fn update_post_partial(
             locale,
             excerpt,
             html,
+            author: {{ id, username, email }},
             seo_description,
             og_image,
         }}"
@@ -176,6 +177,7 @@ pub async fn create_post(
         locale,
         excerpt,
         html,
+        author: {{id, username, email}},
         seo_description,
         og_image,
     }}"
