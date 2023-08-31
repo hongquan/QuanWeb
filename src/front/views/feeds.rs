@@ -58,7 +58,7 @@ pub async fn gen_atom_feeds(
         links.push(LinkBuilder::default().rel("previous".to_string()).href(format!("{base_url}{url}")).build())
     }
     let entries: Vec<Entry> = posts.iter().map(|p| p.to_atom_entry(Some(&host))).collect();
-    let latest_post = stores::blog::get_latest_post(&db)
+    let latest_post = stores::blog::get_last_updated_post(&db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let updated_at = latest_post

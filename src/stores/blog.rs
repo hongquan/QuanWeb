@@ -387,7 +387,7 @@ pub async fn get_next_post(created_at: EDatetime, cat_slug: Option<&str>, client
     Ok(post)
 }
 
-pub async fn get_latest_post(client: &Client) -> Result<Option<MiniBlogPost>, Error> {
+pub async fn get_last_updated_post(client: &Client) -> Result<Option<MiniBlogPost>, Error> {
     let q = "
     SELECT BlogPost {
         id,
@@ -395,7 +395,7 @@ pub async fn get_latest_post(client: &Client) -> Result<Option<MiniBlogPost>, Er
         slug,
         created_at,
         updated_at,
-    } FILTER .is_published = true ORDER BY .created_at DESC LIMIT 1";
+    } FILTER .is_published = true ORDER BY .updated_at DESC LIMIT 1";
     tracing::debug!("To query: {}", q);
     let post: Option<MiniBlogPost> = client.query_single(q, &()).await?;
     Ok(post)
