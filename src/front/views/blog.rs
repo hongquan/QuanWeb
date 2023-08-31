@@ -75,18 +75,19 @@ pub async fn list_posts(
         .page
         .and_then(|p| NonZeroU16::new(p.parse().ok()?))
         .unwrap_or(NonZeroU16::MIN);
+    let page_size = DEFAULT_PAGE_SIZE;
+    let offset = ((current_page.get() - 1) * page_size as u16) as i64;
     let cat = stores::blog::get_category_by_slug(&cat_slug, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    let posts = stores::blog::get_published_posts_under_category(Some(cat_slug), None, None, &db)
+    let posts = stores::blog::get_published_posts_under_category(Some(cat_slug), Some(offset), Some(page_size as i64), &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);
     let total = stores::blog::count_blogposts_under_category(cat.id, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let page_size = DEFAULT_PAGE_SIZE;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
     let paginator = Paginator {
