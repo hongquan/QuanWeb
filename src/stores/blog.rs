@@ -51,6 +51,11 @@ pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedB
         locale,
         excerpt,
         html,
+        author: {
+            id,
+            username,
+            email,
+        },
         seo_description,
         og_image,
     }
@@ -78,6 +83,11 @@ pub async fn get_detailed_post_by_slug(slug: String, client: &Client) -> Result<
         locale,
         excerpt,
         html,
+        author: {
+            id,
+            username,
+            email,
+        },
         seo_description,
         og_image,
     }
@@ -267,6 +277,11 @@ pub async fn get_published_uncategorized_blogposts(offset: Option<i64>, limit: O
             id,
             title,
             slug,
+        }},
+        author: {{
+            id,
+            username,
+            email,
         }},
     }}
     FILTER .is_published = true AND NOT EXISTS .categories ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");

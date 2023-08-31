@@ -204,6 +204,7 @@ pub struct DetailedBlogPost {
     pub locale: Option<String>,
     pub excerpt: Option<String>,
     pub html: Option<String>,
+    pub author: Option<MiniUser>,
     pub seo_description: Option<String>,
     pub og_image: Option<String>,
 }
@@ -225,6 +226,7 @@ impl Default for DetailedBlogPost {
             locale: None,
             excerpt: None,
             html: None,
+            author: None,
             seo_description: None,
             og_image: None,
         }
