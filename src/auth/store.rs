@@ -5,7 +5,6 @@ use std::marker::PhantomData;
 use async_trait::async_trait;
 use axum_login::{UserStore as UserStoreTrait, AuthUser};
 use edgedb_protocol::{query_arg::ScalarArg, queryable::Queryable};
-use eyre::Error;
 
 
 #[derive(Clone, Debug)]
@@ -31,7 +30,8 @@ where
     IUser: AuthUser<UserId, Role> + Queryable,
 {
     type User = IUser;
-    async fn load_user(&self, user_id: &UserId) -> Result<Option<Self::User>, Error> {
+    type Error = edgedb_errors::Error;
+    async fn load_user(&self, user_id: &UserId) -> Result<Option<Self::User>, Self::Error> {
         tracing::info!("To load user with ID {:?}", user_id);
         let q = "SELECT User {id, username, email, password, is_active, is_superuser} FILTER .id = <uuid>$0";
         let user: Option<IUser> = self.client.query_single(q, &(user_id,)).await?;

@@ -14,7 +14,7 @@ pub struct CssSyntectAdapter {
 impl CssSyntectAdapter {
     pub fn new() -> Self {
         Self {
-            syntax_set: two_face::syntax::extra(),
+            syntax_set: two_face::syntax::extra_newlines(),
         }
     }
 

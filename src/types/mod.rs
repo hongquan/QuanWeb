@@ -1,5 +1,3 @@
-#![allow(non_upper_case_globals)]
-
 pub mod conversions;
 #[cfg(test)]
 pub mod tests;
