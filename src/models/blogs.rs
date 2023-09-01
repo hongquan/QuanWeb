@@ -4,12 +4,11 @@ use chrono::{Utc, DateTime};
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
-use http::Uri;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use atom_syndication::{Entry as AtomEntry, EntryBuilder, Link, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text, Person};
+use atom_syndication::{Entry as AtomEntry, EntryBuilder, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text, Person};
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
@@ -74,36 +73,9 @@ pub struct MediumBlogPost {
 }
 
 impl MediumBlogPost {
-    pub fn get_view_url(&self, base_url: Option<&Uri>) -> String {
+    pub fn get_view_url(&self) -> String {
         let created_at: DateTime<Utc> = self.created_at.into();
-        let url_path = format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug);
-        let host = base_url.map(|u| u.authority()).flatten();
-        if let Some(host) = host {
-            let scheme = base_url.map(|u| u.scheme_str()).flatten().unwrap_or("https");
-            format!("{scheme}://{host}{url_path}")
-        } else {
-            url_path
-        }
-    }
-
-    pub fn to_atom_entry(&self, host: Option<&str>) -> AtomEntry {
-        let mut entry = AtomEntry::from(self.clone());
-        if let Some(host) = host {
-            let links = entry.links();
-            let absolute_links: Vec<Link> = links.into_iter().map(|l| {
-                let mut link = l.clone();
-                if l.href().starts_with("/") {
-                    let path = l.href();
-                    let scheme = if host == "localhost" { "http" } else { "https" };
-                    link.set_href(format!("{scheme}://{host}{path}"));
-                    link
-                } else {
-                    link
-                }
-            }).collect();
-            entry.set_links(absolute_links);
-        };
-        entry
+        format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
     }
 }
 
@@ -128,7 +100,7 @@ impl Default for MediumBlogPost {
 
 impl From<MediumBlogPost> for AtomEntry {
     fn from(value: MediumBlogPost) -> Self {
-        let url = value.get_view_url(None);
+        let url = value.get_view_url();
         let MediumBlogPost {
             id,
             title,
@@ -167,7 +139,7 @@ impl From<MediumBlogPost> for AtomEntry {
 
 impl From<MediumBlogPost> for JsonItem {
     fn from(value: MediumBlogPost) -> Self {
-        let url = value.get_view_url(None);
+        let url = value.get_view_url();
         let MediumBlogPost {
             id,
             title,

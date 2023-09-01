@@ -5,12 +5,12 @@ use axum::extract::{Query, State, Host, OriginalUri};
 use axum::response::{Result as AxumResult, IntoResponseParts, Json};
 use chrono::{TimeZone, Utc};
 use edgedb_tokio::Client as EdgeClient;
-use http::header::CONTENT_TYPE;
+use http::{header::CONTENT_TYPE, Uri};
 
 use super::super::structs::LaxPaging;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::errors::PageError;
-use crate::models::feeds::{JsonFeed, JsonItem};
+use crate::models::feeds::{JsonFeed, JsonItem, EntryExt, DEFAULT_SITE_URL};
 use crate::stores;
 use crate::types::Paginator;
 
@@ -23,7 +23,7 @@ pub async fn gen_atom_feeds(
     Query(paging): Query<LaxPaging>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<(impl IntoResponseParts, String)> {
-    let base_url = format!("https://{host}");
+    let base_url: Uri = format!("https://{host}").parse().unwrap_or(Uri::from_static(DEFAULT_SITE_URL));
     let current_page = paging.get_page_as_number();
     let page_size = DEFAULT_PAGE_SIZE;
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
@@ -55,7 +55,8 @@ pub async fn gen_atom_feeds(
     if let Some(url) = prev_page_url {
         links.push(LinkBuilder::default().rel("previous".to_string()).href(format!("{base_url}{url}")).build())
     }
-    let entries: Vec<Entry> = posts.iter().map(|p| p.to_atom_entry(Some(&host))).collect();
+    let mut entries: Vec<Entry> = posts.into_iter().map(Entry::from).collect();
+    entries.iter_mut().for_each(|e| e.prepend_url(&base_url));
     let latest_post = stores::blog::get_last_updated_post(&db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
