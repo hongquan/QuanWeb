@@ -219,6 +219,10 @@ impl Paginator {
     }
 }
 
+pub trait EdgeSelectable {
+    fn fields_as_shape() -> String;
+}
+
 pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> ShapeElement {
     ShapeElement {
         name: name.to_string(),

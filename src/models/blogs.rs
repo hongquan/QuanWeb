@@ -9,10 +9,12 @@ use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
 use atom_syndication::{Entry as AtomEntry, EntryBuilder, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text, Person};
+use field_names::FieldNames;
 
 use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
 };
+use crate::types::EdgeSelectable;
 use super::users::MiniUser;
 use super::feeds::{JsonAuthor, JsonItem};
 use crate::utils::html::strip_tags;
@@ -173,11 +175,18 @@ impl From<MediumBlogPost> for JsonItem {
     }
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Queryable, FieldNames)]
 pub struct BlogCategory {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
+}
+
+impl EdgeSelectable for BlogCategory {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
 }
 
 impl From<BlogCategory> for AtomCategory {
@@ -246,7 +255,7 @@ impl Default for DetailedBlogPost {
 }
 
 // Struct to represent a BlogPost in the database, with just a few fields enough to build links.
-#[derive(Debug, Serialize, Queryable)]
+#[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
 pub struct MiniBlogPost {
     pub id: Uuid,
     pub title: String,
@@ -255,4 +264,11 @@ pub struct MiniBlogPost {
     pub created_at: EDatetime,
     #[serde(serialize_with = "serialize_optional_edge_datetime")]
     pub updated_at: Option<EDatetime>,
+}
+
+impl EdgeSelectable for MiniBlogPost {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
 }
