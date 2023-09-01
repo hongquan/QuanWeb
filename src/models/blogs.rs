@@ -15,6 +15,8 @@ use crate::types::conversions::{
     serialize_edge_datetime, serialize_optional_edge_datetime,
 };
 use super::users::MiniUser;
+use super::feeds::{JsonAuthor, JsonItem};
+use crate::utils::html::strip_tags;
 
 #[derive(
     Debug,
@@ -61,6 +63,7 @@ pub struct MediumBlogPost {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
+    pub locale: Option<String>,
     pub excerpt: Option<String>,
     pub is_published: Option<bool>,
     pub published_at: Option<EDatetime>,
@@ -111,6 +114,7 @@ impl Default for MediumBlogPost {
             id: Uuid::default(),
             title: String::default(),
             slug: String::default(),
+            locale: None,
             excerpt: None,
             is_published: Some(false),
             published_at: None,
@@ -158,6 +162,42 @@ impl From<MediumBlogPost> for AtomEntry {
             .categories(categories)
             .authors(authors);
         builder.build()
+    }
+}
+
+impl From<MediumBlogPost> for JsonItem {
+    fn from(value: MediumBlogPost) -> Self {
+        let url = value.get_view_url(None);
+        let MediumBlogPost {
+            id,
+            title,
+            excerpt,
+            locale,
+            published_at,
+            created_at,
+            updated_at,
+            categories,
+            author,
+            ..
+        } = value;
+        let entry_id = format!("urn:uuid:{id}");
+        let updated_at: DateTime<Utc> = updated_at.unwrap_or(created_at).into();
+        let categories: Vec<String> = categories.into_iter().map(|c| c.title).collect();
+        let authors = author.map(|a| vec![JsonAuthor::from(a)]);
+        JsonItem {
+            id: entry_id,
+            url: Some(url),
+            external_url: None,
+            title: Some(title),
+            content_html: None,
+            content_text: None,
+            summary: excerpt.as_deref().map(strip_tags),
+            date_published: published_at.map(|d| DateTime::<Utc>::from(d).to_rfc3339()),
+            date_modified: Some(updated_at.to_rfc3339()),
+            authors,
+            tags: Some(categories),
+            language: locale,
+        }
     }
 }
 

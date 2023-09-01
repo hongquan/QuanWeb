@@ -1,6 +1,7 @@
 pub mod users;
 pub mod blogs;
 pub mod minors;
+pub mod feeds;
 
 pub use users::{User, Role};
 pub use blogs::{DocFormat, MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};

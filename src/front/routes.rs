@@ -16,5 +16,6 @@ pub fn get_router() -> Router<AppState> {
     .route("/talk/", get(views::minors::list_talks))
     .route("/book/", get(views::minors::list_books))
     .route("/feeds.atom", get(views::feeds::gen_atom_feeds))
+    .route("/feeds.json", get(views::feeds::gen_json_feeds))
     .route("/api/set-lang", post(views::set_lang))
 }

@@ -10,6 +10,7 @@ default-run = "quanweb"
 strip="debuginfo"
 
 [dependencies]
+ammonia = "3.3.0"
 async-fred-session = "0.1.5"
 async-trait = "0.1.71"
 atom_syndication = { version = "0.12.2", features = ["serde"] }

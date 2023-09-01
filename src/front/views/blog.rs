@@ -71,10 +71,7 @@ pub async fn list_posts(
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let current_page = paging
-        .page
-        .and_then(|p| NonZeroU16::new(p.parse().ok()?))
-        .unwrap_or(NonZeroU16::MIN);
+    let current_page = paging.get_page_as_number();
     let page_size = DEFAULT_PAGE_SIZE;
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
     let cat = stores::blog::get_category_by_slug(&cat_slug, &db)

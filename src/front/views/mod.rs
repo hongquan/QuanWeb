@@ -42,10 +42,7 @@ pub async fn home(
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let current_page = paging
-        .page
-        .and_then(|p| NonZeroU16::new(p.parse().ok()?))
-        .unwrap_or(NonZeroU16::MIN);
+    let current_page = paging.get_page_as_number();
     let total = stores::blog::count_all_published_posts(&db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;

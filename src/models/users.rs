@@ -5,6 +5,8 @@ use edgedb_derive::Queryable;
 use serde::{Serialize, Deserialize};
 use atom_syndication::{Person, PersonBuilder};
 
+use super::feeds::JsonAuthor;
+
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, Queryable)]
 pub struct User {
     pub id: Uuid,
@@ -29,6 +31,15 @@ impl From<MiniUser> for Person {
             .name(user.username)
             .email(Some(user.email))
             .build()
+    }
+}
+
+impl From<MiniUser> for JsonAuthor {
+    fn from(user: MiniUser) -> Self {
+        JsonAuthor {
+            name: Some(user.username),
+            url: None,
+        }
     }
 }
 

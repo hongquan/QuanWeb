@@ -1,5 +1,6 @@
 pub mod urls;
 pub mod markdown;
+pub mod html;
 pub mod jinja_extra;
 
 pub fn split_search_query<'a>(query: Option<&'a str>) -> Option<Vec<&str>> {
