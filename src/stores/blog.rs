@@ -413,7 +413,7 @@ pub async fn get_last_updated_post(client: &Client) -> Result<Option<MiniBlogPos
 }
 
 pub async fn get_mini_post_by_old_id(old_id: u32, client: &Client) -> Result<Option<MiniBlogPost>, Error> {
-    let q = "SELECT BlogPost {id, title, slug, created_at} FILTER .old_id = <int32>$0";
+    let q = "SELECT BlogPost {id, title, slug, created_at, updated_at} FILTER .old_id = <int32>$0";
     tracing::debug!("To query: {}", q);
     let post: Option<MiniBlogPost> = client.query_single(q, &(old_id as i32,)).await?;
     Ok(post)
