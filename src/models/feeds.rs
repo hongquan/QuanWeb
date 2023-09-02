@@ -16,14 +16,14 @@ pub struct JsonFeed {
     pub description: Option<String>,
     pub icon: Option<String>,
     pub favicon: Option<String>,
-    pub authors: Option<Vec<JsonAuthor>>,
+    pub author: Option<JsonAuthor>,
     pub items: Vec<JsonItem>,
 }
 
 impl Default for JsonFeed {
     fn default() -> Self {
         Self {
-            version: "https://jsonfeed.org/version/1.1".into(),
+            version: "https://jsonfeed.org/version/1".into(),
             title: "QuanWeb".into(),
             home_page_url: Some(DEFAULT_SITE_URL.to_string()),
             feed_url: None,
@@ -31,7 +31,7 @@ impl Default for JsonFeed {
             description: Some("Blog about programming, culture, history".into()),
             icon: None,
             favicon: None,
-            authors: None,
+            author: None,
             items: vec![],
         }
     }
@@ -54,7 +54,7 @@ pub struct JsonItem {
     pub summary: Option<String>,
     pub date_published: Option<String>,
     pub date_modified: Option<String>,
-    pub authors: Option<Vec<JsonAuthor>>,
+    pub author: Option<JsonAuthor>,
     pub tags: Option<Vec<String>>,
     pub language: Option<String>,
 }

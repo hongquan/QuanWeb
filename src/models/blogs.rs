@@ -157,7 +157,7 @@ impl From<MediumBlogPost> for JsonItem {
         let entry_id = format!("urn:uuid:{id}");
         let updated_at: DateTime<Utc> = updated_at.unwrap_or(created_at).into();
         let categories: Vec<String> = categories.into_iter().map(|c| c.title).collect();
-        let authors = author.map(|a| vec![JsonAuthor::from(a)]);
+        let author = author.map(JsonAuthor::from);
         JsonItem {
             id: entry_id,
             url: Some(url),
@@ -168,7 +168,7 @@ impl From<MediumBlogPost> for JsonItem {
             summary: excerpt.as_deref().map(strip_tags),
             date_published: published_at.map(|d| DateTime::<Utc>::from(d).to_rfc3339()),
             date_modified: Some(updated_at.to_rfc3339()),
-            authors,
+            author,
             tags: Some(categories),
             language: locale,
         }
