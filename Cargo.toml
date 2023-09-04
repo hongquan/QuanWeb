@@ -58,7 +58,7 @@ tower-http = { version = "0.4.1", features = ["trace"] }
 tracing = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-journald = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-subscriber = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald", features = ["env-filter"] }
-two-face = "0.2.0"
+two-face = { version = "0.3.0", default-features = false, features = ["syntect-fancy"] }
 unic-langid = { version = "0.9.1", features = ["serde"] }
 uuid = { version = "1.4.1", features = ["v1", "serde"] }
 validify = "1.0.11"
