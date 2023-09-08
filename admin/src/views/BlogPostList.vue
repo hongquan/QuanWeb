@@ -9,7 +9,7 @@
           v-model='search'
           name='q'
           placeholder='Search'
-          class='w-64'
+          class='w-40 sm:w-64'
           size='sm'
         >
           <template #prefix>
@@ -72,6 +72,12 @@
               :class='CELL_CLASSES'
             >
               Categories
+            </th>
+            <th
+              scope='col'
+              :class='CELL_CLASSES'
+            >
+              Created
             </th>
             <th
               scope='col'

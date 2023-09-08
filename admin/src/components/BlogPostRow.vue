@@ -16,7 +16,10 @@
       {{ post.slug }}
     </td>
     <td :class='CELL_CLASSES'>
-      {{ CategoriesDisplay }}
+      {{ categoriesDisplay }}
+    </td>
+    <td :class='CELL_CLASSES'>
+      {{ createDateDisplay }}
     </td>
     <td>
       <div class='flex items-center space-x-4'>
@@ -86,12 +89,18 @@ const classNames = computed(() => [
   'dark:border-gray-700',
 ])
 
-const CategoriesDisplay = computed(() => {
+const categoriesDisplay = computed(() => {
   if (!props.post.categories) {
     return ''
   }
   return props.post.categories.map(c => c.title).join(', ')
 })
+
+const createDateDisplay = computed(() => props.post.created_at.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+}))
 
 const editUrl = computed(() => ({
   name: 'post.edit',
