@@ -59,7 +59,7 @@ impl From<DocFormat> for EValue {
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
 )]
-#[derive(Debug, Clone, Serialize, Queryable)]
+#[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
 pub struct MediumBlogPost {
     pub id: Uuid,
     pub title: String,
@@ -97,6 +97,25 @@ impl Default for MediumBlogPost {
             categories: Vec::default(),
             author: None,
         }
+    }
+}
+
+impl EdgeSelectable for MediumBlogPost {
+    fn fields_as_shape() -> String {
+        let fields: Vec<String> = Self::FIELDS.into_iter().map(|s| {
+            match s {
+                "categories" => {
+                    let cat_shape = BlogCategory::fields_as_shape();
+                    format!("categories: {cat_shape}")
+                },
+                "author" => {
+                    let user_shape = MiniUser::fields_as_shape();
+                    format!("author: {user_shape}")
+                },
+                _ => s.to_string(),
+            }
+        }).collect();
+        format!("{{ {} }}", fields.join(", "))
     }
 }
 
@@ -210,7 +229,7 @@ impl FromIterator<BlogCategory> for Vec<AtomCategory> {
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
 )]
-#[derive(Debug, Serialize, Queryable)]
+#[derive(Debug, Serialize, Queryable, FieldNames)]
 pub struct DetailedBlogPost {
     pub id: Uuid,
     pub title: String,
@@ -251,6 +270,25 @@ impl Default for DetailedBlogPost {
             seo_description: None,
             og_image: None,
         }
+    }
+}
+
+impl EdgeSelectable for DetailedBlogPost {
+    fn fields_as_shape() -> String {
+        let fields: Vec<String> = Self::FIELDS.into_iter().map(|s| {
+            match s {
+                "categories" => {
+                    let cat_shape = BlogCategory::fields_as_shape();
+                    format!("categories: {cat_shape}")
+                },
+                "author" => {
+                    let user_shape = MiniUser::fields_as_shape();
+                    format!("author: {user_shape}")
+                },
+                _ => s.to_string(),
+            }
+        }).collect();
+        format!("{{ {} }}", fields.join(", "))
     }
 }
 

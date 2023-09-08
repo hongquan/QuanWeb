@@ -1,11 +1,12 @@
 use uuid::Uuid;
-
+use field_names::FieldNames;
 use axum_login::{AuthUser, secrecy::SecretVec};
 use edgedb_derive::Queryable;
 use serde::{Serialize, Deserialize};
 use atom_syndication::{Person, PersonBuilder};
 
 use super::feeds::JsonAuthor;
+use crate::types::EdgeSelectable;
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, Queryable)]
 pub struct User {
@@ -18,11 +19,18 @@ pub struct User {
     pub is_superuser: bool,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, Queryable, FieldNames)]
 pub struct MiniUser {
     pub id: Uuid,
     pub username: String,
     pub email: String,
+}
+
+impl EdgeSelectable for MiniUser {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
 }
 
 impl From<MiniUser> for Person {

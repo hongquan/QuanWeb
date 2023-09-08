@@ -6,8 +6,8 @@ use indexmap::{indexmap, IndexMap};
 use uuid::Uuid;
 
 use crate::models::{BlogCategory, DetailedBlogPost, MediumBlogPost, MiniBlogPost};
-use crate::types::EdgeSelectable;
 use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
+use crate::types::EdgeSelectable;
 
 pub async fn count_search_result_posts(
     lower_search_tokens: Option<&Vec<String>>,
@@ -41,28 +41,13 @@ pub async fn count_all_published_posts(client: &Client) -> Result<usize, Error> 
 pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
     // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
     // does not match DetailedBlogPost.
-    let q = "
-    SELECT BlogPost {
-        id,
-        title,
-        slug,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {id, title, slug},
-        body,
-        format,
-        locale,
-        excerpt,
-        html,
-        author: {id, username, email},
-        seo_description,
-        og_image,
-    }
-    FILTER .id = <uuid>$0";
+    let fields = DetailedBlogPost::fields_as_shape();
+    let q = format!(
+        "SELECT BlogPost {fields}
+        FILTER .id = <uuid>$0"
+    );
     tracing::debug!("To query: {}", q);
-    let post: Option<DetailedBlogPost> = client.query_single(q, &(post_id,)).await?;
+    let post: Option<DetailedBlogPost> = client.query_single(&q, &(post_id,)).await?;
     Ok(post)
 }
 
@@ -72,28 +57,13 @@ pub async fn get_detailed_post_by_slug(
 ) -> Result<Option<DetailedBlogPost>, Error> {
     // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
     // does not match DetailedBlogPost.
-    let q = "
-    SELECT BlogPost {
-        id,
-        title,
-        slug,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {id, title, slug},
-        body,
-        format,
-        locale,
-        excerpt,
-        html,
-        author: {id, username, email},
-        seo_description,
-        og_image,
-    }
-    FILTER .slug = <str>$0";
+    let fields = DetailedBlogPost::fields_as_shape();
+    let q = format!(
+        "SELECT BlogPost {fields}
+        FILTER .slug = <str>$0"
+    );
     tracing::debug!("To query: {}", q);
-    let post: Option<DetailedBlogPost> = client.query_single(q, &(slug,)).await?;
+    let post: Option<DetailedBlogPost> = client.query_single(&q, &(slug,)).await?;
     Ok(post)
 }
 
@@ -123,32 +93,12 @@ pub async fn get_blogposts(
         paging_lines.push(format!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
+    let fields = MediumBlogPost::fields_as_shape();
     let args = edge_object_from_pairs(pairs);
     let q = format!(
-        "
-    SELECT BlogPost {{
-        id,
-        title,
-        slug,
-        locale,
-        excerpt,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
-        author: {{
-            id,
-            username,
-            email,
-        }},
-    }}
-    {filter_line}
-    ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
+        "SELECT BlogPost {fields}
+        {filter_line}
+        ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:?}", args);
@@ -172,35 +122,15 @@ pub async fn get_published_posts(
         paging_lines.push(format!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
+    let fields = MediumBlogPost::fields_as_shape();
     let args = if pairs.is_empty() {
         EValue::Nothing
     } else {
         edge_object_from_pairs(pairs)
     };
     let q = format!(
-        "
-    SELECT BlogPost {{
-        id,
-        title,
-        slug,
-        locale,
-        excerpt,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
-        author: {{
-            id,
-            username,
-            email,
-        }},
-    }}
-    FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
+        "SELECT BlogPost {fields}
+        FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
     tracing::info!("To query: {}", q);
     let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
@@ -230,32 +160,12 @@ pub async fn get_published_posts_under_category(
     }
     let filter_expr = filter_lines.join(" AND ");
     let paging_expr = paging_lines.join(" ");
+    let fields = MediumBlogPost::fields_as_shape();
     let args = edge_object_from_pairs(pairs);
 
     let q = format!(
-        "
-    SELECT BlogPost {{
-        id,
-        title,
-        slug,
-        locale,
-        excerpt,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
-        author: {{
-            id,
-            username,
-            email,
-        }},
-    }}
-    FILTER {filter_expr} ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
+        "SELECT BlogPost {fields}
+        FILTER {filter_expr} ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
@@ -287,29 +197,10 @@ pub async fn get_published_uncategorized_blogposts(
         paging_lines.push(format!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
+    let fields = MediumBlogPost::fields_as_shape();
     let args = edge_object_from_pairs(pairs);
     let q = format!("
-    SELECT BlogPost {{
-        id,
-        title,
-        slug,
-        locale,
-        excerpt,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{
-            id,
-            title,
-            slug,
-        }},
-        author: {{
-            id,
-            username,
-            email,
-        }},
-    }}
+    SELECT BlogPost {fields}
     FILTER .is_published = true AND NOT EXISTS .categories ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
@@ -330,7 +221,10 @@ pub async fn get_blog_categories(
     limit: Option<i64>,
     client: &Client,
 ) -> Result<Vec<BlogCategory>, Error> {
-    let q = format!("SELECT BlogCategory {} ORDER BY .title OFFSET <optional int64>$0 LIMIT <optional int64>$1", BlogCategory::fields_as_shape());
+    let q = format!(
+        "SELECT BlogCategory {} ORDER BY .title OFFSET <optional int64>$0 LIMIT <optional int64>$1",
+        BlogCategory::fields_as_shape()
+    );
     let categories: Vec<BlogCategory> = client.query(&q, &(offset, limit)).await?;
     Ok(categories)
 }
@@ -343,7 +237,10 @@ pub async fn get_all_categories_count(client: &Client) -> Result<usize, Error> {
 }
 
 pub async fn get_category(id: Uuid, client: &Client) -> Result<Option<BlogCategory>, Error> {
-    let q = format!("SELECT BlogCategory {} FILTER .id = <uuid>$0", BlogCategory::fields_as_shape());
+    let q = format!(
+        "SELECT BlogCategory {} FILTER .id = <uuid>$0",
+        BlogCategory::fields_as_shape()
+    );
     tracing::debug!("To query: {}", q);
     let cat: Option<BlogCategory> = client.query_single(&q, &(id,)).await?;
     Ok(cat)
@@ -353,7 +250,10 @@ pub async fn get_category_by_slug(
     slug: &str,
     client: &Client,
 ) -> Result<Option<BlogCategory>, Error> {
-    let q = format!("SELECT BlogCategory {} FILTER .slug = <str>$0", BlogCategory::fields_as_shape());
+    let q = format!(
+        "SELECT BlogCategory {} FILTER .slug = <str>$0",
+        BlogCategory::fields_as_shape()
+    );
     tracing::debug!("To query: {}", q);
     let cat: Option<BlogCategory> = client.query_single(&q, &(slug,)).await?;
     Ok(cat)
@@ -380,7 +280,8 @@ pub async fn get_previous_post(
     let args = edge_object_from_simple_pairs(pairs);
     let fields = MiniBlogPost::fields_as_shape();
 
-    let q = format!("SELECT BlogPost {fields} FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
+    let q =
+        format!("SELECT BlogPost {fields} FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
     tracing::debug!("To query: {}", q);
     let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
@@ -407,7 +308,8 @@ pub async fn get_next_post(
     let args = edge_object_from_simple_pairs(pairs);
 
     let fields = MiniBlogPost::fields_as_shape();
-    let q = format!("SELECT BlogPost {fields} FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
+    let q =
+        format!("SELECT BlogPost {fields} FILTER {filter_expr} ORDER BY .created_at ASC LIMIT 1");
     tracing::debug!("To query: {}", q);
     let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
