@@ -2,7 +2,7 @@
 
 This is my personal website. At first, it only has a blog, with Markdown being input format.
 
-The website is being rewritten in Rust.
+The website is programmed in Rust (used to be Python, but was rewritten as an exercise to learn Rust).
 
 ## Tech stack
 
