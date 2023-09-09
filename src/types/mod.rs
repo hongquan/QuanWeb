@@ -1,4 +1,5 @@
 pub mod conversions;
+pub mod ext;
 #[cfg(test)]
 pub mod tests;
 

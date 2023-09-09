@@ -12,7 +12,7 @@ use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::errors::PageError;
 use crate::models::feeds::{JsonFeed, JsonItem, EntryExt, DEFAULT_SITE_URL};
 use crate::stores;
-use crate::types::Paginator;
+use crate::types::{Paginator, ext::UriExt};
 
 // Generate from Python: uuid.uuid5(uuid.NAMESPACE_DNS, 'quan.hoabinh.vn'
 const SITE_UUID: &str = "4543aea6-ab17-5c18-9279-19e73529594d";
@@ -39,21 +39,21 @@ pub async fn gen_atom_feeds(
         current_page,
         total_pages,
     };
-    let self_url = format!("{base_url}{current_url}");
+    let self_url = base_url.join(&current_url.to_string()).to_string();
     let first_page_url = paginator.first_url(&current_url);
     let last_page_url = paginator.last_url(&current_url);
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
     let mut links = vec![
         LinkBuilder::default().rel("self".to_string()).href(self_url).build(),
-        LinkBuilder::default().rel("first".to_string()).href(format!("{base_url}{first_page_url}")).build(),
-        LinkBuilder::default().rel("last".to_string()).href(format!("{base_url}{last_page_url}")).build(),
+        LinkBuilder::default().rel("first".to_string()).href(base_url.join(&first_page_url).to_string()).build(),
+        LinkBuilder::default().rel("last".to_string()).href(base_url.join(&last_page_url).to_string()).build(),
     ];
     if let Some(url) = next_page_url {
-        links.push(LinkBuilder::default().rel("next".to_string()).href(format!("{base_url}{url}")).build())
+        links.push(LinkBuilder::default().rel("next".to_string()).href(base_url.join(&url).to_string()).build())
     }
     if let Some(url) = prev_page_url {
-        links.push(LinkBuilder::default().rel("previous".to_string()).href(format!("{base_url}{url}")).build())
+        links.push(LinkBuilder::default().rel("previous".to_string()).href(base_url.join(&url).to_string()).build())
     }
     let mut entries: Vec<Entry> = posts.into_iter().map(Entry::from).collect();
     entries.iter_mut().for_each(|e| e.prepend_url(&base_url));

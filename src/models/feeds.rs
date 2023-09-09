@@ -4,6 +4,7 @@ use http::Uri;
 use serde::Serialize;
 use atom_syndication::Entry;
 
+use crate::types::ext::UriExt;
 pub const DEFAULT_SITE_URL: &str = "https://quan.hoabinh.vn";
 
 #[derive(Debug, Serialize)]
@@ -68,7 +69,7 @@ impl EntryExt for Entry {
         self.links.iter_mut().for_each(|u| {
             let old_url = u.href();
             if old_url.starts_with("/") {
-                u.set_href(format!("{base_url}{old_url}"));
+                u.set_href(base_url.join(old_url).to_string());
             }
         });
     }
