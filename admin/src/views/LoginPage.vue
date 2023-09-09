@@ -1,5 +1,5 @@
 <template>
-  <div class='max-w-md mx-auto'>
+  <div class='max-w-md mx-auto px-4'>
     <h1 class='text-2xl py-4'>
       Login
     </h1>
