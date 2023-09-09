@@ -40,6 +40,8 @@
         <div class='flex items-center h-5'>
           <input
             id='remember'
+            v-model='remember'
+            name='remember'
             type='checkbox'
             class='w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800'
           >
@@ -82,12 +84,13 @@ const route = useRoute()
 const store = useStore()
 const email = ref('')
 const password = ref('')
+const remember = ref(false)
 const isSubmitting = ref(false)
 
 async function onSubmit() {
   isSubmitting.value = true
   try {
-    const resp = await kyClient.post(API_LOGIN, { json: { email: email.value, password: password.value } }).json()
+    const resp = await kyClient.post(API_LOGIN, { json: { email: email.value, password: password.value, remember_me: remember.value } }).json()
     const user = UserSchema.parse(resp)
     store.user = user
     toast.success('Login successfully')

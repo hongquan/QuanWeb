@@ -8,6 +8,7 @@ pub struct LoginReqData {
     pub email: String,
     #[serde(serialize_with = "expose_secret")]
     pub password: Secret<String>,
+    pub remember_me: bool,
 }
 
 // The `#[derive(Validate)]` macro failed to generate code due to the type of `password` field.
@@ -36,6 +37,6 @@ impl validify::Validate for LoginReqData {
 
 pub fn validate_password(value: &Secret<String>) -> Result<(), ValidationError> {
     (value.expose_secret().len() >= 8).then_some(()).ok_or_else(|| {
-        ValidationError::new_field("password", "Too short")
+        ValidationError::new_field("password", "too-short")
     })
 }

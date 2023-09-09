@@ -7,24 +7,25 @@ mod errors;
 mod front;
 mod models;
 mod stores;
+mod thingsup;
 mod types;
 mod utils;
-mod thingsup;
 
 use std::net::SocketAddr;
-use std::{fs, path::Path};
 use std::os::unix::fs::PermissionsExt;
+use std::{fs, path::Path};
 
 use axum::routing::Router;
-use axum_login::{axum_sessions::SessionLayer, AuthLayer};
+use axum_login::AuthLayer;
+use axum_sessions::{PersistencePolicy, SessionLayer};
 use clap::Parser;
+use hyperlocal::UnixServerExt;
 use miette::{miette, IntoDiagnostic};
 use tower_http::trace::TraceLayer;
-use hyperlocal::UnixServerExt;
 
 use auth::store::EdgeDbStore;
+use thingsup::{config_jinja, config_logging, get_binding_addr, get_listening_addr, AppOptions};
 use types::AppState;
-use thingsup::{AppOptions, config_jinja, config_logging, get_listening_addr, get_binding_addr};
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
@@ -43,7 +44,10 @@ async fn main() -> miette::Result<()> {
         db: client.clone(),
         jinja,
     };
-    let session_layer = SessionLayer::new(redis_store, &secret_bytes).with_secure(false);
+    let session_layer = SessionLayer::new(redis_store, &secret_bytes)
+        .with_session_ttl(None)
+        .with_persistence_policy(PersistencePolicy::ChangedOnly)
+        .with_secure(false);
     let user_store: EdgeDbStore<models::User> = EdgeDbStore::new(client);
     let auth_layer = AuthLayer::new(user_store, &secret_bytes);
 
@@ -60,20 +64,21 @@ async fn main() -> miette::Result<()> {
         .layer(TraceLayer::new_for_http());
 
     let addr_result = match &app_opts.bind {
-        Some(saddr) => {
-            get_binding_addr(saddr)
-        },
+        Some(saddr) => get_binding_addr(saddr),
         None => {
             let port = conf::get_listening_port(&config);
             Ok(SocketAddr::from((get_listening_addr(), port)))
-        },
+        }
     };
     let main_service = app.into_make_service();
     match addr_result {
         Ok(addr) => {
             tracing::info!("Listening on http://{}", addr);
-            axum::Server::bind(&addr).serve(main_service).await.into_diagnostic()?;
-        },
+            axum::Server::bind(&addr)
+                .serve(main_service)
+                .await
+                .into_diagnostic()?;
+        }
         _ => {
             let original_bind = app_opts.bind.unwrap_or("web.sock".into());
             let path = Path::new(&original_bind);
@@ -85,7 +90,7 @@ async fn main() -> miette::Result<()> {
             let perm = fs::Permissions::from_mode(0o664);
             fs::set_permissions(path, perm).into_diagnostic()?;
             server.serve(main_service).await.into_diagnostic()?;
-        },
+        }
     }
     Ok(())
 }
