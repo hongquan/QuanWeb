@@ -9,6 +9,7 @@ use validify::Validify;
 
 use super::macros::append_set_statement;
 use crate::models::DocFormat;
+use crate::types::ext::VecExt;
 use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
@@ -69,7 +70,7 @@ impl BlogPostPatchData {
         append_set_statement!("slug", "optional str", lines, submitted_fields);
         append_set_statement!("is_published", "optional bool", lines, submitted_fields);
         append_set_statement!("format", "optional DocFormat", lines, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "body") {
+        if submitted_fields.contains("body") {
             // If user submitted "body" field, we will generate "html", "excerpt" and write, too
             lines.push("body := <optional str>$body");
             lines.push("html := <optional str>$html");
@@ -78,7 +79,7 @@ impl BlogPostPatchData {
         append_set_statement!("locale", "optional str", lines, submitted_fields);
         append_set_statement!("author", "optional User", lines, submitted_fields);
         append_set_statement!("og_image", "optional str", lines, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "categories") && self.categories.is_some() {
+        if submitted_fields.contains("categories") && self.categories.is_some() {
             let line = "categories := (
                 SELECT BlogCategory FILTER .id IN array_unpack(<array<uuid>>$categories)
             )";
@@ -91,25 +92,25 @@ impl BlogPostPatchData {
         let mut pairs = indexmap! {
             "id" => (Some(EValue::Uuid(post_id)), Cd::One),
         };
-        if submitted_fields.iter().any(|&f| f == "title") {
+        if submitted_fields.contains("title") {
             pairs.insert(
                 "title",
                 (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "slug") {
+        if submitted_fields.contains("slug") {
             pairs.insert(
                 "slug",
                 (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "is_published") {
+        if submitted_fields.contains("is_published") {
             pairs.insert(
                 "is_published",
                 (self.is_published.map(EValue::Bool), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "format") {
+        if submitted_fields.contains("format") {
             pairs.insert(
                 "format",
                 (
@@ -118,7 +119,7 @@ impl BlogPostPatchData {
                 ),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "body") {
+        if submitted_fields.contains("body") {
             let body = self.body.clone();
             let html = body.as_ref().map(|b| markdown_to_html(b));
             let excerpt = body.as_ref().map(|b| make_excerpt(b));
@@ -129,19 +130,19 @@ impl BlogPostPatchData {
                 (excerpt.map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "locale") {
+        if submitted_fields.contains("locale") {
             pairs.insert(
                 "locale",
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "author") {
+        if submitted_fields.contains("author") {
             pairs.insert(
                 "author",
                 (self.author.map(EValue::Uuid), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "og_image") {
+        if submitted_fields.contains("og_image") {
             pairs.insert(
                 "og_image",
                 (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
@@ -178,7 +179,7 @@ impl BlogPostCreateData {
     pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = vec!["title := <str>$title", "slug := <str>$slug"];
         append_set_statement!("is_published", "optional bool", lines, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "body") {
+        if submitted_fields.contains("body") {
             // If user submitted "body" field, we will generate "html", "excerpt" and write, too
             lines.push("body := <optional str>$body");
             lines.push("html := <optional str>$html");
@@ -203,13 +204,13 @@ impl BlogPostCreateData {
             "title" => (Some(EValue::Str(self.title.clone())), Cd::One),
             "slug" => (Some(EValue::Str(self.slug.clone())), Cd::One),
         };
-        if submitted_fields.iter().any(|&f| f == "is_published") {
+        if submitted_fields.contains("is_published") {
             pairs.insert(
                 "is_published",
                 (self.is_published.map(EValue::Bool), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "body") {
+        if submitted_fields.contains("body") {
             let body = self.body.clone();
             let html = body.as_ref().map(|v| markdown_to_html(v));
             let excerpt = body.as_ref().map(|v| make_excerpt(v));
@@ -220,7 +221,7 @@ impl BlogPostCreateData {
                 (excerpt.map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "format") {
+        if submitted_fields.contains("format") {
             pairs.insert(
                 "format",
                 (
@@ -229,19 +230,19 @@ impl BlogPostCreateData {
                 ),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "locale") {
+        if submitted_fields.contains("locale") {
             pairs.insert(
                 "locale",
                 (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "author") {
+        if submitted_fields.contains("author") {
             pairs.insert(
                 "author",
                 (self.author.map(EValue::Uuid), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "og_image") {
+        if submitted_fields.contains("og_image") {
             pairs.insert(
                 "og_image",
                 (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
@@ -277,13 +278,13 @@ impl BlogCategoryPatchData {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
-        if submitted_fields.iter().any(|&f| f == "title") {
+        if submitted_fields.contains("title") {
             pairs.insert(
                 "title",
                 (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "slug") {
+        if submitted_fields.contains("slug") {
             pairs.insert(
                 "slug",
                 (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
@@ -338,19 +339,19 @@ impl PresentationPatchData {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
-        if submitted_fields.iter().any(|&f| f == "title") {
+        if submitted_fields.contains("title") {
             pairs.insert(
                 "title",
                 (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "url") {
+        if submitted_fields.contains("url") {
             pairs.insert(
                 "url",
                 (self.url.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "event") {
+        if submitted_fields.contains("event") {
             pairs.insert(
                 "event",
                 (self.event.clone().map(EValue::Str), Cd::AtMostOne),
@@ -411,7 +412,7 @@ impl BookPatchData {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("download_url", "optional str", lines, submitted_fields);
-        if submitted_fields.iter().any(|&f| f == "author") {
+        if submitted_fields.contains("author") {
             let line = "author := (
                 SELECT BookAuthor FILTER .id = <uuid>$author
             )";
@@ -425,19 +426,19 @@ impl BookPatchData {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
-        if submitted_fields.iter().any(|&f| f == "title") {
+        if submitted_fields.contains("title") {
             pairs.insert(
                 "title",
                 (self.title.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "download_url") {
+        if submitted_fields.contains("download_url") {
             pairs.insert(
                 "download_url",
                 (self.download_url.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
-        if submitted_fields.iter().any(|&f| f == "author") {
+        if submitted_fields.contains("author") {
             pairs.insert(
                 "author",
                 (self.author.map(EValue::Uuid), Cd::One),

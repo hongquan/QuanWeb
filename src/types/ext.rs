@@ -25,3 +25,13 @@ impl UriExt for Uri {
         builder.build().unwrap_or(self.clone())
     }
 }
+
+pub trait VecExt<T: ?Sized> {
+    fn contains(&self, elm: &T) -> bool;
+}
+
+impl VecExt<str> for &Vec<&String> {
+    fn contains(&self, elm: &str) -> bool {
+        self.iter().any(|&e| e == elm)
+    }
+}
