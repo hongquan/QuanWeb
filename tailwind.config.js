@@ -10,6 +10,10 @@ module.exports = {
       fontFamily: {
         'sans': ['Niramit', ...defaultTheme.fontFamily.sans],
       },
+      zIndex: {
+        4: 4,
+        ...defaultTheme.zIndex,
+      },
       typography: {
         DEFAULT: {
           css: {

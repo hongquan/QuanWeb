@@ -3,6 +3,18 @@
     <div class='flex flex-row items-center'>
       <a href='/' class='title-font font-medium items-center text-white md:mb-0 text-4xl'>Quân</a>
       <div class='grow'></div>
+      <div class='relative' x-data='{formShown: false}' x-cloak>
+        <button class='text-right md:hidden flex me-3' :class="formShown ? 'hidden' : ''" @click.stop='formShown = true'>
+          <svg width='24' height='24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='flex-none dark:text-white dark:hover:text-slate-400' aria-hidden='true'><path d='m19 19-3.5-3.5'></path><circle cx='11' cy='11' r='6'></circle></svg>
+        </button>
+        <!-- Floating search form for mobile -->
+        <div class='absolute z-4 -start-8 -top-4' :class="formShown ? '' : 'hidden'" @click.outside='formShown = false' @keyup.escape='formShown = false'>
+          {% with form_class='text-right me-3' %}
+            {% include 'search_form.jinja' %}
+          {% endwith %}
+        </div>
+        <!-- End search form -->
+      </div>
       <form class='text-right md:hidden me-3' method='post' action='/api/set-lang'>
         {% include 'lang_switcher.jinja' %}
       </form>
@@ -54,6 +66,9 @@
     </ul>
 
     <div class='grow'></div>
+    {% with form_class = 'text-right hidden md:block me-3' %}
+      {% include 'search_form.jinja' %}
+    {% endwith %}
     <form class='text-right hidden md:block me-3' method='post' action='/api/set-lang'>
       {% include 'lang_switcher.jinja' %}
     </form>
@@ -62,4 +77,14 @@
     {% endwith %}
 
   </nav>
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('search_app', () => ({
+        keywords: '',
+        get query() {
+          return this.keywords.trim().replace(/\s+/g, ' ') + ' site:quan.hoabinh.vn'
+        }
+      }))
+    })
+  </script>
 </div>
