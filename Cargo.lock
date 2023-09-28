@@ -2639,6 +2639,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "smart-default",
+ "str-macro",
  "strum",
  "strum_macros",
  "syntect",
@@ -3362,6 +3363,12 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 dependencies = [
  "lock_api",
 ]
+
+[[package]]
+name = "str-macro"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b7514866270741c7b03dd36e2c68f71cf064b230e8217c81bbd4d619d564864"
 
 [[package]]
 name = "string_cache"

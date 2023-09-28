@@ -61,8 +61,7 @@ pub async fn gen_atom_feeds(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let updated_at = latest_post
-        .map(|p| p.updated_at.map(|d| d.into()))
-        .flatten()
+        .and_then(|p| p.updated_at.map(|d| d.into()))
         .unwrap_or_else(|| Utc.with_ymd_and_hms(2013, 1, 1, 0, 0, 0).unwrap());
     let feed = FeedBuilder::default()
         .title("QuanWeb")
@@ -98,13 +97,15 @@ pub async fn gen_json_feeds(
         total_pages,
     };
     let next_page_url = paginator.next_url(&current_url);
-    let mut feed = JsonFeed::default();
-    feed.feed_url = Some(format!("{base_url}{current_url}"));
-    feed.next_url = next_page_url.map(|url| format!("{base_url}{url}"));
+    let mut feed = JsonFeed {
+        feed_url: Some(format!("{base_url}{current_url}")),
+        next_url: next_page_url.map(|url| format!("{base_url}{url}")),
+        ..Default::default()
+    };
     let mut items: Vec<JsonItem> = posts.into_iter().map(JsonItem::from).collect();
     items.iter_mut().for_each(|it| {
         match it.url {
-            Some(ref url) if url.starts_with("/") => {
+            Some(ref url) if url.starts_with('/') => {
                 it.url = Some(format!("{base_url}{url}"));
             }
             _ => {}

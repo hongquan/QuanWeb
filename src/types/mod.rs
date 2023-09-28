@@ -84,8 +84,7 @@ where
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
                 let last_modified = file.metadata.last_modified();
                 let last_modified: DateTime<Utc> = last_modified
-                    .map(|t| UNIX_EPOCH.checked_add(Duration::from_secs(t)))
-                    .flatten()
+                    .and_then(|t| UNIX_EPOCH.checked_add(Duration::from_secs(t)))
                     .unwrap_or(SystemTime::now())
                     .into();
                 let headers = [

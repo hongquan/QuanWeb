@@ -6,7 +6,7 @@ fn main() {
     if env::var("PROFILE") == Ok("release".into()) {
         eprintln!("To build static files...");
         Command::new("yarn")
-            .args(&["build-tailwind"])
+            .args(["build-tailwind"])
             .status()
             .expect("Failed to build static files!");
     }

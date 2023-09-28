@@ -32,7 +32,7 @@ pub async fn login(
             let resp: ApiErrorShape = "User not found".to_string().into();
             (StatusCode::UNAUTHORIZED, Json(resp))
         })?;
-    let passwd_check = check_password(&login_data.password.expose_secret(), &user.password)
+    let passwd_check = check_password(login_data.password.expose_secret(), &user.password)
         .map_err(|e| {
             tracing::error!("Error checking password: {:?}", e);
             ApiError::LoginError("Wrong password".into())

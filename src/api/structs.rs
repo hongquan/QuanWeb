@@ -64,7 +64,7 @@ pub struct BlogPostPatchData {
 }
 
 impl BlogPostPatchData {
-    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+    pub fn gen_set_clause(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("slug", "optional str", lines, submitted_fields);
@@ -88,7 +88,7 @@ impl BlogPostPatchData {
         lines.join(&format!(",\n{}", " ".repeat(8)))
     }
 
-    pub fn make_edgedb_object<'a>(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+    pub fn make_edgedb_object(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap! {
             "id" => (Some(EValue::Uuid(post_id)), Cd::One),
         };
@@ -176,7 +176,7 @@ pub struct BlogPostCreateData {
 }
 
 impl BlogPostCreateData {
-    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+    pub fn gen_set_clause(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = vec!["title := <str>$title", "slug := <str>$slug"];
         append_set_statement!("is_published", "optional bool", lines, submitted_fields);
         if submitted_fields.contains("body") {
@@ -199,7 +199,7 @@ impl BlogPostCreateData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object<'a>(&self, submitted_fields: &Vec<&String>) -> EValue {
+    pub fn make_edgedb_object(&self, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap! {
             "title" => (Some(EValue::Str(self.title.clone())), Cd::One),
             "slug" => (Some(EValue::Str(self.slug.clone())), Cd::One),
@@ -266,7 +266,7 @@ pub struct BlogCategoryPatchData {
 }
 
 impl BlogCategoryPatchData {
-    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+    pub fn gen_set_clause(&self, submitted_fields: &[&String]) -> String {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("slug", "optional str", lines, submitted_fields);
@@ -274,7 +274,7 @@ impl BlogCategoryPatchData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
@@ -303,13 +303,13 @@ pub struct BlogCategoryCreateData {
 }
 
 impl BlogCategoryCreateData {
-    pub fn gen_set_clause<'a>(&self) -> String {
-        let lines = vec!["title := <str>$title", "slug := <str>$slug"];
+    pub fn gen_set_clause(&self) -> String {
+        let lines = ["title := <str>$title", "slug := <str>$slug"];
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object<'a>(&self) -> EValue {
+    pub fn make_edgedb_object(&self) -> EValue {
         let pairs = indexmap! {
             "title" => Some(EValue::from(self.title.clone())),
             "slug" => Some(EValue::from(self.slug.clone())),
@@ -326,7 +326,7 @@ pub struct PresentationPatchData {
 }
 
 impl PresentationPatchData {
-    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+    pub fn gen_set_clause(&self, submitted_fields: &[&String]) -> String {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("url", "optional str", lines, submitted_fields);
@@ -335,7 +335,7 @@ impl PresentationPatchData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );
@@ -373,7 +373,7 @@ pub struct PresentationCreateData {
 
 impl PresentationCreateData {
     pub fn gen_set_clause(&self) -> String {
-        let lines = vec![
+        let lines = [
             "title := <str>$title",
             "url := <str>$url",
             "event := <optional str>$event",
@@ -408,7 +408,7 @@ pub struct BookPatchData {
 }
 
 impl BookPatchData {
-    pub fn gen_set_clause<'a>(&self, submitted_fields: &Vec<&String>) -> String {
+    pub fn gen_set_clause(&self, submitted_fields: &Vec<&String>) -> String {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("download_url", "optional str", lines, submitted_fields);
@@ -422,7 +422,7 @@ impl BookPatchData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object<'a>(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
+    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
         let mut pairs = indexmap!(
             "id" => (Some(EValue::Uuid(id)), Cd::One),
         );

@@ -5,8 +5,7 @@ use std::fmt::Display;
 pub fn update_entry_in_query<T: Display>(name: &str, value: T, original_uri: &Uri) -> Uri {
     let mut query = original_uri
         .query()
-        .map(|s| QueryString::decode(s.as_bytes()).ok())
-        .flatten()
+        .and_then(|s| QueryString::decode(s.as_bytes()).ok())
         .unwrap_or(QueryString::new());
     query.set(name, format!("{value}"));
     let path = original_uri.path();

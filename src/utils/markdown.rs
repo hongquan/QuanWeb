@@ -25,7 +25,7 @@ impl CssSyntectAdapter {
             SYNTECT_CLASS_STYLE,
         );
         for line in LinesWithEndings::from(code) {
-            html_generator.parse_html_for_line_which_includes_newline(&line)?;
+            html_generator.parse_html_for_line_which_includes_newline(line)?;
         }
         Ok(html_generator.finalize())
     }

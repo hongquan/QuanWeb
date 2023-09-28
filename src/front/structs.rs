@@ -17,7 +17,7 @@ impl LaxPaging {
     /// The type is NonZeroU16 because our website is small enough for page number
     /// to be fit in u16.
     pub fn get_page_as_number(&self) -> NonZeroU16 {
-        self.page.as_deref().map(|s| s.parse().ok()).flatten().unwrap_or(NonZeroU16::MIN)
+        self.page.as_deref().and_then(|s| s.parse().ok()).unwrap_or(NonZeroU16::MIN)
     }
 }
 

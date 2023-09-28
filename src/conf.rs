@@ -3,7 +3,7 @@ use miette::{miette, Report};
 
 use config::{Config, ConfigError, File};
 
-pub const KEY_SECRET: &'static str = "secret_key";
+pub const KEY_SECRET: &str = "secret_key";
 pub const KEY_EDGEDB_INSTANCE: &str = "edgedb_instance";
 pub const KEY_PORT: &str = "port";
 pub const DEFAULT_PORT: u16 = 3721;
@@ -12,7 +12,7 @@ pub const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV
 pub fn gen_fallback_secret() -> String {
     let pool: Pool = ALPHANUMERIC.parse().unwrap_or_default();
     // 64 is the secret bytes count required by axum-sessions
-    generate_password(&pool, 64).into()
+    generate_password(&pool, 64)
 }
 
 pub fn get_config() -> Result<Config, ConfigError> {

@@ -1,3 +1,4 @@
+use str_macro::str;
 use edgedb_protocol::common::Cardinality as Cd;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
@@ -81,16 +82,16 @@ pub async fn get_blogposts(
     let mut pairs = IndexMap::with_capacity(3);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(ss) = lower_search_tokens {
-        let search: Vec<EValue> = ss.into_iter().map(|s| EValue::Str(s.into())).collect();
+        let search: Vec<EValue> = ss.iter().map(|s| EValue::Str(s.into())).collect();
         pairs.insert("tokens", (Some(EValue::Array(search)), Cd::One));
     }
     if let Some(offset) = offset {
         pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
-        paging_lines.push(format!("OFFSET <int64>$offset"));
+        paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
         pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
-        paging_lines.push(format!("LIMIT <int64>$limit"));
+        paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
@@ -115,11 +116,11 @@ pub async fn get_published_posts(
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
         pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
-        paging_lines.push(format!("OFFSET <int64>$offset"));
+        paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
         pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
-        paging_lines.push(format!("LIMIT <int64>$limit"));
+        paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
@@ -152,11 +153,11 @@ pub async fn get_published_posts_under_category(
     }
     if let Some(offset) = offset {
         pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
-        paging_lines.push(format!("OFFSET <int64>$offset"));
+        paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
         pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
-        paging_lines.push(format!("LIMIT <int64>$limit"));
+        paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let filter_expr = filter_lines.join(" AND ");
     let paging_expr = paging_lines.join(" ");
@@ -190,11 +191,11 @@ pub async fn get_published_uncategorized_blogposts(
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
         pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
-        paging_lines.push(format!("OFFSET <int64>$offset"));
+        paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
         pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
-        paging_lines.push(format!("LIMIT <int64>$limit"));
+        paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();

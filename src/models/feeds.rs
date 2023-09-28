@@ -68,7 +68,7 @@ impl EntryExt for Entry {
     fn prepend_url(&mut self, base_url: &Uri) {
         self.links.iter_mut().for_each(|u| {
             let old_url = u.href();
-            if old_url.starts_with("/") {
+            if old_url.starts_with('/') {
                 u.set_href(base_url.join(old_url).to_string());
             }
         });

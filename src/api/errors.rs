@@ -6,9 +6,9 @@ use axum::{response::IntoResponse, Json};
 use edgedb_errors::display::display_error_verbose;
 use edgedb_errors::kinds as EdErrKind;
 use indexmap::IndexMap;
+use serde_json::value::Value;
 use thiserror::Error;
 use validify::ValidationError as VE;
-use serde_json::value::Value;
 
 use crate::types::ApiErrorShape;
 
@@ -103,7 +103,7 @@ pub fn flatten_validation_errors(
         } => Some((
             field,
             message
-                .or_else(|| deduce_message(code, params))
+                .or_else(|| deduce_message(code, &params))
                 .unwrap_or("Please check again".into()),
         )),
     });
@@ -111,23 +111,20 @@ pub fn flatten_validation_errors(
     hm
 }
 
-pub fn deduce_message(code: &str, params: Box<HashMap<&str, Value>>) -> Option<String> {
+pub fn deduce_message(code: &str, params: &HashMap<&str, Value>) -> Option<String> {
     if code == "url" {
         return Some("Must be a valid URL".into());
     }
-    params
-        .get("min")
-        .map(|cond| {
-            params
-                .get("value")
-                .map(|input_value| {
-                    if input_value.is_string() {
-                        format!("Must be at least {cond} characters long")
-                    } else {
-                        format!("Must be at least {cond} elements")
-                    }
-                })
-                .or(Some(format!("Must be at least {cond}")))
-        })
-        .flatten()
+    params.get("min").and_then(|cond| {
+        params
+            .get("value")
+            .map(|input_value| {
+                if input_value.is_string() {
+                    format!("Must be at least {cond} characters long")
+                } else {
+                    format!("Must be at least {cond} elements")
+                }
+            })
+            .or(Some(format!("Must be at least {cond}")))
+    })
 }

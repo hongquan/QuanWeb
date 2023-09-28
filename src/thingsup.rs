@@ -89,8 +89,8 @@ pub fn get_listening_addr() -> [u8; 4] {
     }
 }
 
-pub fn get_binding_addr<'a>(bind_opt: &'a str) -> Result<SocketAddr, AddrParseError> {
-    if bind_opt.contains(":") {
+pub fn get_binding_addr(bind_opt: &str) -> Result<SocketAddr, AddrParseError> {
+    if bind_opt.contains(':') {
         bind_opt.parse::<SocketAddr>()
     } else {
         let auto_addr = format!("127.0.0.1:{bind_opt}");
