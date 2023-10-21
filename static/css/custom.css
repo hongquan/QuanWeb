@@ -4,7 +4,7 @@ article .entry-content img {
   max-width: 100%
 }
 
-article .entry-content h2 {
+article .entry-content.front h2 {
     font-size: initial;
 }
 
