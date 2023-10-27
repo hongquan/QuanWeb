@@ -1,38 +1,40 @@
 pub mod blog;
-pub mod minors;
 pub mod feeds;
+pub mod minors;
 pub mod old_urls;
 
 use std::num::NonZeroU16;
 
-use axum_sessions::extractors::{WritableSession, ReadableSession};
 use axum::extract::Form;
-use serde::ser::Serialize;
-use minijinja::Environment;
-use http::{StatusCode, Uri, HeaderName};
-use axum::extract::{Query, State, OriginalUri};
+use axum::extract::{OriginalUri, Query, State};
 use axum::response::{Html, IntoResponse, Result as AxumResult};
+use axum_sessions::extractors::{ReadableSession, WritableSession};
+use http::{HeaderName, StatusCode, Uri};
 use minijinja::context;
+use minijinja::Environment;
+use serde::ser::Serialize;
 use unic_langid::LanguageIdentifier;
 
-pub use crate::errors::PageError;
-use crate::auth::Auth;
-use crate::types::{AppState, Paginator, StaticFile};
 use super::structs::{LaxPaging, SetLangReq};
+use crate::auth::Auth;
+use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG, STATIC_URL};
+pub use crate::errors::PageError;
 use crate::stores;
-use crate::consts::{DEFAULT_PAGE_SIZE, STATIC_URL, KEY_LANG, DEFAULT_LANG};
+use crate::types::{AppState, Paginator, StaticFile};
 
-pub fn render_with<S: Serialize>(template_name: &str, context: S, engine: Environment) -> Result<String, PageError> {
+pub fn render_with<S: Serialize>(
+    template_name: &str,
+    context: S,
+    engine: Environment,
+) -> Result<String, PageError> {
     let tpl = engine.get_template(template_name)?;
     let content = tpl.render(context)?;
     Ok(content)
 }
 
-
 pub async fn fallback_view() -> (StatusCode, &'static str) {
     (StatusCode::NOT_FOUND, "Not found")
 }
-
 
 pub async fn home(
     auth: Auth,
@@ -65,7 +67,9 @@ pub async fn home(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     let no_tracking = auth.current_user.is_some();
-    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
+    let lang = session
+        .get::<String>(KEY_LANG)
+        .unwrap_or(DEFAULT_LANG.into());
     let context = context!(
         lang => lang,
         posts => posts,
@@ -89,10 +93,17 @@ pub async fn static_handler(uri: Uri) -> impl IntoResponse {
 
 type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
 
-pub async fn set_lang(mut session: WritableSession, Form(payload): Form<SetLangReq>) -> AxumResult<HTMXResponse>
-{
-    let li: LanguageIdentifier = payload.lang.parse().map_err(|_e| StatusCode::UNPROCESSABLE_ENTITY)?;
-    session.insert(KEY_LANG, li.clone()).map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
+pub async fn set_lang(
+    mut session: WritableSession,
+    Form(payload): Form<SetLangReq>,
+) -> AxumResult<HTMXResponse> {
+    let li: LanguageIdentifier = payload
+        .lang
+        .parse()
+        .map_err(|_e| StatusCode::UNPROCESSABLE_ENTITY)?;
+    session
+        .insert(KEY_LANG, li.clone())
+        .map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
     let lang_code = li.to_string();
     let header_name = HeaderName::from_static("hx-refresh");
     let r = ([(header_name, "true")], Html(lang_code));
