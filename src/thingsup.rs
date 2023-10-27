@@ -1,14 +1,14 @@
+use std::net::{AddrParseError, SocketAddr};
 use std::{env, io};
-use std::net::{SocketAddr, AddrParseError};
 
 use clap::Parser;
+use fluent_templates::static_loader;
+use minijinja::Environment;
 use tracing_subscriber::{
     filter::{EnvFilter, LevelFilter},
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-use minijinja::Environment;
-use fluent_templates::static_loader;
 
 use crate::consts::UNCATEGORIZED_URL;
 use crate::utils::jinja_extra;
@@ -16,7 +16,11 @@ use crate::utils::jinja_extra;
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
-    #[arg(short, long, help = "Network address to bind, can be <port>, <ip:port> or Unix socket path")]
+    #[arg(
+        short,
+        long,
+        help = "Network address to bind, can be <port>, <ip:port> or Unix socket path"
+    )]
     pub bind: Option<String>,
     #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
     pub verbose: u8,
@@ -27,7 +31,7 @@ pub fn is_journald_connected() -> bool {
     // In desktop (development): JOURNAL_STREAM and TERM are set. We want to log to console.
     // In service: JOURNAL_STREAM is set. TERM is set if stderr is connected to tty instead of journald.
     if env::var_os("JOURNAL_STREAM").is_none() {
-        return false
+        return false;
     }
     let term_available = env::var("TERM").map_or(false, |s| !s.is_empty());
     !term_available
@@ -46,14 +50,12 @@ pub fn config_logging(app_opt: &AppOptions) {
             _ => LevelFilter::TRACE,
         }
     };
-    let command_directives = format!("quanweb={level},axum_login={level},tower_http={level}");
+    let directives = format!("{level}");
     let filter = EnvFilter::builder()
         .with_default_directive(LevelFilter::WARN.into())
-        .parse(command_directives)
-        .unwrap();
+        .parse_lossy(directives);
 
-    let registry = tracing_subscriber::registry()
-        .with(filter);
+    let registry = tracing_subscriber::registry().with(filter);
 
     if is_journald_connected() {
         if let Ok(journald_layer) = tracing_journald::layer() {
@@ -62,7 +64,6 @@ pub fn config_logging(app_opt: &AppOptions) {
     } else {
         registry.with(tracing_subscriber::fmt::layer()).init();
     }
-
 }
 
 pub fn config_jinja() -> Result<Environment<'static>, io::Error> {

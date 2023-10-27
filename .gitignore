@@ -19,6 +19,7 @@ custom_settings.toml
 DB
 .vscode
 .idea
+.helix
 
 # Logs
 logs

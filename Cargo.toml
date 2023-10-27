@@ -20,7 +20,7 @@ axum-login = "0.6.0"
 axum-sessions = "0.5.0"
 chrono = { version = "0.4.26", features = ["serde", "alloc", "clock"], default-features = false }
 chrono-tz = { version = "0.8.3", features = ["serde"] }
-clap = { version = "4.3.12", features = ["derive"] }
+clap = { version = "4.4.7", features = ["derive"] }
 comrak = "0.18.0"
 config = { version = "0.13.3", default-features = false, features = ["indexmap", "toml"] }
 djangohashers = { version = "1.6.7", default-features = false, features = ["with_argon2"] }
@@ -53,7 +53,7 @@ str-macro = "1.0.0"
 strum = { version = "0.25.0", features = ["derive", "strum_macros"] }
 strum_macros = "0.25.0"
 syntect = { version = "5.0.0", default-features = false, features = ["fancy-regex", "html"] }
-thiserror = "1.0.43"
+thiserror = "1.0.50"
 tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
 tracing = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
