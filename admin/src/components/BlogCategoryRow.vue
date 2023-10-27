@@ -14,6 +14,9 @@
     <td class='px-6 py-4'>
       {{ category.slug }}
     </td>
+    <td class='px-6 py-4'>
+      {{ category.title_vi }}
+    </td>
     <td>
       <button
         class='hover:text-red-500'

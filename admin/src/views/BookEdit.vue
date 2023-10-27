@@ -22,19 +22,19 @@
           Author
         </template>
         <template #default>
-          <FbSelect
+          <FwbSelect
             v-model='selectedAuthorId'
             :options='authorOptions'
           />
         </template>
       </HorizontalFormFieldWrap>
       <div class='text-center mt-2'>
-        <FbButton
+        <FwbButton
           type='submit'
           :loading='isSubmitting'
         >
           Save
-        </FbButton>
+        </FwbButton>
       </div>
     </form>
   </div>
@@ -43,7 +43,7 @@
 <script setup lang='ts'>
 import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button as FbButton, Select as FbSelect } from 'flowbite-vue'
+import { FwbButton, FwbSelect } from 'flowbite-vue'
 import lightJoin from 'light-join'
 import { A } from '@mobily/ts-belt'
 import { toast } from 'vue-sonner'

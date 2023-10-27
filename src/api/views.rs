@@ -11,20 +11,20 @@ use validify::Validify;
 
 use super::errors::ApiError;
 pub use super::minors::{
-    create_presentation, delete_presentation, get_presentation, list_presentations,
+    create_book, create_book_author, create_presentation, delete_book, delete_book_author,
+    delete_presentation, get_book, get_book_author, get_presentation, list_book_authors,
+    list_books, list_presentations, update_book_author_partial, update_book_partial,
     update_presentation_partial,
-    list_book_authors, get_book_author, update_book_author_partial, delete_book_author,
-    create_book_author, list_books, get_book, delete_book,
-    update_book_partial, create_book,
 };
-pub use super::users::list_users;
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, ObjectListResponse, NPaging};
+use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, NPaging, ObjectListResponse};
+pub use super::users::list_users;
 use crate::auth::Auth;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::stores;
+use crate::types::EdgeSelectable;
 use crate::utils::markdown::markdown_to_html;
 
 pub async fn root() -> &'static str {
@@ -119,6 +119,7 @@ pub async fn update_category_partial(
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
     let args = patch_data.make_edgedb_object(category_id, &submitted_fields);
+    let fields = BlogCategory::fields_as_shape();
     let q = format!(
         "SELECT (
             UPDATE BlogCategory
@@ -126,11 +127,7 @@ pub async fn update_category_partial(
             SET {{
                 {set_clause}
             }}
-        ) {{
-            id,
-            title,
-            slug,
-        }}"
+        ) {fields}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("With args: {:#?}", args);
@@ -159,8 +156,10 @@ pub async fn create_category(
     let post_data: BlogCategoryCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     tracing::debug!("Post data: {:?}", post_data);
-    let post_data = BlogCategoryCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    let post_data =
+        BlogCategoryCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
+    let fields = BlogCategory::fields_as_shape();
     let args = post_data.make_edgedb_object();
     let q = format!(
         "
@@ -168,11 +167,7 @@ pub async fn create_category(
         INSERT BlogCategory {{
             {set_clause}
         }}
-    ) {{
-        id,
-        title,
-        slug,
-    }}"
+    ) {fields}"
     );
     tracing::debug!("To query: {}", q);
     let created_cat: BlogCategory = db

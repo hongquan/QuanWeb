@@ -16,7 +16,7 @@
           Slug
         </template>
         <template #default>
-          <FbInput
+          <FwbInput
             v-model='category.slug'
             size='sm'
           >
@@ -24,7 +24,7 @@
               v-if='oldSlug'
               #suffix
             >
-              <FbButton
+              <FwbButton
                 type='button'
                 pill
                 outline
@@ -37,18 +37,24 @@
                   icon='mingcute:refresh-2-line'
                   class='h-3 w-auto'
                 />
-              </FbButton>
+              </FwbButton>
             </template>
-          </FbInput>
+          </FwbInput>
         </template>
       </HorizontalFormFieldWrap>
+      <HorizontalFormField
+        v-model='category.title_vi'
+        label='Vietnamese title'
+        required
+        :error-message='getValidationError("title_vi")'
+      />
       <div class='text-center mt-2'>
-        <FbButton
+        <FwbButton
           type='submit'
           :loading='isSubmitting'
         >
           Save
-        </FbButton>
+        </FwbButton>
       </div>
     </form>
   </div>
@@ -59,7 +65,7 @@ import { ref, onBeforeMount, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
-import { Button as FbButton, Input as FbInput } from 'flowbite-vue'
+import { FwbButton, FwbInput } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { D } from '@mobily/ts-belt'
 import { Icon } from '@iconify/vue'

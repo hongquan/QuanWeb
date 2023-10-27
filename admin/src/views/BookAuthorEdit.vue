@@ -11,12 +11,12 @@
         :error-message='getValidationError("name")'
       />
       <div class='text-center mt-2'>
-        <FbButton
+        <FwbButton
           type='submit'
           :loading='isSubmitting'
         >
           Save
-        </FbButton>
+        </FwbButton>
       </div>
     </form>
   </div>
@@ -25,7 +25,7 @@
 <script setup lang='ts'>
 import { onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button as FbButton } from 'flowbite-vue'
+import { FwbButton } from 'flowbite-vue'
 import lightJoin from 'light-join'
 import { D } from '@mobily/ts-belt'
 import { toast } from 'vue-sonner'

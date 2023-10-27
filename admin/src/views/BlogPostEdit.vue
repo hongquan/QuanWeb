@@ -15,7 +15,7 @@
           Slug
         </template>
         <template #default>
-          <FbInput
+          <FwbInput
             v-model='post.slug'
             size='sm'
           >
@@ -23,7 +23,7 @@
               v-if='oldSlug'
               #suffix
             >
-              <FbButton
+              <FwbButton
                 type='button'
                 pill
                 outline
@@ -36,9 +36,9 @@
                   icon='mingcute:refresh-2-line'
                   class='h-3 w-auto'
                 />
-              </FbButton>
+              </FwbButton>
             </template>
-          </FbInput>
+          </FwbInput>
         </template>
       </HorizontalFormFieldWrap>
       <DualPaneSelect
@@ -52,7 +52,7 @@
       <div class='mt-2 space-y-2'>
         <div class='flex justify-between'>
           <label class='block text-sm font-medium leading-6 dark:text-white sm:pt-2'>Body</label>
-          <FbButton
+          <FwbButton
             type='button'
             size='xs'
             outline
@@ -60,7 +60,7 @@
             @click='getHtmlPreview'
           >
             Preview
-          </FbButton>
+          </FwbButton>
         </div>
         <div class='border rounded font-mono py-4'>
           <div class='px-2'>
@@ -76,7 +76,7 @@
           Locale
         </template>
         <template #default='{ inputId }'>
-          <FbSelect
+          <FwbSelect
             :id='inputId'
             v-model='postLocale'
             :options='locales'
@@ -88,7 +88,7 @@
           Author
         </template>
         <template #default='{ inputId }'>
-          <FbSelect
+          <FwbSelect
             :id='inputId'
             v-model='postAuthorId'
             :options='allAuthorChoices'
@@ -111,15 +111,15 @@
         :error-message='getValidationError("og_image")'
       />
       <div class='text-center mt-2'>
-        <FbButton
+        <FwbButton
           type='submit'
           :loading='isSubmitting'
         >
           Save
-        </FbButton>
+        </FwbButton>
       </div>
     </form>
-    <FbModal
+    <FwbModal
       v-if='previewHtml'
       :persistent='false'
       @close='previewHtml = null'
@@ -130,7 +130,7 @@
           v-html='previewHtml'
         />
       </template>
-    </FbModal>
+    </FwbModal>
   </div>
 </template>
 
@@ -139,7 +139,7 @@ import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed } from 
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
-import { Button as FbButton, Select as FbSelect, Modal as FbModal, Input as FbInput } from 'flowbite-vue'
+import { FwbButton, FwbSelect, FwbModal, FwbInput } from 'flowbite-vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { A, F } from '@mobily/ts-belt'

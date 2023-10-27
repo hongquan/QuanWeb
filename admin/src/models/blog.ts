@@ -8,6 +8,7 @@ export const DateFromString = z.string().datetime({ offset: true }).transform((s
 export const CategorySchema = z.object({
   id: z.string().uuid().nullable().default(null),
   title: z.string().default(''),
+  title_vi: z.string().nullable().default(null),
   slug: z.string().default(''),
 })
 

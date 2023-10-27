@@ -1555,10 +1555,10 @@ floating-vue@2.0.0-beta.24:
     "@floating-ui/dom" "~1.1.1"
     vue-resize "^2.0.0-alpha.1"
 
-flowbite-vue@^0.0.17-next.2:
-  version "0.0.17-next.2"
-  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.0.17-next.2.tgz#443f8bbb5476fcb5d143e1ae646dbd4ccc8b7412"
-  integrity sha512-1qoAxz6rwZWJFGD28/JhQNDO33wnQ0+L1PCNOc347AMKdPBsX/z/D99LEyKa9l1RyubyH3s4Z9byDEywSM26IA==
+flowbite-vue@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/flowbite-vue/-/flowbite-vue-0.1.0.tgz#e018a0450945f5bcb634ec0c3c7e2c98b971ea8b"
+  integrity sha512-36SJbc4Wk+Gleh6G5RytYG4aChjSIXKSIdF9uryT8gB4EyAp863/yE10wiyFjj/B+a+awpefIuTzCg8lmF2p+A==
   dependencies:
     "@vueuse/core" "9.3.0"
     classnames "2.3.2"
@@ -1566,6 +1566,7 @@ flowbite-vue@^0.0.17-next.2:
     flowbite "1.5.4"
     lodash-es "4.17.21"
     nanoid "4.0.0"
+    tailwind-merge "^1.14.0"
     tailwindcss "^3"
 
 flowbite@1.5.4:
@@ -1576,10 +1577,10 @@ flowbite@1.5.4:
     "@popperjs/core" "^2.9.3"
     mini-svg-data-uri "^1.4.3"
 
-flowbite@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/flowbite/-/flowbite-1.7.0.tgz#82359dbd5e3b2b9591eaf18ea929fb77871346b2"
-  integrity sha512-OTTmnhRgv85Rs+mcMaVU7zB6EvRQs7BaQziyMUsZLRjW9aUpeQyqKjLmxsVMMCdr8isYPCLd6UL7X1IaSVI0WQ==
+flowbite@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/flowbite/-/flowbite-2.0.0.tgz#f149f63f4752722d888b1300a5f5071a6bf98b7d"
+  integrity sha512-gP/iC/WuznQ5XBzikhaSs4RDs49zrvoAdHbWMHSY3l7nVJX0xJz+dELIlLjh+czLdEVTMLxUjuARYYwCb5q34A==
   dependencies:
     "@popperjs/core" "^2.9.3"
     mini-svg-data-uri "^1.4.3"
@@ -2404,6 +2405,11 @@ svgo@^3.0.2:
     css-tree "^2.2.1"
     csso "^5.0.5"
     picocolors "^1.0.0"
+
+tailwind-merge@^1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-1.14.0.tgz#e677f55d864edc6794562c63f5001f45093cdb8b"
+  integrity sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==
 
 tailwindcss@^3:
   version "3.3.2"

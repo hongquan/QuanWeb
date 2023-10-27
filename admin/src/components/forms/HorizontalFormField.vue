@@ -11,7 +11,7 @@
         type='checkbox'
         :required='required'
       >
-      <FbInput
+      <FwbInput
         v-else
         :id='inputId'
         v-model='htmlAttrValue'
@@ -31,7 +31,7 @@
 
 <script setup lang='ts'>
 import { computed } from 'vue'
-import { Input as FbInput } from 'flowbite-vue'
+import { FwbInput } from 'flowbite-vue'
 import { G } from '@mobily/ts-belt'
 
 import HorizontalFormFieldWrap from '@/components/forms/HorizontalFormFieldWrap.vue'

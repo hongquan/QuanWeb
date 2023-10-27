@@ -19,12 +19,12 @@
         label='Event'
       />
       <div class='text-center mt-2'>
-        <FbButton
+        <FwbButton
           type='submit'
           :loading='isSubmitting'
         >
           Save
-        </FbButton>
+        </FwbButton>
       </div>
     </form>
   </div>
@@ -34,7 +34,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
-import { Button as FbButton } from 'flowbite-vue'
+import { FwbButton } from 'flowbite-vue'
 import { D } from '@mobily/ts-belt'
 import { toast } from 'vue-sonner'
 

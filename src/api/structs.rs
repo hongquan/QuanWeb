@@ -9,8 +9,8 @@ use validify::Validify;
 
 use super::macros::append_set_statement;
 use crate::models::DocFormat;
-use crate::types::ext::VecExt;
 use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
+use crate::types::ext::VecExt;
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
 #[derive(Debug, Deserialize)]
@@ -99,10 +99,7 @@ impl BlogPostPatchData {
             );
         }
         if submitted_fields.contains("slug") {
-            pairs.insert(
-                "slug",
-                (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            pairs.insert("slug", (self.slug.clone().map(EValue::Str), Cd::AtMostOne));
         }
         if submitted_fields.contains("is_published") {
             pairs.insert(
@@ -113,10 +110,7 @@ impl BlogPostPatchData {
         if submitted_fields.contains("format") {
             pairs.insert(
                 "format",
-                (
-                    self.format.clone().map(EValue::from),
-                    Cd::AtMostOne,
-                ),
+                (self.format.clone().map(EValue::from), Cd::AtMostOne),
             );
         }
         if submitted_fields.contains("body") {
@@ -125,10 +119,7 @@ impl BlogPostPatchData {
             let excerpt = body.as_ref().map(|b| make_excerpt(b));
             pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
             pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert(
-                "excerpt",
-                (excerpt.map(EValue::Str), Cd::AtMostOne),
-            );
+            pairs.insert("excerpt", (excerpt.map(EValue::Str), Cd::AtMostOne));
         }
         if submitted_fields.contains("locale") {
             pairs.insert(
@@ -137,10 +128,7 @@ impl BlogPostPatchData {
             );
         }
         if submitted_fields.contains("author") {
-            pairs.insert(
-                "author",
-                (self.author.map(EValue::Uuid), Cd::AtMostOne),
-            );
+            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::AtMostOne));
         }
         if submitted_fields.contains("og_image") {
             pairs.insert(
@@ -150,10 +138,7 @@ impl BlogPostPatchData {
         }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
-            pairs.insert(
-                "categories",
-                (Some(EValue::Array(categories)), Cd::One),
-            );
+            pairs.insert("categories", (Some(EValue::Array(categories)), Cd::One));
         }
         edge_object_from_pairs(pairs)
     }
@@ -216,18 +201,12 @@ impl BlogPostCreateData {
             let excerpt = body.as_ref().map(|v| make_excerpt(v));
             pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
             pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert(
-                "excerpt",
-                (excerpt.map(EValue::Str), Cd::AtMostOne),
-            );
+            pairs.insert("excerpt", (excerpt.map(EValue::Str), Cd::AtMostOne));
         }
         if submitted_fields.contains("format") {
             pairs.insert(
                 "format",
-                (
-                    self.format.clone().map(EValue::from),
-                    Cd::AtMostOne,
-                ),
+                (self.format.clone().map(EValue::from), Cd::AtMostOne),
             );
         }
         if submitted_fields.contains("locale") {
@@ -237,10 +216,7 @@ impl BlogPostCreateData {
             );
         }
         if submitted_fields.contains("author") {
-            pairs.insert(
-                "author",
-                (self.author.map(EValue::Uuid), Cd::AtMostOne),
-            );
+            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::AtMostOne));
         }
         if submitted_fields.contains("og_image") {
             pairs.insert(
@@ -250,10 +226,7 @@ impl BlogPostCreateData {
         }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
-            pairs.insert(
-                "categories",
-                (Some(EValue::Array(categories)), Cd::One),
-            );
+            pairs.insert("categories", (Some(EValue::Array(categories)), Cd::One));
         }
         edge_object_from_pairs(pairs)
     }
@@ -263,6 +236,7 @@ impl BlogPostCreateData {
 pub struct BlogCategoryPatchData {
     pub title: Option<String>,
     pub slug: Option<String>,
+    pub title_vi: Option<String>,
 }
 
 impl BlogCategoryPatchData {
@@ -270,6 +244,7 @@ impl BlogCategoryPatchData {
         let mut lines = Vec::<&str>::new();
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("slug", "optional str", lines, submitted_fields);
+        append_set_statement!("title_vi", "optional str", lines, submitted_fields);
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
@@ -285,9 +260,12 @@ impl BlogCategoryPatchData {
             );
         }
         if submitted_fields.contains("slug") {
+            pairs.insert("slug", (self.slug.clone().map(EValue::Str), Cd::AtMostOne));
+        }
+        if submitted_fields.contains("title_vi") {
             pairs.insert(
-                "slug",
-                (self.slug.clone().map(EValue::Str), Cd::AtMostOne),
+                "title_vi",
+                (self.title_vi.clone().map(EValue::Str), Cd::AtMostOne),
             );
         }
         edge_object_from_pairs(pairs)
@@ -346,10 +324,7 @@ impl PresentationPatchData {
             );
         }
         if submitted_fields.contains("url") {
-            pairs.insert(
-                "url",
-                (self.url.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            pairs.insert("url", (self.url.clone().map(EValue::Str), Cd::AtMostOne));
         }
         if submitted_fields.contains("event") {
             pairs.insert(
@@ -439,10 +414,7 @@ impl BookPatchData {
             );
         }
         if submitted_fields.contains("author") {
-            pairs.insert(
-                "author",
-                (self.author.map(EValue::Uuid), Cd::One),
-            );
+            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::One));
         }
         edge_object_from_pairs(pairs)
     }
@@ -459,10 +431,7 @@ pub struct BookCreateData {
 
 impl BookCreateData {
     pub fn gen_set_clause(&self) -> String {
-        let mut lines = vec![
-            "title := <str>$title",
-            "download_url := <str>$download_url",
-        ];
+        let mut lines = vec!["title := <str>$title", "download_url := <str>$download_url"];
         if self.author.is_some() {
             let line = "author := (
                 SELECT BookAuthor FILTER .id = <uuid>$author
@@ -479,10 +448,7 @@ impl BookCreateData {
             "download_url" => (Some(EValue::from(self.download_url.clone())), Cd::One),
         };
         if self.author.is_some() {
-            pairs.insert(
-                "author",
-                (self.author.map(EValue::Uuid), Cd::One),
-            );
+            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::One));
         }
         edge_object_from_pairs(pairs)
     }

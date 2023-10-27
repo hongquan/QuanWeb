@@ -1,22 +1,23 @@
 use std::str::FromStr;
 
-use chrono::{Utc, DateTime};
+use atom_syndication::{
+    Category as AtomCategory, CategoryBuilder, Entry as AtomEntry, EntryBuilder, LinkBuilder,
+    Person, Text,
+};
+use chrono::{DateTime, Utc};
 use edgedb_derive::Queryable;
 use edgedb_protocol::model::Datetime as EDatetime;
 use edgedb_protocol::value::Value as EValue;
+use field_names::FieldNames;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
-use atom_syndication::{Entry as AtomEntry, EntryBuilder, LinkBuilder, Category as AtomCategory, CategoryBuilder, Text, Person};
-use field_names::FieldNames;
 
-use crate::types::conversions::{
-    serialize_edge_datetime, serialize_optional_edge_datetime,
-};
-use crate::types::EdgeSelectable;
-use super::users::MiniUser;
 use super::feeds::{JsonAuthor, JsonItem};
+use super::users::MiniUser;
+use crate::types::conversions::{serialize_edge_datetime, serialize_optional_edge_datetime};
+use crate::types::EdgeSelectable;
 use crate::utils::html::strip_tags;
 
 #[derive(
@@ -102,19 +103,20 @@ impl Default for MediumBlogPost {
 
 impl EdgeSelectable for MediumBlogPost {
     fn fields_as_shape() -> String {
-        let fields: Vec<String> = Self::FIELDS.into_iter().map(|s| {
-            match s {
+        let fields: Vec<String> = Self::FIELDS
+            .into_iter()
+            .map(|s| match s {
                 "categories" => {
                     let cat_shape = BlogCategory::fields_as_shape();
                     format!("categories: {cat_shape}")
-                },
+                }
                 "author" => {
                     let user_shape = MiniUser::fields_as_shape();
                     format!("author: {user_shape}")
-                },
+                }
                 _ => s.to_string(),
-            }
-        }).collect();
+            })
+            .collect();
         format!("{{ {} }}", fields.join(", "))
     }
 }
@@ -146,7 +148,8 @@ impl From<MediumBlogPost> for AtomEntry {
             vec![]
         };
         let mut builder = EntryBuilder::default();
-        builder.title(title)
+        builder
+            .title(title)
             .id(entry_id)
             .summary(excerpt.map(Text::html))
             .links(vec![link])
@@ -198,6 +201,7 @@ impl From<MediumBlogPost> for JsonItem {
 pub struct BlogCategory {
     pub id: Uuid,
     pub title: String,
+    pub title_vi: Option<String>,
     pub slug: String,
 }
 
@@ -275,19 +279,20 @@ impl Default for DetailedBlogPost {
 
 impl EdgeSelectable for DetailedBlogPost {
     fn fields_as_shape() -> String {
-        let fields: Vec<String> = Self::FIELDS.into_iter().map(|s| {
-            match s {
+        let fields: Vec<String> = Self::FIELDS
+            .into_iter()
+            .map(|s| match s {
                 "categories" => {
                     let cat_shape = BlogCategory::fields_as_shape();
                     format!("categories: {cat_shape}")
-                },
+                }
                 "author" => {
                     let user_shape = MiniUser::fields_as_shape();
                     format!("author: {user_shape}")
-                },
+                }
                 _ => s.to_string(),
-            }
-        }).collect();
+            })
+            .collect();
         format!("{{ {} }}", fields.join(", "))
     }
 }

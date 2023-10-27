@@ -5,7 +5,7 @@
         method='get'
         @submit.prevent='startSearch'
       >
-        <FbInput
+        <FwbInput
           v-model='search'
           name='q'
           placeholder='Search'
@@ -33,7 +33,7 @@
               />
             </button>
           </template>
-        </FbInput>
+        </FwbInput>
       </form>
       <RouterLink
         to='/posts/new'
@@ -116,7 +116,7 @@
 <script setup lang='ts'>
 import { computed, onBeforeMount, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Input as FbInput } from 'flowbite-vue'
+import { FwbInput } from 'flowbite-vue'
 import { Icon } from '@iconify/vue'
 import { D } from '@mobily/ts-belt'
 import LoadingIndicator from 'svg-loaders/svg-smil-loaders/circles.svg?component'

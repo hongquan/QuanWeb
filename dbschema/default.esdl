@@ -36,6 +36,9 @@ module default {
         required title: str {
             constraint max_len_value(50);
         }
+        title_vi: str {
+            constraint max_len_value(50);
+        }
         required slug: str {
             constraint exclusive;
             constraint max_len_value(50);
