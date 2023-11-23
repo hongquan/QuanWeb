@@ -35,23 +35,6 @@ pub async fn login(
             info!("Failed to authenticate");
             ApiError::LoginError("Wrong email or password".into())
         })?;
-    // let user = stores::user::get_user_by_email(&login_data.email, &db)
-    //     .await
-    //     .map_err(ApiError::EdgeDBQueryError)?
-    //     .ok_or_else(|| {
-    //         tracing::info!("User not found");
-    //         let resp: ApiErrorShape = "User not found".to_string().into();
-    //         (StatusCode::UNAUTHORIZED, Json(resp))
-    //     })?;
-    // let passwd_check = check_password(login_data.password.expose_secret(), &user.password)
-    //     .map_err(|e| {
-    //         tracing::error!("Error checking password: {:?}", e);
-    //         ApiError::LoginError("Wrong password".into())
-    //     })?;
-    // tracing::info!("Password check: {:?}", passwd_check);
-    // passwd_check
-    //     .then_some(())
-    //     .ok_or(ApiError::LoginError("Wrong password".into()))?;
     info!("Logging in user: {:?}", user);
     auth_session.login(&user).await.map_err(|e| {
         tracing::error!("Error logging in user: {}", e);
