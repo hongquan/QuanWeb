@@ -50,7 +50,8 @@ async fn main() -> miette::Result<()> {
     // Auth service
     let backend = Backend { db: client };
     let auth_service = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|_e: BoxError| async {
+        .layer(HandleErrorLayer::new(|e: BoxError| async move {
+            tracing::error!("Error: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         }))
         .layer(AuthManagerLayerBuilder::new(backend, session_layer).build());
