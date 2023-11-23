@@ -25,6 +25,7 @@ pub fn get_config() -> Result<Config, ConfigError> {
         .build()
 }
 
+#[allow(dead_code)]
 pub fn get_secret_bytes(config: &Config) -> Result<Vec<u8>, Report> {
     let secret_str = config
         .get_string(KEY_SECRET)

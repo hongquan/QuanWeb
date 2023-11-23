@@ -1,10 +1,6 @@
-pub mod store;
+pub mod backend;
 pub mod structs;
 
-use uuid::Uuid;
-use axum_login::extractors::AuthContext;
+use backend::Backend;
 
-use crate::models::{User, Role};
-use store::EdgeDbStore;
-
-pub type Auth = AuthContext<Uuid, User, EdgeDbStore<User>, Role>;
+pub type AuthSession = axum_login::AuthSession<Backend>;

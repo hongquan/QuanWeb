@@ -6,7 +6,7 @@ pub fn update_entry_in_query<T: Display>(name: &str, value: T, original_uri: &Ur
     let mut query = original_uri
         .query()
         .and_then(|s| QueryString::decode(s.as_bytes()).ok())
-        .unwrap_or(QueryString::new());
+        .unwrap_or_default();
     query.set(name, format!("{value}"));
     let path = original_uri.path();
     let path_and_query = match String::from_utf8(query.encode()).ok() {

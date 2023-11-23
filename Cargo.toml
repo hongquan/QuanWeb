@@ -1,6 +1,6 @@
 [package]
 name = "quanweb"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 default-run = "quanweb"
 
@@ -11,13 +11,11 @@ strip="debuginfo"
 
 [dependencies]
 ammonia = "3.3.0"
-async-fred-session = "0.1.5"
-async-trait = "0.1.71"
+async-trait = "0.1.74"
 atom_syndication = { version = "0.12.2", features = ["serde"] }
-axum = { version = "0.6.19", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query", "original-uri"] }
+axum = { version = "0.6.20", features = ["tracing", "json", "tower-log", "macros", "tokio", "headers", "query", "original-uri"] }
 axum-extra = { version = "0.8.0" }
-axum-login = "0.6.0"
-axum-sessions = "0.5.0"
+axum-login = "0.9.0"
 chrono = { version = "0.4.26", features = ["serde", "alloc", "clock"], default-features = false }
 chrono-tz = { version = "0.8.3", features = ["serde"] }
 clap = { version = "4.4.7", features = ["derive"] }
@@ -31,7 +29,7 @@ edgedb-tokio = { version = "0.5.0", features = ["serde_json", "miette-errors"] }
 field_names = "0.2.0"
 fluent-bundle = "0.15.2"
 fluent-templates = "0.8.0"
-fred = { version = "6.3.0", features = ["serde-json", "partial-tracing"] }
+fred = { version = "7.0.0", features = ["serde-json", "partial-tracing"] }
 http = "0.2.9"
 hyperlocal = { version = "0.8.0", default-features = false, features = ["server"] }
 indexmap = { version = "2.0.0", features = ["serde"] }
@@ -55,7 +53,9 @@ strum_macros = "0.25.0"
 syntect = { version = "5.0.0", default-features = false, features = ["fancy-regex", "html"] }
 thiserror = "1.0.50"
 tokio = { version = "1.29.1", features = ["full"] }
+tower = { version = "0.4.13", features = ["tracing", "tokio"] }
 tower-http = { version = "0.4.1", features = ["trace"] }
+tower-sessions = { version = "0.6.0", features = ["redis-store"] }
 tracing = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-journald = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald" }
 tracing-subscriber = { git = "https://github.com/hongquan/tracing.git", branch = "feat/tracing-journald", features = ["env-filter"] }

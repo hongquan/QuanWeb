@@ -20,7 +20,7 @@ use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
 use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, NPaging, ObjectListResponse};
 pub use super::users::list_users;
-use crate::auth::Auth;
+use crate::auth::AuthSession;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::stores;
@@ -31,9 +31,9 @@ pub async fn root() -> &'static str {
     "API root"
 }
 
-pub async fn show_me(auth: Auth) -> AxumResult<Json<User>> {
-    tracing::info!("Current user: {:?}", auth.current_user);
-    let user = auth.current_user.ok_or(ApiError::Unauthorized)?;
+pub async fn show_me(auth_session: AuthSession) -> AxumResult<Json<User>> {
+    tracing::info!("Current user: {:?}", auth_session.user);
+    let user = auth_session.user.ok_or(ApiError::Unauthorized)?;
     Ok(Json(user))
 }
 
@@ -81,10 +81,10 @@ pub async fn get_category(
 
 pub async fn delete_category(
     Path(category_id): Path<Uuid>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE BlogCategory FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let _deleted_cat: MinimalObject = db
@@ -97,11 +97,11 @@ pub async fn delete_category(
 
 pub async fn update_category_partial(
     WithRejection(Path(category_id), _): WithRejection<Path<Uuid>, ApiError>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<BlogCategory>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -140,11 +140,11 @@ pub async fn update_category_partial(
 }
 
 pub async fn create_category(
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<(StatusCode, Json<BlogCategory>)> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;

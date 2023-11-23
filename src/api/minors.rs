@@ -12,11 +12,12 @@ use validify::Validify;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
 use super::structs::{
-    BookAuthorPatchData, NPaging, ObjectListResponse, PresentationCreateData, PresentationPatchData, BookPatchData, BookCreateData,
+    BookAuthorPatchData, BookCreateData, BookPatchData, NPaging, ObjectListResponse,
+    PresentationCreateData, PresentationPatchData,
 };
-use crate::auth::Auth;
+use crate::auth::AuthSession;
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::minors::{BookAuthor, Book};
+use crate::models::minors::{Book, BookAuthor};
 use crate::models::{MinimalObject, Presentation};
 use crate::stores;
 
@@ -61,11 +62,11 @@ pub async fn get_presentation(
 
 pub async fn update_presentation_partial(
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<Presentation>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -101,11 +102,11 @@ pub async fn update_presentation_partial(
 }
 
 pub async fn create_presentation(
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<Presentation>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -115,7 +116,8 @@ pub async fn create_presentation(
         .ok_or(ApiError::NotEnoughData)?;
     let post_data: PresentationCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data = PresentationCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    let post_data =
+        PresentationCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
@@ -141,10 +143,10 @@ pub async fn create_presentation(
 
 pub async fn delete_presentation(
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE Presentation FILTER .id = <uuid>$0";
     let _p: MinimalObject = db
         .query_single(q, &(id,))
@@ -194,13 +196,14 @@ pub async fn get_book_author(
 }
 
 pub async fn update_book_author_partial(
-    auth: Auth,
+    auth_session: AuthSession,
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
     WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
-    let post_data = BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
+    let post_data =
+        BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         UPDATE BookAuthor FILTER .id = <uuid>$0 SET {
             name := <str>$1,
@@ -216,11 +219,11 @@ pub async fn update_book_author_partial(
 }
 
 pub async fn delete_book_author(
-    auth: Auth,
+    auth_session: AuthSession,
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE BookAuthor FILTER .id = <uuid>$0";
     let _p: MinimalObject = db
         .query_single(q, &(id,))
@@ -231,12 +234,13 @@ pub async fn delete_book_author(
 }
 
 pub async fn create_book_author(
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
-    let post_data = BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
+    let post_data =
+        BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         INSERT BookAuthor {
             name := <str>$0,
@@ -291,11 +295,11 @@ pub async fn get_book(
 }
 
 pub async fn delete_book(
-    auth: Auth,
+    auth_session: AuthSession,
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE Book FILTER .id = <uuid>$0";
     let _p: MinimalObject = db
         .query_single(q, &(id,))
@@ -307,11 +311,11 @@ pub async fn delete_book(
 
 pub async fn update_book_partial(
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<Book>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -325,7 +329,8 @@ pub async fn update_book_partial(
     }
     let patch_data: BookPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let patch_data = BookPatchData::validify(patch_data.into()).map_err(ApiError::ValidationErrors)?;
+    let patch_data =
+        BookPatchData::validify(patch_data.into()).map_err(ApiError::ValidationErrors)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
     let args = patch_data.make_edgedb_object(id, &submitted_fields);
@@ -341,16 +346,20 @@ pub async fn update_book_partial(
     );
     tracing::debug!("Query: {}", q);
     tracing::debug!("Args: {:#?}", args);
-    let book = db.query_single(&q, &args).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::ObjectNotFound("Book".into()))?;
+    let book = db
+        .query_single(&q, &args)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(Json(book))
 }
 
 pub async fn create_book(
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<Book>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -360,7 +369,8 @@ pub async fn create_book(
         .ok_or(ApiError::NotEnoughData)?;
     let post_data: BookCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data = BookCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    let post_data =
+        BookCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
@@ -376,6 +386,10 @@ pub async fn create_book(
         author: {{ id, name }},
     }}"
     );
-    let book = db.query_single(&q, &args).await.map_err(ApiError::EdgeDBQueryError)?.ok_or(ApiError::Other("Failed to create Book".into()))?;
+    let book = db
+        .query_single(&q, &args)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?
+        .ok_or(ApiError::Other("Failed to create Book".into()))?;
     Ok(Json(book))
 }

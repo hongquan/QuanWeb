@@ -1,9 +1,8 @@
-use uuid::Uuid;
-use field_names::FieldNames;
-use axum_login::{AuthUser, secrecy::SecretVec};
-use edgedb_derive::Queryable;
-use serde::{Serialize, Deserialize};
 use atom_syndication::{Person, PersonBuilder};
+use edgedb_derive::Queryable;
+use field_names::FieldNames;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use super::feeds::JsonAuthor;
 use crate::types::EdgeSelectable;
@@ -51,21 +50,8 @@ impl From<MiniUser> for JsonAuthor {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Role {
     Admin,
-}
-
-impl AuthUser<Uuid, Role> for User {
-    fn get_id(&self) -> Uuid {
-        self.id
-    }
-
-    fn get_password_hash(&self) -> SecretVec<u8> {
-        SecretVec::new(self.password.clone().into())
-    }
-
-    fn get_role(&self) -> Option<Role> {
-        Some(Role::Admin)
-    }
 }

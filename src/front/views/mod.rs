@@ -8,15 +8,15 @@ use std::num::NonZeroU16;
 use axum::extract::Form;
 use axum::extract::{OriginalUri, Query, State};
 use axum::response::{Html, IntoResponse, Result as AxumResult};
-use axum_sessions::extractors::{ReadableSession, WritableSession};
 use http::{HeaderName, StatusCode, Uri};
 use minijinja::context;
 use minijinja::Environment;
 use serde::ser::Serialize;
+use tower_sessions::Session;
 use unic_langid::LanguageIdentifier;
 
 use super::structs::{LaxPaging, SetLangReq};
-use crate::auth::Auth;
+use crate::auth::AuthSession;
 use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG, STATIC_URL};
 pub use crate::errors::PageError;
 use crate::stores;
@@ -37,10 +37,10 @@ pub async fn fallback_view() -> (StatusCode, &'static str) {
 }
 
 pub async fn home(
-    auth: Auth,
+    auth_session: AuthSession,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
-    session: ReadableSession,
+    session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -66,9 +66,11 @@ pub async fn home(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let no_tracking = auth.current_user.is_some();
+    let no_tracking = auth_session.user.is_some();
     let lang = session
         .get::<String>(KEY_LANG)
+        .ok()
+        .flatten()
         .unwrap_or(DEFAULT_LANG.into());
     let context = context!(
         lang => lang,
@@ -94,7 +96,7 @@ pub async fn static_handler(uri: Uri) -> impl IntoResponse {
 type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
 
 pub async fn set_lang(
-    mut session: WritableSession,
+    session: Session,
     Form(payload): Form<SetLangReq>,
 ) -> AxumResult<HTMXResponse> {
     let li: LanguageIdentifier = payload

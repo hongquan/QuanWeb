@@ -3,25 +3,25 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
-use axum_sessions::extractors::ReadableSession;
 use indexmap::indexmap;
 use minijinja::{context, value::Value as MJValue};
+use tower_sessions::Session;
 use uuid::Uuid;
 
 use super::super::structs::{LaxPaging, PostPageParams};
 use super::render_with;
-use crate::auth::Auth;
-use crate::consts::{DEFAULT_PAGE_SIZE, KEY_LANG, DEFAULT_LANG};
+use crate::auth::AuthSession;
+use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG};
 use crate::errors::PageError;
 use crate::stores;
 use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous_post};
 use crate::types::{AppState, Paginator};
 
 pub async fn show_post(
-    auth: Auth,
+    auth_session: AuthSession,
     Path((_y, _m, slug)): Path<(u16, u16, String)>,
     Query(params): Query<PostPageParams>,
-    session: ReadableSession,
+    session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -29,10 +29,12 @@ pub async fn show_post(
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    let user = auth.current_user;
+    let user = auth_session.user;
     let no_tracking = !post.is_published.unwrap_or(false) || user.is_some();
     let cat = match params.cat {
-        Some(slug) => stores::blog::get_category_by_slug(&slug, &db).await.map_err(PageError::EdgeDBQueryError)?,
+        Some(slug) => stores::blog::get_category_by_slug(&slug, &db)
+            .await
+            .map_err(PageError::EdgeDBQueryError)?,
         None => None,
     };
     let cat_slug = cat.as_ref().map(|c| c.slug.as_str());
@@ -46,7 +48,11 @@ pub async fn show_post(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
+    let lang = session
+        .get::<String>(KEY_LANG)
+        .ok()
+        .flatten()
+        .unwrap_or(DEFAULT_LANG.into());
     let mut vcontext = indexmap! {
         "post" => MJValue::from_serializable(&post),
         "prev_post" => MJValue::from_serializable(&prev_post),
@@ -63,11 +69,11 @@ pub async fn show_post(
 }
 
 pub async fn list_posts(
-    auth: Auth,
+    auth_session: AuthSession,
     Path(cat_slug): Path<String>,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
-    session: ReadableSession,
+    session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -78,9 +84,14 @@ pub async fn list_posts(
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    let posts = stores::blog::get_published_posts_under_category(Some(cat_slug), Some(offset), Some(page_size as i64), &db)
-        .await
-        .map_err(PageError::EdgeDBQueryError)?;
+    let posts = stores::blog::get_published_posts_under_category(
+        Some(cat_slug),
+        Some(offset),
+        Some(page_size as i64),
+        &db,
+    )
+    .await
+    .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);
     let total = stores::blog::count_blogposts_under_category(cat.id, &db)
         .await
@@ -97,8 +108,12 @@ pub async fn list_posts(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
-    let no_tracking = auth.current_user.is_some();
+    let lang = session
+        .get::<String>(KEY_LANG)
+        .ok()
+        .flatten()
+        .unwrap_or(DEFAULT_LANG.into());
+    let no_tracking = auth_session.user.is_some();
     let context = context!(
         posts => posts,
         cat => cat,
@@ -113,12 +128,12 @@ pub async fn list_posts(
 }
 
 pub async fn preview_post(
-    auth: Auth,
+    auth_session: AuthSession,
     Path(id): Path<Uuid>,
-    session: ReadableSession,
+    session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let _user = auth.current_user.ok_or(PageError::PermissionDenied);
+    let _user = auth_session.user.ok_or(PageError::PermissionDenied);
     let AppState { db, jinja } = state;
     let post = stores::blog::get_post(id, &db)
         .await
@@ -132,18 +147,21 @@ pub async fn preview_post(
         .await
         .map_err(PageError::EdgeDBQueryError)?;
     tracing::debug!("Next post: {:?}", next_post);
-    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
-    let context =
-        context!(post => post, prev_post => prev_post, next_post => next_post, lang => lang, no_tracking => true);
+    let lang = session
+        .get::<String>(KEY_LANG)
+        .ok()
+        .flatten()
+        .unwrap_or(DEFAULT_LANG.into());
+    let context = context!(post => post, prev_post => prev_post, next_post => next_post, lang => lang, no_tracking => true);
     let content = render_with("blog/post.jinja", context, jinja)?;
     Ok(Html(content))
 }
 
 pub async fn list_uncategorized_posts(
-    auth: Auth,
+    auth_session: AuthSession,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
-    session: ReadableSession,
+    session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
@@ -175,8 +193,12 @@ pub async fn list_uncategorized_posts(
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;
-    let lang = session.get::<String>(KEY_LANG).unwrap_or(DEFAULT_LANG.into());
-    let no_tracking = auth.current_user.is_some();
+    let lang = session
+        .get::<String>(KEY_LANG)
+        .ok()
+        .flatten()
+        .unwrap_or(DEFAULT_LANG.into());
+    let no_tracking = auth_session.user.is_some();
     let context = context!(
         posts => posts,
         pagelink_items => pagelink_items,

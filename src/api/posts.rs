@@ -8,13 +8,16 @@ use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 use validify::Validify;
 
-use crate::auth::Auth;
 use super::errors::ApiError;
 use super::paging::gen_pagination_links;
-use super::structs::{BlogPostCreateData, BlogPostPatchData, ObjectListResponse, NPaging, OtherQuery};
+use super::structs::{
+    BlogPostCreateData, BlogPostPatchData, NPaging, ObjectListResponse, OtherQuery,
+};
+use crate::auth::AuthSession;
 use crate::consts::DEFAULT_PAGE_SIZE;
-use crate::models::{DetailedBlogPost, MinimalObject, MediumBlogPost};
+use crate::models::{DetailedBlogPost, MediumBlogPost, MinimalObject};
 use crate::stores;
+use crate::types::EdgeSelectable;
 use crate::utils::split_search_query;
 
 pub async fn list_posts(
@@ -28,12 +31,15 @@ pub async fn list_posts(
     let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
     let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
-    let other_query = OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
+    let other_query =
+        OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
     let search_tokens = split_search_query(other_query.q.as_deref());
-    let lower_search_tokens: Option<Vec<String>> = search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
-    let posts = stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
-        .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+    let lower_search_tokens: Option<Vec<String>> =
+        search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
+    let posts =
+        stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
+            .await
+            .map_err(ApiError::EdgeDBQueryError)?;
     let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
         .await
         .map_err(ApiError::EdgeDBQueryError)?;
@@ -62,10 +68,10 @@ pub async fn get_post(
 
 pub async fn delete_post(
     Path(post_id): Path<Uuid>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
 ) -> AxumResult<StatusCode> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     let q = "DELETE BlogPost FILTER .id = <uuid>$0";
     tracing::debug!("To query: {}", q);
     let _deleted_post: MinimalObject = db
@@ -78,11 +84,11 @@ pub async fn delete_post(
 
 pub async fn update_post_partial(
     WithRejection(Path(post_id), _): WithRejection<Path<Uuid>, ApiError>,
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<Json<DetailedBlogPost>> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -99,6 +105,7 @@ pub async fn update_post_partial(
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
+    let fields = DetailedBlogPost::fields_as_shape();
     let args = patch_data.make_edgedb_object(post_id, &submitted_fields);
     let q = format!(
         "SELECT (
@@ -107,24 +114,7 @@ pub async fn update_post_partial(
             SET {{
                 {set_clause}
             }}
-        ) {{
-            id,
-            title,
-            slug,
-            is_published,
-            published_at,
-            created_at,
-            updated_at,
-            categories: {{ id, title, slug }},
-            body,
-            format,
-            locale,
-            excerpt,
-            html,
-            author: {{ id, username, email }},
-            seo_description,
-            og_image,
-        }}"
+        ) {fields}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:#?}", args);
@@ -137,11 +127,11 @@ pub async fn update_post_partial(
 }
 
 pub async fn create_post(
-    auth: Auth,
+    auth_session: AuthSession,
     State(db): State<EdgeClient>,
     WithRejection(Json(value), _): WithRejection<Json<Value>, ApiError>,
 ) -> AxumResult<(StatusCode, Json<DetailedBlogPost>)> {
-    auth.current_user.ok_or(ApiError::Unauthorized)?;
+    auth_session.user.ok_or(ApiError::Unauthorized)?;
     // Collect list of submitted fields
     let jdata: JMap<String, Value> =
         serde_json::from_value(value.clone()).map_err(ApiError::JsonExtractionError)?;
@@ -152,10 +142,12 @@ pub async fn create_post(
     // Check that data has valid fields
     let post_data: BlogPostCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data = BlogPostCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    let post_data =
+        BlogPostCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
     tracing::debug!("Post data: {:?}", post_data);
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = post_data.gen_set_clause(&submitted_fields);
+    let fields = DetailedBlogPost::fields_as_shape();
     let args = post_data.make_edgedb_object(&submitted_fields);
     let q = format!(
         "
@@ -163,24 +155,7 @@ pub async fn create_post(
         INSERT BlogPost {{
             {set_clause}
         }}
-    ) {{
-        id,
-        title,
-        slug,
-        is_published,
-        published_at,
-        created_at,
-        updated_at,
-        categories: {{id, title, slug}},
-        body,
-        format,
-        locale,
-        excerpt,
-        html,
-        author: {{id, username, email}},
-        seo_description,
-        og_image,
-    }}"
+    ) {fields}"
     );
     tracing::debug!("To query: {}", q);
     tracing::debug!("Query with params: {:?}", args);

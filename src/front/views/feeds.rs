@@ -1,8 +1,8 @@
 use std::num::NonZeroU16;
 
 use atom_syndication::{Entry, FeedBuilder, LinkBuilder};
-use axum::extract::{Query, State, Host, OriginalUri};
-use axum::response::{Result as AxumResult, IntoResponseParts, Json};
+use axum::extract::{Host, OriginalUri, Query, State};
+use axum::response::{IntoResponseParts, Json, Result as AxumResult};
 use chrono::{TimeZone, Utc};
 use edgedb_tokio::Client as EdgeClient;
 use http::{header::CONTENT_TYPE, Uri};
@@ -10,9 +10,9 @@ use http::{header::CONTENT_TYPE, Uri};
 use super::super::structs::LaxPaging;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::errors::PageError;
-use crate::models::feeds::{JsonFeed, JsonItem, EntryExt, DEFAULT_SITE_URL};
+use crate::models::feeds::{EntryExt, JsonFeed, JsonItem, DEFAULT_SITE_URL};
 use crate::stores;
-use crate::types::{Paginator, ext::UriExt};
+use crate::types::{ext::UriExt, Paginator};
 
 // Generate from Python: uuid.uuid5(uuid.NAMESPACE_DNS, 'quan.hoabinh.vn'
 const SITE_UUID: &str = "4543aea6-ab17-5c18-9279-19e73529594d";
@@ -23,7 +23,9 @@ pub async fn gen_atom_feeds(
     Query(paging): Query<LaxPaging>,
     State(db): State<EdgeClient>,
 ) -> AxumResult<(impl IntoResponseParts, String)> {
-    let base_url: Uri = format!("https://{host}").parse().unwrap_or(Uri::from_static(DEFAULT_SITE_URL));
+    let base_url: Uri = format!("https://{host}")
+        .parse()
+        .unwrap_or(Uri::from_static(DEFAULT_SITE_URL));
     let current_page = paging.get_page_as_number();
     let page_size = DEFAULT_PAGE_SIZE;
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
@@ -45,15 +47,34 @@ pub async fn gen_atom_feeds(
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
     let mut links = vec![
-        LinkBuilder::default().rel("self".to_string()).href(self_url).build(),
-        LinkBuilder::default().rel("first".to_string()).href(base_url.join(&first_page_url).to_string()).build(),
-        LinkBuilder::default().rel("last".to_string()).href(base_url.join(&last_page_url).to_string()).build(),
+        LinkBuilder::default()
+            .rel("self".to_string())
+            .href(self_url)
+            .build(),
+        LinkBuilder::default()
+            .rel("first".to_string())
+            .href(base_url.join(&first_page_url).to_string())
+            .build(),
+        LinkBuilder::default()
+            .rel("last".to_string())
+            .href(base_url.join(&last_page_url).to_string())
+            .build(),
     ];
     if let Some(url) = next_page_url {
-        links.push(LinkBuilder::default().rel("next".to_string()).href(base_url.join(&url).to_string()).build())
+        links.push(
+            LinkBuilder::default()
+                .rel("next".to_string())
+                .href(base_url.join(&url).to_string())
+                .build(),
+        )
     }
     if let Some(url) = prev_page_url {
-        links.push(LinkBuilder::default().rel("previous".to_string()).href(base_url.join(&url).to_string()).build())
+        links.push(
+            LinkBuilder::default()
+                .rel("previous".to_string())
+                .href(base_url.join(&url).to_string())
+                .build(),
+        )
     }
     let mut entries: Vec<Entry> = posts.into_iter().map(Entry::from).collect();
     entries.iter_mut().for_each(|e| e.prepend_url(&base_url));
@@ -70,9 +91,11 @@ pub async fn gen_atom_feeds(
         .updated(updated_at)
         .entries(entries)
         .build();
-    Ok(([(CONTENT_TYPE, "application/atom+xml; charset=utf-8")], feed.to_string()))
+    Ok((
+        [(CONTENT_TYPE, "application/atom+xml; charset=utf-8")],
+        feed.to_string(),
+    ))
 }
-
 
 pub async fn gen_json_feeds(
     Host(host): Host,
@@ -103,13 +126,11 @@ pub async fn gen_json_feeds(
         ..Default::default()
     };
     let mut items: Vec<JsonItem> = posts.into_iter().map(JsonItem::from).collect();
-    items.iter_mut().for_each(|it| {
-        match it.url {
-            Some(ref url) if url.starts_with('/') => {
-                it.url = Some(format!("{base_url}{url}"));
-            }
-            _ => {}
+    items.iter_mut().for_each(|it| match it.url {
+        Some(ref url) if url.starts_with('/') => {
+            it.url = Some(format!("{base_url}{url}"));
         }
+        _ => {}
     });
     feed.items = items;
     Ok(Json(feed))
