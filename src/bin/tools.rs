@@ -39,13 +39,11 @@ enum Commands {
     GenSyntectCSS,
     TryUpdateCategory {
         id: Uuid,
-        #[arg(short, long)]
-        title: String,
     },
 }
 
 fn config_logging() {
-    let directives = format!("quanweb={level},tools={level},edgedb::outgoing={level}", level = LevelFilter::DEBUG);
+    let directives = format!("{level}", level = LevelFilter::DEBUG);
     let filter = EnvFilter::new(directives);
     let registry = tracing_subscriber::registry().with(filter);
     registry.with(tracing_subscriber::fmt::layer()).init();
@@ -65,8 +63,9 @@ fn gen_syntect_css() -> Result<()> {
     Ok(())
 }
 
-async fn update_with_tuple(id: Uuid, title: String, client: &edgedb_tokio::Client) -> Result<()> {
+async fn update_with_tuple(id: Uuid, client: &edgedb_tokio::Client) -> Result<()> {
     let q_simple = "UPDATE BlogCategory FILTER .id = <uuid>$0 SET { title := <str>$1 }";
+    let title = "Test with tuple".to_string();
     let t_args = (id, title);
     tracing::debug!("To query: {}", q_simple);
     tracing::debug!("With args: {:#?}", t_args);
@@ -78,7 +77,8 @@ async fn update_with_tuple(id: Uuid, title: String, client: &edgedb_tokio::Clien
     Ok(())
 }
 
-async fn update_with_params(id: Uuid, title: String, client: &edgedb_tokio::Client) -> Result<()> {
+async fn update_with_params(id: Uuid, client: &edgedb_tokio::Client) -> Result<()> {
+    let title = "Test with params".to_string();
     let pairs = indexmap!(
         "id" => (Some(EValue::Uuid(id)), Cd::One),
         "title" => (Some(EValue::Str(title)), Cd::One),
@@ -95,12 +95,12 @@ async fn update_with_params(id: Uuid, title: String, client: &edgedb_tokio::Clie
     Ok(())
 }
 
-async fn try_update_category(id: Uuid, title: String) -> Result<()> {
-    eprintln!("id: {}, title: {}", id, title);
+async fn try_update_category(id: Uuid) -> Result<()> {
+    eprintln!("id: {}", id);
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let client = db::get_edgedb_client(&config).await?;
-    update_with_tuple(id, title.clone(), &client).await?;
-    update_with_params(id, title, &client).await?;
+    update_with_tuple(id, &client).await?;
+    update_with_params(id, &client).await?;
     eprintln!("🎉 Done!");
     Ok(())
 }
@@ -112,10 +112,10 @@ fn main() -> Result<()> {
         Commands::GenSyntectCSS => {
             gen_syntect_css()?;
         },
-        Commands::TryUpdateCategory { id, title } => {
+        Commands::TryUpdateCategory { id } => {
             let rt = tokio::runtime::Runtime::new().unwrap();
             rt.block_on(async {
-                try_update_category(id, title).await
+                try_update_category(id).await
             })?;
         },
     }
