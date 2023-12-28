@@ -170,6 +170,7 @@ pub async fn create_category(
     ) {fields}"
     );
     tracing::debug!("To query: {}", q);
+    tracing::debug!("With args: {:#?}", args);
     let created_cat: BlogCategory = db
         .query_single(&q, &args)
         .await

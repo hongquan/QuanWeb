@@ -278,11 +278,17 @@ pub struct BlogCategoryCreateData {
     pub title: String,
     #[validate(length(min = 2))]
     pub slug: String,
+    #[validate(length(min = 2))]
+    pub title_vi: String,
 }
 
 impl BlogCategoryCreateData {
     pub fn gen_set_clause(&self) -> String {
-        let lines = ["title := <str>$title", "slug := <str>$slug"];
+        let lines = [
+            "title := <str>$title",
+            "slug := <str>$slug",
+            "title_vi :=<str>$title_vi",
+        ];
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
@@ -291,6 +297,7 @@ impl BlogCategoryCreateData {
         let pairs = indexmap! {
             "title" => Some(EValue::from(self.title.clone())),
             "slug" => Some(EValue::from(self.slug.clone())),
+            "title_vi" => Some(EValue::from(self.title_vi.clone())),
         };
         edge_object_from_simple_pairs(pairs)
     }

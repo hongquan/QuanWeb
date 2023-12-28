@@ -50,7 +50,7 @@ pub fn config_logging(app_opt: &AppOptions) {
             _ => LevelFilter::TRACE,
         }
     };
-    let directives = format!("{level}");
+    let directives = format!("quanweb={level},tower_http={level}");
     let filter = EnvFilter::builder()
         .with_default_directive(LevelFilter::WARN.into())
         .parse_lossy(directives);
