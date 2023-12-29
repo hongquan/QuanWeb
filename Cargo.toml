@@ -68,10 +68,10 @@ validify = "1.0.11"
 nonzero = "0.2.0"
 
 [patch.crates-io]
-edgedb-derive = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "60309cf" }
-edgedb-errors = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "60309cf" }
-edgedb-protocol = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "60309cf" }
-edgedb-tokio = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "60309cf" }
+edgedb-derive = { git = "https://github.com/hongquan/edgedb-rust.git", branch = "fix/object-encoding" }
+edgedb-errors = { git = "https://github.com/hongquan/edgedb-rust.git", branch = "fix/object-encoding" }
+edgedb-protocol = { git = "https://github.com/hongquan/edgedb-rust.git", branch = "fix/object-encoding" }
+edgedb-tokio = { git = "https://github.com/hongquan/edgedb-rust.git", branch = "fix/object-encoding" }
 
 [build-dependencies]
 crate-git-revision = "0.0.6"

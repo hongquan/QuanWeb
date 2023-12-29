@@ -4,9 +4,9 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bunx --bun vite",
     "lint": "eslint --ext .ts,.vue src",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "bunx --bun vue-tsc --noEmit && bunx --bun vite build",
     "preview": "vite preview"
   },
   "dependencies": {
