@@ -1,11 +1,11 @@
-pub mod users;
 pub mod blogs;
-pub mod minors;
 pub mod feeds;
+pub mod minors;
+pub mod users;
 
-pub use users::{User, Role};
-pub use blogs::{DocFormat, MediumBlogPost, DetailedBlogPost, BlogCategory, MiniBlogPost};
+pub use blogs::{BlogCategory, DetailedBlogPost, DocFormat, MediumBlogPost, MiniBlogPost};
 pub use minors::Presentation;
+pub use users::User;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, edgedb_derive::Queryable)]
 pub struct MinimalObject {
