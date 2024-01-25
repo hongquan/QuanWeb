@@ -6,7 +6,7 @@
   {% if post.og_image %}
     <meta property='og:image' content='{{ post.og_image }}' />
   {% endif %}
-  <meta property='og:description' content='{{ post.excerpt|striptags }}' />
+  <meta property='og:description' content='{{ post.excerpt|striptags|e }}' />
 {% endblock meta_og %}
 
 {% block inner_content %}
