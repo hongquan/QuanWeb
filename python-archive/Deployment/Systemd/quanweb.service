@@ -4,12 +4,13 @@ After=postgresql.service
 
 [Service]
 User=quan
-Group=quan
+Group=www-data
 
 Type=simple
 WorkingDirectory=/home/quan/QuanWeb/quanweb
 RuntimeDirectory=quanweb
-ExecStart=/home/quan/QuanWeb/venv/bin/gunicorn quanweb.app:app -b unix:/run/quanweb/web.sock
+# ExecStart=/home/quan/.local/bin/quanweb -vb /run/quanweb/web.sock
+ExecStart=/home/quan/.local/bin/quanweb -v
 TimeoutStopSec=20
 KillMode=process
 Restart=on-failure
