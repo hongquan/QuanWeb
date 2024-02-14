@@ -93,19 +93,19 @@ pub fn flatten_validation_errors(
         .and_then(|f| hm.insert("_schema_", f.to_string()));
     let field_errors = errors.field_errors();
     let field_errors = field_errors.into_iter().filter_map(|e| match e {
-        VE::Schema { .. } => None,
         VE::Field {
-            field,
+            field: Some(field),
             code,
             params,
             message,
-            ..
+            location: _location,
         } => Some((
             field,
             message
                 .or_else(|| deduce_message(code, &params))
                 .unwrap_or("Please check again".into()),
         )),
+        _ => None,
     });
     hm.extend(field_errors);
     hm

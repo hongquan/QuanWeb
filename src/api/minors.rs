@@ -114,10 +114,9 @@ pub async fn create_presentation(
     (!jdata.is_empty())
         .then_some(())
         .ok_or(ApiError::NotEnoughData)?;
-    let post_data: PresentationCreateData =
+    let mut post_data: PresentationCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data =
-        PresentationCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(
@@ -199,11 +198,10 @@ pub async fn update_book_author_partial(
     auth_session: AuthSession,
     WithRejection(Path(id), _): WithRejection<Path<Uuid>, ApiError>,
     State(db): State<EdgeClient>,
-    WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
+    WithRejection(Json(mut post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
     auth_session.user.ok_or(ApiError::Unauthorized)?;
-    let post_data =
-        BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         UPDATE BookAuthor FILTER .id = <uuid>$0 SET {
             name := <str>$1,
@@ -236,11 +234,10 @@ pub async fn delete_book_author(
 pub async fn create_book_author(
     auth_session: AuthSession,
     State(db): State<EdgeClient>,
-    WithRejection(Json(post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
+    WithRejection(Json(mut post_data), _): WithRejection<Json<BookAuthorPatchData>, ApiError>,
 ) -> AxumResult<Json<BookAuthor>> {
     auth_session.user.ok_or(ApiError::Unauthorized)?;
-    let post_data =
-        BookAuthorPatchData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     let q = "SELECT (
         INSERT BookAuthor {
             name := <str>$0,
@@ -327,10 +324,9 @@ pub async fn update_book_partial(
             .ok_or(ApiError::ObjectNotFound("Book".into()))?;
         return Ok(Json(obj));
     }
-    let patch_data: BookPatchData =
+    let mut patch_data: BookPatchData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let patch_data =
-        BookPatchData::validify(patch_data.into()).map_err(ApiError::ValidationErrors)?;
+    patch_data.validify().map_err(ApiError::ValidationErrors)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
     let args = patch_data.make_edgedb_object(id, &submitted_fields);
@@ -367,10 +363,9 @@ pub async fn create_book(
     (!jdata.is_empty())
         .then_some(())
         .ok_or(ApiError::NotEnoughData)?;
-    let post_data: BookCreateData =
+    let mut post_data: BookCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data =
-        BookCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let args = post_data.make_edgedb_object();
     let q = format!(

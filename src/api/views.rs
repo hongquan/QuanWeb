@@ -153,11 +153,10 @@ pub async fn create_category(
         .then_some(())
         .ok_or(ApiError::NotEnoughData)?;
     // Check that data has valid fields
-    let post_data: BlogCategoryCreateData =
+    let mut post_data: BlogCategoryCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     tracing::debug!("Post data: {:?}", post_data);
-    let post_data =
-        BlogCategoryCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let fields = BlogCategory::fields_as_shape();
     let args = post_data.make_edgedb_object();

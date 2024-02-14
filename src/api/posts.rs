@@ -22,7 +22,7 @@ use crate::utils::split_search_query;
 
 pub async fn list_posts(
     Query(paging): Query<NPaging>,
-    Query(other_query): Query<OtherQuery>,
+    Query(mut other_query): Query<OtherQuery>,
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<MediumBlogPost>>> {
@@ -31,8 +31,7 @@ pub async fn list_posts(
     let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
     let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
-    let other_query =
-        OtherQuery::validify(other_query.into()).map_err(ApiError::ValidationErrors)?;
+    other_query.validify().map_err(ApiError::ValidationErrors)?;
     let search_tokens = split_search_query(other_query.q.as_deref());
     let lower_search_tokens: Option<Vec<String>> =
         search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
@@ -140,10 +139,9 @@ pub async fn create_post(
         .then_some(())
         .ok_or(ApiError::NotEnoughData)?;
     // Check that data has valid fields
-    let post_data: BlogPostCreateData =
+    let mut post_data: BlogPostCreateData =
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
-    let post_data =
-        BlogPostCreateData::validify(post_data.into()).map_err(ApiError::ValidationErrors)?;
+    post_data.validify().map_err(ApiError::ValidationErrors)?;
     tracing::debug!("Post data: {:?}", post_data);
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = post_data.gen_set_clause(&submitted_fields);

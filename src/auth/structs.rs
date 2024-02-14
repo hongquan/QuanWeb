@@ -1,7 +1,6 @@
-use redact::{Secret, expose_secret};
-use serde::{Serialize, Deserialize};
+use redact::{expose_secret, Secret};
+use serde::{Deserialize, Serialize};
 use validify::{ValidationError, ValidationErrors};
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginReqData {
@@ -17,7 +16,7 @@ impl validify::Validate for LoginReqData {
     fn validate(&self) -> Result<(), ValidationErrors> {
         let mut errors = ValidationErrors::new();
         if !validify::validate_email(&self.email) {
-            let mut err = ValidationError::new_field("email", "email");
+            let mut err = ValidationError::new_field_named("email", "email");
             err.add_param("value", &&self.email);
             err.set_location("email");
             errors.add(err);
@@ -36,7 +35,7 @@ impl validify::Validate for LoginReqData {
 }
 
 pub fn validate_password(value: &Secret<String>) -> Result<(), ValidationError> {
-    (value.expose_secret().len() >= 8).then_some(()).ok_or_else(|| {
-        ValidationError::new_field("password", "too-short")
-    })
+    (value.expose_secret().len() >= 8)
+        .then_some(())
+        .ok_or_else(|| ValidationError::new_field_named("password", "too-short"))
 }
