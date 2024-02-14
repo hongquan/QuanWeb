@@ -69,6 +69,7 @@ pub async fn home(
     let no_tracking = auth_session.user.is_some();
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
@@ -105,6 +106,7 @@ pub async fn set_lang(
         .map_err(|_e| StatusCode::UNPROCESSABLE_ENTITY)?;
     session
         .insert(KEY_LANG, li.clone())
+        .await
         .map_err(|_e| StatusCode::SERVICE_UNAVAILABLE)?;
     let lang_code = li.to_string();
     let header_name = HeaderName::from_static("hx-refresh");

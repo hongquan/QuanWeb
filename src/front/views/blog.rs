@@ -50,6 +50,7 @@ pub async fn show_post(
         .map_err(PageError::EdgeDBQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
@@ -110,6 +111,7 @@ pub async fn list_posts(
         .map_err(PageError::EdgeDBQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
@@ -149,6 +151,7 @@ pub async fn preview_post(
     tracing::debug!("Next post: {:?}", next_post);
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
@@ -195,6 +198,7 @@ pub async fn list_uncategorized_posts(
         .map_err(PageError::EdgeDBQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());

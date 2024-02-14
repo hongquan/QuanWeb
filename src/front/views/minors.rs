@@ -25,6 +25,7 @@ pub async fn list_talks(
         .map_err(PageError::EdgeDBQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
@@ -48,6 +49,7 @@ pub async fn list_books(
         .map_err(PageError::EdgeDBQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
+        .await
         .ok()
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());

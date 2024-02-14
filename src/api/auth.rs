@@ -46,6 +46,7 @@ pub async fn login(
 pub async fn logout(mut auth_session: AuthSession) -> AxumResult<()> {
     auth_session
         .logout()
+        .await
         .map_err(|_e| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(())
 }

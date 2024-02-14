@@ -11,7 +11,7 @@ use edgedb_protocol::value::Value as EValue;
 use field_names::FieldNames;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
-use strum_macros::{Display, EnumString, IntoStaticStr};
+use strum::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
 
 use super::feeds::{JsonAuthor, JsonItem};
