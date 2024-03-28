@@ -4,6 +4,7 @@ module.exports = {
   content: [
     './templates/**/*.jinja',
     './minijinja/**/*.jinja',
+    './src/**/*.rs',
   ],
   theme: {
     extend: {

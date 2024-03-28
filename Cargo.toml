@@ -1,6 +1,6 @@
 [package]
 name = "quanweb"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 rust-version = "1.76"
 default-run = "quanweb"
@@ -31,6 +31,7 @@ field_names = "0.2.0"
 fluent-bundle = "0.15.2"
 fluent-templates = "0.8.0"
 fred = { version = "8.0.2", features = ["tracing"] }
+htmlize = "1.0.5"
 http = "1.0.0"
 indexmap = { version = "2.0.0", features = ["serde"] }
 libpassgen = "1.0.3"
