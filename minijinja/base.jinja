@@ -82,21 +82,51 @@
       </script>
       <script type='module'>
         import { codeToHtml } from 'https://esm.sh/shiki@1.0.0'
+
+        // Our old <code> element will be replaced by the one created by Shiki,
+        // we need to keep old class names and copy to the new one.
+        function getShikiOpt(lang, classes) {
+          return {
+            lang,
+            theme: 'one-dark-pro',
+            // Ref: https://shiki.style/guide/transformers#transformer-hooks
+            transformers: [
+              {
+                code(node) {
+                  classes.forEach((c) => this.addClassToHast(node, c))
+                },
+                pre(node) {
+                  if (!classes.includes('q-with-lineno')) {
+                    this.addClassToHast(node, 'p-4')
+                  }
+                },
+              }
+            ]
+          }
+
+        }
+
         document.addEventListener('alpine:init', () => {
           Alpine.data('need_highlight', () => ({
             code: '',
+            classes: [],
             lang: 'text',
             init() {
               const codeElm = this.$refs.orig_code;
               const code = codeElm.textContent
               this.code = code.trim()
-              let className = Array.from(codeElm.classList.values()).find((c) => c.startsWith('language-'))
+              let classes = Array.from(codeElm.classList.values())
+              let className = classes.find((c) => c.startsWith('language-'))
               if (className) {
                 this.lang = className.split('-')[1]
               }
+              this.classes = classes
             },
             async highlight() {
-              const html = await codeToHtml(this.code, { lang: this.lang, theme: 'one-dark-pro' })
+              const lang = this.lang
+              const classes = this.classes
+              const opts = getShikiOpt(lang, classes)
+              const html = await codeToHtml(this.code, opts)
               return html
             }
           }))

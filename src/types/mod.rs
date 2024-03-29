@@ -232,3 +232,11 @@ pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> S
         flag_implicit: false,
     }
 }
+
+#[derive(Debug, Deserialize, SmartDefault)]
+#[serde(default)]
+pub struct CodeFenceOptions {
+    pub lines: bool,
+    #[default = 1]
+    pub start_line: u8,
+}

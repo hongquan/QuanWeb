@@ -67,12 +67,12 @@ article .entry-content.front h2 {
 }
 
 /* Code line numbering */
-.q-need-highlight code {
+.q-need-highlight code.q-with-lineno {
   counter-reset: step;
   counter-increment: step 0;
 }
 
-.q-need-highlight code .line::before {
+.q-need-highlight code.q-with-lineno .line::before {
   content: counter(step);
   counter-increment: step;
   width: 1rem;
@@ -80,9 +80,4 @@ article .entry-content.front h2 {
   display: inline-block;
   text-align: right;
   color: rgba(115,138,148,.4)
-}
-
-pre.shiki {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
 }

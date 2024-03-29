@@ -1,15 +1,22 @@
 use std::collections::HashMap;
 use std::io::Write;
 
-use htmlize::escape_text;
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
-use comrak::{markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
+use comrak::{
+    markdown_to_html_with_plugins, ExtensionOptionsBuilder, Options, PluginsBuilder,
+    RenderOptionsBuilder, RenderPluginsBuilder,
+};
+use htmlize::escape_text;
+use serde_json5;
 use syntect::html::ClassedHTMLGenerator;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
-use crate::consts::{SYNTECT_CLASS_STYLE, ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM};
+use crate::consts::{
+    ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ATTR_CODEFENCE_EXTRA, SYNTECT_CLASS_STYLE,
+};
+use crate::types::CodeFenceOptions;
 
 pub struct CssSyntectAdapter {
     syntax_set: SyntaxSet,
@@ -85,24 +92,24 @@ impl SyntaxHighlighterAdapter for CssSyntectAdapter {
 }
 
 // A simple adapter that defers highlighting job to the client side
-pub struct JSHighlightSyntectAdapter;
+pub struct JSHighlightAdapter;
 
-impl SyntaxHighlighterAdapter for JSHighlightSyntectAdapter {
+impl SyntaxHighlighterAdapter for JSHighlightAdapter {
     fn write_highlighted(
-            &self,
-            output: &mut dyn Write,
-            _lang: Option<&str>,
-            code: &str,
-        ) -> std::io::Result<()> {
+        &self,
+        output: &mut dyn Write,
+        _lang: Option<&str>,
+        code: &str,
+    ) -> std::io::Result<()> {
         let code = escape_text(code);
         output.write_all(code.as_bytes())
     }
 
     fn write_pre_tag(
-            &self,
-            output: &mut dyn Write,
-            mut attributes: HashMap<String, String>,
-        ) -> std::io::Result<()> {
+        &self,
+        output: &mut dyn Write,
+        mut attributes: HashMap<String, String>,
+    ) -> std::io::Result<()> {
         let classname = " q-need-highlight not-prose p-0";
         if let Some(class) = attributes.get_mut("class") {
             class.push_str(classname)
@@ -115,26 +122,65 @@ impl SyntaxHighlighterAdapter for JSHighlightSyntectAdapter {
     }
 
     fn write_code_tag(
-            &self,
-            output: &mut dyn Write,
-            mut attributes: HashMap<String, String>,
-        ) -> std::io::Result<()> {
-        let classname = " q-code";
-        if let Some(class) = attributes.get_mut("class") {
-            class.push_str(classname)
-        } else {
-            attributes.insert("class".to_string(), classname.to_string());
+        &self,
+        output: &mut dyn Write,
+        mut attributes: HashMap<String, String>,
+    ) -> std::io::Result<()> {
+        tracing::info!("Attributes for code: {:?}", attributes);
+        let mut class_names = vec!["q-code"];
+        let mut styles = vec![];
+        if let Some(info_string) = attributes.get(ATTR_CODEFENCE_EXTRA) {
+            tracing::info!("Attempt to parse: {}", info_string);
+            let codefence_opts: CodeFenceOptions = serde_json5::from_str(info_string.as_str())
+                .inspect_err(|e| tracing::warn!("Failed to parse codefence extra. {e}"))
+                .unwrap_or_default();
+            if codefence_opts.lines {
+                class_names.push("q-with-lineno")
+            }
+            styles.push(format!("--line-start={}", codefence_opts.start_line));
         };
+        let extra_class = format!(" {}", class_names.join(" "));
+        if let Some(class) = attributes.get_mut("class") {
+            class.push_str(&extra_class)
+        } else {
+            attributes.insert("class".to_string(), extra_class);
+        };
+        if let Some(style) = attributes.get("style") {
+            styles.extend(style.split(';').map(String::from));
+        }
+        if !styles.is_empty() {
+            let style_s = styles.join(" ");
+            attributes.insert("style".to_string(), style_s);
+        }
         attributes.insert("x-ref".to_string(), ALPINE_ORIG_CODE_ELM.to_string());
         html::write_opening_tag(output, "code", attributes)
     }
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {
-    let options = ComrakOptions::default();
-    let mut plugins = ComrakPlugins::default();
-    let adapter = JSHighlightSyntectAdapter;
-    plugins.render.codefence_syntax_highlighter = Some(&adapter);
+    let extension = ExtensionOptionsBuilder::default()
+        .table(true)
+        .autolink(true)
+        .build()
+        .unwrap_or_default();
+    let render = RenderOptionsBuilder::default()
+        .full_info_string(true)
+        .build()
+        .unwrap_or_default();
+    let options = Options {
+        extension,
+        render,
+        ..Default::default()
+    };
+    let adapter = JSHighlightAdapter;
+    let render = RenderPluginsBuilder::default()
+        .codefence_syntax_highlighter(Some(&adapter))
+        .build()
+        .unwrap_or_default();
+    let plugins = PluginsBuilder::default()
+        .render(render)
+        .build()
+        .unwrap_or_default();
     markdown_to_html_with_plugins(markdown, &options, &plugins)
 }
 

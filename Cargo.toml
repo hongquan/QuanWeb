@@ -46,6 +46,7 @@ rust-embed = { version = "8.0.0", features = ["axum", "mime-guess", "include-exc
 serde = { version = "1.0.164", features = ["serde_derive"] }
 serde-value = "0.7.0"
 serde_json = "1.0.99"
+serde_json5 = "0.1.0"
 serde_with = "3.0.0"
 smart-default = "0.7.1"
 str-macro = "1.0.0"
