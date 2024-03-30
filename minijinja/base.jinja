@@ -96,9 +96,8 @@
                   classes.forEach((c) => this.addClassToHast(node, c))
                 },
                 pre(node) {
-                  if (!classes.includes('q-with-lineno')) {
-                    this.addClassToHast(node, 'p-4')
-                  }
+                  const className = classes.includes('q-with-lineno') ? 'py-4' : 'p-4'
+                  this.addClassToHast(node, className)
                 },
               }
             ]
