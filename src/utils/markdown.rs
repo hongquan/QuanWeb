@@ -7,102 +7,22 @@ use comrak::{
     markdown_to_html_with_plugins, ExtensionOptionsBuilder, Options, PluginsBuilder,
     RenderOptionsBuilder, RenderPluginsBuilder,
 };
-use htmlize::escape_text;
 use serde_json5;
-use syntect::html::ClassedHTMLGenerator;
-use syntect::parsing::{SyntaxReference, SyntaxSet};
-use syntect::util::LinesWithEndings;
 
-use crate::consts::{
-    ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ATTR_CODEFENCE_EXTRA, SYNTECT_CLASS_STYLE,
-};
+use crate::consts::{ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ATTR_CODEFENCE_EXTRA};
 use crate::types::CodeFenceOptions;
 
-pub struct CssSyntectAdapter {
-    syntax_set: SyntaxSet,
-}
-
-#[allow(dead_code)]
-impl CssSyntectAdapter {
-    pub fn new() -> Self {
-        Self {
-            syntax_set: two_face::syntax::extra_newlines(),
-        }
-    }
-
-    fn highlight_html(
-        &self,
-        code: &str,
-        syntax: &SyntaxReference,
-    ) -> Result<String, syntect::Error> {
-        let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
-            syntax,
-            &self.syntax_set,
-            SYNTECT_CLASS_STYLE,
-        );
-        for line in LinesWithEndings::from(code) {
-            html_generator.parse_html_for_line_which_includes_newline(line)?;
-        }
-        Ok(html_generator.finalize())
-    }
-}
-
-impl SyntaxHighlighterAdapter for CssSyntectAdapter {
-    fn write_highlighted(
-        &self,
-        output: &mut dyn Write,
-        lang: Option<&str>,
-        code: &str,
-    ) -> std::io::Result<()> {
-        let fallback_syntax = "Plain Text";
-        let lang: &str = match lang {
-            Some(l) if !l.is_empty() => l,
-            _ => fallback_syntax,
-        };
-        let syntax = self
-            .syntax_set
-            .find_syntax_by_token(lang)
-            .unwrap_or_else(|| {
-                self.syntax_set
-                    .find_syntax_by_first_line(code)
-                    .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
-            });
-
-        match self.highlight_html(code, syntax) {
-            Ok(highlighted_code) => output.write_all(highlighted_code.as_bytes()),
-            Err(_) => output.write_all(code.as_bytes()),
-        }
-    }
-
-    fn write_pre_tag(
-        &self,
-        output: &mut dyn Write,
-        attributes: HashMap<String, String>,
-    ) -> std::io::Result<()> {
-        html::write_opening_tag(output, "pre", attributes)
-    }
-
-    fn write_code_tag(
-        &self,
-        output: &mut dyn Write,
-        attributes: HashMap<String, String>,
-    ) -> std::io::Result<()> {
-        html::write_opening_tag(output, "code", attributes)
-    }
-}
-
 // A simple adapter that defers highlighting job to the client side
-pub struct JSHighlightAdapter;
+pub struct JsHighlightAdapter;
 
-impl SyntaxHighlighterAdapter for JSHighlightAdapter {
+impl SyntaxHighlighterAdapter for JsHighlightAdapter {
     fn write_highlighted(
         &self,
         output: &mut dyn Write,
         _lang: Option<&str>,
         code: &str,
     ) -> std::io::Result<()> {
-        let code = escape_text(code);
-        output.write_all(code.as_bytes())
+        html::escape(output, code.as_bytes())
     }
 
     fn write_pre_tag(
@@ -110,6 +30,7 @@ impl SyntaxHighlighterAdapter for JSHighlightAdapter {
         output: &mut dyn Write,
         mut attributes: HashMap<String, String>,
     ) -> std::io::Result<()> {
+        // Adding HTML classes which are needed by our AlpineJS app
         let classname = " q-need-highlight not-prose p-0";
         if let Some(class) = attributes.get_mut("class") {
             class.push_str(classname)
@@ -126,9 +47,9 @@ impl SyntaxHighlighterAdapter for JSHighlightAdapter {
         output: &mut dyn Write,
         mut attributes: HashMap<String, String>,
     ) -> std::io::Result<()> {
+        // Adding HTML classes which are needed by our AlpineJS app
         tracing::info!("Attributes for code: {:?}", attributes);
         let mut class_names = vec!["q-code"];
-        let mut styles = vec![];
         if let Some(info_string) = attributes.get(ATTR_CODEFENCE_EXTRA) {
             tracing::info!("Attempt to parse: {}", info_string);
             let codefence_opts: CodeFenceOptions = serde_json5::from_str(info_string.as_str())
@@ -137,7 +58,10 @@ impl SyntaxHighlighterAdapter for JSHighlightAdapter {
             if codefence_opts.lines {
                 class_names.push("q-with-lineno")
             }
-            styles.push(format!("--line-start={}", codefence_opts.start_line));
+            attributes.insert(
+                "data-start-line".to_string(),
+                format!("{}", codefence_opts.start_line),
+            );
         };
         let extra_class = format!(" {}", class_names.join(" "));
         if let Some(class) = attributes.get_mut("class") {
@@ -145,13 +69,6 @@ impl SyntaxHighlighterAdapter for JSHighlightAdapter {
         } else {
             attributes.insert("class".to_string(), extra_class);
         };
-        if let Some(style) = attributes.get("style") {
-            styles.extend(style.split(';').map(String::from));
-        }
-        if !styles.is_empty() {
-            let style_s = styles.join(" ");
-            attributes.insert("style".to_string(), style_s);
-        }
         attributes.insert("x-ref".to_string(), ALPINE_ORIG_CODE_ELM.to_string());
         html::write_opening_tag(output, "code", attributes)
     }
@@ -172,7 +89,7 @@ pub fn markdown_to_html(markdown: &str) -> String {
         render,
         ..Default::default()
     };
-    let adapter = JSHighlightAdapter;
+    let adapter = JsHighlightAdapter;
     let render = RenderPluginsBuilder::default()
         .codefence_syntax_highlighter(Some(&adapter))
         .build()

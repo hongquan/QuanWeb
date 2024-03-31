@@ -233,6 +233,8 @@ pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> S
     }
 }
 
+/// Codefence options. Follow slidev syntax.
+/// For example: {lines:true, start_line:4}
 #[derive(Debug, Deserialize, SmartDefault)]
 #[serde(default)]
 pub struct CodeFenceOptions {

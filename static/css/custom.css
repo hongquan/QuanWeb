@@ -68,7 +68,7 @@ article .entry-content.front h2 {
 
 /* Code line numbering */
 .q-need-highlight code.q-with-lineno {
-  counter-reset: step;
+  counter-reset: step calc(var(--start-line, 1) - 1);
   counter-increment: step 0;
 }
 
