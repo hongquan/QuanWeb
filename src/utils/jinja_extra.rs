@@ -90,9 +90,7 @@ pub fn fluent(state: &State, key: &str, kwargs: Kwargs) -> String {
         );
         LanguageIdentifier::default()
     });
-    LOCALES
-        .lookup_complete(&li, key, fluent_args.as_ref())
-        .unwrap_or_else(|| key.to_string())
+    LOCALES.lookup_complete(&li, key, fluent_args.as_ref())
 }
 
 // Template loader for MiniJinja

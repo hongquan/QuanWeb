@@ -55,15 +55,15 @@ pub async fn show_post(
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
     let mut vcontext = indexmap! {
-        "post" => MJValue::from_serializable(&post),
-        "prev_post" => MJValue::from_serializable(&prev_post),
-        "next_post" => MJValue::from_serializable(&next_post),
-        "categories" => MJValue::from_serializable(&categories),
+        "post" => MJValue::from_serialize(&post),
+        "prev_post" => MJValue::from_serialize(&prev_post),
+        "next_post" => MJValue::from_serialize(&next_post),
+        "categories" => MJValue::from_serialize(&categories),
         "lang" => MJValue::from(lang),
         "no_tracking" => MJValue::from(no_tracking),
     };
     if let Some(cat) = cat {
-        vcontext.insert("cat", MJValue::from_serializable(&cat));
+        vcontext.insert("cat", MJValue::from_serialize(&cat));
     }
     let content = render_with("blog/post.jinja", vcontext, jinja)?;
     Ok(Html(content))
