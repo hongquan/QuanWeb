@@ -19,7 +19,7 @@ pub async fn get_edgedb_client(
     })?;
     tracing::info!("To connect to EdgeDB instance {}", instance_name);
     builder.instance(&instance_name)?;
-    let config = builder.build_env().await?.with_database(DB_NAME)?;
+    let config = builder.build_env().await?.with_branch(DB_NAME)?;
     Ok(edgedb_tokio::Client::new(&config))
 }
 

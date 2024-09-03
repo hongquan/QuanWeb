@@ -87,3 +87,9 @@ nonzero = "0.2.0"
 
 [build-dependencies]
 crate-git-revision = "0.0.6"
+
+[patch.crates-io]
+edgedb-derive = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
+edgedb-errors = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
+edgedb-protocol = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
+edgedb-tokio = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
