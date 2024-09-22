@@ -5,7 +5,6 @@ use edgedb_tokio::TlsSecurity;
 use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
 
 use crate::conf::KEY_EDGEDB_INSTANCE;
-use crate::consts::DB_NAME;
 
 pub async fn get_edgedb_client(
     app_config: &Config,
@@ -19,7 +18,8 @@ pub async fn get_edgedb_client(
     })?;
     tracing::info!("To connect to EdgeDB instance {}", instance_name);
     builder.instance(&instance_name)?;
-    let config = builder.build_env().await?.with_branch(DB_NAME)?;
+    // EdgeDB v5 has to be used as local server, so it is safe to use default branch name "main"
+    let config = builder.build_env().await?;
     Ok(edgedb_tokio::Client::new(&config))
 }
 
