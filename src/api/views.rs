@@ -118,7 +118,7 @@ pub async fn update_category_partial(
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
-    let args = patch_data.make_edgedb_object(category_id, &submitted_fields);
+    let args = patch_data.make_edgedb_args(category_id, &submitted_fields);
     let fields = BlogCategory::fields_as_shape();
     let q = format!(
         "SELECT (
@@ -159,7 +159,7 @@ pub async fn create_category(
     post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
     let fields = BlogCategory::fields_as_shape();
-    let args = post_data.make_edgedb_object();
+    let args = post_data.make_edgedb_args();
     let q = format!(
         "
     SELECT (

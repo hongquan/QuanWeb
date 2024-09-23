@@ -38,7 +38,7 @@ pub enum ApiError {
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
-        tracing::debug!("To convert ApiError: {:?}", self);
+        tracing::debug!("To convert ApiError: {:#?}", self);
         let (status, message) = match self {
             Self::PathRejection(path_rejection) => {
                 (StatusCode::NOT_FOUND, path_rejection.body_text())

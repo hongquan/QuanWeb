@@ -11,8 +11,6 @@ use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use chrono::{DateTime, Utc};
-use edgedb_protocol::codec::ShapeElement;
-use edgedb_protocol::common::Cardinality;
 use edgedb_tokio::Client;
 use http::Uri;
 use indexmap::IndexMap;
@@ -221,16 +219,6 @@ impl Paginator {
 
 pub trait EdgeSelectable {
     fn fields_as_shape() -> String;
-}
-
-pub fn create_shape_element<N: ToString>(name: N, cardinality: Cardinality) -> ShapeElement {
-    ShapeElement {
-        name: name.to_string(),
-        cardinality: Some(cardinality),
-        flag_link: false,
-        flag_link_property: false,
-        flag_implicit: false,
-    }
 }
 
 /// Codefence options. Follow slidev syntax.

@@ -82,7 +82,7 @@ pub async fn update_presentation_partial(
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
-    let args = patch_data.make_edgedb_object(id, &submitted_fields);
+    let args = patch_data.make_edgedb_args(id, &submitted_fields);
     let q = format!(
         "SELECT (
             UPDATE Presentation FILTER .id = <uuid>$id SET {{ {set_clause} }}
@@ -118,7 +118,7 @@ pub async fn create_presentation(
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
-    let args = post_data.make_edgedb_object();
+    let args = post_data.make_edgedb_args();
     let q = format!(
         "
     SELECT (
@@ -329,7 +329,7 @@ pub async fn update_book_partial(
     patch_data.validify().map_err(ApiError::ValidationErrors)?;
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
-    let args = patch_data.make_edgedb_object(id, &submitted_fields);
+    let args = patch_data.make_edgedb_args(id, &submitted_fields);
     let q = format!(
         "SELECT (
             UPDATE Book FILTER .id = <uuid>$id SET {{ {set_clause} }}
@@ -367,7 +367,7 @@ pub async fn create_book(
         serde_json::from_value(value).map_err(ApiError::JsonExtractionError)?;
     post_data.validify().map_err(ApiError::ValidationErrors)?;
     let set_clause = post_data.gen_set_clause();
-    let args = post_data.make_edgedb_object();
+    let args = post_data.make_edgedb_args();
     let q = format!(
         "
     SELECT (

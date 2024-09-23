@@ -1,13 +1,15 @@
-use str_macro::str;
-use edgedb_protocol::common::Cardinality as Cd;
+use std::collections::HashMap;
+
 use edgedb_protocol::model::Datetime as EDatetime;
-use edgedb_protocol::value::Value as EValue;
+use edgedb_protocol::named_args;
+use edgedb_protocol::value_opt::ValueOpt;
 use edgedb_tokio::{Client, Error};
-use indexmap::{indexmap, IndexMap};
+use smallvec::SmallVec;
+use str_macro::str;
+use tracing::{debug, info};
 use uuid::Uuid;
 
 use crate::models::{BlogCategory, DetailedBlogPost, MediumBlogPost, MiniBlogPost};
-use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
 use crate::types::EdgeSelectable;
 
 pub async fn count_search_result_posts(
@@ -79,30 +81,29 @@ pub async fn get_blogposts(
     } else {
         ""
     };
-    let mut pairs = IndexMap::with_capacity(3);
-    let mut paging_lines: Vec<String> = Vec::with_capacity(2);
+    let mut args = HashMap::new();
+    let mut paging_lines: SmallVec<[_; 2]> = SmallVec::new();
     if let Some(ss) = lower_search_tokens {
-        let search: Vec<EValue> = ss.iter().map(|s| EValue::Str(s.into())).collect();
-        pairs.insert("tokens", (Some(EValue::Array(search)), Cd::One));
+        let v: Vec<&str> = ss.iter().map(|s| s.as_str()).collect();
+        args.insert("tokens", ValueOpt::from(v));
     }
     if let Some(offset) = offset {
-        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        args.insert("offset", ValueOpt::from(offset));
         paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
-        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        args.insert("limit", ValueOpt::from(limit));
         paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
-    let args = edge_object_from_pairs(pairs);
     let q = format!(
         "SELECT BlogPost {fields}
         {filter_line}
         ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
-    tracing::debug!("To query: {}", q);
-    tracing::debug!("With args: {:?}", args);
+    debug!("To query: {q}");
+    debug!("With args: {args:?}");
     let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
@@ -112,28 +113,23 @@ pub async fn get_published_posts(
     limit: Option<i64>,
     client: &Client,
 ) -> Result<Vec<MediumBlogPost>, Error> {
-    let mut pairs = IndexMap::with_capacity(2);
+    let mut args = HashMap::with_capacity(2);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
-        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        args.insert("offset", ValueOpt::from(offset));
         paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
-        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        args.insert("limit", ValueOpt::from(limit));
         paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
-    let args = if pairs.is_empty() {
-        EValue::Nothing
-    } else {
-        edge_object_from_pairs(pairs)
-    };
     let q = format!(
         "SELECT BlogPost {fields}
         FILTER .is_published = true ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
-    tracing::info!("To query: {}", q);
+    info!("To query: {q}");
     let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
@@ -146,23 +142,22 @@ pub async fn get_published_posts_under_category(
 ) -> Result<Vec<MediumBlogPost>, Error> {
     let mut filter_lines = vec![".is_published = true"];
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
-    let mut pairs = indexmap! {};
+    let mut args: HashMap<&str, ValueOpt> = HashMap::new();
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug", (Some(EValue::Str(slug)), Cd::One));
+        args.insert("slug", slug.into());
     }
     if let Some(offset) = offset {
-        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        args.insert("offset", offset.into());
         paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
-        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        args.insert("limit", limit.into());
         paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let filter_expr = filter_lines.join(" AND ");
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
-    let args = edge_object_from_pairs(pairs);
 
     let q = format!(
         "SELECT BlogPost {fields}
@@ -187,24 +182,23 @@ pub async fn get_published_uncategorized_blogposts(
     limit: Option<i64>,
     client: &Client,
 ) -> Result<Vec<MediumBlogPost>, Error> {
-    let mut pairs = IndexMap::with_capacity(2);
+    let mut args: HashMap<&str, ValueOpt> = HashMap::with_capacity(2);
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     if let Some(offset) = offset {
-        pairs.insert("offset", (Some(EValue::Int64(offset)), Cd::One));
+        args.insert("offset", offset.into());
         paging_lines.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
-        pairs.insert("limit", (Some(EValue::Int64(limit)), Cd::One));
+        args.insert("limit", limit.into());
         paging_lines.push(str!("LIMIT <int64>$limit"));
     }
     let paging_expr = paging_lines.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
-    let args = edge_object_from_pairs(pairs);
     let q = format!("
     SELECT BlogPost {fields}
     FILTER .is_published = true AND NOT EXISTS .categories ORDER BY .created_at DESC EMPTY FIRST {paging_expr}");
-    tracing::debug!("To query: {}", q);
-    tracing::debug!("With args: {:#?}", args);
+    debug!("To query: {q}");
+    debug!("With args: {args:#?}");
     let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
     Ok(posts)
 }
@@ -212,7 +206,7 @@ pub async fn get_published_uncategorized_blogposts(
 pub async fn count_published_uncategorized_posts(client: &Client) -> Result<usize, Error> {
     let q = "
     SELECT count((SELECT BlogPost FILTER .is_published = true AND NOT EXISTS .categories))";
-    tracing::debug!("To query: {}", q);
+    debug!("To query: {q}");
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
 }
@@ -232,7 +226,7 @@ pub async fn get_blog_categories(
 
 pub async fn get_all_categories_count(client: &Client) -> Result<usize, Error> {
     let q = "SELECT count(BlogCategory)";
-    tracing::debug!("To query: {}", q);
+    debug!("To query: {q}");
     let count: i64 = client.query_required_single(q, &()).await?;
     Ok(count.try_into().unwrap_or(0))
 }
@@ -269,21 +263,19 @@ pub async fn get_previous_post(
         ".created_at < <datetime>$created_at",
         ".is_published = true",
     ];
-    let edatime = EValue::Datetime(created_at);
-    let mut pairs = indexmap! {
-        "created_at" => Some(edatime),
+    let mut args = named_args! {
+        "created_at" => created_at
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug", Some(EValue::Str(slug.to_string())));
+        args.insert("slug", slug.into());
     }
     let filter_expr = filter_lines.join(" AND ");
-    let args = edge_object_from_simple_pairs(pairs);
     let fields = MiniBlogPost::fields_as_shape();
 
     let q =
         format!("SELECT BlogPost {fields} FILTER {filter_expr} ORDER BY .created_at DESC LIMIT 1");
-    tracing::debug!("To query: {}", q);
+    debug!("To query: {q}");
     let post: Option<MiniBlogPost> = client.query_single(&q, &args).await?;
     Ok(post)
 }
@@ -297,16 +289,14 @@ pub async fn get_next_post(
         ".created_at > <datetime>$created_at",
         ".is_published = true",
     ];
-    let edatime = EValue::Datetime(created_at);
-    let mut pairs = indexmap! {
-        "created_at" => Some(edatime),
+    let mut args = named_args! {
+        "created_at" => created_at
     };
     if let Some(slug) = cat_slug {
         filter_lines.push(".categories.slug = <str>$slug");
-        pairs.insert("slug", Some(EValue::Str(slug.to_string())));
+        args.insert("slug", slug.into());
     }
     let filter_expr = filter_lines.join(" AND ");
-    let args = edge_object_from_simple_pairs(pairs);
 
     let fields = MiniBlogPost::fields_as_shape();
     let q =

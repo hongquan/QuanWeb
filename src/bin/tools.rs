@@ -2,13 +2,10 @@ use std::fs;
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use edgedb_protocol::common::Cardinality as Cd;
-use edgedb_protocol::value::Value as EValue;
-use indexmap::indexmap;
+use edgedb_protocol::named_args;
 use miette::{miette, IntoDiagnostic, Result};
 use syntect::highlighting::ThemeSet;
 use syntect::html::css_for_theme_with_class_style;
-use tokio;
 use tracing::debug;
 use tracing_subscriber::{
     filter::{EnvFilter, LevelFilter},
@@ -20,7 +17,6 @@ use uuid::Uuid;
 use quanweb::conf;
 use quanweb::consts::SYNTECT_CLASS_STYLE;
 use quanweb::db;
-use quanweb::types::conversions::edge_object_from_pairs;
 
 const OUTPUT_PATH: &str = "static/css/syntect.css";
 const SYNTECT_THEME: &str = "base16-ocean.dark";
@@ -83,12 +79,10 @@ async fn update_with_tuple(id: Uuid, client: &edgedb_tokio::Client) -> Result<()
 }
 
 async fn update_with_params(id: Uuid, client: &edgedb_tokio::Client) -> Result<()> {
-    let title = "Test with params".to_string();
-    let pairs = indexmap!(
-        "id" => (Some(EValue::Uuid(id)), Cd::One),
-        "title" => (Some(EValue::Str(title)), Cd::One),
-    );
-    let args = edge_object_from_pairs(pairs);
+    let args = named_args! {
+        "id" => id,
+        "title" => "Test with params"
+    };
     let q_simple = "UPDATE BlogCategory FILTER .id = <uuid>$id SET { title := <str>$title }";
     tracing::debug!("To query: {}", q_simple);
     tracing::debug!("With args: {:#?}", args);

@@ -1,15 +1,15 @@
+use std::collections::HashMap;
 use std::num::NonZeroU16;
 
-use edgedb_protocol::common::Cardinality as Cd;
+use edgedb_protocol::named_args;
 use edgedb_protocol::value::Value as EValue;
-use indexmap::indexmap;
+use edgedb_protocol::value_opt::ValueOpt;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validify::Validify;
 
 use super::macros::append_set_statement;
 use crate::models::DocFormat;
-use crate::types::conversions::{edge_object_from_pairs, edge_object_from_simple_pairs};
 use crate::types::ext::VecExt;
 use crate::utils::markdown::{make_excerpt, markdown_to_html};
 
@@ -88,59 +88,47 @@ impl BlogPostPatchData {
         lines.join(&format!(",\n{}", " ".repeat(8)))
     }
 
-    pub fn make_edgedb_object(&self, post_id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut pairs = indexmap! {
-            "id" => (Some(EValue::Uuid(post_id)), Cd::One),
+    pub fn make_edgedb_args(
+        &self,
+        post_id: Uuid,
+        submitted_fields: &Vec<&String>,
+    ) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "id" => post_id
         };
         if submitted_fields.contains("title") {
-            pairs.insert(
-                "title",
-                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("title", self.title.clone().into());
         }
         if submitted_fields.contains("slug") {
-            pairs.insert("slug", (self.slug.clone().map(EValue::Str), Cd::AtMostOne));
+            hm.insert("slug", self.slug.clone().into());
         }
         if submitted_fields.contains("is_published") {
-            pairs.insert(
-                "is_published",
-                (self.is_published.map(EValue::Bool), Cd::AtMostOne),
-            );
+            hm.insert("is_published", self.is_published.into());
         }
         if submitted_fields.contains("format") {
-            pairs.insert(
-                "format",
-                (self.format.clone().map(EValue::from), Cd::AtMostOne),
-            );
+            hm.insert("format", self.format.clone().into());
         }
         if submitted_fields.contains("body") {
-            let body = self.body.clone();
-            let html = body.as_ref().map(|b| markdown_to_html(b));
-            let excerpt = body.as_ref().map(|b| make_excerpt(b));
-            pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert("excerpt", (excerpt.map(EValue::Str), Cd::AtMostOne));
+            let html = self.body.as_ref().map(|b| markdown_to_html(b));
+            let excerpt = self.body.as_ref().map(|b| make_excerpt(b));
+            hm.insert("body", self.body.clone().into());
+            hm.insert("html", html.into());
+            hm.insert("excerpt", excerpt.into());
         }
         if submitted_fields.contains("locale") {
-            pairs.insert(
-                "locale",
-                (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("locale", self.locale.clone().into());
         }
         if submitted_fields.contains("author") {
-            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::AtMostOne));
+            hm.insert("author", self.author.into());
         }
         if submitted_fields.contains("og_image") {
-            pairs.insert(
-                "og_image",
-                (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("og_image", self.og_image.clone().into());
         }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
-            pairs.insert("categories", (Some(EValue::Array(categories)), Cd::One));
+            hm.insert("categories", categories.into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -184,51 +172,38 @@ impl BlogPostCreateData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object(&self, submitted_fields: &Vec<&String>) -> EValue {
-        let mut pairs = indexmap! {
-            "title" => (Some(EValue::Str(self.title.clone())), Cd::One),
-            "slug" => (Some(EValue::Str(self.slug.clone())), Cd::One),
+    pub fn make_edgedb_args(&self, submitted_fields: &Vec<&String>) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "title" => self.title.clone(),
+            "slug" => self.slug.clone()
         };
         if submitted_fields.contains("is_published") {
-            pairs.insert(
-                "is_published",
-                (self.is_published.map(EValue::Bool), Cd::AtMostOne),
-            );
+            hm.insert("is_published", self.is_published.into());
         }
         if submitted_fields.contains("body") {
-            let body = self.body.clone();
-            let html = body.as_ref().map(|v| markdown_to_html(v));
-            let excerpt = body.as_ref().map(|v| make_excerpt(v));
-            pairs.insert("body", (body.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert("html", (html.map(EValue::Str), Cd::AtMostOne));
-            pairs.insert("excerpt", (excerpt.map(EValue::Str), Cd::AtMostOne));
+            hm.insert("body", self.body.clone().into());
+            let html = self.body.as_ref().map(|v| markdown_to_html(v));
+            let excerpt = self.body.as_ref().map(|v| make_excerpt(v));
+            hm.insert("html", html.into());
+            hm.insert("excerpt ", excerpt.into());
         }
         if submitted_fields.contains("format") {
-            pairs.insert(
-                "format",
-                (self.format.clone().map(EValue::from), Cd::AtMostOne),
-            );
+            hm.insert("format", self.format.clone().into());
         }
         if submitted_fields.contains("locale") {
-            pairs.insert(
-                "locale",
-                (self.locale.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("locale", self.locale.clone().into());
         }
         if submitted_fields.contains("author") {
-            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::AtMostOne));
+            hm.insert("author", self.author.into());
         }
         if submitted_fields.contains("og_image") {
-            pairs.insert(
-                "og_image",
-                (self.og_image.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("og_image", self.og_image.clone().into());
         }
         if let Some(categories) = &self.categories {
             let categories: Vec<EValue> = categories.iter().map(|&i| EValue::Uuid(i)).collect();
-            pairs.insert("categories", (Some(EValue::Array(categories)), Cd::One));
+            hm.insert("categories", categories.into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -248,27 +223,24 @@ impl BlogCategoryPatchData {
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
-
-    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut pairs = indexmap!(
-            "id" => (Some(EValue::Uuid(id)), Cd::One),
-        );
+    pub fn make_edgedb_args(
+        &self,
+        id: Uuid,
+        submitted_fields: &Vec<&String>,
+    ) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "id" => id
+        };
         if submitted_fields.contains("title") {
-            pairs.insert(
-                "title",
-                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("title", self.title.clone().into());
         }
         if submitted_fields.contains("slug") {
-            pairs.insert("slug", (self.slug.clone().map(EValue::Str), Cd::AtMostOne));
+            hm.insert("slug", self.slug.clone().into());
         }
         if submitted_fields.contains("title_vi") {
-            pairs.insert(
-                "title_vi",
-                (self.title_vi.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("title_vi", self.title_vi.clone().into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -292,14 +264,13 @@ impl BlogCategoryCreateData {
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
-
-    pub fn make_edgedb_object(&self) -> EValue {
-        let pairs = indexmap! {
-            "title" => Some(EValue::from(self.title.clone())),
-            "slug" => Some(EValue::from(self.slug.clone())),
-            "title_vi" => Some(EValue::from(self.title_vi.clone())),
+    pub fn make_edgedb_args(&self) -> HashMap<&str, ValueOpt> {
+        let hm = named_args! {
+            "title" => self.title.clone(),
+            "slug" => self.slug.clone(),
+            "title_vi" => self.title_vi.clone()
         };
-        edge_object_from_simple_pairs(pairs)
+        hm
     }
 }
 
@@ -319,27 +290,24 @@ impl PresentationPatchData {
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
-
-    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut pairs = indexmap!(
-            "id" => (Some(EValue::Uuid(id)), Cd::One),
-        );
+    pub fn make_edgedb_args(
+        &self,
+        id: Uuid,
+        submitted_fields: &Vec<&String>,
+    ) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "id"=> id
+        };
         if submitted_fields.contains("title") {
-            pairs.insert(
-                "title",
-                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("title", self.title.clone().into());
         }
         if submitted_fields.contains("url") {
-            pairs.insert("url", (self.url.clone().map(EValue::Str), Cd::AtMostOne));
+            hm.insert("url", self.url.clone().into());
         }
         if submitted_fields.contains("event") {
-            pairs.insert(
-                "event",
-                (self.event.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("event", self.event.clone().into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -363,14 +331,13 @@ impl PresentationCreateData {
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
-
-    pub fn make_edgedb_object(&self) -> EValue {
-        let pairs = indexmap! {
-            "title" => (Some(EValue::from(self.title.clone())), Cd::One),
-            "url" => (Some(EValue::from(self.url.clone())), Cd::One),
-            "event" => (self.event.clone().map(EValue::from), Cd::AtMostOne),
+    pub fn make_edgedb_args(&self) -> HashMap<&str, ValueOpt> {
+        let hm = named_args! {
+            "title" => self.title.clone(),
+            "url" => self.url.clone(),
+            "event" => self.event.clone()
         };
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -404,26 +371,24 @@ impl BookPatchData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object(&self, id: Uuid, submitted_fields: &Vec<&String>) -> EValue {
-        let mut pairs = indexmap!(
-            "id" => (Some(EValue::Uuid(id)), Cd::One),
-        );
+    pub fn make_edgedb_args(
+        &self,
+        id: Uuid,
+        submitted_fields: &Vec<&String>,
+    ) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "id" => id,
+        };
         if submitted_fields.contains("title") {
-            pairs.insert(
-                "title",
-                (self.title.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("title", self.title.clone().into());
         }
         if submitted_fields.contains("download_url") {
-            pairs.insert(
-                "download_url",
-                (self.download_url.clone().map(EValue::Str), Cd::AtMostOne),
-            );
+            hm.insert("download_url", self.download_url.clone().into());
         }
         if submitted_fields.contains("author") {
-            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::One));
+            hm.insert("author", self.author.into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }
 
@@ -449,14 +414,14 @@ impl BookCreateData {
         lines.join(&sep)
     }
 
-    pub fn make_edgedb_object(&self) -> EValue {
-        let mut pairs = indexmap! {
-            "title" => (Some(EValue::from(self.title.clone())), Cd::One),
-            "download_url" => (Some(EValue::from(self.download_url.clone())), Cd::One),
+    pub fn make_edgedb_args(&self) -> HashMap<&str, ValueOpt> {
+        let mut hm = named_args! {
+            "title" => self.title.as_str(),
+            "download_url" => self.download_url.as_str()
         };
-        if self.author.is_some() {
-            pairs.insert("author", (self.author.map(EValue::Uuid), Cd::One));
+        if let Some(a) = self.author {
+            hm.insert("author", a.into());
         }
-        edge_object_from_pairs(pairs)
+        hm
     }
 }

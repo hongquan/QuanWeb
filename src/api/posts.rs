@@ -5,6 +5,7 @@ use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
 use edgedb_tokio::Client as EdgeClient;
 use serde_json::{Map as JMap, Value};
+use tracing::debug;
 use uuid::Uuid;
 use validify::Validify;
 
@@ -35,13 +36,13 @@ pub async fn list_posts(
     let search_tokens = split_search_query(other_query.q.as_deref());
     let lower_search_tokens: Option<Vec<String>> =
         search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
+    let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
+        .await
+        .map_err(ApiError::EdgeDBQueryError)?;
     let posts =
         stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
             .await
             .map_err(ApiError::EdgeDBQueryError)?;
-    let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
-        .await
-        .map_err(ApiError::EdgeDBQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count, original_uri);
@@ -105,7 +106,7 @@ pub async fn update_post_partial(
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = patch_data.gen_set_clause(&submitted_fields);
     let fields = DetailedBlogPost::fields_as_shape();
-    let args = patch_data.make_edgedb_object(post_id, &submitted_fields);
+    let args = patch_data.make_edgedb_args(post_id, &submitted_fields);
     let q = format!(
         "SELECT (
             UPDATE BlogPost
@@ -115,8 +116,8 @@ pub async fn update_post_partial(
             }}
         ) {fields}"
     );
-    tracing::debug!("To query: {}", q);
-    tracing::debug!("Query with params: {:#?}", args);
+    debug!("To query: {q}");
+    debug!("Query with params: {args:#?}");
     let updated_post: Option<DetailedBlogPost> = db
         .query_single(&q, &args)
         .await
@@ -146,7 +147,7 @@ pub async fn create_post(
     let submitted_fields: Vec<&String> = jdata.keys().collect();
     let set_clause = post_data.gen_set_clause(&submitted_fields);
     let fields = DetailedBlogPost::fields_as_shape();
-    let args = post_data.make_edgedb_object(&submitted_fields);
+    let args = post_data.make_edgedb_args(&submitted_fields);
     let q = format!(
         "
     SELECT (

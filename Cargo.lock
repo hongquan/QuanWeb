@@ -2314,7 +2314,7 @@ dependencies = [
 
 [[package]]
 name = "quanweb"
-version = "1.3.0"
+version = "1.4.0"
 dependencies = [
  "ammonia",
  "async-trait",
@@ -2354,6 +2354,7 @@ dependencies = [
  "serde_json",
  "serde_json5",
  "serde_with",
+ "smallvec",
  "smart-default",
  "str-macro",
  "strum",
