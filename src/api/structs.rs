@@ -4,6 +4,7 @@ use std::num::NonZeroU16;
 use edgedb_protocol::named_args;
 use edgedb_protocol::value::Value as EValue;
 use edgedb_protocol::value_opt::ValueOpt;
+use field_access::FieldAccess;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validify::Validify;
@@ -132,7 +133,7 @@ impl BlogPostPatchData {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Validify)]
+#[derive(Debug, Default, Deserialize, FieldAccess, Validify)]
 pub struct BlogPostCreateData {
     #[validate(length(min = 2))]
     pub title: String,
@@ -185,7 +186,7 @@ impl BlogPostCreateData {
             let html = self.body.as_ref().map(|v| markdown_to_html(v));
             let excerpt = self.body.as_ref().map(|v| make_excerpt(v));
             hm.insert("html", html.into());
-            hm.insert("excerpt ", excerpt.into());
+            hm.insert("excerpt", excerpt.into());
         }
         if submitted_fields.contains("format") {
             hm.insert("format", self.format.clone().into());

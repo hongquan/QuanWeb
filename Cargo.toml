@@ -35,6 +35,7 @@ edgedb-derive = "0.5.2"
 edgedb-errors = { version = "0.4.2", features = ["miette"] }
 edgedb-protocol = { version = "0.6.1", features = ["all-types"] }
 edgedb-tokio = { version = "0.5.1", features = ["serde_json", "miette-errors"] }
+field_access = "0.1.9"
 field_names = "0.2.0"
 fluent-bundle = "0.15.3"
 fluent-templates = "0.10.1"

@@ -1041,6 +1041,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8c02a5121d4ea3eb16a80748c74f5549a5665e4c21333c6098f283870fbdea6"
 
 [[package]]
+name = "field_access"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4aa3211388c5c9ed253068d161f92ee9e7b9468226f6cb25371af5d2e043c87"
+dependencies = [
+ "field_access_derive",
+ "paste",
+]
+
+[[package]]
+name = "field_access_derive"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9888eb0f2f9b41bcbe982612cd2744955f30383e0ce7a2e45f7ef40a14d681b0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.77",
+]
+
+[[package]]
 name = "field_names"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2333,6 +2354,7 @@ dependencies = [
  "edgedb-errors",
  "edgedb-protocol",
  "edgedb-tokio",
+ "field_access",
  "field_names",
  "fluent-bundle",
  "fluent-templates",
