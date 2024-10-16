@@ -65,7 +65,7 @@
         <div class='border rounded font-mono py-4'>
           <div class='px-2'>
             <div
-              ref='codeEditor'
+              ref='code-editor-elm'
               class='language-markdown relative rounded p-2 dark:text-gray-200 text-sm h-80'
             />
           </div>
@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed } from 'vue'
+import { ref, onBeforeMount, onMounted, watch, onBeforeUnmount, computed, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 import lightJoin from 'light-join'
 import { slugify } from 'transliteration'
@@ -178,7 +178,7 @@ const oldSlug = ref<string | null>(null)
 const allCategories = ref<Category[]>([])
 const allAuthors = ref<User[]>([])
 const isSubmitting = ref(false)
-const codeEditor = ref<HTMLDivElement | null>(null)
+const codeEditor = useTemplateRef<HTMLDivElement>('code-editor-elm')
 const kullnaEditor = ref<KullnaEditor | null>(null)
 const previewHtml = ref<string | null>(null)
 const validationErrors = ref<Record<string, string>>({})

@@ -98,7 +98,7 @@ function genLinks(): Array<PageLinkItem> {
   if (props.totalPages <= totalDisplay) {
     return Array.from(
       Array(totalPages),
-      (v, i) => {
+      (_v, i) => {
         i += 1
         return {
           label: i.toString(),
@@ -117,7 +117,7 @@ function genLinks(): Array<PageLinkItem> {
   }
   return Array.from(
     Array(totalDisplay),
-    (v, i) => {
+    (_v, i) => {
       let iPage = 0
       let isEllipsis = false
       // When current page is around beginning or around the end, we show one ellipsis
