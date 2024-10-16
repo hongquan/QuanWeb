@@ -32,7 +32,7 @@
     {%- endblock css %}
 
     {% block headjs -%}
-    <script src='https://unpkg.com/htmx.org@1.9.3/dist/htmx.min.js' defer></script>
+    <script src='https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js' defer></script>
     {%- endblock headjs %}
   {%- endblock head %}
   </head>
@@ -58,88 +58,21 @@
     {% include 'footer.jinja' %}
 
     {% block js -%}
-      <script src="https://cdn.jsdelivr.net/npm/minitz/dist/minitz.min.js"></script>
       {% if not running_locally %}
         {% if not no_tracking %}
           {% include 'block_tracking.jinja' %}
         {% endif %}
       {% endif %}
       <script>
-      var LANG = '{{ lang }}';
-      document.addEventListener('alpine:init', () => {
-        const shortFormatter = new Intl.DateTimeFormat(LANG, { dateStyle: 'medium' });
-        const longFormatter = new Intl.DateTimeFormat(LANG, { dateStyle: 'long', timeStyle: 'full'});
-        Alpine.data('post_meta', (created_at = null) => ({
-          created_at: created_at ? minitz.fromTZISO(created_at) : null,
-          get created_at_date_display() {
-            return this.created_at ? shortFormatter.format(this.created_at) : ''
-          },
-          get created_at_full_display() {
-            return this.created_at ? longFormatter.format(this.created_at) : ''
-          },
-        }));
-      })
+      var LANG = '{{ lang }}'
       </script>
-      <script type='module'>
-        import { codeToHtml } from 'https://esm.sh/shiki@1.4.0'
-
-        // Our old <code> element will be replaced by the one created by Shiki,
-        // we need to keep old class names and copy to the new one.
-        function getShikiOpt(lang, classes, startLine) {
-          return {
-            lang,
-            theme: 'one-dark-pro',
-            // Ref: https://shiki.style/guide/transformers#transformer-hooks
-            transformers: [
-              {
-                code(node) {
-                  classes.forEach((c) => this.addClassToHast(node, c))
-                  const style = node.properties.style || ''
-                  node.properties.style = style + `--start-line: ${startLine};`
-                },
-                pre(node) {
-                  const className = classes.includes('q-with-lineno') ? 'py-4' : 'p-4'
-                  this.addClassToHast(node, className)
-                },
-              }
-            ]
-          }
-
-        }
-
-        document.addEventListener('alpine:init', () => {
-          Alpine.data('need_highlight', () => ({
-            code: '',
-            origClasses: [],
-            startLine: 1,
-            lang: 'text',
-            init() {
-              const codeElm = this.$refs.orig_code;
-              const code = codeElm.textContent
-              this.code = code.trim()
-              const classes = Array.from(codeElm.classList.values())
-              const className = classes.find((c) => c.startsWith('language-'))
-              if (className) {
-                this.lang = className.split('-')[1]
-              }
-              this.origClasses = classes
-              codeElm.dataset.startLine && (this.startLine = parseInt(codeElm.dataset.startLine))
-            },
-            async highlight() {
-              const lang = this.lang
-              const classes = this.origClasses
-              const opts = getShikiOpt(lang, classes, this.startLine)
-              const html = await codeToHtml(this.code, opts)
-              return html
-            }
-          }))
-        })
-      </script>
+      <script src='/static/js/post-datetime-format.js?v={{ GIT_REVISION }}' type='module'></script>
+      <script src='/static/js/highlight-app.js?v={{ GIT_REVISION }}' type='module'></script>
     {%- endblock js %}
     <script type='module'>
       // There are pages which only have tiny apps defined directly in HTML markup, without any
       // <script type='module'> block. We need to load Alpine to activate those apps too.
-      import Alpine from "https://esm.sh/alpinejs@3.13.7"
+      import Alpine from "https://esm.sh/alpinejs@3.14.3"
 
       if (!window.Alpine) {
         window.Alpine = Alpine
