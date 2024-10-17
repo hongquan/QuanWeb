@@ -1,11 +1,9 @@
-
-
 article .entry-content img {
   max-width: 100%
 }
 
 article .entry-content.front h2 {
-    font-size: initial;
+  font-size: initial;
 }
 
 .entry-content {
@@ -51,7 +49,7 @@ article .entry-content.front h2 {
 }
 
 .entry-content.front:after {
-    content: '…'
+  content: '…'
 }
 
 .entry-content.front p:last-child {
@@ -79,5 +77,10 @@ article .entry-content.front h2 {
   margin-right: 1rem;
   display: inline-block;
   text-align: right;
-  color: rgba(115,138,148,.4)
+  color: rgba(115, 138, 148, .4)
+}
+
+.q-need-highlight {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
