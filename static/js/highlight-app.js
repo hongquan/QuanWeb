@@ -1,4 +1,5 @@
-import { codeToHtml } from 'https://esm.sh/shiki@1.22.0'
+import { createHighlighter } from 'https://esm.sh/shiki@1.22.0'
+
 
 // Our old <code> element will be replaced by the one created by Shiki,
 // we need to keep old class names and copy to the new one.
@@ -46,7 +47,19 @@ document.addEventListener('alpine:init', () => {
       const lang = this.lang
       const classes = this.origClasses
       const opts = getShikiOpt(lang, classes, this.startLine)
-      const html = await codeToHtml(this.code, opts)
+      const highlighter = await createHighlighter({
+        langs: ['html', 'css', 'js', 'typescript', 'python', 'rust'],
+        langAlias: {
+          elm: 'EdgeQL',
+        },
+        themes: ['one-dark-pro']
+      })
+
+      const raw = await fetch('/static/js/edgeql.json')
+      const edgeQl = await raw.json()
+
+      await highlighter.loadLanguage(edgeQl)
+      const html = await highlighter.codeToHtml(this.code, opts)
       return html
     }
   }))
