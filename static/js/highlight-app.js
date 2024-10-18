@@ -1,5 +1,31 @@
 import { createHighlighter } from 'https://esm.sh/shiki@1.22.0'
 
+var edgeQlGrammar = null
+
+fetch('/static/js/edgeql.json').then(res => res.json()).then(o => {
+  edgeQlGrammar = o
+})
+
+const LANGS = [
+  'html', 'css', 'js', 'typescript', 'vue', 'vue-html',
+  'python', 'rust', 'shellscript', 'shellsession', 
+  'c', 'cpp', 'go', 'latex', 'lua', 'json', 'plsql', 'sql', 
+  'desktop', 'docker', 'regexp', 'rst', 'md',  'toml', 'fluent', 'jinja',
+  'ssh-config', 'nginx', 'systemd',
+]
+
+const taskShiki = createHighlighter({
+  langs: LANGS,
+  langAlias: {
+    edgeql: 'EdgeQL',
+  },
+  themes: ['one-dark-pro']
+})
+
+function delay() {
+  return new Promise(resolve => setTimeout(resolve, 100))
+}
+
 
 // Our old <code> element will be replaced by the one created by Shiki,
 // we need to keep old class names and copy to the new one.
@@ -47,18 +73,20 @@ document.addEventListener('alpine:init', () => {
       const lang = this.lang
       const classes = this.origClasses
       const opts = getShikiOpt(lang, classes, this.startLine)
-      const highlighter = await createHighlighter({
-        langs: ['html', 'css', 'js', 'typescript', 'python', 'rust'],
-        langAlias: {
-          elm: 'EdgeQL',
-        },
-        themes: ['one-dark-pro']
-      })
-
-      const raw = await fetch('/static/js/edgeql.json')
-      const edgeQl = await raw.json()
-
-      await highlighter.loadLanguage(edgeQl)
+      const highlighter = await taskShiki
+      if (!edgeQlGrammar) {
+        for (let i = 0; i < 5; i++) {
+          await delay()
+          if (edgeQlGrammar) {
+            break
+          }
+        }        
+      }
+      if (edgeQlGrammar) {
+        await highlighter.loadLanguage(edgeQlGrammar)
+      } else {
+        console.warn('EdgeQL grammar is not available!')
+      }
       const html = await highlighter.codeToHtml(this.code, opts)
       return html
     }

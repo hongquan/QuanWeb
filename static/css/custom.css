@@ -84,3 +84,7 @@ article .entry-content.front h2 {
   font-size: 0.75rem;
   line-height: 1rem;
 }
+
+.q-need-highlight .shiki {
+  overflow-y: scroll;
+}
