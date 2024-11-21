@@ -110,7 +110,7 @@
         label='OpenGraph image'
         :error-message='getValidationError("og_image")'
       />
-      <div class='text-center mt-2'>
+      <div class='text-center mt-2 space-x-4'>
         <FwbButton
           type='submit'
           :loading='isSubmitting'
@@ -119,6 +119,7 @@
         </FwbButton>
         <FwbButton
           type='button'
+          color='purple'
           :loading='isSubmitting'
           @click='onSubmit(true)'
         >
