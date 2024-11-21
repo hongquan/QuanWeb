@@ -3,7 +3,7 @@
     <form
       v-if='post'
       method='post'
-      @submit.prevent='onSubmit'
+      @submit.prevent='onSubmit(false)'
     >
       <HorizontalFormField
         v-model='post.title'
@@ -115,7 +115,14 @@
           type='submit'
           :loading='isSubmitting'
         >
-          Save
+          Save and quit
+        </FwbButton>
+        <FwbButton
+          type='button'
+          :loading='isSubmitting'
+          @click='onSubmit(true)'
+        >
+          Save and stay
         </FwbButton>
       </div>
     </form>
@@ -266,7 +273,7 @@ function onCategoryReleased(id: string) {
   post.value.categories = post.value.categories.filter(c => c.id !== id)
 }
 
-async function onSubmit() {
+async function onSubmit(toStay: boolean) {
   if (!post.value) {
     return
   }
@@ -282,7 +289,9 @@ async function onSubmit() {
     const updatedPost = PostSchema.parse(resp)
     const message = isCreating ? `Post "${updatedPost.title}" is created!` : `Post "${updatedPost.title}" is updated!`
     toast.success(message)
-    await router.push({ name: 'post.list' })
+    if (!toStay) {
+      await router.push({ name: 'post.list' })
+    }
   } catch (e) {
     console.debug(e)
     validationErrors.value = await handleApiError(e)
