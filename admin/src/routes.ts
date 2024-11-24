@@ -31,7 +31,7 @@ export const routes: RouteRecordRaw[] = [
         path: 'posts', component: SimpleWrap, name: 'post', redirect: () => ({ name: 'post.list' }),
         children: [
           { path: '', component: BlogPostList, name: 'post.list' },
-          { path: 'new', component: BlogPostEdit, name: 'post.new' },
+          { path: 'new', component: BlogPostEdit, name: 'post.new', props: { postId: null } },
           { path: ':postId', component: BlogPostEdit, name: 'post.edit', props: true },
         ],
       },

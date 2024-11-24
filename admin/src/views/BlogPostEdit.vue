@@ -123,7 +123,7 @@
           :loading='isSubmitting'
           @click='onSubmit(true)'
         >
-          Save and stay
+          {{ postId ? 'Save and stay' : 'Save and continue to edit' }}
         </FwbButton>
       </div>
     </form>
@@ -170,12 +170,10 @@ import '../../../static/css/syntect.css'
 import { User, UserSchema } from '@/models/user'
 
 interface Props {
-  postId?: string | null
+  postId: string | null
 }
-const props = withDefaults(defineProps<Props>(), {
-  postId: null,
-})
 
+const props = defineProps<Props>()
 Prism.manual = true
 Prism.languages.console = Prism.languages['shell-session']
 
@@ -292,6 +290,8 @@ async function onSubmit(toStay: boolean) {
     toast.success(message)
     if (!toStay) {
       await router.push({ name: 'post.list' })
+    } else if (isCreating) {
+      await router.push({ name: 'post.edit', params: { postId: updatedPost.id }})
     }
   } catch (e) {
     console.debug(e)
