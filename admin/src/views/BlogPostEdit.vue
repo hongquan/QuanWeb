@@ -113,14 +113,14 @@
       <div class='text-center mt-2 space-x-4'>
         <FwbButton
           type='submit'
-          :loading='isSubmitting'
+          :loading='isSubmittingFirst'
         >
           Save and quit
         </FwbButton>
         <FwbButton
           type='button'
           color='purple'
-          :loading='isSubmitting'
+          :loading='isSubmittingSecond'
           @click='onSubmit(true)'
         >
           {{ postId ? 'Save and stay' : 'Save and continue to edit' }}
@@ -183,7 +183,8 @@ const post = ref<Post | null>(null)
 const oldSlug = ref<string | null>(null)
 const allCategories = ref<Category[]>([])
 const allAuthors = ref<User[]>([])
-const isSubmitting = ref(false)
+const isSubmittingFirst = ref(false)
+const isSubmittingSecond = ref(false)
 const codeEditor = useTemplateRef<HTMLDivElement>('code-editor-elm')
 const kullnaEditor = ref<KullnaEditor | null>(null)
 const previewHtml = ref<string | null>(null)
@@ -279,7 +280,11 @@ async function onSubmit(toStay: boolean) {
   const isCreating = !props.postId
   const url = props.postId ? lightJoin(API_GET_POSTS, props.postId) : API_GET_POSTS
   const postData = transformPostForPosting(post.value)
-  isSubmitting.value = true
+  if (toStay) {
+    isSubmittingSecond.value = true
+  } else {
+    isSubmittingFirst.value = true
+  }
   try {
     const resp = await kyClient(url, {
       method: isCreating ? 'post' : 'patch',
@@ -297,7 +302,8 @@ async function onSubmit(toStay: boolean) {
     console.debug(e)
     validationErrors.value = await handleApiError(e)
   } finally {
-    isSubmitting.value = false
+    isSubmittingFirst.value = false
+    isSubmittingSecond.value = false
   }
 }
 
