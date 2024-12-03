@@ -256,7 +256,7 @@ pub struct DetailedBlogPost {
 impl DetailedBlogPost {
     pub fn get_canonical_url(&self) -> String {
         let created_at = DateTime::<Utc>::from(self.created_at);
-        format!("/{}/{}", created_at.format("%Y/%m"), self.slug)
+        format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
     }
 }
 
