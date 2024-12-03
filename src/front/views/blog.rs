@@ -3,8 +3,10 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
+use http::header::LOCATION;
 use indexmap::indexmap;
 use minijinja::{context, value::Value as MJValue};
+use str_macro::str;
 use tower_sessions::Session;
 use uuid::Uuid;
 
@@ -135,12 +137,26 @@ pub async fn preview_post(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let _user = auth_session.user.ok_or(PageError::PermissionDenied);
+    // Sometimes we mistakenly share the preview URL to social network, instead of the canonical URL.
+    // In that case, we should:
+    // - For logged-in user, render as normal.
+    // - For guests, redirect to canonical URL if the post is in "published" state, otherwise throwing PermissionDenied.
+    let user = auth_session.user;
     let AppState { db, jinja } = state;
     let post = stores::blog::get_post(id, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
+    if user.is_none() {
+        if !post.is_published.unwrap_or(false) {
+            Err(PageError::PermissionDenied(str!("Post is not published.")))?;
+        } else {
+            let url = post.get_canonical_url();
+            tracing::debug!("Guest visit. Redirect to {url}..");
+            let header = [(LOCATION, url.as_str())];
+            Err((StatusCode::MOVED_PERMANENTLY, header))?;
+        }
+    }
     let prev_post = get_previous_post(post.created_at, None, &db)
         .await
         .map_err(PageError::EdgeDBQueryError)?;

@@ -253,6 +253,13 @@ pub struct DetailedBlogPost {
     pub og_image: Option<String>,
 }
 
+impl DetailedBlogPost {
+    pub fn get_canonical_url(&self) -> String {
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        format!("/{}/{}", created_at.format("%Y/%m"), self.slug)
+    }
+}
+
 impl Default for DetailedBlogPost {
     fn default() -> Self {
         let created_at = Utc::now().try_into().unwrap_or(EDatetime::MIN);
