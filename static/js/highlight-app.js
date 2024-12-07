@@ -1,4 +1,4 @@
-import { createHighlighter } from 'https://esm.sh/shiki@1.22.0'
+import { createHighlighter } from 'https://esm.sh/shiki@1.24.0'
 
 var edgeQlGrammar = null
 
@@ -8,7 +8,7 @@ fetch('/static/js/edgeql.json').then(res => res.json()).then(o => {
 
 const LANGS = [
   'html', 'css', 'js', 'typescript', 'vue', 'vue-html',
-  'python', 'rust', 'shellscript', 'shellsession', 
+  'python', 'rust', 'shellscript', 'shellsession', 'nushell',
   'c', 'cpp', 'go', 'latex', 'lua', 'json', 'plsql', 'sql', 
   'desktop', 'docker', 'regexp', 'rst', 'md',  'toml', 'fluent', 'jinja',
   'ssh-config', 'nginx', 'systemd',
