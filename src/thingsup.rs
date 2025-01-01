@@ -1,9 +1,9 @@
-use std::net::{AddrParseError, SocketAddr};
 use std::{env, io};
 
 use clap::Parser;
 use fluent_templates::static_loader;
 use minijinja::Environment;
+use tokio_listener::ListenerAddress;
 use tracing_subscriber::{
     filter::{EnvFilter, LevelFilter},
     layer::SubscriberExt,
@@ -19,7 +19,7 @@ pub struct AppOptions {
     #[arg(
         short,
         long,
-        help = "Network address to bind, can be <port>, <ip:port> or Unix socket path"
+        help = "Network address to bind, can be <port>, <ip:port> or Unix socket in form of <unix:/path/to/file>"
     )]
     pub bind: Option<String>,
     #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
@@ -90,12 +90,14 @@ pub fn get_listening_addr() -> [u8; 4] {
     }
 }
 
-pub fn get_binding_addr(bind_opt: &str) -> Result<SocketAddr, AddrParseError> {
-    if bind_opt.contains(':') {
-        bind_opt.parse::<SocketAddr>()
+pub fn get_binding_addr(bind_opt: &str) -> Result<ListenerAddress, &'static str> {
+    if let Some(sk_path) = bind_opt.strip_prefix("unix:") {
+        sk_path.parse()
+    } else if bind_opt.contains(':') {
+        bind_opt.parse()
     } else {
         let auto_addr = format!("127.0.0.1:{bind_opt}");
-        auto_addr.parse::<SocketAddr>()
+        auto_addr.parse()
     }
 }
 

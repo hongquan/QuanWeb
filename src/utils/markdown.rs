@@ -4,8 +4,7 @@ use std::io::Write;
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
 use comrak::{
-    markdown_to_html_with_plugins, ExtensionOptionsBuilder, Options, PluginsBuilder,
-    RenderOptionsBuilder, RenderPluginsBuilder,
+    markdown_to_html_with_plugins, ExtensionOptions, Options, Plugins, RenderOptions, RenderPlugins,
 };
 use serde_json5;
 
@@ -75,29 +74,21 @@ impl SyntaxHighlighterAdapter for JsHighlightAdapter {
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {
-    let extension = ExtensionOptionsBuilder::default()
+    let extension = ExtensionOptions::builder()
         .table(true)
         .autolink(true)
-        .build()
-        .unwrap_or_default();
-    let render = RenderOptionsBuilder::default()
-        .full_info_string(true)
-        .build()
-        .unwrap_or_default();
+        .build();
+    let render = RenderOptions::builder().full_info_string(true).build();
     let options = Options {
         extension,
         render,
         ..Default::default()
     };
     let adapter = JsHighlightAdapter;
-    let render = RenderPluginsBuilder::default()
-        .codefence_syntax_highlighter(Some(&adapter))
-        .build()
-        .unwrap_or_default();
-    let plugins = PluginsBuilder::default()
-        .render(render)
-        .build()
-        .unwrap_or_default();
+    let render = RenderPlugins::builder()
+        .codefence_syntax_highlighter(&adapter)
+        .build();
+    let plugins = Plugins::builder().render(render).build();
     markdown_to_html_with_plugins(markdown, &options, &plugins)
 }
 

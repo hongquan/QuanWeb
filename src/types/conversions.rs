@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
@@ -51,13 +52,13 @@ pub fn jinja_value_to_fluent_value(value: MJValue) -> FluentValue<'static> {
 
 pub fn jinja_kwargs_to_fluent_args(
     kwargs: Kwargs,
-) -> Option<HashMap<String, FluentValue<'static>>> {
+) -> Option<HashMap<Cow<'static, str>, FluentValue<'static>>> {
     let mj_value: MJValue = kwargs.into();
-    let mut hm: HashMap<String, FluentValue<'static>> = HashMap::new();
+    let mut hm: HashMap<Cow<'static, str>, FluentValue<'static>> = HashMap::new();
     let iter = mj_value.try_iter().ok()?;
     for key in iter {
         let skey = match key.as_str() {
-            Some(sk) => sk.to_string(),
+            Some(sk) => Cow::from(sk.to_string()),
             None => continue,
         };
         let value = match mj_value.get_item(&key) {

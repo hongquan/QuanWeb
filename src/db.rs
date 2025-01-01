@@ -2,6 +2,8 @@ use config::Config;
 use edgedb_errors::kinds::ConfigurationError;
 use edgedb_errors::ErrorKind;
 use edgedb_tokio::TlsSecurity;
+use fred::error::Error as FredError;
+use fred::types::ConnectHandle;
 use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
 
 use crate::conf::KEY_EDGEDB_INSTANCE;
@@ -23,11 +25,11 @@ pub async fn get_edgedb_client(
     Ok(edgedb_tokio::Client::new(&config))
 }
 
-pub async fn get_redis_store() -> Result<RedisStore<RedisClient>, RedisError> {
-    let client = RedisClient::default();
-    let _c = client.connect();
-    client.wait_for_connect().await?;
+pub async fn get_redis_store() -> Result<(RedisStore<Pool>, ConnectHandle), FredError> {
+    let pool = Pool::new(fred::types::config::Config::default(), None, None, None, 2)?;
+    let redis_conn = pool.connect();
+    pool.wait_for_connect().await?;
     tracing::debug!("Connected to Redis");
-    let store = RedisStore::new(client);
-    Ok(store)
+    let store = RedisStore::new(pool);
+    Ok((store, redis_conn))
 }
