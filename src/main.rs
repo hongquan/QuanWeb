@@ -19,7 +19,7 @@ use axum_login::AuthManagerLayerBuilder;
 use clap::Parser;
 use miette::{miette, IntoDiagnostic};
 use tokio_listener::axum07::serve as axum_serve;
-use tokio_listener::{Listener, ListenerAddress, SystemOptions, UserOptions};
+use tokio_listener::{Listener, ListenerAddress, SystemOptions, UnixChmodVariant, UserOptions};
 use tower_http::trace::TraceLayer;
 use tower_sessions::SessionManagerLayer;
 use tracing::info;
@@ -31,11 +31,21 @@ use types::AppState;
 async fn main() -> miette::Result<()> {
     let app_opts = AppOptions::parse();
     config_logging(&app_opts);
+    let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
+    let addr = match &app_opts.bind {
+        Some(saddr) => get_binding_addr(saddr).map_err(|e| miette!("{e}")),
+        None => {
+            let port = conf::get_listening_port(&config);
+            Ok(ListenerAddress::Tcp(SocketAddr::from((
+                get_listening_addr(),
+                port,
+            ))))
+        }
+    }?;
     let (redis_store, redis_conn) = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
 
-    let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let client = db::get_edgedb_client(&config).await.map_err(|e| {
         info!("{e:?}");
         miette!("Failed to create EdgeDB client")
@@ -62,20 +72,15 @@ async fn main() -> miette::Result<()> {
         .layer(auth_layer)
         .layer(TraceLayer::new_for_http());
 
-    let addr = match &app_opts.bind {
-        Some(saddr) => get_binding_addr(saddr).map_err(|e| miette!("{e}")),
-        None => {
-            let port = conf::get_listening_port(&config);
-            Ok(ListenerAddress::Tcp(SocketAddr::from((
-                get_listening_addr(),
-                port,
-            ))))
-        }
-    }?;
     let main_service = app.into_make_service();
     tracing::info!("Listening on http://{}", addr);
     let sys_opts = SystemOptions::default();
-    let usr_opts = UserOptions::default();
+    let mut usr_opts = UserOptions::default();
+    // TODO: We want to chmod the socket file to 660 (allow owner and group to read and write),
+    // but there is bug in tokio-listener which remove owner permission,
+    // so we temporary use the most open mode.
+    usr_opts.unix_listen_unlink = true;
+    usr_opts.unix_listen_chmod = Some(UnixChmodVariant::Everybody);
     let listerner = Listener::bind(&addr, &sys_opts, &usr_opts)
         .await
         .into_diagnostic()?;
