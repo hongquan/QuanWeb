@@ -76,11 +76,8 @@ async fn main() -> miette::Result<()> {
     tracing::info!("Listening on http://{}", addr);
     let sys_opts = SystemOptions::default();
     let mut usr_opts = UserOptions::default();
-    // TODO: We want to chmod the socket file to 660 (allow owner and group to read and write),
-    // but there is bug in tokio-listener which remove owner permission,
-    // so we temporary use the most open mode.
     usr_opts.unix_listen_unlink = true;
-    usr_opts.unix_listen_chmod = Some(UnixChmodVariant::Everybody);
+    usr_opts.unix_listen_chmod = Some(UnixChmodVariant::Group);
     let listerner = Listener::bind(&addr, &sys_opts, &usr_opts)
         .await
         .into_diagnostic()?;
