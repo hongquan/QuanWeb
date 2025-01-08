@@ -5,6 +5,7 @@
   "repository": "git@bitbucket.org:hongquan/quanweb.git",
   "author": "Nguyễn Hồng Quân <ng.hong.quan@gmail.com>",
   "private": true,
+  "type": "module",
   "scripts": {
     "build-tailwind": "NODE_ENV=production tailwindcss build -o static/css/built-tailwind.css"
   },
