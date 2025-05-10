@@ -4,7 +4,7 @@ use axum::extract::{OriginalUri, Path, Query, State};
 use axum::response::Html;
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
-use edgedb_tokio::Client as EdgeClient;
+use gel_tokio::Client as EdgeClient;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
 use validify::Validify;
@@ -49,10 +49,10 @@ pub async fn list_categories(
     let limit = per_page as i64;
     let categories = stores::blog::get_blog_categories(Some(offset), Some(limit), &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let count = stores::blog::get_all_categories_count(&db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     tracing::debug!("All categories count: {}", count);
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
@@ -74,7 +74,7 @@ pub async fn get_category(
 ) -> AxumResult<Json<BlogCategory>> {
     let category = stores::blog::get_category(category_id, &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(category))
 }
@@ -90,7 +90,7 @@ pub async fn delete_category(
     let _deleted_cat: MinimalObject = db
         .query_single(q, &(category_id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -109,7 +109,7 @@ pub async fn update_category_partial(
     if jdata.is_empty() {
         let post = stores::blog::get_category(category_id, &db)
             .await
-            .map_err(ApiError::EdgeDBQueryError)?;
+            .map_err(ApiError::GelQueryError)?;
         let post = post.ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
         return Ok(Json(post));
     };
@@ -134,7 +134,7 @@ pub async fn update_category_partial(
     let cat = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogCategory".into()))?;
     Ok(Json(cat))
 }
@@ -173,7 +173,7 @@ pub async fn create_category(
     let created_cat: BlogCategory = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogCategory".into()))?;
     Ok((StatusCode::CREATED, Json(created_cat)))
 }

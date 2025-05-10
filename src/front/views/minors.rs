@@ -22,7 +22,7 @@ pub async fn list_talks(
     let AppState { db, jinja } = state;
     let presentations = get_all_talks(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
@@ -32,7 +32,7 @@ pub async fn list_talks(
     let no_tracking = auth_session.user.is_some();
     let categories = get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let ctx = context!(presentations, lang, categories, no_tracking,);
     let content = render_with("minors/talk_list.jinja", ctx, jinja)?;
     Ok(Html(content))
@@ -46,7 +46,7 @@ pub async fn list_books(
     let AppState { db, jinja } = state;
     let books = get_all_books(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
@@ -56,7 +56,7 @@ pub async fn list_books(
     let no_tracking = auth_session.user.is_some();
     let categories = get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let ctx = context!(books, lang, categories, no_tracking,);
     let content = render_with("minors/book_list.jinja", ctx, jinja)?;
     Ok(Html(content))

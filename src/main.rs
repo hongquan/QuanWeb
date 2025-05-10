@@ -46,9 +46,9 @@ async fn main() -> miette::Result<()> {
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
 
-    let client = db::get_edgedb_client(&config).await.map_err(|e| {
+    let client = db::get_gel_client(&config).await.map_err(|e| {
         info!("{e:?}");
-        miette!("Failed to create EdgeDB client")
+        miette!("Failed to create Gel client")
     })?;
     let jinja = config_jinja().into_diagnostic()?;
     let app_state = AppState {

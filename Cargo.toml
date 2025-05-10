@@ -1,6 +1,6 @@
 [package]
 name = "quanweb"
-version = "1.5.0"
+version = "1.6.0"
 edition = "2021"
 rust-version = "1.76"
 default-run = "quanweb"
@@ -31,15 +31,15 @@ config = { version = "0.15.4", default-features = false, features = [
 djangohashers = { version = "1.7.4", default-features = false, features = [
     "with_argon2",
 ] }
-edgedb-derive = "0.5.2"
-edgedb-errors = { version = "0.4.2", features = ["miette"] }
-edgedb-protocol = { version = "0.6.1", features = ["all-types"] }
-edgedb-tokio = { version = "0.5.1", features = ["serde_json", "miette-errors"] }
 field_access = "0.1.11"
 field_names = "0.2.0"
 fluent-bundle = "0.15.3"
 fluent-templates = "0.12.0"
 fred = { version = "10.0.3", features = ["tracing"] }
+gel-derive = "0.7.0"
+gel-errors = { version = "0.5.0", features = ["miette"] }
+gel-protocol = { version = "0.8.0", features = ["all-types"] }
+gel-tokio = { version = "0.9.3", features = ["miette-errors"] }
 http = "1.2.0"
 indexmap = { version = "2.7.0", features = ["serde"] }
 libpassgen = "1.0.3"
@@ -91,8 +91,3 @@ nonzero = "0.2.0"
 [build-dependencies]
 crate-git-revision = "0.0.6"
 
-[patch.crates-io]
-edgedb-derive = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
-edgedb-errors = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
-edgedb-protocol = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }
-edgedb-tokio = { git = "https://github.com/edgedb/edgedb-rust.git", rev = "9025de8" }

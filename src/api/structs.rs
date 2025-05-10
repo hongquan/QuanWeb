@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::num::NonZeroU16;
 
-use edgedb_protocol::named_args;
-use edgedb_protocol::value::Value as EValue;
-use edgedb_protocol::value_opt::ValueOpt;
+use gel_protocol::named_args;
+use gel_protocol::value::Value as EValue;
+use gel_protocol::value_opt::ValueOpt;
 use field_access::FieldAccess;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

@@ -29,27 +29,27 @@ pub async fn show_post(
     let AppState { db, jinja } = state;
     let post = get_detailed_post_by_slug(slug, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?
+        .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     let user = auth_session.user;
     let no_tracking = !post.is_published.unwrap_or(false) || user.is_some();
     let cat = match params.cat {
         Some(slug) => stores::blog::get_category_by_slug(&slug, &db)
             .await
-            .map_err(PageError::EdgeDBQueryError)?,
+            .map_err(PageError::GelQueryError)?,
         None => None,
     };
     let cat_slug = cat.as_ref().map(|c| c.slug.as_str());
 
     let prev_post = get_previous_post(post.created_at, cat_slug, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let next_post = get_next_post(post.created_at, cat_slug, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
@@ -85,7 +85,7 @@ pub async fn list_posts(
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
     let cat = stores::blog::get_category_by_slug(&cat_slug, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?
+        .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     let posts = stores::blog::get_published_posts_under_category(
         Some(cat_slug),
@@ -94,11 +94,11 @@ pub async fn list_posts(
         &db,
     )
     .await
-    .map_err(PageError::EdgeDBQueryError)?;
+    .map_err(PageError::GelQueryError)?;
     tracing::debug!("To count posts under category {}", cat.id);
     let total = stores::blog::count_blogposts_under_category(cat.id, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
     let paginator = Paginator {
@@ -110,7 +110,7 @@ pub async fn list_posts(
     let prev_page_url = paginator.previous_url(&current_url);
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
@@ -145,7 +145,7 @@ pub async fn preview_post(
     let AppState { db, jinja } = state;
     let post = stores::blog::get_post(id, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?
+        .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     if user.is_none() {
         if !post.is_published.unwrap_or(false) {
@@ -159,11 +159,11 @@ pub async fn preview_post(
     }
     let prev_post = get_previous_post(post.created_at, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     tracing::debug!("Previous post: {:?}", prev_post);
     let next_post = get_next_post(post.created_at, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     tracing::debug!("Next post: {:?}", next_post);
     let lang = session
         .get::<String>(KEY_LANG)
@@ -190,7 +190,7 @@ pub async fn list_uncategorized_posts(
         .unwrap_or(NonZeroU16::MIN);
     let total = stores::blog::count_published_uncategorized_posts(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let page_size = DEFAULT_PAGE_SIZE;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
@@ -208,10 +208,10 @@ pub async fn list_uncategorized_posts(
         &db,
     )
     .await
-    .map_err(PageError::EdgeDBQueryError)?;
+    .map_err(PageError::GelQueryError)?;
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await

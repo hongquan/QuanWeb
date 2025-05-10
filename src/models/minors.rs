@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use serde::Serialize;
-use edgedb_derive::Queryable;
+use gel_derive::Queryable;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Queryable)]
 pub struct Presentation {

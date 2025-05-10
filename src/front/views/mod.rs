@@ -47,7 +47,7 @@ pub async fn home(
     let current_page = paging.get_page_as_number();
     let total = stores::blog::count_all_published_posts(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let page_size = DEFAULT_PAGE_SIZE;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
@@ -62,10 +62,10 @@ pub async fn home(
     let offset = ((current_page.get() - 1) * (page_size as u16)) as i64;
     let posts = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let categories = stores::blog::get_blog_categories(None, None, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let no_tracking = auth_session.user.is_some();
     let lang = session
         .get::<String>(KEY_LANG)

@@ -10,7 +10,7 @@ The website is programmed in Rust (used to be Python, but was rewritten as an ex
 
   + Programming language: Rust
   + Framework: [Axum](https://crates.io/crates/axum)
-  + Database: [EdgeDB](https://www.edgedb.com/), Redis
+  + Database: [Gel](https://www.geldata.com), Redis
   + Localization: [Fluent](https://projectfluent.org/)
 
 - Frontend:

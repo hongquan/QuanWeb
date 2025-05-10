@@ -2,7 +2,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::{debug_handler, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
-use edgedb_tokio::Client;
+use gel_tokio::Client;
 use serde_json::Value;
 use tracing::info;
 use validify::Validate;

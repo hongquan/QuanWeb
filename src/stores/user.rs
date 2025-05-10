@@ -1,5 +1,5 @@
 use crate::models::{users::MiniUser, User};
-use edgedb_tokio::{Client, Error};
+use gel_tokio::{Client, Error};
 use tracing::debug;
 
 pub async fn get_user_by_email(email: &str, client: &Client) -> Result<Option<User>, Error> {

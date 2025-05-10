@@ -3,7 +3,7 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::{http::StatusCode, response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
-use edgedb_tokio::Client as EdgeClient;
+use gel_tokio::Client as EdgeClient;
 use serde_json::{Map as JMap, Value};
 use tracing::debug;
 use uuid::Uuid;
@@ -38,11 +38,11 @@ pub async fn list_posts(
         search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
     let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let posts =
         stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
             .await
-            .map_err(ApiError::EdgeDBQueryError)?;
+            .map_err(ApiError::GelQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count, original_uri);
@@ -61,7 +61,7 @@ pub async fn get_post(
 ) -> AxumResult<Json<DetailedBlogPost>> {
     let post = stores::blog::get_post(post_id, &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(post))
 }
@@ -77,7 +77,7 @@ pub async fn delete_post(
     let _deleted_post: MinimalObject = db
         .query_single(q, &(post_id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -96,7 +96,7 @@ pub async fn update_post_partial(
     if jdata.is_empty() {
         let post = stores::blog::get_post(post_id, &db)
             .await
-            .map_err(ApiError::EdgeDBQueryError)?;
+            .map_err(ApiError::GelQueryError)?;
         let post = post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
         return Ok(Json(post));
     };
@@ -121,7 +121,7 @@ pub async fn update_post_partial(
     let updated_post: Option<DetailedBlogPost> = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let updated_post = updated_post.ok_or(ApiError::ObjectNotFound("BlogPost".into()))?;
     Ok(Json(updated_post))
 }
@@ -161,7 +161,7 @@ pub async fn create_post(
     let created_post: DetailedBlogPost = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::Other("Failed to create BlogPost".into()))?;
     Ok((StatusCode::CREATED, Json(created_post)))
 }

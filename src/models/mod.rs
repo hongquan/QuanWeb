@@ -7,7 +7,7 @@ pub use blogs::{BlogCategory, DetailedBlogPost, DocFormat, MediumBlogPost, MiniB
 pub use minors::Presentation;
 pub use users::User;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, edgedb_derive::Queryable)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, gel_derive::Queryable)]
 pub struct MinimalObject {
     pub id: uuid::Uuid,
 }

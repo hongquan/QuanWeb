@@ -3,7 +3,7 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::{response::Result as AxumResult, Json};
 use axum_extra::extract::WithRejection;
-use edgedb_tokio::Client as EdgeClient;
+use gel_tokio::Client as EdgeClient;
 use http::StatusCode;
 use serde_json::{Map as JMap, Value};
 use uuid::Uuid;
@@ -33,10 +33,10 @@ pub async fn list_presentations(
     let limit = per_page as i64;
     let presentations = stores::minors::get_presentations(Some(offset), Some(limit), &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let count = stores::minors::get_all_presentations_count(&db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count as usize, original_uri);
@@ -55,7 +55,7 @@ pub async fn get_presentation(
 ) -> AxumResult<Json<Presentation>> {
     let presentation = stores::minors::get_presentation(id, &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
     Ok(Json(presentation))
 }
@@ -74,7 +74,7 @@ pub async fn update_presentation_partial(
     if jdata.is_empty() {
         let obj = stores::minors::get_presentation(id, &db)
             .await
-            .map_err(ApiError::EdgeDBQueryError)?
+            .map_err(ApiError::GelQueryError)?
             .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
         return Ok(Json(obj));
     }
@@ -96,7 +96,7 @@ pub async fn update_presentation_partial(
     let presentation: Presentation = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
     Ok(Json(presentation))
 }
@@ -135,7 +135,7 @@ pub async fn create_presentation(
     let p: Presentation = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::Other("Failed to create Presentation".into()))?;
     Ok(Json(p))
 }
@@ -150,7 +150,7 @@ pub async fn delete_presentation(
     let _p: MinimalObject = db
         .query_single(q, &(id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Presentation".into()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -167,10 +167,10 @@ pub async fn list_book_authors(
     let limit = per_page as i64;
     let authors = stores::minors::get_book_authors(Some(offset), Some(limit), &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let count = stores::minors::get_all_book_authors_count(&db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count as usize, original_uri);
@@ -189,7 +189,7 @@ pub async fn get_book_author(
 ) -> AxumResult<Json<BookAuthor>> {
     let author = stores::minors::get_book_author(id, &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
     Ok(Json(author))
 }
@@ -211,7 +211,7 @@ pub async fn update_book_author_partial(
     let author: BookAuthor = db
         .query_single(q, &(id, &post_data.name))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
     Ok(Json(author))
 }
@@ -226,7 +226,7 @@ pub async fn delete_book_author(
     let _p: MinimalObject = db
         .query_single(q, &(id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("BookAuthor".into()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -247,7 +247,7 @@ pub async fn create_book_author(
     let author: BookAuthor = db
         .query_single(q, &(post_data.name,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::Other("Failed to create BookAuthor".into()))?;
     Ok(Json(author))
 }
@@ -264,10 +264,10 @@ pub async fn list_books(
     let limit = per_page as i64;
     let books = stores::minors::get_books(Some(offset), Some(limit), &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let count = stores::minors::get_all_books_count(&db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?;
+        .map_err(ApiError::GelQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count as usize, original_uri);
@@ -286,7 +286,7 @@ pub async fn get_book(
 ) -> AxumResult<Json<Book>> {
     let book = stores::minors::get_book(id, &db)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(Json(book))
 }
@@ -301,7 +301,7 @@ pub async fn delete_book(
     let _p: MinimalObject = db
         .query_single(q, &(id,))
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -320,7 +320,7 @@ pub async fn update_book_partial(
     if jdata.is_empty() {
         let obj = stores::minors::get_book(id, &db)
             .await
-            .map_err(ApiError::EdgeDBQueryError)?
+            .map_err(ApiError::GelQueryError)?
             .ok_or(ApiError::ObjectNotFound("Book".into()))?;
         return Ok(Json(obj));
     }
@@ -345,7 +345,7 @@ pub async fn update_book_partial(
     let book = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::ObjectNotFound("Book".into()))?;
     Ok(Json(book))
 }
@@ -384,7 +384,7 @@ pub async fn create_book(
     let book = db
         .query_single(&q, &args)
         .await
-        .map_err(ApiError::EdgeDBQueryError)?
+        .map_err(ApiError::GelQueryError)?
         .ok_or(ApiError::Other("Failed to create Book".into()))?;
     Ok(Json(book))
 }

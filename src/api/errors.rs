@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
 use axum::{response::IntoResponse, Json};
-use edgedb_errors::display::display_error_verbose;
-use edgedb_errors::kinds as EdErrKind;
+use gel_errors::display::display_error_verbose;
+use gel_errors::kinds as EdErrKind;
 use indexmap::IndexMap;
 use serde_json::value::Value;
 use thiserror::Error;
@@ -21,7 +21,7 @@ pub enum ApiError {
     #[error(transparent)]
     JsonExtractionError(#[from] serde_json::Error),
     #[error(transparent)]
-    EdgeDBQueryError(#[from] edgedb_errors::Error),
+    GelQueryError(#[from] gel_errors::Error),
     #[error("{0} not found")]
     ObjectNotFound(String),
     #[error("Please login")]
@@ -55,8 +55,8 @@ impl IntoResponse for ApiError {
                     (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
                 }
             }
-            Self::EdgeDBQueryError(ref e) => {
-                tracing::error!("EdgeDB error: {}", display_error_verbose(e));
+            Self::GelQueryError(ref e) => {
+                tracing::error!("Gel error: {}", display_error_verbose(e));
                 if e.is::<EdErrKind::ConstraintViolationError>() {
                     let detail = e.details().unwrap_or_default();
                     (StatusCode::UNPROCESSABLE_ENTITY, detail.to_string())

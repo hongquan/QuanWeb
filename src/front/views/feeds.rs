@@ -4,7 +4,7 @@ use atom_syndication::{Entry, FeedBuilder, LinkBuilder};
 use axum::extract::{Host, OriginalUri, Query, State};
 use axum::response::{IntoResponseParts, Json, Result as AxumResult};
 use chrono::{TimeZone, Utc};
-use edgedb_tokio::Client as EdgeClient;
+use gel_tokio::Client as EdgeClient;
 use http::{header::CONTENT_TYPE, Uri};
 
 use super::super::structs::LaxPaging;
@@ -31,10 +31,10 @@ pub async fn gen_atom_feeds(
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
     let posts = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let total = stores::blog::count_all_published_posts(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
     let paginator = Paginator {
@@ -80,7 +80,7 @@ pub async fn gen_atom_feeds(
     entries.iter_mut().for_each(|e| e.prepend_url(&base_url));
     let latest_post = stores::blog::get_last_updated_post(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let updated_at = latest_post
         .and_then(|p| p.updated_at.map(|d| d.into()))
         .unwrap_or_else(|| Utc.with_ymd_and_hms(2013, 1, 1, 0, 0, 0).unwrap());
@@ -109,10 +109,10 @@ pub async fn gen_json_feeds(
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
     let posts = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let total = stores::blog::count_all_published_posts(&db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?;
+        .map_err(PageError::GelQueryError)?;
     let total_pages = NonZeroU16::try_from((total as f64 / page_size as f64).ceil() as u16)
         .unwrap_or(NonZeroU16::MIN);
     let paginator = Paginator {

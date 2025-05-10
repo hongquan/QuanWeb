@@ -1,4 +1,4 @@
-use edgedb_tokio::{Client, Error};
+use gel_tokio::{Client, Error};
 use uuid::Uuid;
 
 use crate::models::minors::{Book, BookAuthor, Presentation};

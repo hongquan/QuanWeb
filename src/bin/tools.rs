@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use edgedb_protocol::named_args;
+use gel_protocol::named_args;
 use miette::{miette, IntoDiagnostic, Result};
 use syntect::highlighting::ThemeSet;
 use syntect::html::css_for_theme_with_class_style;
@@ -64,7 +64,7 @@ fn gen_syntect_css() -> Result<()> {
     Ok(())
 }
 
-async fn update_with_tuple(id: Uuid, client: &edgedb_tokio::Client) -> Result<()> {
+async fn update_with_tuple(id: Uuid, client: &gel_tokio::Client) -> Result<()> {
     let q_simple = "UPDATE BlogCategory FILTER .id = <uuid>$0 SET { title := <str>$1 }";
     let title = "Test with tuple".to_string();
     let t_args = (id, title);
@@ -78,7 +78,7 @@ async fn update_with_tuple(id: Uuid, client: &edgedb_tokio::Client) -> Result<()
     Ok(())
 }
 
-async fn update_with_params(id: Uuid, client: &edgedb_tokio::Client) -> Result<()> {
+async fn update_with_params(id: Uuid, client: &gel_tokio::Client) -> Result<()> {
     let args = named_args! {
         "id" => id,
         "title" => "Test with params"
@@ -97,7 +97,7 @@ async fn update_with_params(id: Uuid, client: &edgedb_tokio::Client) -> Result<(
 async fn try_update_category(id: Uuid) -> Result<()> {
     eprintln!("id: {}", id);
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
-    let client = db::get_edgedb_client(&config).await.map_err(|e| {
+    let client = db::get_gel_client(&config).await.map_err(|e| {
         debug!("{e:?}");
         miette!("Failed to create EdgeD client")
     })?;

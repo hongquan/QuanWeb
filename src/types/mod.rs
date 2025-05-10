@@ -11,7 +11,7 @@ use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use chrono::{DateTime, Utc};
-use edgedb_tokio::Client;
+use gel_tokio::Client;
 use http::Uri;
 use indexmap::IndexMap;
 use minijinja::Environment;

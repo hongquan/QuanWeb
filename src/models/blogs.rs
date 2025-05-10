@@ -5,10 +5,10 @@ use atom_syndication::{
     Person, Text,
 };
 use chrono::{DateTime, Utc};
-use edgedb_derive::Queryable;
-use edgedb_protocol::model::Datetime as EDatetime;
-use edgedb_protocol::value::Value as EValue;
 use field_names::FieldNames;
+use gel_derive::Queryable;
+use gel_protocol::model::Datetime as EDatetime;
+use gel_protocol::value::Value as EValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
 use strum::{Display, EnumString, IntoStaticStr};

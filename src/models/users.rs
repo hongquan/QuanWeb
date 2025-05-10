@@ -1,5 +1,5 @@
 use atom_syndication::{Person, PersonBuilder};
-use edgedb_derive::Queryable;
+use gel_derive::Queryable;
 use field_names::FieldNames;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

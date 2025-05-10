@@ -8,7 +8,7 @@ use crate::stores::user::get_user_by_email;
 
 #[derive(Clone, Debug)]
 pub struct Backend {
-    pub db: edgedb_tokio::Client,
+    pub db: gel_tokio::Client,
 }
 
 #[derive(Clone, Debug)]
@@ -33,7 +33,7 @@ impl AuthUser for User {
 impl AuthnBackend for Backend {
     type User = User;
     type Credentials = Credentials;
-    type Error = edgedb_errors::Error;
+    type Error = gel_errors::Error;
 
     async fn authenticate(
         &self,

@@ -3,13 +3,13 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use chrono_tz::Asia::Ho_Chi_Minh;
-use edgedb_protocol::model::Datetime as EDatetime;
 use fluent_bundle::FluentValue;
+use gel_protocol::model::Datetime as EDatetime;
 use minijinja::value::{Kwargs, Value as MJValue, ValueKind as MJValueKind};
 use serde::ser::Serializer;
 use serde::Serialize;
 
-/* Serde serializers to serialize EdgeDB's Datetime type */
+/* Serde serializers to serialize Gel's Datetime type */
 pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>
 where
     Se: Serializer,

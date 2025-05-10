@@ -1,7 +1,7 @@
 use axum::extract::{Path, State};
 use axum::response::{Redirect, Result};
 use chrono::{DateTime, Utc};
-use edgedb_tokio::Client;
+use gel_tokio::Client;
 use http::StatusCode;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -27,7 +27,7 @@ pub async fn redirect_old_blog_view(Path(rest): Path<String>, State(db): State<C
     tracing::debug!("Look for post with old ID {}", old_id);
     let post: MiniBlogPost = stores::blog::get_mini_post_by_old_id(old_id, &db)
         .await
-        .map_err(PageError::EdgeDBQueryError)?
+        .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post with this ID"))?;
     let created_at: DateTime<Utc> = post.created_at.into();
     let new_url = format!("/post/{}/{}", created_at.format("%Y/%m"), post.slug);

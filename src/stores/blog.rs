@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use edgedb_protocol::model::Datetime as EDatetime;
-use edgedb_protocol::named_args;
-use edgedb_protocol::value_opt::ValueOpt;
-use edgedb_tokio::{Client, Error};
+use gel_protocol::model::Datetime as EDatetime;
+use gel_protocol::named_args;
+use gel_protocol::value_opt::ValueOpt;
+use gel_tokio::{Client, Error};
 use smallvec::SmallVec;
 use str_macro::str;
 use tracing::{debug, info};
@@ -42,7 +42,7 @@ pub async fn count_all_published_posts(client: &Client) -> Result<usize, Error> 
 }
 
 pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedBlogPost>, Error> {
-    // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
+    // Note: For now, we cannot use Gel splats syntax because the returned field order
     // does not match DetailedBlogPost.
     let fields = DetailedBlogPost::fields_as_shape();
     let q = format!(
@@ -58,7 +58,7 @@ pub async fn get_detailed_post_by_slug(
     slug: String,
     client: &Client,
 ) -> Result<Option<DetailedBlogPost>, Error> {
-    // Note: For now, we cannot use EdgeDB splats syntax because the returned field order
+    // Note: For now, we cannot use Gel splats syntax because the returned field order
     // does not match DetailedBlogPost.
     let fields = DetailedBlogPost::fields_as_shape();
     let q = format!(
