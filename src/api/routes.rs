@@ -1,4 +1,4 @@
-use axum::routing::{get, post, Router};
+use axum::routing::{Router, get, post};
 
 use super::auth;
 use super::views;
@@ -30,24 +30,24 @@ pub fn get_router() -> Router<AppState> {
         .route("/logout", post(auth::logout))
         .route("/users/me", get(views::show_me))
         .route("/posts/", get(views::list_posts).post(views::create_post))
-        .route("/posts/:post_id", single_post_router)
+        .route("/posts/{post_id}", single_post_router)
         .route(
             "/categories/",
             get(views::list_categories).post(views::create_category),
         )
-        .route("/categories/:category_id", single_category_router)
+        .route("/categories/{category_id}", single_category_router)
         .route("/users/", get(views::list_users))
         .route(
             "/presentations/",
             get(views::list_presentations).post(views::create_presentation),
         )
-        .route("/presentations/:id", single_presentation_router)
+        .route("/presentations/{id}", single_presentation_router)
         .route(
             "/book-authors/",
             get(views::list_book_authors).post(views::create_book_author),
         )
-        .route("/book-authors/:id", single_book_author_router)
+        .route("/book-authors/{id}", single_book_author_router)
         .route("/books/", get(views::list_books).post(views::create_book))
-        .route("/books/:id", single_book_router)
+        .route("/books/{id}", single_book_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
 }

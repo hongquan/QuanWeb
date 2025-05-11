@@ -15,13 +15,13 @@ use auth::backend::Backend;
 use axum::routing::Router;
 use axum_login::AuthManagerLayerBuilder;
 use clap::Parser;
-use miette::{miette, IntoDiagnostic};
+use miette::{IntoDiagnostic, miette};
 use tokio::net::{TcpListener, UnixListener};
 use tower_http::trace::TraceLayer;
 use tower_sessions::SessionManagerLayer;
 use tracing::info;
 
-use thingsup::{config_jinja, config_logging, get_binding_addr, AppOptions};
+use thingsup::{AppOptions, config_jinja, config_logging, get_binding_addr};
 use types::{AppState, BindingAddr};
 
 #[tokio::main]
@@ -64,15 +64,16 @@ async fn main() -> miette::Result<()> {
     match addr {
         BindingAddr::Unix(p) => {
             let lt = UnixListener::bind(p).into_diagnostic()?;
+            tracing::info!("Listening on http://{}", addr);
             axum::serve(lt, main_service).await
         }
         BindingAddr::Tcp(s) => {
             let lt = TcpListener::bind(s).await.into_diagnostic()?;
+            tracing::info!("Listening on http://{}", addr);
             axum::serve(lt, main_service).await
         }
     }
     .into_diagnostic()?;
-    tracing::info!("Listening on http://{}", addr);
     redis_conn
         .await
         .map_err(|_e| miette!("Redis error."))?

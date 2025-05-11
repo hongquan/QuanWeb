@@ -1,5 +1,5 @@
 use http::Uri;
-use nonzero::nonzero as nz;
+use notzero::nz;
 
 use super::paging::gen_pagination_links;
 use super::structs::NPaging;

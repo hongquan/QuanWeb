@@ -1,8 +1,8 @@
 [package]
 name = "quanweb"
 version = "1.6.0"
-edition = "2021"
-rust-version = "1.76"
+edition = "2024"
+rust-version = "1.85"
 default-run = "quanweb"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,9 +11,9 @@ default-run = "quanweb"
 strip = "debuginfo"
 
 [dependencies]
-ammonia = "4.0.0"
+ammonia = "4.1.0"
 async-trait = "0.1.83"
-atom_syndication = { version = "0.12.4", features = ["serde"] }
+atom_syndication = { version = "0.12.7", features = ["serde"] }
 axum = { version = "0.8.4", features = ["macros"] }
 axum-extra = { version = "0.10.1" }
 axum-login = "0.17.0"
@@ -24,7 +24,7 @@ chrono = { version = "0.4.41", features = [
 chrono-tz = "0.10.3"
 clap = { version = "4.5.20", features = ["derive"] }
 comrak = "0.32.0"
-config = { version = "0.15.4", default-features = false, features = [
+config = { version = "0.15.11", default-features = false, features = [
     "indexmap",
     "toml",
 ] }
@@ -35,40 +35,40 @@ field_access = "0.1.11"
 field_names = "0.2.0"
 fluent-bundle = "0.15.3"
 fluent-templates = "0.12.0"
-fred = { version = "10.0.3", features = ["tracing"] }
+fred = { version = "10.1.0", features = ["tracing"] }
 gel-derive = "0.7.0"
 gel-errors = { version = "0.5.0", features = ["miette"] }
 gel-protocol = { version = "0.8.0", features = ["all-types"] }
 gel-tokio = { version = "0.9.3", features = ["miette-errors"] }
-http = "1.2.0"
+http = "1.3.1"
 indexmap = { version = "2.7.0", features = ["serde"] }
 libpassgen = "1.0.3"
-miette = { version = "7.4.0", features = ["fancy", "serde"] }
+miette = { version = "7.6.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.5"
-minijinja = { version = "2.5.0", features = ["loader", "internal_debug"] }
+minijinja = { version = "2.10.2", features = ["loader", "internal_debug"] }
 once_cell = "1.20.2"
 querystring_tiny = "0.2.1"
-redact = { version = "0.1.1", features = ["serde"] }
+redact = { version = "0.1.10", features = ["serde"] }
 regex = "1.11.1"
-rust-embed = { version = "8.5.0", features = [
+rust-embed = { version = "8.7.1", features = [
     "axum",
     "mime-guess",
     "include-exclude",
 ] }
-serde = { version = "1.0.217", features = ["serde_derive"] }
+serde = { version = "1.0.219", features = ["serde_derive"] }
 serde-value = "0.7.0"
-serde_json = "1.0.134"
-serde_json5 = "0.1.0"
+serde_json = "1.0.140"
+serde_json5 = "0.2.1"
 serde_with = "3.12.0"
 smallvec = "1.13.2"
 smart-default = "0.7.1"
 str-macro = "1.0.0"
-strum = { version = "0.26.3", features = ["derive", "strum_macros"] }
-syntect = { version = "5.0.0", default-features = false, features = [
+strum = { version = "0.27.1", features = ["derive", "strum_macros"] }
+syntect = { version = "5.2.0", default-features = false, features = [
     "fancy-regex",
     "html",
 ] }
-thiserror = "2.0.9"
+thiserror = "2.0.12"
 tokio = { version = "1.45.0", features = ["full"] }
 tower = { version = "0.5.2", features = ["tokio", "tracing"] }
 tower-http = { version = "0.6.2", features = ["trace"] }
@@ -77,15 +77,15 @@ tower-sessions-redis-store = "0.16.0"
 tracing = "0.1.41"
 tracing-journald = "0.3.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-two-face = { version = "0.4.0", default-features = false, features = [
+two-face = { version = "0.4.3", default-features = false, features = [
     "syntect-fancy",
 ] }
 unic-langid = { version = "0.9.5", features = ["serde"] }
 uuid = { version = "1.11.0", features = ["v1", "serde"] }
-validify = "1.4.0"
+validify = "2.0.0"
 
 [dev-dependencies]
-nonzero = "0.2.0"
+notzero = "1.1.0"
 
 [build-dependencies]
 crate-git-revision = "0.0.6"

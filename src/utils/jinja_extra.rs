@@ -59,11 +59,11 @@ pub fn gen_element_attr(name: &str, value: MJValue) -> String {
 }
 
 pub fn add_url_param(url: String, name: String, value: String) -> String {
-    if let Ok(x) = Uri::from_str(&url) {
+    match Uri::from_str(&url) { Ok(x) => {
         update_entry_in_query(&name, value, &x).to_string()
-    } else {
+    } _ => {
         url
-    }
+    }}
 }
 
 // Ref: https://github.com/pallets/markupsafe/blob/main/src/markupsafe/__init__.py

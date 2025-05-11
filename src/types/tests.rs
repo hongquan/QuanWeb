@@ -1,6 +1,6 @@
-use nonzero::nonzero as nz;
+use notzero::nz;
 
-use super::{Paginator, PageLinkItem};
+use super::{PageLinkItem, Paginator};
 
 #[test]
 fn gen_pagination_items_for_total_2_pages() {
