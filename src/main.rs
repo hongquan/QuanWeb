@@ -11,37 +11,25 @@ mod thingsup;
 mod types;
 mod utils;
 
-use std::net::SocketAddr;
-
 use auth::backend::Backend;
 use axum::routing::Router;
 use axum_login::AuthManagerLayerBuilder;
 use clap::Parser;
 use miette::{miette, IntoDiagnostic};
-use tokio_listener::axum07::serve as axum_serve;
-use tokio_listener::{Listener, ListenerAddress, SystemOptions, UnixChmodVariant, UserOptions};
+use tokio::net::{TcpListener, UnixListener};
 use tower_http::trace::TraceLayer;
 use tower_sessions::SessionManagerLayer;
 use tracing::info;
 
-use thingsup::{config_jinja, config_logging, get_binding_addr, get_listening_addr, AppOptions};
-use types::AppState;
+use thingsup::{config_jinja, config_logging, get_binding_addr, AppOptions};
+use types::{AppState, BindingAddr};
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
     let app_opts = AppOptions::parse();
     config_logging(&app_opts);
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
-    let addr = match &app_opts.bind {
-        Some(saddr) => get_binding_addr(saddr).map_err(|e| miette!("{e}")),
-        None => {
-            let port = conf::get_listening_port(&config);
-            Ok(ListenerAddress::Tcp(SocketAddr::from((
-                get_listening_addr(),
-                port,
-            ))))
-        }
-    }?;
+    let addr = get_binding_addr(app_opts.bind.as_deref());
     let (redis_store, redis_conn) = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
@@ -73,17 +61,18 @@ async fn main() -> miette::Result<()> {
         .layer(TraceLayer::new_for_http());
 
     let main_service = app.into_make_service();
+    match addr {
+        BindingAddr::Unix(p) => {
+            let lt = UnixListener::bind(p).into_diagnostic()?;
+            axum::serve(lt, main_service).await
+        }
+        BindingAddr::Tcp(s) => {
+            let lt = TcpListener::bind(s).await.into_diagnostic()?;
+            axum::serve(lt, main_service).await
+        }
+    }
+    .into_diagnostic()?;
     tracing::info!("Listening on http://{}", addr);
-    let sys_opts = SystemOptions::default();
-    let mut usr_opts = UserOptions::default();
-    usr_opts.unix_listen_unlink = true;
-    usr_opts.unix_listen_chmod = Some(UnixChmodVariant::Group);
-    let listerner = Listener::bind(&addr, &sys_opts, &usr_opts)
-        .await
-        .into_diagnostic()?;
-    axum_serve(listerner, main_service)
-        .await
-        .into_diagnostic()?;
     redis_conn
         .await
         .map_err(|_e| miette!("Redis error."))?

@@ -1,8 +1,9 @@
 use std::num::NonZeroU16;
 
 use atom_syndication::{Entry, FeedBuilder, LinkBuilder};
-use axum::extract::{Host, OriginalUri, Query, State};
+use axum::extract::{OriginalUri, Query, State};
 use axum::response::{IntoResponseParts, Json, Result as AxumResult};
+use axum_extra::extract::Host;
 use chrono::{TimeZone, Utc};
 use gel_tokio::Client as EdgeClient;
 use http::{header::CONTENT_TYPE, Uri};

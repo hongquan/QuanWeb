@@ -14,14 +14,14 @@ strip = "debuginfo"
 ammonia = "4.0.0"
 async-trait = "0.1.83"
 atom_syndication = { version = "0.12.4", features = ["serde"] }
-axum = { version = "0.7.9", features = ["macros"] }
-axum-extra = { version = "0.9.6" }
-axum-login = "0.16.0"
-chrono = { version = "0.4.39", features = [
+axum = { version = "0.8.4", features = ["macros"] }
+axum-extra = { version = "0.10.1" }
+axum-login = "0.17.0"
+chrono = { version = "0.4.41", features = [
     "serde",
     "std",
 ], default-features = false }
-chrono-tz = "0.10.0"
+chrono-tz = "0.10.3"
 clap = { version = "4.5.20", features = ["derive"] }
 comrak = "0.32.0"
 config = { version = "0.15.4", default-features = false, features = [
@@ -69,12 +69,11 @@ syntect = { version = "5.0.0", default-features = false, features = [
     "html",
 ] }
 thiserror = "2.0.9"
-tokio = { version = "1.40.0", features = ["full"] }
-tokio-listener = { version = "0.5.0", default-features = false, features = ["axum07", "unix", "unix_path_tools"] }
+tokio = { version = "1.45.0", features = ["full"] }
 tower = { version = "0.5.2", features = ["tokio", "tracing"] }
 tower-http = { version = "0.6.2", features = ["trace"] }
-tower-sessions = "0.13.0"
-tower-sessions-redis-store = "0.15.0"
+tower-sessions = "0.14.0"
+tower-sessions-redis-store = "0.16.0"
 tracing = "0.1.41"
 tracing-journald = "0.3.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

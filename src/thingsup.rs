@@ -1,17 +1,19 @@
-use std::{env, io};
+use std::net::{SocketAddr, SocketAddrV4};
+use std::str::FromStr;
+use std::{env, io, net::Ipv4Addr, path::Path};
 
 use clap::Parser;
 use fluent_templates::static_loader;
 use minijinja::Environment;
-use tokio_listener::ListenerAddress;
 use tracing_subscriber::{
     filter::{EnvFilter, LevelFilter},
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
 
-use crate::consts::UNCATEGORIZED_URL;
+use crate::conf::DEFAULT_PORT;
 use crate::utils::jinja_extra;
+use crate::{consts::UNCATEGORIZED_URL, types::BindingAddr};
 
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
@@ -33,7 +35,7 @@ pub fn is_journald_connected() -> bool {
     if env::var_os("JOURNAL_STREAM").is_none() {
         return false;
     }
-    let term_available = env::var("TERM").map_or(false, |s| !s.is_empty());
+    let term_available = env::var("TERM").is_ok_and(|s| !s.is_empty());
     !term_available
 }
 
@@ -83,22 +85,31 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     Ok(jinja)
 }
 
-pub fn get_listening_addr() -> [u8; 4] {
+pub fn get_listening_addr() -> Ipv4Addr {
     match env::var("CARGO") {
-        Ok(_) => [0, 0, 0, 0],
-        Err(_) => [127, 0, 0, 1],
+        Ok(_) => Ipv4Addr::UNSPECIFIED,
+        Err(_) => Ipv4Addr::LOCALHOST,
     }
 }
 
-pub fn get_binding_addr(bind_opt: &str) -> Result<ListenerAddress, &'static str> {
-    if let Some(sk_path) = bind_opt.strip_prefix("unix:") {
-        sk_path.parse()
-    } else if bind_opt.contains(':') {
-        bind_opt.parse()
+pub fn get_binding_addr(bind_opt: Option<&str>) -> BindingAddr {
+    let addr = if let Some(s) = bind_opt {
+        if let Some(sk_path) = s.strip_prefix("unix:") {
+            Some(BindingAddr::Unix(Path::new(sk_path)))
+        } else if s.contains(':') {
+            SocketAddr::from_str(s).ok().map(BindingAddr::Tcp)
+        } else {
+            None
+        }
     } else {
-        let auto_addr = format!("127.0.0.1:{bind_opt}");
-        auto_addr.parse()
-    }
+        None
+    };
+    addr.unwrap_or_else(|| {
+        BindingAddr::Tcp(SocketAddr::V4(SocketAddrV4::new(
+            get_listening_addr(),
+            DEFAULT_PORT,
+        )))
+    })
 }
 
 static_loader! {

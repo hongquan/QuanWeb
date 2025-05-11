@@ -3,7 +3,10 @@ pub mod ext;
 #[cfg(test)]
 pub mod tests;
 
+use std::fmt::{self, Display};
+use std::net::SocketAddr;
 use std::num::NonZeroU16;
+use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use axum::extract::FromRef;
@@ -60,6 +63,21 @@ impl From<IndexMap<&str, String>> for ApiErrorShape {
 pub struct AppState {
     pub db: Client,
     pub jinja: Environment<'static>,
+}
+
+#[derive(Debug)]
+pub enum BindingAddr<'a> {
+    Unix(&'a Path),
+    Tcp(SocketAddr),
+}
+
+impl Display for BindingAddr<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Unix(p) => write!(f, "{}", p.to_string_lossy()),
+            Self::Tcp(s) => write!(f, "{}", s),
+        }
+    }
 }
 
 #[derive(RustEmbed)]
