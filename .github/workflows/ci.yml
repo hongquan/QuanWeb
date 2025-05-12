@@ -12,6 +12,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
 
       - name: Build binary
         run: cargo build --profile ${{ matrix.BUILD_TARGET }} --all-features
