@@ -1,10 +1,9 @@
 use config::Config;
 use fred::error::Error as FredError;
-use fred::types::ConnectHandle;
-use gel_errors::kinds::ConfigurationError;
 use gel_errors::ErrorKind;
+use gel_errors::kinds::ConfigurationError;
 use gel_tokio::TlsSecurity;
-use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
+use tower_sessions_redis_store::{RedisStore, fred::prelude::*};
 
 use crate::conf::KEY_EDGEDB_INSTANCE;
 
@@ -23,11 +22,11 @@ pub async fn get_gel_client(app_config: &Config) -> Result<gel_tokio::Client, ge
     Ok(gel_tokio::Client::new(&config))
 }
 
-pub async fn get_redis_store() -> Result<(RedisStore<Pool>, ConnectHandle), FredError> {
+pub async fn get_redis_store() -> Result<RedisStore<Pool>, FredError> {
     let pool = Pool::new(fred::types::config::Config::default(), None, None, None, 2)?;
-    let redis_conn = pool.connect();
+    let _redis_conn = pool.connect();
     pool.wait_for_connect().await?;
     tracing::debug!("Connected to Redis");
     let store = RedisStore::new(pool);
-    Ok((store, redis_conn))
+    Ok(store)
 }

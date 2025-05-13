@@ -11,12 +11,15 @@ mod thingsup;
 mod types;
 mod utils;
 
+use std::{fs, path::PathBuf};
+
 use auth::backend::Backend;
 use axum::routing::Router;
 use axum_login::AuthManagerLayerBuilder;
 use clap::Parser;
 use miette::{IntoDiagnostic, miette};
 use tokio::net::{TcpListener, UnixListener};
+use tokio::signal;
 use tower_http::trace::TraceLayer;
 use tower_sessions::SessionManagerLayer;
 use tracing::info;
@@ -30,7 +33,7 @@ async fn main() -> miette::Result<()> {
     config_logging(&app_opts);
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let addr = get_binding_addr(app_opts.bind.as_deref());
-    let (redis_store, redis_conn) = db::get_redis_store()
+    let redis_store = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
 
@@ -64,19 +67,43 @@ async fn main() -> miette::Result<()> {
     match addr {
         BindingAddr::Unix(p) => {
             let lt = UnixListener::bind(p).into_diagnostic()?;
-            tracing::info!("Listening on http://{}", addr);
-            axum::serve(lt, main_service).await
+            tracing::info!("Listening on {}", addr);
+            axum::serve(lt, main_service)
+                .with_graceful_shutdown(on_shutdown_signal(Some(p.to_path_buf())))
+                .await
         }
         BindingAddr::Tcp(s) => {
             let lt = TcpListener::bind(s).await.into_diagnostic()?;
             tracing::info!("Listening on http://{}", addr);
-            axum::serve(lt, main_service).await
+            axum::serve(lt, main_service)
+                .with_graceful_shutdown(on_shutdown_signal(None))
+                .await
         }
     }
     .into_diagnostic()?;
-    redis_conn
-        .await
-        .map_err(|_e| miette!("Redis error."))?
-        .map_err(|_e| miette!("{}", _e))?;
     Ok(())
+}
+
+async fn on_shutdown_signal<'a>(sk: Option<PathBuf>) {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("Failed to install Ctrl+C handler!");
+    };
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("Failed to install TERM signal handler")
+            .recv()
+            .await;
+    };
+    tracing::debug!("Wait for signals...");
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {}
+    };
+    tracing::info!("Got signal to terminate. Exiting...");
+    if let Some(sk) = sk {
+        fs::remove_file(sk).unwrap_or_default();
+    }
+    tracing::info!("👾 Bye!");
 }
