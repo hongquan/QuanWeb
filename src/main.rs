@@ -11,6 +11,8 @@ mod thingsup;
 mod types;
 mod utils;
 
+use std::fs::Permissions;
+use std::os::unix::fs::PermissionsExt;
 use std::{fs, path::PathBuf};
 
 use auth::backend::Backend;
@@ -68,6 +70,9 @@ async fn main() -> miette::Result<()> {
         BindingAddr::Unix(p) => {
             let lt = UnixListener::bind(p).into_diagnostic()?;
             tracing::info!("Listening on {}", addr);
+            let perm = Permissions::from_mode(0o664);
+            tracing::info!("To set permission {:?}", &perm);
+            fs::set_permissions(p, perm).into_diagnostic()?;
             axum::serve(lt, main_service)
                 .with_graceful_shutdown(on_shutdown_signal(Some(p.to_path_buf())))
                 .await
@@ -84,7 +89,7 @@ async fn main() -> miette::Result<()> {
     Ok(())
 }
 
-async fn on_shutdown_signal<'a>(sk: Option<PathBuf>) {
+async fn on_shutdown_signal(sk: Option<PathBuf>) {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
