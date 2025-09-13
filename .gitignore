@@ -12,6 +12,12 @@ quanweb.egg-info
 *.njsproj
 *.sln
 *.sw?
+*.beam
+*.ez
+build
+erl_crash.dump
+ladmin/priv
+
 secret.py
 custom_settings.toml
 .secrets.toml

@@ -1,0 +1,7 @@
+# Run development server
+dev-serve:
+    bun run dev
+
+# Build to static files
+build:
+    bun run build
