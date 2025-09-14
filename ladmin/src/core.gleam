@@ -1,3 +1,4 @@
+import formal/form.{type Form}
 import tempo.{type DateTime}
 
 pub type Post {
@@ -20,11 +21,18 @@ pub type User {
   )
 }
 
-pub type LoginDetail {
-  LoginDetail(email: String, password: String)
+pub type LoginData {
+  LoginData(email: String, password: String)
+}
+
+pub type LoginState {
+  NonLogin
+  TryingLogin(Form(LoginData))
+  LoggedIn(User)
 }
 
 pub type Msg(r) {
+  RouterInitDone
   ApiReturnedPosts
   OnRouteChange(r)
 }
