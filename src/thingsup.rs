@@ -92,7 +92,7 @@ pub fn get_listening_addr() -> Ipv4Addr {
     }
 }
 
-pub fn get_binding_addr(bind_opt: Option<&str>) -> BindingAddr {
+pub fn get_binding_addr(bind_opt: Option<&str>) -> BindingAddr<'_> {
     let addr = if let Some(s) = bind_opt {
         if let Some(sk_path) = s.strip_prefix("unix:") {
             Some(BindingAddr::Unix(Path::new(sk_path)))
