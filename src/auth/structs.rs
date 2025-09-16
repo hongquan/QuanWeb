@@ -1,4 +1,4 @@
-use redact::{expose_secret, Secret};
+use redact::{Secret, expose_secret};
 use serde::{Deserialize, Serialize};
 use validify::{ValidationError, ValidationErrors};
 
@@ -7,6 +7,7 @@ pub struct LoginReqData {
     pub email: String,
     #[serde(serialize_with = "expose_secret")]
     pub password: Secret<String>,
+    #[serde(default)]
     pub remember_me: bool,
 }
 
