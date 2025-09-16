@@ -7,10 +7,12 @@ import gleam/option.{None}
 import gleam/result
 import lustre/effect.{type Effect}
 import modem
+import plinth/javascript/storage
 import rsvp
 
 import actions
 import core.{type LoginData, type User, LoggedIn, TryingLogin}
+import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
 import routes.{HomePage}
 
@@ -46,9 +48,19 @@ pub fn handle_login_api_result(
       let login_state = LoggedIn(user)
       // User has logged-in successfully. Redirect to home page
       let #(p, q) = routes.to_uri_parts(HomePage)
-      let whatsnext = modem.push(routes.prefix(p, model.mounted_path), q, None)
+      let go_next = modem.push(routes.prefix(p, model.mounted_path), q, None)
       let model = Model(..model, login_state:)
-      #(model, whatsnext)
+      // Save to localstorage
+      storage.local()
+      |> result.try(storage.set_item(
+        _,
+        "user",
+        json.to_string(encode_user(user)),
+      ))
+      |> result.lazy_unwrap(fn() {
+        io.println_error("Failed to acquire localStorage!")
+      })
+      #(model, go_next)
     }
     Error(err) -> {
       let detail = case err {

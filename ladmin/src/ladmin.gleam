@@ -1,4 +1,6 @@
+import decoders
 import gleam/io
+import gleam/json
 import gleam/option.{None}
 import gleam/result
 import gleam/uri
@@ -7,10 +9,11 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html as h
 import modem
+import plinth/javascript/storage
 
 import core.{
-  ApiLoginReturned, NonLogin, OnRouteChange, RouterInitDone, TryingLogin,
-  UserSubmittedLoginForm,
+  ApiLoginReturned, LoggedIn, NonLogin, OnRouteChange, RouterInitDone,
+  TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model}
@@ -36,9 +39,27 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     |> result.flatten
     |> result.unwrap([])
   let route = parse_to_route(mounted_path, path, query)
-  let login_state = case route {
-    LoginPage -> TryingLogin(create_login_form())
-    _ -> NonLogin
+  let saved_user =
+    storage.local()
+    |> result.map_error(fn(_e) {
+      io.println_error("Failed to acquire localStorage!")
+    })
+    |> result.try(storage.get_item(_, "user"))
+    |> result.map_error(fn(_e) {
+      io.println("user is not found in localStorage.")
+    })
+    |> result.try(fn(s) {
+      json.parse(s, decoders.get_user_decoder())
+      |> result.map_error(fn(e) {
+        io.println_error("Failed to decode user.")
+        echo e
+        Nil
+      })
+    })
+  let login_state = case route, saved_user {
+    LoginPage, _ -> TryingLogin(create_login_form())
+    _, Ok(user) -> LoggedIn(user)
+    _, _ -> NonLogin
   }
   let model = Model(mounted_path, route, login_state:)
   let route_react_setup =
