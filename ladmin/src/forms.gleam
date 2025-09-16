@@ -2,7 +2,7 @@ import formal/form.{type Form}
 
 import core.{type LoginData, LoginData}
 
-pub fn make_login_form() -> Form(LoginData) {
+pub fn create_login_form() -> Form(LoginData) {
   form.new({
     use email <- form.field("email", form.parse_string |> form.check_not_empty)
     use password <- form.field(

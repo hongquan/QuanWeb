@@ -73,3 +73,7 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     _ -> #("/not-found", None)
   }
 }
+
+pub fn prefix(path: String, mounted_path: String) {
+  { mounted_path <> path } |> string.replace("//", "/")
+}

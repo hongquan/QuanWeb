@@ -1,7 +1,14 @@
+import formal/form as formlib
 import lustre/attribute as a
 import lustre/element/html as h
+import lustre/event as ev
 
-pub fn make_login_page() {
+import core.{type LoginData, UserSubmittedLoginForm}
+
+pub fn make_login_page(form: formlib.Form(LoginData)) {
+  let handle_submit = fn(values) {
+    form |> formlib.add_values(values) |> formlib.run |> UserSubmittedLoginForm
+  }
   h.div(
     [
       a.class(
@@ -28,13 +35,14 @@ pub fn make_login_page() {
         h.p([a.class("mt-1 text-center text-gray-500 dark:text-gray-400")], [
           h.text("Login or create account"),
         ]),
-        h.form([a.method("post")], [
+        h.form([a.method("post"), ev.on_submit(handle_submit)], [
           h.div([a.class("w-full mt-4")], [
             h.input([
               a.class(
                 "block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300",
               ),
               a.type_("email"),
+              a.name("email"),
               a.placeholder("Email Address"),
               a.attribute("aria-label", "Email Address"),
             ]),
@@ -45,6 +53,7 @@ pub fn make_login_page() {
                 "block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-500 bg-white border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300",
               ),
               a.type_("password"),
+              a.name("password"),
               a.placeholder("Password"),
               a.attribute("aria-label", "Password"),
             ]),
@@ -62,8 +71,9 @@ pub fn make_login_page() {
             h.button(
               [
                 a.class(
-                  "px-6 py-2 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50",
+                  "px-6 py-2 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50 cursor-pointer",
                 ),
+                a.type_("submit"),
               ],
               [h.text("Sign In")],
             ),

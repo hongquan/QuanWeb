@@ -1,7 +1,6 @@
 import gleam/io
 import gleam/option.{None}
 import gleam/result
-import gleam/string
 import gleam/uri
 import lustre
 import lustre/effect.{type Effect}
@@ -9,19 +8,15 @@ import lustre/element.{type Element}
 import lustre/element/html as h
 import modem
 
-import core.{type LoginState, type Msg, NonLogin, OnRouteChange, RouterInitDone}
-import routes.{
-  type Route, HomePage, LoginPage, on_url_change, parse_to_route, to_uri_parts,
+import core.{
+  ApiLoginReturned, NonLogin, OnRouteChange, RouterInitDone, TryingLogin,
+  UserSubmittedLoginForm,
 }
+import forms.{create_login_form}
+import models.{type AppMsg, type Model, Model}
+import routes.{HomePage, LoginPage, on_url_change, parse_to_route, to_uri_parts}
+import updates
 import views/simple.{make_login_page}
-
-pub type Model {
-  Model(mounted_path: String, route: Route, login_state: LoginState)
-}
-
-// `Msg` is generic with route type, we make concrete type here
-type AppMsg =
-  Msg(Route)
 
 pub fn main(base_path: String) -> Nil {
   let app = lustre.application(init, update, view)
@@ -41,7 +36,11 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     |> result.flatten
     |> result.unwrap([])
   let route = parse_to_route(mounted_path, path, query)
-  let model = Model(mounted_path, route, login_state: NonLogin)
+  let login_state = case route {
+    LoginPage -> TryingLogin(create_login_form())
+    _ -> NonLogin
+  }
+  let model = Model(mounted_path, route, login_state:)
   let route_react_setup =
     modem.init(on_url_change(_, mounted_path, OnRouteChange))
   case model.login_state {
@@ -67,16 +66,25 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         LoginPage -> effect.none()
         _ -> {
           let #(p, q) = to_uri_parts(LoginPage)
-          let full_path = string.replace(model.mounted_path <> p, "//", "/")
+          let full_path = routes.prefix(p, model.mounted_path)
           modem.push(full_path, q, None)
         }
       }
       #(model, whatsnext)
     }
     OnRouteChange(new_route) -> {
-      let model = Model(..model, route: new_route)
+      let login_state = case new_route, model.login_state {
+        LoginPage, NonLogin -> TryingLogin(create_login_form())
+        _, state -> state
+      }
+      let model = Model(..model, route: new_route, login_state:)
       #(model, effect.none())
     }
+    UserSubmittedLoginForm(form) -> {
+      io.println("UserSubmittedLoginForm")
+      updates.handle_login_submission(model, form)
+    }
+    ApiLoginReturned(res) -> updates.handle_login_api_result(model, res)
     _ -> #(model, effect.none())
   }
 }
@@ -84,10 +92,16 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
 fn view(model: Model) -> Element(AppMsg) {
   io.println("In view()")
   let route = model.route
-  case route {
-    HomePage -> dummy_view()
-    LoginPage -> make_login_page()
-    _ -> dummy_view()
+  case route, model.login_state {
+    HomePage, _ -> {
+      dummy_view()
+    }
+    LoginPage, TryingLogin(form) -> make_login_page(form)
+    _, _ -> {
+      echo route
+      echo model.login_state
+      dummy_view()
+    }
   }
 }
 

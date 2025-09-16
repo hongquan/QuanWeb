@@ -1,4 +1,5 @@
 import formal/form.{type Form}
+import rsvp
 import tempo.{type DateTime}
 
 pub type Post {
@@ -33,6 +34,8 @@ pub type LoginState {
 
 pub type Msg(r) {
   RouterInitDone
+  UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
+  ApiLoginReturned(Result(User, rsvp.Error))
   ApiReturnedPosts
   OnRouteChange(r)
 }
