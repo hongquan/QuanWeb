@@ -2,7 +2,7 @@ import gleam/bool
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleam/uri
@@ -70,6 +70,10 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   case route {
     HomePage -> #("/", None)
     LoginPage -> #("/login", None)
+    PostListPage(page) -> #(
+      "/posts",
+      Some(uri.query_to_string([#("page", int.to_string(page))])),
+    )
     _ -> #("/not-found", None)
   }
 }

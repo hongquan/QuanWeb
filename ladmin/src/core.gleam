@@ -1,4 +1,6 @@
 import formal/form.{type Form}
+import gleam/option.{type Option}
+import gleam/uri
 import rsvp
 import tempo.{type DateTime}
 
@@ -32,10 +34,19 @@ pub type LoginState {
   LoggedIn(User)
 }
 
+pub type ApiListingResponse(o) {
+  ApiListingResponse(
+    count: Int,
+    objects: List(o),
+    total_pages: Int,
+    links: #(Option(uri.Uri), Option(uri.Uri)),
+  )
+}
+
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error))
-  ApiReturnedPosts
+  ApiReturnedPosts(Result(ApiListingResponse(Post), rsvp.Error))
   OnRouteChange(r)
 }

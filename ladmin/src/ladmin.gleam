@@ -1,3 +1,4 @@
+import actions
 import decoders
 import gleam/io
 import gleam/json
@@ -17,7 +18,9 @@ import core.{
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model}
-import routes.{HomePage, LoginPage, on_url_change, parse_to_route, to_uri_parts}
+import routes.{
+  HomePage, LoginPage, PostListPage, on_url_change, parse_to_route, to_uri_parts,
+}
 import updates
 import views/simple.{make_login_page}
 
@@ -49,7 +52,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
       io.println("user is not found in localStorage.")
     })
     |> result.try(fn(s) {
-      json.parse(s, decoders.get_user_decoder())
+      json.parse(s, decoders.create_user_decoder())
       |> result.map_error(fn(e) {
         io.println_error("Failed to decode user.")
         echo e
@@ -98,8 +101,20 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         LoginPage, NonLogin -> TryingLogin(create_login_form())
         _, state -> state
       }
+      let go_next = case new_route, login_state {
+        // If user has logged-in, redirect to "/posts" page
+        HomePage, LoggedIn(_u) -> {
+          let #(p, q) = to_uri_parts(PostListPage(1))
+          let full_path = routes.prefix(p, model.mounted_path)
+          modem.push(full_path, q, None)
+        }
+        PostListPage(p), _ -> {
+          actions.load_posts(p)
+        }
+        _, _ -> effect.none()
+      }
       let model = Model(..model, route: new_route, login_state:)
-      #(model, effect.none())
+      #(model, go_next)
     }
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")

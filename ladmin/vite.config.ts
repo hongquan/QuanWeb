@@ -10,6 +10,7 @@ export default defineConfig({
   // Our prod site will be at http://domain/ladmin/
   base: BASE_PATH,
   server: {
+    port: 5111,
     fs: {
       allow: ['..'],
     },
