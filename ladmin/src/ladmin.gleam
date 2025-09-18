@@ -51,7 +51,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
       io.println("user is not found in localStorage.")
     })
     |> result.try(fn(s) {
-      json.parse(s, decoders.create_user_decoder())
+      json.parse(s, decoders.make_user_decoder())
       |> result.map_error(fn(e) {
         io.println_error("Failed to decode user.")
         echo e

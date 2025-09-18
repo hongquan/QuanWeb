@@ -9,7 +9,7 @@ import tempo/datetime
 
 import core.{type User, ApiListingResponse, Post, User}
 
-pub fn create_user_decoder() -> Decoder(User) {
+pub fn make_user_decoder() -> Decoder(User) {
   use id <- decode.field("id", decode.string)
   use email <- decode.field("email", decode.string)
   use username <- decode.field("username", decode.string)
@@ -40,12 +40,12 @@ pub fn decode_datetime(
   })
 }
 
-pub fn create_datetime_decoder() {
+pub fn make_datetime_decoder() -> Decoder(DateTime) {
   use data <- decode.new_primitive_decoder("DateTime")
   data |> decode_datetime |> result.replace_error(datetime.unix_epoch)
 }
 
-pub fn create_uri_decoder() {
+pub fn make_uri_decoder() -> Decoder(uri.Uri) {
   use data <- decode.new_primitive_decoder("Uri")
   data
   |> decode.run(decode.string)
@@ -56,22 +56,22 @@ pub fn create_uri_decoder() {
   |> result.replace_error(uri.empty)
 }
 
-pub fn create_post_decoder() {
+pub fn make_post_decoder() -> Decoder(core.Post) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
   use is_published <- decode.field("is_published", decode.bool)
-  let datetime_decoder = create_datetime_decoder()
+  let datetime_decoder = make_datetime_decoder()
   use created_at <- decode.field("created_at", datetime_decoder)
   decode.success(Post(id:, title:, slug:, is_published:, created_at:))
 }
 
-pub fn create_listing_api_decoder(
+pub fn make_listing_api_decoder(
   object_decoder: Decoder(o),
 ) -> Decoder(core.ApiListingResponse(o)) {
   use count <- decode.field("count", decode.int)
   use total_pages <- decode.field("total_pages", decode.int)
-  let uri_decoder = create_uri_decoder()
+  let uri_decoder = make_uri_decoder()
   use prev <- decode.subfield(["links", "prev"], decode.optional(uri_decoder))
   use next <- decode.subfield(["links", "next"], decode.optional(uri_decoder))
   use objects <- decode.field("objects", decode.list(object_decoder))
