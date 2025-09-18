@@ -11,6 +11,7 @@ import plinth/javascript/storage
 import rsvp
 
 import actions
+import consts
 import core.{type LoginData, type User, LoggedIn, TryingLogin}
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -47,14 +48,13 @@ pub fn handle_login_api_result(
     Ok(user) -> {
       let login_state = LoggedIn(user)
       // User has logged-in successfully. Redirect to home page
-      let #(p, q) = routes.to_uri_parts(HomePage)
-      let go_next = modem.push(routes.prefix(p, model.mounted_path), q, None)
+      let go_next = routes.goto(HomePage, model.mounted_path)
       let model = Model(..model, login_state:)
       // Save to localstorage
       storage.local()
       |> result.try(storage.set_item(
         _,
-        "user",
+        consts.key_store_user,
         json.to_string(encode_user(user)),
       ))
       |> result.lazy_unwrap(fn() {

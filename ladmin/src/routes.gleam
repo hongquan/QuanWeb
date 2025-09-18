@@ -6,6 +6,8 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleam/uri
+import lustre/effect.{type Effect}
+import modem
 
 pub type Route {
   HomePage
@@ -78,6 +80,12 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   }
 }
 
-pub fn prefix(path: String, mounted_path: String) {
-  { mounted_path <> path } |> string.replace("//", "/")
+pub fn prefix(uri_parts: #(String, a), mounted_path: String) -> #(String, a) {
+  let #(path, query) = uri_parts
+  #({ mounted_path <> path } |> string.replace("//", "/"), query)
+}
+
+pub fn goto(route: Route, mounted_path: String) -> Effect(b) {
+  let #(full_path, q) = to_uri_parts(route) |> prefix(mounted_path)
+  modem.push(full_path, q, None)
 }

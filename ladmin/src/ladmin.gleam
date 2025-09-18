@@ -1,4 +1,5 @@
 import actions
+import consts
 import decoders
 import gleam/io
 import gleam/json
@@ -18,9 +19,7 @@ import core.{
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model}
-import routes.{
-  HomePage, LoginPage, PostListPage, on_url_change, parse_to_route, to_uri_parts,
-}
+import routes.{HomePage, LoginPage, PostListPage, on_url_change, parse_to_route}
 import updates
 import views/simple.{make_login_page}
 
@@ -47,7 +46,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     |> result.map_error(fn(_e) {
       io.println_error("Failed to acquire localStorage!")
     })
-    |> result.try(storage.get_item(_, "user"))
+    |> result.try(storage.get_item(_, consts.key_store_user))
     |> result.map_error(fn(_e) {
       io.println("user is not found in localStorage.")
     })
@@ -67,31 +66,32 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
   let model = Model(mounted_path, route, login_state:)
   let route_react_setup =
     modem.init(on_url_change(_, mounted_path, OnRouteChange))
-  case model.login_state {
-    NonLogin -> #(
-      model,
-      effect.batch([
-        route_react_setup,
-        {
-          use dispatch, _root <- effect.before_paint
-          dispatch(RouterInitDone)
-        },
-      ]),
-    )
-    _ -> #(model, route_react_setup)
-  }
+  let whatsnext =
+    effect.batch([
+      route_react_setup,
+      {
+        use dispatch, _root <- effect.before_paint
+        dispatch(RouterInitDone)
+      },
+    ])
+  #(model, whatsnext)
 }
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   io.println("In update()")
+  let Model(route:, login_state:, mounted_path:) = model
   case msg {
     RouterInitDone -> {
-      let whatsnext = case model.route {
-        LoginPage -> effect.none()
-        _ -> {
-          let #(p, q) = to_uri_parts(LoginPage)
-          let full_path = routes.prefix(p, model.mounted_path)
-          modem.push(full_path, q, None)
+      io.println("RouterInitDone")
+      echo route
+      let whatsnext = case route, login_state {
+        LoginPage, _ -> effect.none()
+        // If user has already logged-in, and visiting HomePage, redirect to PostList
+        HomePage, LoggedIn(_u) -> {
+          routes.goto(PostListPage(1), mounted_path)
+        }
+        _, _ -> {
+          routes.goto(LoginPage, mounted_path)
         }
       }
       #(model, whatsnext)
@@ -104,9 +104,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let go_next = case new_route, login_state {
         // If user has logged-in, redirect to "/posts" page
         HomePage, LoggedIn(_u) -> {
-          let #(p, q) = to_uri_parts(PostListPage(1))
-          let full_path = routes.prefix(p, model.mounted_path)
-          modem.push(full_path, q, None)
+          routes.goto(PostListPage(1), mounted_path)
         }
         PostListPage(p), _ -> {
           actions.load_posts(p)
@@ -127,15 +125,15 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
 
 fn view(model: Model) -> Element(AppMsg) {
   io.println("In view()")
-  let route = model.route
-  case route, model.login_state {
+  let Model(route:, login_state:, ..) = model
+  case route, login_state {
     HomePage, _ -> {
       dummy_view()
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
     _, _ -> {
       echo route
-      echo model.login_state
+      echo login_state
       dummy_view()
     }
   }
