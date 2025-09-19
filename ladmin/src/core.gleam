@@ -24,6 +24,10 @@ pub type User {
   )
 }
 
+pub type Category {
+  Category(id: String, title: String)
+}
+
 pub type LoginData {
   LoginData(email: String, password: String)
 }
@@ -41,6 +45,31 @@ pub type ApiListingResponse(o) {
     total_pages: Int,
     links: #(Option(uri.Uri), Option(uri.Uri)),
   )
+}
+
+// Objects to be rendered in a page
+pub type PageOwnedObjects {
+  PageOwnedPosts(List(Post))
+  PageOwnedCategories(List(Category))
+}
+
+pub type PageOwnedObjectPaging {
+  PageOwnedObjectPaging(
+    count: Int,
+    total_pages: Int,
+    links: #(Option(uri.Uri), Option(uri.Uri)),
+  )
+}
+
+pub type Severity {
+  Danger
+  Warning
+  Info
+  Success
+}
+
+pub type FlashMessage {
+  FlashMessage(content: String, severity: Severity)
 }
 
 pub type Msg(r) {

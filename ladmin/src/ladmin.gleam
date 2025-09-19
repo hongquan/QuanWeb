@@ -12,13 +12,14 @@ import lustre/element.{type Element}
 import lustre/element/html as h
 import modem
 import plinth/javascript/storage
+import views/posts
 
 import core.{
-  ApiLoginReturned, LoggedIn, NonLogin, OnRouteChange, RouterInitDone,
-  TryingLogin, UserSubmittedLoginForm,
+  ApiLoginReturned, ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange,
+  RouterInitDone, TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
-import models.{type AppMsg, type Model, Model}
+import models.{type AppMsg, type Model, Model, default_model}
 import routes.{HomePage, LoginPage, PostListPage, on_url_change, parse_to_route}
 import updates
 import views/simple.{make_login_page}
@@ -63,7 +64,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     _, Ok(user) -> LoggedIn(user)
     _, _ -> NonLogin
   }
-  let model = Model(mounted_path, route, login_state:)
+  let model = Model(..default_model, mounted_path:, route:, login_state:)
   let route_react_setup =
     modem.init(on_url_change(_, mounted_path, OnRouteChange))
   let whatsnext =
@@ -79,7 +80,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   io.println("In update()")
-  let Model(route:, login_state:, mounted_path:) = model
+  let Model(route:, login_state:, mounted_path:, ..) = model
   case msg {
     RouterInitDone -> {
       io.println("RouterInitDone")
@@ -90,6 +91,8 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         HomePage, LoggedIn(_u) -> {
           routes.goto(PostListPage(1), mounted_path)
         }
+        // In PostList page, call API to load posts
+        PostListPage(p), LoggedIn(_u) -> actions.load_posts(p)
         // Already logged in, just serve, no redirect
         _, LoggedIn(_u) -> effect.none()
         _, _ -> {
@@ -121,7 +124,11 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       updates.handle_login_submission(model, form)
     }
     ApiLoginReturned(res) -> updates.handle_login_api_result(model, res)
-    _ -> #(model, effect.none())
+    ApiReturnedPosts(res) -> {
+      let model = updates.handle_api_list_post_result(model, res)
+      #(model, effect.none())
+    }
+    // _ -> #(model, effect.none())
   }
 }
 
@@ -133,6 +140,9 @@ fn view(model: Model) -> Element(AppMsg) {
       dummy_view()
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
+    PostListPage(p), _ -> {
+      posts.render_post_table_view(p, model)
+    }
     _, _ -> {
       echo route
       echo login_state

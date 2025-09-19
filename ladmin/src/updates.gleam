@@ -10,7 +10,10 @@ import rsvp
 
 import actions
 import consts
-import core.{type LoginData, type User, LoggedIn, TryingLogin}
+import core.{
+  type ApiListingResponse, type LoginData, type Post, type User,
+  ApiListingResponse, LoggedIn, PageOwnedObjectPaging, TryingLogin,
+}
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
 import routes.{HomePage}
@@ -93,6 +96,31 @@ pub fn handle_login_api_result(
       }
       let model = Model(..model, login_state:)
       #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_api_list_post_result(
+  model: Model,
+  res: Result(ApiListingResponse(Post), rsvp.Error),
+) {
+  case res {
+    Ok(info) -> {
+      let ApiListingResponse(count:, total_pages:, links:, ..) = info
+      Model(
+        ..model,
+        page_owned_objects: core.PageOwnedPosts(info.objects),
+        page_owned_object_paging: PageOwnedObjectPaging(
+          count:,
+          total_pages:,
+          links:,
+        ),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load posts")
+      let Model(flash_messages:, ..) = model
+      Model(..model, flash_messages: [message, ..flash_messages])
     }
   }
 }
