@@ -90,6 +90,8 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         HomePage, LoggedIn(_u) -> {
           routes.goto(PostListPage(1), mounted_path)
         }
+        // Already logged in, just serve, no redirect
+        _, LoggedIn(_u) -> effect.none()
         _, _ -> {
           routes.goto(LoginPage, mounted_path)
         }

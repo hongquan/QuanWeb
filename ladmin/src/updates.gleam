@@ -3,10 +3,8 @@ import gleam/dynamic/decode
 import gleam/http/response.{Response}
 import gleam/io
 import gleam/json
-import gleam/option.{None}
 import gleam/result
 import lustre/effect.{type Effect}
-import modem
 import plinth/javascript/storage
 import rsvp
 
