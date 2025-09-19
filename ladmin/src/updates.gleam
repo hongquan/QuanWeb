@@ -117,7 +117,9 @@ pub fn handle_api_list_post_result(
         ),
       )
     }
-    Error(_e) -> {
+    Error(e) -> {
+      io.println_error("Posts API failed")
+      echo e
       let message = models.create_danger_message("Failed to load posts")
       let Model(flash_messages:, ..) = model
       Model(..model, flash_messages: [message, ..flash_messages])

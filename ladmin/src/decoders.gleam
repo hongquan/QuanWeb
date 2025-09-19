@@ -7,7 +7,7 @@ import gleam/uri
 import tempo.{type DateTime}
 import tempo/datetime
 
-import core.{type User, ApiListingResponse, Post, User}
+import core.{type Category, type User, ApiListingResponse, Category, Post, User}
 
 pub fn make_user_decoder() -> Decoder(User) {
   use id <- decode.field("id", decode.string)
@@ -63,7 +63,26 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   use is_published <- decode.field("is_published", decode.bool)
   let datetime_decoder = make_datetime_decoder()
   use created_at <- decode.field("created_at", datetime_decoder)
-  decode.success(Post(id:, title:, slug:, is_published:, created_at:))
+  use updated_at <- decode.field("updated_at", datetime_decoder)
+  let category_decoder = make_category_decoder()
+  use categories <- decode.field("categories", decode.list(category_decoder))
+  decode.success(Post(
+    id:,
+    title:,
+    slug:,
+    is_published:,
+    created_at:,
+    updated_at:,
+    categories:,
+  ))
+}
+
+pub fn make_category_decoder() -> Decoder(Category) {
+  use id <- decode.field("id", decode.string)
+  use title <- decode.field("title", decode.string)
+  use slug <- decode.field("slug", decode.string)
+  use title_vi <- decode.field("title_vi", decode.optional(decode.string))
+  decode.success(Category(id:, title:, slug:, title_vi:))
 }
 
 pub fn make_listing_api_decoder(

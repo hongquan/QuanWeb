@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/string
 import lustre/attribute as a
 import lustre/element/html as h
 import tempo.{DateFormat}
@@ -51,10 +52,12 @@ fn render_post_row(post: Post) {
   let Post(title:, created_at:, ..) = post
   let created_at_str =
     datetime.format(created_at, DateFormat(tempo.CustomDate("DD MMM YYYY")))
+  let categories =
+    post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
   h.tr([], [
     h.td([a.class(class_cell)], [h.text(title)]),
     h.td([a.class(class_cell)], [h.text(post.slug)]),
-    h.td([a.class(class_cell)], [h.text("")]),
+    h.td([a.class(class_cell)], [h.text(categories)]),
     h.td([a.class(class_cell)], [h.text(created_at_str)]),
   ])
 }

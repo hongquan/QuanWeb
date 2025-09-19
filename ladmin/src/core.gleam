@@ -4,6 +4,10 @@ import gleam/uri
 import rsvp
 import tempo.{type DateTime}
 
+pub type Category {
+  Category(id: String, title: String, title_vi: Option(String), slug: String)
+}
+
 pub type Post {
   Post(
     id: String,
@@ -11,6 +15,8 @@ pub type Post {
     slug: String,
     is_published: Bool,
     created_at: DateTime,
+    updated_at: DateTime,
+    categories: List(Category),
   )
 }
 
@@ -22,10 +28,6 @@ pub type User {
     is_active: Bool,
     is_superuser: Bool,
   )
-}
-
-pub type Category {
-  Category(id: String, title: String)
 }
 
 pub type LoginData {
