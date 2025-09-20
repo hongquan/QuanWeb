@@ -2,7 +2,7 @@ import gleam/bool
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{type Option, None}
 import gleam/result
 import gleam/string
 import gleam/uri
@@ -12,7 +12,7 @@ import modem
 pub type Route {
   HomePage
   LoginPage
-  PostListPage(page: Int)
+  PostListPage(page: Option(Int))
   PostEditPage(id: String)
   NotFound
 }
@@ -44,7 +44,7 @@ pub fn parse_to_route(
             n -> n
           }
         })
-        |> result.unwrap(1)
+        |> option.from_result
       PostListPage(page)
     }
     _, _ -> NotFound
@@ -74,7 +74,9 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     LoginPage -> #("/login", None)
     PostListPage(page) -> #(
       "/posts",
-      Some(uri.query_to_string([#("page", int.to_string(page))])),
+      page
+        |> option.map(fn(p) { [#("page", int.to_string(p))] })
+        |> option.map(uri.query_to_string),
     )
     _ -> #("/not-found", None)
   }

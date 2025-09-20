@@ -3,7 +3,7 @@ import consts
 import decoders
 import gleam/io
 import gleam/json
-import gleam/option.{None}
+import gleam/option.{None, Some}
 import gleam/result
 import gleam/uri
 import lustre
@@ -89,10 +89,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         LoginPage, _ -> effect.none()
         // If user has already logged-in, and visiting HomePage, redirect to PostList
         HomePage, LoggedIn(_u) -> {
-          routes.goto(PostListPage(1), mounted_path)
+          routes.goto(PostListPage(None), mounted_path)
         }
         // In PostList page, call API to load posts
-        PostListPage(p), LoggedIn(_u) -> actions.load_posts(p)
+        PostListPage(Some(p)), _ if p < 1 ->
+          routes.goto(PostListPage(None), mounted_path)
+        PostListPage(p), LoggedIn(_u) -> actions.load_posts(option.unwrap(p, 1))
         // Already logged in, just serve, no redirect
         _, LoggedIn(_u) -> effect.none()
         _, _ -> {
@@ -109,10 +111,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let go_next = case new_route, login_state {
         // If user has logged-in, redirect to "/posts" page
         HomePage, LoggedIn(_u) -> {
-          routes.goto(PostListPage(1), mounted_path)
+          routes.goto(PostListPage(None), mounted_path)
         }
         PostListPage(p), _ -> {
-          actions.load_posts(p)
+          actions.load_posts(option.unwrap(p, 1))
         }
         _, _ -> effect.none()
       }
@@ -141,7 +143,7 @@ fn view(model: Model) -> Element(AppMsg) {
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
     PostListPage(p), _ -> {
-      posts.render_post_table_view(p, model)
+      posts.render_post_table_view(option.unwrap(p, 1), model)
     }
     _, _ -> {
       echo route

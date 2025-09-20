@@ -16,7 +16,7 @@ pub fn render_post_table_view(_page: Int, model: models.Model) {
   h.div(
     [
       a.class(
-        "overflow-hidden border border-gray-200 dark:border-gray-700 md:rounded-lg",
+        "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
       ),
     ],
     [
