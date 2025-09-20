@@ -85,22 +85,28 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     RouterInitDone -> {
       io.println("RouterInitDone")
       echo route
-      let whatsnext = case route, login_state {
-        LoginPage, _ -> effect.none()
+      let #(whatsnext, is_loading) = case route, login_state {
+        LoginPage, _ -> #(effect.none(), False)
         // If user has already logged-in, and visiting HomePage, redirect to PostList
         HomePage, LoggedIn(_u) -> {
-          routes.goto(PostListPage(None), mounted_path)
+          #(routes.goto(PostListPage(None), mounted_path), False)
         }
         // In PostList page, call API to load posts
-        PostListPage(Some(p)), _ if p < 1 ->
-          routes.goto(PostListPage(None), mounted_path)
-        PostListPage(p), LoggedIn(_u) -> actions.load_posts(option.unwrap(p, 1))
+        PostListPage(Some(p)), _ if p < 1 -> #(
+          routes.goto(PostListPage(None), mounted_path),
+          False,
+        )
+        PostListPage(p), LoggedIn(_u) -> #(
+          actions.load_posts(option.unwrap(p, 1)),
+          True,
+        )
         // Already logged in, just serve, no redirect
-        _, LoggedIn(_u) -> effect.none()
+        _, LoggedIn(_u) -> #(effect.none(), False)
         _, _ -> {
-          routes.goto(LoginPage, mounted_path)
+          #(routes.goto(LoginPage, mounted_path), False)
         }
       }
+      let model = Model(..model, is_loading:)
       #(model, whatsnext)
     }
     OnRouteChange(new_route) -> {
@@ -108,17 +114,17 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         LoginPage, NonLogin -> TryingLogin(create_login_form())
         _, state -> state
       }
-      let go_next = case new_route, login_state {
+      let #(go_next, is_loading) = case new_route, login_state {
         // If user has logged-in, redirect to "/posts" page
         HomePage, LoggedIn(_u) -> {
-          routes.goto(PostListPage(None), mounted_path)
+          #(routes.goto(PostListPage(None), mounted_path), False)
         }
         PostListPage(p), _ -> {
-          actions.load_posts(option.unwrap(p, 1))
+          #(actions.load_posts(option.unwrap(p, 1)), True)
         }
-        _, _ -> effect.none()
+        _, _ -> #(effect.none(), False)
       }
-      let model = Model(..model, route: new_route, login_state:)
+      let model = Model(..model, route: new_route, login_state:, is_loading:)
       #(model, go_next)
     }
     UserSubmittedLoginForm(form) -> {

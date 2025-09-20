@@ -14,6 +14,7 @@ pub type Model {
     page_owned_objects: PageOwnedObjects,
     page_owned_object_paging: PageOwnedObjectPaging,
     flash_messages: List(FlashMessage),
+    is_loading: Bool,
   )
 }
 
@@ -32,6 +33,7 @@ pub const default_model = Model(
     links: #(None, None),
   ),
   flash_messages: [],
+  is_loading: False,
 )
 
 pub fn create_success_message(content: String) {

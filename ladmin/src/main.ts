@@ -1,4 +1,5 @@
 import 'virtual:uno.css'
+import './load-indicators.css'
 
 const BASE_PATH = import.meta.env.BASE_URL
 

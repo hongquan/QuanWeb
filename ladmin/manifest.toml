@@ -32,6 +32,7 @@ packages = [
   { name = "gtempo", version = "7.2.2", build_tools = ["gleam"], requirements = ["gleam_regexp", "gleam_stdlib", "gleam_time"], otp_app = "gtempo", source = "hex", outer_checksum = "51AACF841C5F936455973BAF7C03F1EEBF86EC0F0F8D9EBEE126CB02968D50AC" },
   { name = "houdini", version = "1.2.0", build_tools = ["gleam"], requirements = [], otp_app = "houdini", source = "hex", outer_checksum = "5DB1053F1AF828049C2B206D4403C18970ABEF5C18671CA3C2D2ED0DD64F6385" },
   { name = "hpack_erl", version = "0.3.0", build_tools = ["rebar3"], requirements = [], otp_app = "hpack", source = "hex", outer_checksum = "D6137D7079169D8C485C6962DFE261AF5B9EF60FBC557344511C1E65E3D95FB0" },
+  { name = "iterators", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "iterators", source = "hex", outer_checksum = "1AE078C0DE76405ED476CA4C758A5D5CCAA565AE311EE219819A905AF54D3D1E" },
   { name = "iv", version = "1.3.2", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_yielder"], otp_app = "iv", source = "hex", outer_checksum = "1FE22E047705BE69EA366E3A2E73C2E1310CBCB27DDE767DE17AE3FA86499947" },
   { name = "logging", version = "1.3.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "logging", source = "hex", outer_checksum = "1098FBF10B54B44C2C7FDF0B01C1253CAFACDACABEFB4B0D027803246753E06D" },
   { name = "lustre", version = "5.3.5", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_json", "gleam_otp", "gleam_stdlib", "houdini"], otp_app = "lustre", source = "hex", outer_checksum = "5CBB5DD2849D8316A2101792FC35AEB58CE4B151451044A9C2A2A70A2F7FCEB8" },
@@ -61,6 +62,7 @@ gleam_stdlib = { version = ">= 0.44.0 and < 2.0.0" }
 gleam_time = { version = ">= 1.4.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 gtempo = { version = ">= 7.2.2 and < 8.0.0" }
+iterators = { version = ">= 1.0.0 and < 2.0.0" }
 iv = { version = ">= 1.3.2 and < 2.0.0" }
 lustre = { version = ">= 5.3.5 and < 6.0.0" }
 lustre_dev_tools = { version = ">= 1.9.2 and < 2.0.0" }

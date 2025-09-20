@@ -1,3 +1,4 @@
+import gleam/io
 import gleam/list
 import gleam/string
 import lustre/attribute as a
@@ -6,26 +7,40 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{type Post, PageOwnedPosts, Post}
-import models
+import models.{type Model}
+import views/load_indicators.{render_three_bar_pulse}
+import views/skeleton
 
 const class_cell = "px-4 py-4 text-sm font-medium whitespace-nowrap"
 
-pub fn render_post_table_view(_page: Int, model: models.Model) {
-  let assert PageOwnedPosts(posts) = model.page_owned_objects
-  let rows = posts |> list.map(render_post_row)
-  h.div(
-    [
-      a.class(
-        "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
-      ),
-    ],
-    [
-      h.table(
-        [a.class("min-w-full divide-y divide-gray-200 dark:divide-gray-700")],
-        [render_post_table_header(), h.tbody([], rows)],
-      ),
-    ],
-  )
+pub fn render_post_table_view(_page: Int, model: Model) {
+  io.println("Is loading:")
+  echo model.is_loading
+  case model.is_loading {
+    True ->
+      skeleton.render_main_block([
+        h.div([a.class("mt-12")], [render_three_bar_pulse()]),
+      ])
+    False -> {
+      let assert PageOwnedPosts(posts) = model.page_owned_objects
+      let rows = posts |> list.map(render_post_row)
+      let body =
+        h.div(
+          [
+            a.class(
+              "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
+            ),
+          ],
+          [
+            h.table([a.class("divide-y divide-gray-200 dark:divide-gray-700")], [
+              render_post_table_header(),
+              h.tbody([], rows),
+            ]),
+          ],
+        )
+      skeleton.render_main_block([body])
+    }
+  }
 }
 
 fn render_post_table_header() {

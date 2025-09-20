@@ -115,6 +115,7 @@ pub fn handle_api_list_post_result(
           total_pages:,
           links:,
         ),
+        is_loading: False,
       )
     }
     Error(e) -> {
@@ -122,7 +123,11 @@ pub fn handle_api_list_post_result(
       echo e
       let message = models.create_danger_message("Failed to load posts")
       let Model(flash_messages:, ..) = model
-      Model(..model, flash_messages: [message, ..flash_messages])
+      Model(
+        ..model,
+        flash_messages: [message, ..flash_messages],
+        is_loading: False,
+      )
     }
   }
 }
