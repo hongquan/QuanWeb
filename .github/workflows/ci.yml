@@ -39,6 +39,9 @@ jobs:
 
   test-lustre-app:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ladmin
     steps:
       - uses: actions/checkout@v4
       - name: Get lustre app changes
