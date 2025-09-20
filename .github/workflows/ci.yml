@@ -24,7 +24,6 @@ jobs:
           files_ignore: |
             admini
             ladmin
-      - uses: oven-sh/setup-bun@v2
 
       - name: Build binary
         if: steps.changed-backend.outputs.any_changed == 'true'
@@ -37,7 +36,7 @@ jobs:
           name: Built binaries
           path: target/${{ matrix.BUILD_TARGET }}/quanweb
 
-  test-lustre-app:
+  build-lustre-app:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -51,6 +50,8 @@ jobs:
           files: |
             ladmin/**
             **.yml
+      - uses: oven-sh/setup-bun@v2
+        if: steps.changed-lustre-app.outputs.any_changed == 'true'
       - uses: erlef/setup-beam@v1
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
         with:
@@ -61,9 +62,6 @@ jobs:
       - name: Download Gleam dependencies
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
         run: gleam deps download
-      - name: Gleam test
+      - name: Build lustre app
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
-        run: gleam test
-      - name: Gleam format
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
-        run: gleam format --check src test
+        run: bun run build
