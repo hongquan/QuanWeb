@@ -3,7 +3,7 @@ on: [push]
 name: CI
 
 jobs:
-  build:
+  build-backend:
     name: quanweb
     runs-on: ubuntu-latest
     strategy:
@@ -22,8 +22,12 @@ jobs:
             **.toml
             Cargo.lock
           files_ignore: |
-            admini
+            admin
             ladmin
+
+      # Our backend binary needs to embed the frontend built files.
+      - uses: oven-sh/setup-bun@v2
+        if: steps.changed-backend.outputs.any_changed == 'true'
 
       - name: Build binary
         if: steps.changed-backend.outputs.any_changed == 'true'
