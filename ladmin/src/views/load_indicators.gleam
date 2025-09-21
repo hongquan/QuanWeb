@@ -4,7 +4,10 @@ import lustre/element/html as h
 
 // Collections: https://loading.io/css/
 pub fn render_dense_dots_spinner() {
-  let dots = iterators.naturals(0) |> iterators.map(fn(_n) { h.div([], []) })
+  let dots =
+    iterators.naturals(0)
+    |> iterators.take(8)
+    |> iterators.map(fn(_n) { h.div([], []) })
   h.div([a.class("lds-roller")], iterators.to_list(dots))
 }
 

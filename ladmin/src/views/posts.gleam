@@ -1,4 +1,3 @@
-import gleam/io
 import gleam/list
 import gleam/string
 import lustre/attribute as a
@@ -10,12 +9,11 @@ import core.{type Post, PageOwnedPosts, Post}
 import models.{type Model}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
+import views/ui_components.{render_paginator}
 
 const class_cell = "px-4 py-4 text-sm font-medium whitespace-nowrap"
 
-pub fn render_post_table_view(_page: Int, model: Model) {
-  io.println("Is loading:")
-  echo model.is_loading
+pub fn render_post_table_view(page: Int, model: Model) {
   case model.is_loading {
     True ->
       skeleton.render_main_block([
@@ -23,6 +21,8 @@ pub fn render_post_table_view(_page: Int, model: Model) {
       ])
     False -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
+      let total_pages = model.page_owned_object_paging.total_pages
+      let paginator = render_paginator(page, total_pages)
       let rows = posts |> list.map(render_post_row)
       let body =
         h.div(
@@ -38,7 +38,7 @@ pub fn render_post_table_view(_page: Int, model: Model) {
             ]),
           ],
         )
-      skeleton.render_main_block([body])
+      skeleton.render_main_block([body, paginator])
     }
   }
 }
