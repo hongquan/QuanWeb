@@ -1,10 +1,12 @@
 import gleam/int
 import gleam/list
+import gleam/uri
 import iterators.{type Iterator}
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/element/keyed
+import routes
 
 const class_active = "text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white dark:hover:bg-blue-500 dark:hover:text-gray-200"
 
@@ -24,20 +26,34 @@ pub type PageLink {
 
 const default_page_link = PageLink("", 1, False, False, "")
 
-pub fn render_paginator(current_page: Int, total: Int) -> Element(msg) {
+pub fn render_paginator(
+  current_page: Int,
+  total: Int,
+  url_query: List(#(String, String)),
+) -> Element(msg) {
   let links =
     gen_links(current_page, total)
     |> iterators.map(fn(lk) {
-      #(int.to_string(lk.page), make_html_from_link(lk))
+      #(int.to_string(lk.page), make_html_from_link(lk, url_query))
     })
+  let prev_page = int.clamp(current_page - 1, 1, total)
+  let prev_query_string =
+    url_query |> routes.replace_page(prev_page) |> uri.query_to_string
   let prev_link = #(
     "prev",
     h.a(
       [
         a.class(
-          "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+          "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
         ),
-        a.href("#"),
+        a.classes([
+          #("cursor-not-allowed", current_page == 1),
+          #(
+            "hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white",
+            current_page != 1,
+          ),
+        ]),
+        a.href("?" <> prev_query_string),
       ],
       [
         h.span([a.class("sr-only")], [h.text("Previous")]),
@@ -45,14 +61,24 @@ pub fn render_paginator(current_page: Int, total: Int) -> Element(msg) {
       ],
     ),
   )
+  let next_page = int.clamp(current_page + 1, 1, total)
+  let next_query_string =
+    url_query |> routes.replace_page(next_page) |> uri.query_to_string
   let next_link = #(
     "next",
     h.a(
       [
         a.class(
-          "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white",
+          "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
         ),
-        a.href("#"),
+        a.classes([
+          #("cursor-not-allowed", current_page == total),
+          #(
+            "hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white",
+            current_page != total,
+          ),
+        ]),
+        a.href("?" <> next_query_string),
       ],
       [
         h.span([a.class("sr-only")], [h.text("Previous")]),
@@ -149,7 +175,10 @@ fn gen_links(current_page: Int, total: Int) -> Iterator(PageLink) {
   }
 }
 
-fn make_html_from_link(lk: PageLink) -> Element(a) {
+fn make_html_from_link(
+  lk: PageLink,
+  url_query: List(#(String, String)),
+) -> Element(a) {
   case lk.is_ellipsis {
     True -> h.span([a.class(class_ellipsis)], [h.text("…")])
     False -> {
@@ -157,11 +186,13 @@ fn make_html_from_link(lk: PageLink) -> Element(a) {
         True -> a.aria_current("page")
         _ -> a.none()
       }
+      let new_query =
+        url_query |> routes.replace_page(lk.page) |> uri.query_to_string
       h.a(
         [
           a.class("px-3 py-2 leading-tight min-w-8"),
           a.class(lk.css_class),
-          a.href("?page=" <> int.to_string(lk.page)),
+          a.href("?" <> new_query),
           aria_current,
         ],
         [h.text(lk.label)],

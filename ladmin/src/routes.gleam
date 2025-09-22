@@ -91,3 +91,11 @@ pub fn goto(route: Route, mounted_path: String) -> Effect(b) {
   let #(full_path, q) = to_uri_parts(route) |> prefix(mounted_path)
   modem.push(full_path, q, None)
 }
+
+pub fn replace_page(
+  query: List(#(String, String)),
+  page: Int,
+) -> List(#(String, String)) {
+  let wo_page = query |> list.filter(fn(kv) { kv.0 != "page" })
+  [#("page", int.to_string(page)), ..wo_page]
+}

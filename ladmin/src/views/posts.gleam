@@ -22,7 +22,7 @@ pub fn render_post_table_view(page: Int, model: Model) {
     False -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
-      let paginator = render_paginator(page, total_pages)
+      let paginator = render_paginator(page, total_pages, [])
       let rows = posts |> list.map(render_post_row)
       let body =
         h.div(
