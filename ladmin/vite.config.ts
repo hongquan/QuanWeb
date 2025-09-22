@@ -1,6 +1,5 @@
 import { defineConfig, PluginOption } from 'vite'
 import gleam from 'vite-gleam'
-import UnoCSS from 'unocss/vite'
 import encrecss from 'encre-css-vite'
 
 const BACKEND_ROOT_URL = 'http://localhost:3721'
