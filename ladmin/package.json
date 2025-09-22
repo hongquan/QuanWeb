@@ -1,20 +1,18 @@
 {
   "name": "ladmin",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
   "devDependencies": {
+    "encre-css-vite": "https://gitlab.com/encre-org/encre-css-vite",
     "ts-gleam": "^1.0.1",
     "typescript": "~5.8.3",
     "vite": "^7.1.2",
     "vite-gleam": "^0.4.3"
   },
-  "dependencies": {
-    "unocss": "^66.5.1"
-  }
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "type": "module"
 }

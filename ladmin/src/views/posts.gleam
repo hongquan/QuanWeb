@@ -34,7 +34,14 @@ pub fn render_post_table_view(page: Int, model: Model) {
           [
             h.table([a.class("divide-y divide-gray-200 dark:divide-gray-700")], [
               render_post_table_header(),
-              h.tbody([], rows),
+              h.tbody(
+                [
+                  a.class(
+                    "bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+                  ),
+                ],
+                rows,
+              ),
             ]),
           ],
         )
