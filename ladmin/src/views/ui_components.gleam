@@ -44,7 +44,7 @@ pub fn render_paginator(
     h.a(
       [
         a.class(
-          "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
+          "block px-3 py-2 ms-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400",
         ),
         a.classes([
           #("cursor-not-allowed", current_page == 1),
@@ -95,7 +95,7 @@ pub fn render_paginator(
     |> iterators.to_list
   keyed.element(
     "nav",
-    [a.class("relative inline-flex rounded-md shadow-sm -space-x-px")],
+    [a.class("relative inline-flex mt-6 rounded-md shadow-sm -space-x-px")],
     links,
   )
 }

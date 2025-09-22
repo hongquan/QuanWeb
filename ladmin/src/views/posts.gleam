@@ -11,7 +11,7 @@ import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
 import views/ui_components.{render_paginator}
 
-const class_cell = "px-4 py-4 text-sm font-medium whitespace-nowrap"
+const class_cell = "px-4 py-4 text-sm font-medium"
 
 pub fn render_post_table_view(page: Int, model: Model) {
   case model.is_loading {
@@ -32,17 +32,20 @@ pub fn render_post_table_view(page: Int, model: Model) {
             ),
           ],
           [
-            h.table([a.class("divide-y divide-gray-200 dark:divide-gray-700")], [
-              render_post_table_header(),
-              h.tbody(
-                [
-                  a.class(
-                    "bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
-                  ),
-                ],
-                rows,
-              ),
-            ]),
+            h.table(
+              [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
+              [
+                render_post_table_header(),
+                h.tbody(
+                  [
+                    a.class(
+                      "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+                    ),
+                  ],
+                  rows,
+                ),
+              ],
+            ),
           ],
         )
       skeleton.render_main_block([body, paginator])
