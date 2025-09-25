@@ -10,5 +10,5 @@ export default defineConfig({
       ]
     }
   },
-  presets: [presetWind4({ dark: 'media'})]
+  presets: [presetWind4({ dark: 'media' })]
 })
