@@ -29,3 +29,8 @@ pub fn load_posts(page: Int) -> Effect(Msg(a)) {
   let url = uri.Uri(..uri.empty, path: consts.api_posts, query:)
   rsvp.get(uri.to_string(url), handler)
 }
+
+pub fn initiate_logout() -> Effect(Msg(b)) {
+  let handler = rsvp.expect_text(core.ApiReturnedLogOutDone)
+  rsvp.post("/_api/logout", json.bool(True), handler)
+}

@@ -15,8 +15,8 @@ import plinth/javascript/storage
 import views/posts
 
 import core.{
-  ApiLoginReturned, ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange,
-  RouterInitDone, TryingLogin, UserSubmittedLoginForm,
+  ApiLoginReturned, ApiReturnedLogOutDone, ApiReturnedPosts, LoggedIn, NonLogin,
+  OnRouteChange, RouterInitDone, TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -136,7 +136,14 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let model = updates.handle_api_list_post_result(model, res)
       #(model, effect.none())
     }
-    // _ -> #(model, effect.none())
+    core.LogOutClicked -> {
+      #(model, actions.initiate_logout())
+    }
+    ApiReturnedLogOutDone(Ok(_s)) -> {
+      let model = updates.handle_successful_logout(model)
+      #(model, effect.none())
+    }
+    _ -> #(model, effect.none())
   }
 }
 

@@ -12,7 +12,7 @@ import actions
 import consts
 import core.{
   type ApiListingResponse, type LoginData, type Post, type User,
-  ApiListingResponse, LoggedIn, PageOwnedObjectPaging, TryingLogin,
+  ApiListingResponse, LoggedIn, NonLogin, PageOwnedObjectPaging, TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -103,7 +103,7 @@ pub fn handle_login_api_result(
 pub fn handle_api_list_post_result(
   model: Model,
   res: Result(ApiListingResponse(Post), rsvp.Error),
-) {
+) -> Model {
   case res {
     Ok(info) -> {
       let ApiListingResponse(count:, total_pages:, links:, ..) = info
@@ -130,4 +130,17 @@ pub fn handle_api_list_post_result(
       )
     }
   }
+}
+
+pub fn handle_successful_logout(model: Model) -> Model {
+  let login_state = NonLogin
+  // Delete user from localStorage
+  let model = Model(..model, login_state:)
+  storage.local()
+  |> result.map(storage.remove_item(_, consts.key_store_user))
+  |> result.map(fn(_x) {
+    io.println("Deleted " <> consts.key_store_user <> " from localStorage!")
+  })
+  |> result.unwrap(Nil)
+  model
 }

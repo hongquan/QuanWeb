@@ -2,7 +2,7 @@ import gleam/bool
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import gleam/uri
@@ -28,6 +28,7 @@ pub fn parse_to_route(
   case path, query {
     "/", _ -> HomePage
     "/login", _ -> LoginPage
+    "/logout", _ -> LoginPage
     "/posts", queries -> {
       let page =
         queries
@@ -90,6 +91,15 @@ pub fn prefix(uri_parts: #(String, a), mounted_path: String) -> #(String, a) {
 pub fn goto(route: Route, mounted_path: String) -> Effect(b) {
   let #(full_path, q) = to_uri_parts(route) |> prefix(mounted_path)
   modem.push(full_path, q, None)
+}
+
+pub fn as_url_string(route: Route, mounted_path: String) {
+  let #(full_path, query) = to_uri_parts(route) |> prefix(mounted_path)
+  case query {
+    Some("") -> full_path
+    Some(s) -> full_path <> "?" <> s
+    _ -> full_path
+  }
 }
 
 pub fn replace_page(

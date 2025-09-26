@@ -1,6 +1,7 @@
 import gleam/list
 import gleam/string
 import lustre/attribute as a
+import lustre/element
 import lustre/element/html as h
 import tempo.{DateFormat}
 import tempo/datetime
@@ -50,7 +51,11 @@ pub fn render_post_table_view(page: Int, model: Model) {
             ),
           ],
         )
-      skeleton.render_main_block([body, paginator])
+
+      element.fragment([
+        skeleton.render_header_bar(core.LogOutClicked),
+        skeleton.render_main_block([body, paginator]),
+      ])
     }
   }
 }

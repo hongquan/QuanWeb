@@ -80,4 +80,6 @@ pub type Msg(r) {
   ApiLoginReturned(Result(User, rsvp.Error))
   ApiReturnedPosts(Result(ApiListingResponse(Post), rsvp.Error))
   OnRouteChange(r)
+  LogOutClicked
+  ApiReturnedLogOutDone(Result(String, rsvp.Error))
 }

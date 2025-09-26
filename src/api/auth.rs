@@ -1,16 +1,16 @@
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::{debug_handler, response::Result as AxumResult, Json};
+use axum::{Json, debug_handler, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
 use gel_tokio::Client;
 use serde_json::Value;
-use tracing::info;
+use tracing::{debug, info};
 use validify::Validate;
 
 use super::errors::ApiError;
+use crate::auth::AuthSession;
 use crate::auth::backend::Credentials;
 use crate::auth::structs::LoginReqData;
-use crate::auth::AuthSession;
 use crate::models::User;
 
 #[debug_handler]
@@ -43,10 +43,13 @@ pub async fn login(
     Ok(Json(user))
 }
 
-pub async fn logout(mut auth_session: AuthSession) -> AxumResult<()> {
-    auth_session
+pub async fn logout(mut auth_session: AuthSession) -> AxumResult<String> {
+    let user = auth_session
         .logout()
         .await
         .map_err(|_e| StatusCode::INTERNAL_SERVER_ERROR)?;
-    Ok(())
+    if let Some(u) = user {
+        debug!("Log user {} out...", u.email)
+    }
+    Ok("Bye".to_string())
 }
