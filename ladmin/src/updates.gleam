@@ -61,6 +61,11 @@ pub fn handle_login_api_result(
       |> result.lazy_unwrap(fn() {
         io.println_error("Failed to acquire localStorage!")
       })
+      let flash_messages = [
+        models.create_success_message("Login successfully!"),
+        ..model.flash_messages
+      ]
+      let model = Model(..model, flash_messages:)
       #(model, go_next)
     }
     Error(err) -> {
@@ -135,12 +140,16 @@ pub fn handle_api_list_post_result(
 pub fn handle_successful_logout(model: Model) -> Model {
   let login_state = NonLogin
   // Delete user from localStorage
-  let model = Model(..model, login_state:)
   storage.local()
   |> result.map(storage.remove_item(_, consts.key_store_user))
   |> result.map(fn(_x) {
     io.println("Deleted " <> consts.key_store_user <> " from localStorage!")
   })
   |> result.unwrap(Nil)
+  let flash_messages = [
+    models.create_info_message("Logged out successfully."),
+    ..model.flash_messages
+  ]
+  let model = Model(..model, login_state:, flash_messages:)
   model
 }

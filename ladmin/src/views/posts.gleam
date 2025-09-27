@@ -12,16 +12,22 @@ import lucide_lustre as lucide_icon
 import models.{type Model}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
-import views/ui_components.{render_paginator}
+import views/ui_components.{render_flash_messages, render_paginator}
 
 const class_cell = "px-4 py-4"
 
 pub fn render_post_table_view(page: Int, model: Model) {
   case model.is_loading {
     True ->
-      skeleton.render_main_block([
-        h.div([a.class("mt-12")], [render_three_bar_pulse()]),
-      ])
+      skeleton.render_main_block(
+        [
+          h.div([a.class("mt-12 space-y-12")], [
+            render_flash_messages(model.flash_messages),
+            render_three_bar_pulse(),
+          ]),
+        ],
+        "",
+      )
     False -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
@@ -54,7 +60,14 @@ pub fn render_post_table_view(page: Int, model: Model) {
 
       element.fragment([
         skeleton.render_header_bar(core.LogOutClicked),
-        skeleton.render_main_block([body, paginator]),
+        skeleton.render_main_block(
+          [
+            render_flash_messages(model.flash_messages),
+            body,
+            paginator,
+          ],
+          "space-y-8",
+        ),
       ])
     }
   }

@@ -6,6 +6,9 @@ import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/element/keyed
+
+import core.{type FlashMessage, Danger, Info, Success, Warning}
+import lucide_lustre.{circle_check}
 import routes
 
 const class_active = "text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white dark:hover:bg-blue-500 dark:hover:text-gray-200"
@@ -199,4 +202,40 @@ fn make_html_from_link(
       )
     }
   }
+}
+
+pub fn render_flash_messages(messages: List(FlashMessage)) -> Element(c) {
+  h.div(
+    [a.class("container max-w-md mx-auto")],
+    messages |> list.map(render_flash_message),
+  )
+}
+
+fn render_flash_message(message: FlashMessage) -> Element(b) {
+  let color_class = case message.severity {
+    Success -> "bg-emerald-500"
+    Info -> "bg-blue-500"
+    Warning -> "bg-yellow-400"
+    Danger -> "bg-red-500"
+  }
+  h.div(
+    [
+      a.class("flex items-center justify-between px-6 py-4"),
+      a.class(color_class),
+    ],
+    [
+      h.div([a.class("flex")], [
+        circle_check([]),
+        h.p([a.class("ms-3")], [h.text(message.content)]),
+      ]),
+      h.button(
+        [
+          a.class(
+            "p-1 transition-colors duration-300 transform rounded-md hover:bg-opacity-25 hover:bg-gray-600 focus:outline-none",
+          ),
+        ],
+        [],
+      ),
+    ],
+  )
 }

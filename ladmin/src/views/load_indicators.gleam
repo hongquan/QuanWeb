@@ -1,5 +1,6 @@
 import iterators
 import lustre/attribute as a
+import lustre/element.{type Element}
 import lustre/element/html as h
 
 // Collections: https://loading.io/css/
@@ -12,6 +13,6 @@ pub fn render_dense_dots_spinner() {
 }
 
 // Collections: https://cssloaders.github.io/
-pub fn render_three_bar_pulse() {
+pub fn render_three_bar_pulse() -> Element(a) {
   h.div([a.class("three-bar-pulse mx-auto")], [])
 }
