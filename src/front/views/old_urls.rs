@@ -1,18 +1,23 @@
+use std::sync::LazyLock;
+
 use axum::extract::{Path, State};
 use axum::response::{Redirect, Result};
 use chrono::{DateTime, Utc};
 use gel_tokio::Client;
 use http::StatusCode;
-use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::errors::PageError;
 use crate::models::blogs::MiniBlogPost;
 use crate::stores;
 
-pub async fn redirect_old_blog_view(Path(rest): Path<String>, State(db): State<Client>) -> Result<Redirect> {
-    static RE_OLD_CAT_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[-\w]+/$").unwrap());
-    static RE_OLD_POST_URL: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\d+/\d+/(\d+)-([-\w]+)$").unwrap());
+pub async fn redirect_old_blog_view(
+    Path(rest): Path<String>,
+    State(db): State<Client>,
+) -> Result<Redirect> {
+    static RE_OLD_CAT_URL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[-\w]+/$").unwrap());
+    static RE_OLD_POST_URL: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^\d+/\d+/(\d+)-([-\w]+)$").unwrap());
     let is_cat = RE_OLD_CAT_URL.is_match(&rest);
     if is_cat {
         return Ok(Redirect::temporary(&format!("/category/{}", rest)));

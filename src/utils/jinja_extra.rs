@@ -1,18 +1,18 @@
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use chrono::DateTime;
 use fluent_templates::Loader;
 use http::Uri;
 use minijinja::value::{Kwargs, Value as MJValue, ValueKind};
 use minijinja::{Error, ErrorKind, State};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use unic_langid::LanguageIdentifier;
 
 use crate::consts::{DEFAULT_LANG, KEY_LANG};
 use crate::thingsup::LOCALES;
-use crate::types::conversions::jinja_kwargs_to_fluent_args;
 use crate::types::BundledTemplates;
+use crate::types::conversions::jinja_kwargs_to_fluent_args;
 use crate::utils::urls::update_entry_in_query;
 
 pub fn debug_value(value: MJValue) -> &'static str {
@@ -59,17 +59,16 @@ pub fn gen_element_attr(name: &str, value: MJValue) -> String {
 }
 
 pub fn add_url_param(url: String, name: String, value: String) -> String {
-    match Uri::from_str(&url) { Ok(x) => {
-        update_entry_in_query(&name, value, &x).to_string()
-    } _ => {
-        url
-    }}
+    match Uri::from_str(&url) {
+        Ok(x) => update_entry_in_query(&name, value, &x).to_string(),
+        _ => url,
+    }
 }
 
 // Ref: https://github.com/pallets/markupsafe/blob/main/src/markupsafe/__init__.py
 pub fn striptags(html: String) -> String {
-    static RE_COMMENTS: Lazy<Regex> = Lazy::new(|| Regex::new(r"<!--.*?-->").unwrap());
-    static RE_TAGS: Lazy<Regex> = Lazy::new(|| Regex::new(r"<[^>]*>").unwrap());
+    static RE_COMMENTS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<!--.*?-->").unwrap());
+    static RE_TAGS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]*>").unwrap());
     let stripped = RE_COMMENTS.replace_all(&html, "");
     let stripped = RE_TAGS.replace_all(&stripped, "");
     stripped.to_string()

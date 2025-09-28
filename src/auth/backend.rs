@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use djangohashers::check_password;
 use tracing::info;
@@ -29,7 +28,6 @@ impl AuthUser for User {
     }
 }
 
-#[async_trait]
 impl AuthnBackend for Backend {
     type User = User;
     type Credentials = Credentials;

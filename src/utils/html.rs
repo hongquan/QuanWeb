@@ -1,10 +1,10 @@
 use std::collections::HashSet;
+use std::sync::LazyLock;
 
 use ammonia::Builder;
-use once_cell::sync::Lazy;
 
 pub fn strip_tags(html: &str) -> String {
-    let builder: Lazy<Builder> = Lazy::new(|| {
+    let builder: LazyLock<Builder> = LazyLock::new(|| {
         let mut b = Builder::new();
         b.tags(HashSet::new());
         b
