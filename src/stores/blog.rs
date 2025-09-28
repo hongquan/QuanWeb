@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use gel_protocol::model::Datetime as EDatetime;
 use gel_protocol::named_args;
+use gel_protocol::value::Value;
 use gel_protocol::value_opt::ValueOpt;
 use gel_tokio::{Client, Error};
 use smallvec::SmallVec;
@@ -14,23 +15,33 @@ use crate::types::EdgeSelectable;
 
 pub async fn count_search_result_posts(
     lower_search_tokens: Option<&Vec<String>>,
+    cat_id: Option<Uuid>,
     client: &Client,
 ) -> Result<usize, Error> {
     let lower_search_tokens: Option<Vec<&str>> =
         lower_search_tokens.map(|v| v.iter().map(|s| s.as_str()).collect());
-    let filter_line = if lower_search_tokens.is_some() {
-        "FILTER all(contains(str_lower(BlogPost.title), array_unpack(<array<str>>$0)))"
+    let mut kw_args = named_args! {};
+    let mut filter_conds = vec![];
+    if let Some(words) = lower_search_tokens.clone() {
+        let words: Vec<_> = words.into_iter().map(Value::from).collect();
+        kw_args.insert("search_words", ValueOpt::from(words));
+        filter_conds.push(
+            "all(contains(str_lower(BlogPost.title), array_unpack(<array<str>>$search_words)))",
+        );
+    };
+    if let Some(cat) = cat_id {
+        kw_args.insert("cat_id", ValueOpt::from(cat));
+        filter_conds.push("any(.categories.id = <uuid>$cat_id)");
+    }
+    let filter_line = if filter_conds.is_empty() {
+        "".to_string()
     } else {
-        ""
+        format!("FILTER {}", filter_conds.join(" AND "))
     };
     let q = format!("SELECT count((SELECT BlogPost {filter_line}))");
-    tracing::debug!("To query: {}", q);
-    let count: i64 = if let Some(tokens) = lower_search_tokens {
-        tracing::debug!("With args: {:?}", tokens);
-        client.query_required_single(&q, &(tokens,)).await?
-    } else {
-        client.query_required_single(&q, &()).await?
-    };
+    debug!("To query: {}", q);
+    debug!("With args: {:?}", kw_args);
+    let count: i64 = client.query_required_single(&q, &kw_args).await?;
     Ok(count.try_into().unwrap_or(0))
 }
 
@@ -72,30 +83,34 @@ pub async fn get_detailed_post_by_slug(
 
 pub async fn get_blogposts(
     lower_search_tokens: Option<&Vec<String>>,
+    cat_id: Option<Uuid>,
     offset: Option<i64>,
     limit: Option<i64>,
     client: &Client,
 ) -> Result<Vec<MediumBlogPost>, Error> {
-    let filter_line = if lower_search_tokens.is_some() {
-        "FILTER all(contains(str_lower(.title), array_unpack(<array<str>>$tokens)))"
-    } else {
-        ""
-    };
-    let mut args = HashMap::new();
-    let mut paging_lines: SmallVec<[_; 2]> = SmallVec::new();
+    let mut kw_args = HashMap::new();
+    let mut filter_conds = vec![];
+    let mut paging_params: SmallVec<[_; 2]> = SmallVec::new();
     if let Some(ss) = lower_search_tokens {
         let v: Vec<&str> = ss.iter().map(|s| s.as_str()).collect();
-        args.insert("tokens", ValueOpt::from(v));
+        kw_args.insert("tokens", ValueOpt::from(v));
+        filter_conds
+            .push("FILTER all(contains(str_lower(.title), array_unpack(<array<str>>$tokens)))");
+    }
+    if let Some(cat) = cat_id {
+        kw_args.insert("cat_id", ValueOpt::from(cat));
+        filter_conds.push("any(.categories.id = <uuid>$cat_id)");
     }
     if let Some(offset) = offset {
-        args.insert("offset", ValueOpt::from(offset));
-        paging_lines.push(str!("OFFSET <int64>$offset"));
+        kw_args.insert("offset", ValueOpt::from(offset));
+        paging_params.push(str!("OFFSET <int64>$offset"));
     }
     if let Some(limit) = limit {
-        args.insert("limit", ValueOpt::from(limit));
-        paging_lines.push(str!("LIMIT <int64>$limit"));
+        kw_args.insert("limit", ValueOpt::from(limit));
+        paging_params.push(str!("LIMIT <int64>$limit"));
     }
-    let paging_expr = paging_lines.join(" ");
+    let filter_line = format!("FILTER {}", filter_conds.join(" AND "));
+    let paging_expr = paging_params.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
     let q = format!(
         "SELECT BlogPost {fields}
@@ -103,8 +118,8 @@ pub async fn get_blogposts(
         ORDER BY .created_at DESC EMPTY FIRST {paging_expr}"
     );
     debug!("To query: {q}");
-    debug!("With args: {args:?}");
-    let posts: Vec<MediumBlogPost> = client.query(&q, &args).await?;
+    debug!("With args: {kw_args:?}");
+    let posts: Vec<MediumBlogPost> = client.query(&q, &kw_args).await?;
     Ok(posts)
 }
 
@@ -144,7 +159,8 @@ pub async fn get_published_posts_under_category(
     let mut paging_lines: Vec<String> = Vec::with_capacity(2);
     let mut args: HashMap<&str, ValueOpt> = HashMap::new();
     if let Some(slug) = cat_slug {
-        filter_lines.push(".categories.slug = <str>$slug");
+        // The any() function is to solve the "possibly more than one element returned by an expression in a FILTER clause" warning.
+        filter_lines.push("any(.categories.slug = <str>$slug)");
         args.insert("slug", slug.into());
     }
     if let Some(offset) = offset {

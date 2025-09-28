@@ -1,7 +1,7 @@
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
-use axum::{http::StatusCode, response::Result as AxumResult, Json};
+use axum::{Json, http::StatusCode, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
 use gel_tokio::Client as EdgeClient;
 use serde_json::{Map as JMap, Value};
@@ -36,13 +36,19 @@ pub async fn list_posts(
     let search_tokens = split_search_query(other_query.q.as_deref());
     let lower_search_tokens: Option<Vec<String>> =
         search_tokens.map(|v| v.into_iter().map(|s| s.to_lowercase()).collect());
-    let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), &db)
+    let cat = other_query.cat_id;
+    let count = stores::blog::count_search_result_posts(lower_search_tokens.as_ref(), cat, &db)
         .await
         .map_err(ApiError::GelQueryError)?;
-    let posts =
-        stores::blog::get_blogposts(lower_search_tokens.as_ref(), Some(offset), Some(limit), &db)
-            .await
-            .map_err(ApiError::GelQueryError)?;
+    let posts = stores::blog::get_blogposts(
+        lower_search_tokens.as_ref(),
+        cat,
+        Some(offset),
+        Some(limit),
+        &db,
+    )
+    .await
+    .map_err(ApiError::GelQueryError)?;
     let total_pages =
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     let links = gen_pagination_links(&paging, count, original_uri);

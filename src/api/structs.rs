@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::num::NonZeroU16;
 
+use field_access::FieldAccess;
 use gel_protocol::named_args;
 use gel_protocol::value::Value as EValue;
 use gel_protocol::value_opt::ValueOpt;
-use field_access::FieldAccess;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validify::Validify;
@@ -24,6 +24,7 @@ pub struct NPaging {
 pub struct OtherQuery {
     #[modify(trim)]
     pub q: Option<String>,
+    pub cat_id: Option<Uuid>,
 }
 
 #[derive(Debug, Default, Serialize)]
