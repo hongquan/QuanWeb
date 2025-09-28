@@ -1,8 +1,8 @@
 import gleam/option.{None}
 
 import core.{
-  type FlashMessage, type LoginState, type Msg, type PageOwnedObjectPaging,
-  type PageOwnedObjects,
+  type Category, type FlashMessage, type LoginState, type Msg,
+  type PageOwnedObjectPaging, type PageOwnedObjects,
 }
 import routes.{type Route}
 
@@ -15,6 +15,8 @@ pub type Model {
     page_owned_object_paging: PageOwnedObjectPaging,
     flash_messages: List(FlashMessage),
     is_loading: Bool,
+    categories: List(Category),
+    partial_load_categories: List(Category),
   )
 }
 
@@ -34,6 +36,8 @@ pub const default_model = Model(
   ),
   flash_messages: [],
   is_loading: False,
+  categories: [],
+  partial_load_categories: [],
 )
 
 pub fn create_success_message(content: String) {

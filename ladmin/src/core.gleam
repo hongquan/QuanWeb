@@ -79,6 +79,7 @@ pub type Msg(r) {
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error))
   ApiReturnedPosts(Result(ApiListingResponse(Post), rsvp.Error))
+  ApiReturnedCategories(Result(ApiListingResponse(Category), rsvp.Error))
   OnRouteChange(r)
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error))

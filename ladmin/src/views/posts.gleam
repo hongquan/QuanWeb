@@ -6,13 +6,15 @@ import lustre/element/html as h
 import tempo.{DateFormat}
 import tempo/datetime
 
-import core.{type Post, PageOwnedPosts, Post}
+import core.{type Category, type Post, PageOwnedPosts, Post}
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
-import views/ui_components.{render_flash_messages, render_paginator}
+import views/ui_components.{
+  render_flash_messages, render_paginator, render_search_box,
+}
 
 const class_cell = "px-4 py-4"
 
@@ -63,6 +65,7 @@ pub fn render_post_table_view(page: Int, model: Model) {
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
+            render_filter_form(model.categories),
             body,
             paginator,
           ],
@@ -122,5 +125,23 @@ fn render_post_row(post: Post) {
         ]),
       ]),
     ]),
+  ])
+}
+
+fn render_filter_form(categories: List(Category)) {
+  let choices =
+    categories |> list.map(fn(c) { h.option([a.value(c.id)], c.title) })
+  let choices = [h.option([a.value("")], "Category..."), ..choices]
+  let category_select =
+    h.select(
+      [
+        a.name("category"),
+        a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4"),
+      ],
+      choices,
+    )
+  h.form([a.class("flex space-x-6 text-sm")], [
+    render_search_box(),
+    category_select,
   ])
 }

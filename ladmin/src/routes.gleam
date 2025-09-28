@@ -12,8 +12,9 @@ import modem
 pub type Route {
   HomePage
   LoginPage
-  PostListPage(page: Option(Int))
+  PostListPage(page: Option(Int), q: Option(String), cat_id: Option(String))
   PostEditPage(id: String)
+  CategoryListPage(page: Option(Int))
   NotFound
 }
 
@@ -46,7 +47,7 @@ pub fn parse_to_route(
           }
         })
         |> option.from_result
-      PostListPage(page)
+      PostListPage(page, None, None)
     }
     _, _ -> NotFound
   }
@@ -73,7 +74,7 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   case route {
     HomePage -> #("/", None)
     LoginPage -> #("/login", None)
-    PostListPage(page) -> #(
+    PostListPage(page, _q, _c) -> #(
       "/posts",
       page
         |> option.map(fn(p) { [#("page", int.to_string(p))] })

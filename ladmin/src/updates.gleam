@@ -1,8 +1,11 @@
 import formal/form as formlib
+import forms
 import gleam/dynamic/decode
 import gleam/http/response.{Response}
 import gleam/io
 import gleam/json
+import gleam/list
+import gleam/option.{None, Some}
 import gleam/result
 import lustre/effect.{type Effect}
 import plinth/javascript/storage
@@ -11,12 +14,12 @@ import rsvp
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type LoginData, type Post, type User,
+  type ApiListingResponse, type Category, type LoginData, type Post, type User,
   ApiListingResponse, LoggedIn, NonLogin, PageOwnedObjectPaging, TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
-import routes.{HomePage}
+import routes.{type Route, CategoryListPage, HomePage, LoginPage, PostListPage}
 
 pub type LoginValidationDetail {
   LoginFailureDetail(message: String, email: String, password: String)
@@ -152,4 +155,94 @@ pub fn handle_successful_logout(model: Model) -> Model {
   ]
   let model = Model(..model, login_state:, flash_messages:)
   model
+}
+
+pub fn handle_landing_on_page(new_route: Route, model: Model) {
+  let Model(mounted_path:, categories:, partial_load_categories:, ..) = model
+  let login_state = case new_route, model.login_state {
+    LoginPage, NonLogin -> TryingLogin(forms.create_login_form())
+    _, state -> state
+  }
+  let #(go_next, is_loading) = case new_route, login_state {
+    // If user has logged-in, redirect to "/posts" page
+    HomePage, LoggedIn(_u) -> {
+      #(routes.goto(PostListPage(None, None, None), mounted_path), False)
+    }
+    PostListPage(p, _q, _c), _ -> {
+      let load_posts_action = actions.load_posts(option.unwrap(p, 1))
+      let load_categories_action = case categories, partial_load_categories {
+        [], _o -> actions.load_categories(1)
+        _, _ -> effect.none()
+      }
+      #(effect.batch([load_posts_action, load_categories_action]), True)
+    }
+    _, _ -> #(effect.none(), False)
+  }
+  let model = Model(..model, route: new_route, login_state:, is_loading:)
+  #(model, go_next)
+}
+
+pub fn handle_api_list_category_result(
+  model: Model,
+  res: Result(ApiListingResponse(Category), rsvp.Error),
+) {
+  let Model(route:, ..) = model
+  case res {
+    Error(e) -> {
+      io.println_error("Categories API failed")
+      echo e
+      let message = models.create_danger_message("Failed to load posts")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          is_loading: False,
+        )
+      #(model, effect.none())
+    }
+    Ok(info) -> {
+      let ApiListingResponse(count:, total_pages:, links:, ..) = info
+      let Model(partial_load_categories:, ..) = model
+      case route {
+        // This page, we need to load all categories from API
+        PostListPage(_x, _q, _c) -> {
+          let categories = list.append(partial_load_categories, info.objects)
+          let model = Model(..model, partial_load_categories: categories)
+          let #(model, whatsnext) = case links.1 {
+            Some(u) -> {
+              #(
+                Model(..model, partial_load_categories: categories),
+                actions.load_categories_by_url(u),
+              )
+            }
+            None -> {
+              #(
+                Model(..model, categories:, partial_load_categories: []),
+                effect.none(),
+              )
+            }
+          }
+          #(model, whatsnext)
+        }
+        CategoryListPage(_p) -> {
+          let model =
+            Model(
+              ..model,
+              page_owned_objects: core.PageOwnedCategories(info.objects),
+              page_owned_object_paging: PageOwnedObjectPaging(
+                count:,
+                total_pages:,
+                links:,
+              ),
+              is_loading: False,
+            )
+          #(model, effect.none())
+        }
+        _ -> {
+          #(model, effect.none())
+        }
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/json
 import gleam/option.{Some}
-import gleam/uri
+import gleam/uri.{type Uri}
 import lustre/effect.{type Effect}
 import rsvp
 
@@ -33,4 +33,20 @@ pub fn load_posts(page: Int) -> Effect(Msg(a)) {
 pub fn initiate_logout() -> Effect(Msg(b)) {
   let handler = rsvp.expect_text(core.ApiReturnedLogOutDone)
   rsvp.post("/_api/logout", json.bool(True), handler)
+}
+
+pub fn load_categories(page: Int) {
+  let response_decoder =
+    decoders.make_listing_api_decoder(decoders.make_category_decoder())
+  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedCategories)
+  let query = uri.query_to_string([#("page", int.to_string(page))]) |> Some
+  let url = uri.Uri(..uri.empty, path: consts.api_categories, query:)
+  rsvp.get(uri.to_string(url), handler)
+}
+
+pub fn load_categories_by_url(url: Uri) {
+  let response_decoder =
+    decoders.make_listing_api_decoder(decoders.make_category_decoder())
+  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedCategories)
+  rsvp.get(uri.to_string(url), handler)
 }

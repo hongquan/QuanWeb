@@ -8,7 +8,7 @@ import lustre/element/html as h
 import lustre/element/keyed
 
 import core.{type FlashMessage, Danger, Info, Success, Warning}
-import lucide_lustre.{circle_check}
+import lucide_lustre as icons
 import routes
 
 const class_active = "text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white dark:hover:bg-blue-500 dark:hover:text-gray-200"
@@ -225,7 +225,7 @@ fn render_flash_message(message: FlashMessage) -> Element(b) {
     ],
     [
       h.div([a.class("flex")], [
-        circle_check([]),
+        icons.circle_check([]),
         h.p([a.class("ms-3")], [h.text(message.content)]),
       ]),
       h.button(
@@ -238,4 +238,18 @@ fn render_flash_message(message: FlashMessage) -> Element(b) {
       ),
     ],
   )
+}
+
+pub fn render_search_box() {
+  h.div([a.class("relative")], [
+    h.span([a.class("absolute inset-y-0 left-0 flex items-center ps-2")], [
+      icons.search([]),
+    ]),
+    h.input([
+      a.name("q"),
+      a.class(
+        "w-xs py-2 ps-10 pe-4 text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40",
+      ),
+    ]),
+  ])
 }

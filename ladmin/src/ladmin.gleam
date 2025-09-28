@@ -15,8 +15,9 @@ import plinth/javascript/storage
 import views/posts
 
 import core.{
-  ApiLoginReturned, ApiReturnedLogOutDone, ApiReturnedPosts, LoggedIn, NonLogin,
-  OnRouteChange, RouterInitDone, TryingLogin, UserSubmittedLoginForm,
+  ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
+  ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange, RouterInitDone,
+  TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -80,7 +81,14 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   io.println("In update()")
-  let Model(route:, login_state:, mounted_path:, ..) = model
+  let Model(
+    route:,
+    login_state:,
+    mounted_path:,
+    categories:,
+    partial_load_categories:,
+    ..,
+  ) = model
   case msg {
     RouterInitDone -> {
       io.println("RouterInitDone")
@@ -89,17 +97,24 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         LoginPage, _ -> #(effect.none(), False)
         // If user has already logged-in, and visiting HomePage, redirect to PostList
         HomePage, LoggedIn(_u) -> {
-          #(routes.goto(PostListPage(None), mounted_path), False)
+          #(routes.goto(PostListPage(None, None, None), mounted_path), False)
         }
         // In PostList page, call API to load posts
-        PostListPage(Some(p)), _ if p < 1 -> #(
-          routes.goto(PostListPage(None), mounted_path),
+        PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
+          routes.goto(PostListPage(None, None, None), mounted_path),
           False,
         )
-        PostListPage(p), LoggedIn(_u) -> #(
-          actions.load_posts(option.unwrap(p, 1)),
-          True,
-        )
+        PostListPage(p, _q, _c), LoggedIn(_u) -> {
+          let load_posts_action = actions.load_posts(option.unwrap(p, 1))
+          let load_categories_action = case
+            categories,
+            partial_load_categories
+          {
+            [], _o -> actions.load_categories(1)
+            _, _ -> effect.none()
+          }
+          #(effect.batch([load_posts_action, load_categories_action]), True)
+        }
         // Already logged in, just serve, no redirect
         _, LoggedIn(_u) -> #(effect.none(), False)
         _, _ -> {
@@ -109,24 +124,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let model = Model(..model, is_loading:)
       #(model, whatsnext)
     }
-    OnRouteChange(new_route) -> {
-      let login_state = case new_route, model.login_state {
-        LoginPage, NonLogin -> TryingLogin(create_login_form())
-        _, state -> state
-      }
-      let #(go_next, is_loading) = case new_route, login_state {
-        // If user has logged-in, redirect to "/posts" page
-        HomePage, LoggedIn(_u) -> {
-          #(routes.goto(PostListPage(None), mounted_path), False)
-        }
-        PostListPage(p), _ -> {
-          #(actions.load_posts(option.unwrap(p, 1)), True)
-        }
-        _, _ -> #(effect.none(), False)
-      }
-      let model = Model(..model, route: new_route, login_state:, is_loading:)
-      #(model, go_next)
-    }
+    OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")
       updates.handle_login_submission(model, form)
@@ -136,6 +134,8 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let model = updates.handle_api_list_post_result(model, res)
       #(model, effect.none())
     }
+    ApiReturnedCategories(res) ->
+      updates.handle_api_list_category_result(model, res)
     core.LogOutClicked -> {
       #(model, actions.initiate_logout())
     }
@@ -155,7 +155,7 @@ fn view(model: Model) -> Element(AppMsg) {
       dummy_view()
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
-    PostListPage(p), _ -> {
+    PostListPage(p, _q, _c), _ -> {
       posts.render_post_table_view(option.unwrap(p, 1), model)
     }
     _, _ -> {
