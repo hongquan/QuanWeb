@@ -2836,6 +2836,7 @@ dependencies = [
  "serde_json",
  "serde_json5",
  "serde_with",
+ "slugrs",
  "smallvec",
  "smart-default",
  "str-macro",
@@ -3650,6 +3651,16 @@ checksum = "882a80f72ee45de3cc9a5afeb2da0331d58df69e4e7d8eeb5d3c7784ae67e724"
 dependencies = [
  "deunicode",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "slugrs"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06453b5e11212318221a81a8c4e0f7350ec80f4df6e0ec26a4352d446954a1b7"
+dependencies = [
+ "deunicode",
+ "regex",
 ]
 
 [[package]]

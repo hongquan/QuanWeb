@@ -50,4 +50,5 @@ pub fn get_router() -> Router<AppState> {
         .route("/books/", get(views::list_books).post(views::create_book))
         .route("/books/{id}", single_book_router)
         .route("/markdown-to-html/", post(views::convert_to_html))
+        .route("/generate-slug", post(views::generate_slug))
 }

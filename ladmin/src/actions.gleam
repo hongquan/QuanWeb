@@ -6,7 +6,9 @@ import lustre/effect.{type Effect}
 import rsvp
 
 import consts
-import core.{type LoginData, type Msg, ApiReturnedSinglePost, LoginData}
+import core.{
+  type LoginData, type Msg, ApiReturnedSinglePost, ApiReturnedSlug, LoginData,
+}
 import decoders.{make_user_decoder}
 
 pub fn login_via_api(login_data: LoginData) -> Effect(Msg(r)) {
@@ -68,4 +70,9 @@ pub fn load_single_post(id: String) -> Effect(Msg(c)) {
   let handler =
     rsvp.expect_json(decoders.make_post_decoder(), ApiReturnedSinglePost)
   rsvp.get(consts.api_posts <> id, handler)
+}
+
+pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
+  let handler = rsvp.expect_text(ApiReturnedSlug)
+  rsvp.post(consts.api_slug_generator, json.string(title), handler)
 }

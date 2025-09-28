@@ -78,6 +78,12 @@ pub type PostFormData {
   PostFormData(title: String, slug: String)
 }
 
+pub type PostEditing {
+  NoPostEditing
+  PostCreating(Form(PostFormData))
+  PostEditing(post: Post, form: Form(PostFormData))
+}
+
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
@@ -90,4 +96,6 @@ pub type Msg(r) {
   PostFilterSubmitted(List(#(String, String)))
   ApiReturnedSinglePost(Result(Post, rsvp.Error))
   PostFormSubmitted(Result(PostFormData, Form(PostFormData)))
+  SlugGeneratorClicked(String)
+  ApiReturnedSlug(Result(String, rsvp.Error))
 }

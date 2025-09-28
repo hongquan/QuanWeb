@@ -5,3 +5,5 @@ pub const api_login = "/_api/login"
 pub const api_posts = "/_api/posts/"
 
 pub const api_categories = "/_api/categories/"
+
+pub const api_slug_generator = "/_api/generate-slug"

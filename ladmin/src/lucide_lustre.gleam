@@ -129,3 +129,29 @@ pub fn search(attributes: List(Attribute(a))) {
     ],
   )
 }
+
+pub fn refresh_ccw(attributes: List(Attribute(a))) {
+  svg.svg(
+    [
+      attribute("stroke-linejoin", "round"),
+      attribute("stroke-linecap", "round"),
+      attribute("stroke-width", "2"),
+      attribute("stroke", "currentColor"),
+      attribute("fill", "none"),
+      attribute("viewBox", "0 0 24 24"),
+      attribute("height", "24"),
+      attribute("width", "24"),
+      ..attributes
+    ],
+    [
+      svg.path([
+        attribute("d", "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"),
+      ]),
+      svg.path([attribute("d", "M3 3v5h5")]),
+      svg.path([
+        attribute("d", "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"),
+      ]),
+      svg.path([attribute("d", "M16 16h5v5")]),
+    ],
+  )
+}

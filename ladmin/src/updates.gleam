@@ -15,7 +15,8 @@ import actions
 import consts
 import core.{
   type ApiListingResponse, type Category, type LoginData, type Post, type User,
-  ApiListingResponse, LoggedIn, NonLogin, PageOwnedObjectPaging, TryingLogin,
+  ApiListingResponse, LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts,
+  TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -191,7 +192,23 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     _, _ -> #(effect.none(), False)
   }
-  let model = Model(..model, route: new_route, login_state:, is_loading:)
+  let #(post_editing, page_owned_objects) = case new_route {
+    PostEditPage("") -> #(
+      core.PostCreating(forms.make_post_form(None)),
+      PageOwnedPosts([]),
+    )
+    PostEditPage(_id) -> #(model.post_editing, PageOwnedPosts([]))
+    _ -> #(core.NoPostEditing, model.page_owned_objects)
+  }
+  let model =
+    Model(
+      ..model,
+      route: new_route,
+      login_state:,
+      is_loading:,
+      post_editing:,
+      page_owned_objects:,
+    )
   #(model, go_next)
 }
 
@@ -263,7 +280,13 @@ pub fn handle_api_list_category_result(
 pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) {
   case res {
     Ok(p) -> {
-      let model = Model(..model, editing_post: Some(p), is_loading: False)
+      let form = forms.make_post_form(Some(p))
+      let model =
+        Model(
+          ..model,
+          post_editing: core.PostEditing(p, form),
+          is_loading: False,
+        )
       #(model, effect.none())
     }
     Error(_e) -> {

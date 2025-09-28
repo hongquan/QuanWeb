@@ -18,8 +18,9 @@ import views/posts
 
 import core.{
   ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, ApiReturnedSinglePost, LoggedIn, NonLogin, OnRouteChange,
-  PostFilterSubmitted, RouterInitDone, TryingLogin, UserSubmittedLoginForm,
+  ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, LoggedIn, NonLogin,
+  OnRouteChange, PostFilterSubmitted, RouterInitDone, SlugGeneratorClicked,
+  TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -143,7 +144,11 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           #(routes.goto(LoginPage, mounted_path), False)
         }
       }
-      let model = Model(..model, is_loading:)
+      let post_editing = case route {
+        PostEditPage("") -> core.PostCreating(forms.make_post_form(None))
+        _ -> model.post_editing
+      }
+      let model = Model(..model, is_loading:, post_editing:)
       #(model, whatsnext)
     }
     OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)
@@ -182,6 +187,13 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiReturnedSinglePost(res) ->
       updates.handle_api_load_post_result(model, res)
+    SlugGeneratorClicked(title) -> #(
+      model,
+      actions.initiate_generate_slug(title),
+    )
+    ApiReturnedSlug(_slug) -> {
+      #(model, effect.none())
+    }
     _ -> #(model, effect.none())
   }
 }

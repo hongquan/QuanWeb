@@ -2,10 +2,11 @@ use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::response::Html;
-use axum::{http::StatusCode, response::Result as AxumResult, Json};
+use axum::{Json, http::StatusCode, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
 use gel_tokio::Client as EdgeClient;
 use serde_json::{Map as JMap, Value};
+use slugrs::slugify;
 use uuid::Uuid;
 use validify::Validify;
 
@@ -181,4 +182,9 @@ pub async fn create_category(
 pub async fn convert_to_html(body: String) -> AxumResult<Html<String>> {
     let html = markdown_to_html(&body);
     Ok(Html(html))
+}
+
+pub async fn generate_slug(body: String) -> AxumResult<String> {
+    let slug = slugify(body.as_str());
+    Ok(slug)
 }
