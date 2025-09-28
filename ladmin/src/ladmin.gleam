@@ -106,8 +106,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           routes.goto(PostListPage(None, None, None), mounted_path),
           False,
         )
-        PostListPage(p, _q, _c), LoggedIn(_u) -> {
-          let load_posts_action = actions.load_posts(option.unwrap(p, 1))
+        PostListPage(p, q, cat_id), LoggedIn(_u) -> {
+          let load_posts_action =
+            actions.load_posts(option.unwrap(p, 1), q, cat_id)
           let load_categories_action = case
             categories,
             partial_load_categories
@@ -156,7 +157,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           }
         })
       let query = uri.query_to_string(cleaned_data)
-      #(model, modem.push("", Some(query), None))
+      let #(path, _q) =
+        routes.to_uri_parts(route) |> routes.prefix(mounted_path)
+      #(model, modem.push(path, Some(query), None))
     }
     _ -> #(model, effect.none())
   }
@@ -170,8 +173,8 @@ fn view(model: Model) -> Element(AppMsg) {
       dummy_view()
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
-    PostListPage(p, _q, _c), _ -> {
-      posts.render_post_table_view(option.unwrap(p, 1), model)
+    PostListPage(p, q, cat_id), _ -> {
+      posts.render_post_table_view(option.unwrap(p, 1), q, cat_id, model)
     }
     _, _ -> {
       echo route

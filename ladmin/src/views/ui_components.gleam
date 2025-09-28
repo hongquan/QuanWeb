@@ -240,13 +240,14 @@ fn render_flash_message(message: FlashMessage) -> Element(b) {
   )
 }
 
-pub fn render_search_box() {
+pub fn render_search_box(initial_value: String) {
   h.div([a.class("relative")], [
     h.span([a.class("absolute inset-y-0 left-0 flex items-center ps-2")], [
       icons.search([]),
     ]),
     h.input([
       a.name("q"),
+      a.value(initial_value),
       a.class(
         "w-xs py-2 ps-10 pe-4 text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40",
       ),

@@ -1,6 +1,6 @@
 import gleam/int
 import gleam/json
-import gleam/option.{Some}
+import gleam/option.{type Option, None, Some}
 import gleam/uri.{type Uri}
 import lustre/effect.{type Effect}
 import rsvp
@@ -21,11 +21,24 @@ pub fn login_via_api(login_data: LoginData) -> Effect(Msg(r)) {
   rsvp.post(consts.api_login, post_data, handler)
 }
 
-pub fn load_posts(page: Int) -> Effect(Msg(a)) {
+pub fn load_posts(
+  page: Int,
+  q: Option(String),
+  cat_id: Option(String),
+) -> Effect(Msg(a)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_post_decoder())
   let handler = rsvp.expect_json(response_decoder, core.ApiReturnedPosts)
-  let query = uri.query_to_string([#("page", int.to_string(page))]) |> Some
+  let query_list = [#("page", int.to_string(page))]
+  let query_list = case q {
+    Some(q) -> [#("q", q), ..query_list]
+    None -> query_list
+  }
+  let query_list = case cat_id {
+    Some(q) -> [#("cat_id", q), ..query_list]
+    None -> query_list
+  }
+  let query = uri.query_to_string(query_list) |> Some
   let url = uri.Uri(..uri.empty, path: consts.api_posts, query:)
   rsvp.get(uri.to_string(url), handler)
 }

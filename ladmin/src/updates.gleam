@@ -168,8 +168,8 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     HomePage, LoggedIn(_u) -> {
       #(routes.goto(PostListPage(None, None, None), mounted_path), False)
     }
-    PostListPage(p, _q, _c), _ -> {
-      let load_posts_action = actions.load_posts(option.unwrap(p, 1))
+    PostListPage(p, q, cat_id), _ -> {
+      let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
       let load_categories_action = case categories, partial_load_categories {
         [], _o -> actions.load_categories(1)
         _, _ -> effect.none()

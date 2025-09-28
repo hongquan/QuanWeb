@@ -1,4 +1,5 @@
 import gleam/bool
+import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
@@ -31,15 +32,11 @@ pub fn parse_to_route(
     "/login", _ -> LoginPage
     "/logout", _ -> LoginPage
     "/posts", queries -> {
+      let query_dict = dict.from_list(queries)
       let page =
-        queries
-        |> list.find_map(fn(x) {
-          let #(name, value) = x
-          case name {
-            "page" -> int.parse(value)
-            _ -> Error(Nil)
-          }
-        })
+        query_dict
+        |> dict.get("page")
+        |> result.try(int.parse)
         |> result.map(fn(p) {
           case p {
             n if n < 1 -> 1
@@ -47,9 +44,14 @@ pub fn parse_to_route(
           }
         })
         |> option.from_result
-      PostListPage(page, None, None)
+      let q = query_dict |> dict.get("q") |> option.from_result
+      let cat_id = query_dict |> dict.get("cat_id") |> option.from_result
+      PostListPage(page, q:, cat_id:)
     }
-    _, _ -> NotFound
+    _, _ -> {
+      io.println("Unknown " <> path)
+      NotFound
+    }
   }
 }
 

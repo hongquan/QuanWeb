@@ -1,13 +1,19 @@
+import gleam/dynamic/decode
+import gleam/javascript/array
 import gleam/list
+import gleam/option.{type Option}
+import gleam/result
 import gleam/string
 import lustre/attribute as a
-import lustre/element
+import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
+import plinth/browser/element as br_element
 import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{type Category, type Post, PageOwnedPosts, Post, PostFilterSubmitted}
+import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model}
@@ -19,7 +25,12 @@ import views/ui_components.{
 
 const class_cell = "px-4 py-4"
 
-pub fn render_post_table_view(page: Int, model: Model) {
+pub fn render_post_table_view(
+  page: Int,
+  q: Option(String),
+  cat_id: Option(String),
+  model: Model,
+) {
   case model.is_loading {
     True ->
       skeleton.render_main_block(
@@ -61,12 +72,14 @@ pub fn render_post_table_view(page: Int, model: Model) {
           ],
         )
 
+      let initial_q = q |> option.unwrap("")
+      let initial_cat_id = cat_id |> option.unwrap("")
       element.fragment([
         skeleton.render_header_bar(core.LogOutClicked),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
-            render_filter_form(model.categories),
+            render_filter_form(initial_q, initial_cat_id, model.categories),
             body,
             paginator,
           ],
@@ -129,22 +142,42 @@ fn render_post_row(post: Post) {
   ])
 }
 
-fn render_filter_form(categories: List(Category)) {
+fn render_filter_form(
+  initial_q: String,
+  initial_cat_id: String,
+  categories: List(Category),
+) -> Element(core.Msg(a)) {
   let choices =
-    categories |> list.map(fn(c) { h.option([a.value(c.id)], c.title) })
+    categories
+    |> list.map(fn(c) {
+      h.option([a.value(c.id), a.selected(c.id == initial_cat_id)], c.title)
+    })
   let choices = [h.option([a.value("")], "Category..."), ..choices]
+  let select_handler = {
+    use el <- decode.field("target", decode.dynamic)
+    let form_data =
+      br_element.cast(el)
+      |> result.map(ffi.get_form_data)
+      |> result.map(array.to_list)
+    form_data
+    |> result.map(fn(data) { decode.success(PostFilterSubmitted(data)) })
+    |> result.lazy_unwrap(fn() {
+      decode.failure(PostFilterSubmitted([]), "FormData")
+    })
+  }
   let category_select =
     h.select(
       [
         a.name("cat_id"),
         a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4"),
+        ev.on("change", select_handler),
       ],
       choices,
     )
   h.form(
     [a.class("flex space-x-6 text-sm"), ev.on_submit(PostFilterSubmitted)],
     [
-      render_search_box(),
+      render_search_box(initial_q),
       category_select,
     ],
   )

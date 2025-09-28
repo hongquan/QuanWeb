@@ -95,8 +95,7 @@ pub async fn get_blogposts(
     if let Some(ss) = lower_search_tokens {
         let v: Vec<&str> = ss.iter().map(|s| s.as_str()).collect();
         kw_args.insert("tokens", ValueOpt::from(v));
-        filter_conds
-            .push("FILTER all(contains(str_lower(.title), array_unpack(<array<str>>$tokens)))");
+        filter_conds.push("all(contains(str_lower(.title), array_unpack(<array<str>>$tokens)))");
     }
     if let Some(cat) = cat_id {
         kw_args.insert("cat_id", ValueOpt::from(cat));
