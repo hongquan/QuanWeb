@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use gel_protocol::model::Datetime as EDatetime;
@@ -34,9 +35,9 @@ pub async fn count_search_result_posts(
         filter_conds.push("any(.categories.id = <uuid>$cat_id)");
     }
     let filter_line = if filter_conds.is_empty() {
-        "".to_string()
+        Cow::from("")
     } else {
-        format!("FILTER {}", filter_conds.join(" AND "))
+        Cow::from(format!("FILTER {}", filter_conds.join(" AND ")))
     };
     let q = format!("SELECT count((SELECT BlogPost {filter_line}))");
     debug!("To query: {}", q);
@@ -109,7 +110,11 @@ pub async fn get_blogposts(
         kw_args.insert("limit", ValueOpt::from(limit));
         paging_params.push(str!("LIMIT <int64>$limit"));
     }
-    let filter_line = format!("FILTER {}", filter_conds.join(" AND "));
+    let filter_line = if filter_conds.is_empty() {
+        Cow::Borrowed("")
+    } else {
+        Cow::Owned(format!("FILTER {}", filter_conds.join(" AND ")))
+    };
     let paging_expr = paging_params.join(" ");
     let fields = MediumBlogPost::fields_as_shape();
     let q = format!(

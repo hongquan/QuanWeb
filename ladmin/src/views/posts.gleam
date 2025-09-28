@@ -3,10 +3,11 @@ import gleam/string
 import lustre/attribute as a
 import lustre/element
 import lustre/element/html as h
+import lustre/event as ev
 import tempo.{DateFormat}
 import tempo/datetime
 
-import core.{type Category, type Post, PageOwnedPosts, Post}
+import core.{type Category, type Post, PageOwnedPosts, Post, PostFilterSubmitted}
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model}
@@ -135,13 +136,16 @@ fn render_filter_form(categories: List(Category)) {
   let category_select =
     h.select(
       [
-        a.name("category"),
+        a.name("cat_id"),
         a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4"),
       ],
       choices,
     )
-  h.form([a.class("flex space-x-6 text-sm")], [
-    render_search_box(),
-    category_select,
-  ])
+  h.form(
+    [a.class("flex space-x-6 text-sm"), ev.on_submit(PostFilterSubmitted)],
+    [
+      render_search_box(),
+      category_select,
+    ],
+  )
 }

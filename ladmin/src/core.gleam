@@ -83,4 +83,5 @@ pub type Msg(r) {
   OnRouteChange(r)
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error))
+  PostFilterSubmitted(List(#(String, String)))
 }

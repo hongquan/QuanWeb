@@ -3,8 +3,10 @@ import consts
 import decoders
 import gleam/io
 import gleam/json
+import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
+import gleam/string
 import gleam/uri
 import lustre
 import lustre/effect.{type Effect}
@@ -16,8 +18,8 @@ import views/posts
 
 import core.{
   ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange, RouterInitDone,
-  TryingLogin, UserSubmittedLoginForm,
+  ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
+  RouterInitDone, TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -142,6 +144,19 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     ApiReturnedLogOutDone(Ok(_s)) -> {
       let model = updates.handle_successful_logout(model)
       #(model, effect.none())
+    }
+    PostFilterSubmitted(values) -> {
+      let cleaned_data =
+        values
+        |> list.filter_map(fn(kv) {
+          let #(k, v) = kv
+          case v |> string.trim {
+            "" -> Error(Nil)
+            s -> Ok(#(k, s))
+          }
+        })
+      let query = uri.query_to_string(cleaned_data)
+      #(model, modem.push("", Some(query), None))
     }
     _ -> #(model, effect.none())
   }
