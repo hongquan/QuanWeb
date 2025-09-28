@@ -6,7 +6,7 @@ import lustre/effect.{type Effect}
 import rsvp
 
 import consts
-import core.{type LoginData, type Msg, LoginData}
+import core.{type LoginData, type Msg, ApiReturnedSinglePost, LoginData}
 import decoders.{make_user_decoder}
 
 pub fn login_via_api(login_data: LoginData) -> Effect(Msg(r)) {
@@ -57,9 +57,15 @@ pub fn load_categories(page: Int) {
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_categories_by_url(url: Uri) {
+pub fn load_categories_by_url(url: Uri) -> Effect(Msg(d)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_category_decoder())
   let handler = rsvp.expect_json(response_decoder, core.ApiReturnedCategories)
   rsvp.get(uri.to_string(url), handler)
+}
+
+pub fn load_single_post(id: String) -> Effect(Msg(c)) {
+  let handler =
+    rsvp.expect_json(decoders.make_post_decoder(), ApiReturnedSinglePost)
+  rsvp.get(consts.api_posts <> id, handler)
 }

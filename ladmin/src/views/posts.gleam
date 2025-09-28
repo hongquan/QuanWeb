@@ -16,7 +16,8 @@ import core.{type Category, type Post, PageOwnedPosts, Post, PostFilterSubmitted
 import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
-import models.{type Model}
+import models.{type Model, Model}
+import routes.{PostEditPage}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
 import views/ui_components.{
@@ -25,7 +26,7 @@ import views/ui_components.{
 
 const class_cell = "px-4 py-4"
 
-pub fn render_post_table_view(
+pub fn render_post_table_page(
   page: Int,
   q: Option(String),
   cat_id: Option(String),
@@ -55,7 +56,7 @@ pub fn render_post_table_view(
         _ -> query_list
       }
       let paginator = render_paginator(page, total_pages, query_list)
-      let rows = posts |> list.map(render_post_row)
+      let rows = posts |> list.map(render_post_row(_, model.mounted_path))
       let body =
         h.div(
           [
@@ -83,12 +84,28 @@ pub fn render_post_table_view(
 
       let initial_q = q |> option.unwrap("")
       let initial_cat_id = cat_id |> option.unwrap("")
+      let url_new_post =
+        routes.as_url_string(PostEditPage(""), model.mounted_path)
       element.fragment([
         skeleton.render_header_bar(core.LogOutClicked),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
-            render_filter_form(initial_q, initial_cat_id, model.categories),
+            h.a(
+              [
+                a.href(url_new_post),
+                a.class(
+                  "block sm:hidden px-6 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80",
+                ),
+              ],
+              [h.text("New post")],
+            ),
+            render_filter_form(
+              initial_q,
+              initial_cat_id,
+              model.categories,
+              url_new_post,
+            ),
             body,
             paginator,
           ],
@@ -120,15 +137,18 @@ fn render_post_table_header() {
   ])
 }
 
-fn render_post_row(post: Post) {
-  let Post(title:, created_at:, ..) = post
+fn render_post_row(post: Post, mounted_path: String) {
+  let Post(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
     datetime.format(created_at, DateFormat(tempo.CustomDate("DD MMM YYYY")))
   let categories =
     post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
+  let url = routes.as_url_string(PostEditPage(id), mounted_path)
   h.tr([], [
-    h.td([a.class(class_cell)], [h.text(title)]),
-    h.td([a.class(class_cell), a.class("text-sm")], [h.text(post.slug)]),
+    h.td([a.class(class_cell)], [
+      h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
     h.td([a.class(class_cell), a.class("text-sm")], [h.text(categories)]),
     h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
     h.td([a.class(class_cell), a.class("text-sm")], [
@@ -155,6 +175,7 @@ fn render_filter_form(
   initial_q: String,
   initial_cat_id: String,
   categories: List(Category),
+  url_new_post: String,
 ) -> Element(core.Msg(a)) {
   let choices =
     categories
@@ -184,10 +205,77 @@ fn render_filter_form(
       choices,
     )
   h.form(
-    [a.class("flex space-x-6 text-sm"), ev.on_submit(PostFilterSubmitted)],
+    [
+      a.class(
+        "flex flex-col sm:flex-row space-y-4 sm:space-x-6 sm:space-y-0 text-sm",
+      ),
+      ev.on_submit(PostFilterSubmitted),
+    ],
     [
       render_search_box(initial_q),
       category_select,
+      h.div([a.class("sm:grow mb-0")], []),
+      h.a(
+        [
+          a.href(url_new_post),
+          a.class(
+            "hidden sm:block px-6 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80",
+          ),
+        ],
+        [h.text("New post")],
+      ),
     ],
   )
+}
+
+pub fn render_post_edit_page(_id: String, model: Model) {
+  let Model(editing_post:, is_loading:, ..) = model
+  case is_loading {
+    True ->
+      skeleton.render_main_block(
+        [
+          h.div([a.class("mt-12 space-y-12")], [
+            render_flash_messages(model.flash_messages),
+            render_three_bar_pulse(),
+          ]),
+        ],
+        "",
+      )
+    False -> {
+      element.fragment([
+        skeleton.render_header_bar(core.LogOutClicked),
+        skeleton.render_main_block([render_post_form(editing_post)], ""),
+      ])
+    }
+  }
+}
+
+fn render_post_form(post: Option(Post)) {
+  let class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
+  let class_label = "block font-medium leading-6 dark:text-white sm:pt-2"
+  let class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
+  let class_text_input =
+    "px-4 py-2 w-full text-gray-700 bg-white border rounded-md sm:mx-2 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+  let #(title, slug) = case post {
+    Some(post) -> {
+      let Post(title:, slug:, ..) = post
+      #(title, slug)
+    }
+    _ -> #("", "")
+  }
+  let children = [
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Title")]),
+      h.div([a.class(class_input_col)], [
+        h.input([a.name("title"), a.value(title), a.class(class_text_input)]),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Slug")]),
+      h.div([a.class(class_input_col)], [
+        h.input([a.name("slug"), a.value(slug), a.class(class_text_input)]),
+      ]),
+    ]),
+  ]
+  h.form([a.method("post"), a.class("max-w-3xl mx-auto")], children)
 }

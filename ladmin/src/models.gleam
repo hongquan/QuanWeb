@@ -1,8 +1,8 @@
-import gleam/option.{None}
+import gleam/option.{type Option, None}
 
 import core.{
   type Category, type FlashMessage, type LoginState, type Msg,
-  type PageOwnedObjectPaging, type PageOwnedObjects,
+  type PageOwnedObjectPaging, type PageOwnedObjects, type Post,
 }
 import routes.{type Route}
 
@@ -17,6 +17,7 @@ pub type Model {
     is_loading: Bool,
     categories: List(Category),
     partial_load_categories: List(Category),
+    editing_post: Option(Post),
   )
 }
 
@@ -38,6 +39,7 @@ pub const default_model = Model(
   is_loading: False,
   categories: [],
   partial_load_categories: [],
+  editing_post: None,
 )
 
 pub fn create_success_message(content: String) {

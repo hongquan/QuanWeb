@@ -74,6 +74,10 @@ pub type FlashMessage {
   FlashMessage(content: String, severity: Severity)
 }
 
+pub type PostFormData {
+  PostFormData(title: String, slug: String)
+}
+
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
@@ -84,4 +88,6 @@ pub type Msg(r) {
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error))
   PostFilterSubmitted(List(#(String, String)))
+  ApiReturnedSinglePost(Result(Post, rsvp.Error))
+  PostFormSubmitted(Result(PostFormData, Form(PostFormData)))
 }

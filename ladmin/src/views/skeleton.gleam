@@ -8,7 +8,10 @@ pub fn render_main_block(
   extra_class: String,
 ) -> Element(msg) {
   h.main(
-    [a.class("mx-auto w-full max-w-320 mt-8"), a.class(extra_class)],
+    [
+      a.class("mx-auto px-4 sm:px-0 w-full max-w-320 mt-8"),
+      a.class(extra_class),
+    ],
     children,
   )
 }
@@ -19,7 +22,7 @@ pub fn render_header_bar(logout_click_msg: msg) -> Element(msg) {
   h.header(
     [
       a.class(
-        "mx-auto w-full max-w-320 pt-6 border-b border-gray-200 dark:border-gray-600",
+        "mx-auto px-4 sm:px-0 sm:w-full max-w-320 pt-6 border-b border-gray-200 dark:border-gray-600",
       ),
     ],
     [

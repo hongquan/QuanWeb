@@ -19,7 +19,9 @@ import core.{
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
-import routes.{type Route, CategoryListPage, HomePage, LoginPage, PostListPage}
+import routes.{
+  type Route, CategoryListPage, HomePage, LoginPage, PostEditPage, PostListPage,
+}
 
 pub type LoginValidationDetail {
   LoginFailureDetail(message: String, email: String, password: String)
@@ -176,6 +178,17 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       }
       #(effect.batch([load_posts_action, load_categories_action]), True)
     }
+    PostEditPage(id), _ -> {
+      let #(load_post_action, is_loading) = case id {
+        "" -> #(effect.none(), False)
+        s -> #(actions.load_single_post(s), True)
+      }
+      let load_categories_action = case categories, partial_load_categories {
+        [], _o -> actions.load_categories(1)
+        _, _ -> effect.none()
+      }
+      #(effect.batch([load_post_action, load_categories_action]), is_loading)
+    }
     _, _ -> #(effect.none(), False)
   }
   let model = Model(..model, route: new_route, login_state:, is_loading:)
@@ -206,7 +219,7 @@ pub fn handle_api_list_category_result(
       let Model(partial_load_categories:, ..) = model
       case route {
         // This page, we need to load all categories from API
-        PostListPage(_x, _q, _c) -> {
+        PostListPage(_x, _q, _c) | PostEditPage(_id) -> {
           let categories = list.append(partial_load_categories, info.objects)
           let model = Model(..model, partial_load_categories: categories)
           let #(model, whatsnext) = case links.1 {
@@ -243,6 +256,26 @@ pub fn handle_api_list_category_result(
           #(model, effect.none())
         }
       }
+    }
+  }
+}
+
+pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) {
+  case res {
+    Ok(p) -> {
+      let model = Model(..model, editing_post: Some(p), is_loading: False)
+      #(model, effect.none())
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load posts")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          is_loading: False,
+        )
+      #(model, effect.none())
     }
   }
 }

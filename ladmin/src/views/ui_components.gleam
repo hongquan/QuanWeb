@@ -98,7 +98,7 @@ pub fn render_paginator(
     |> iterators.to_list
   keyed.element(
     "nav",
-    [a.class("relative inline-flex mt-6 rounded-md shadow-sm -space-x-px")],
+    [a.class("relative inline-flex rounded-md shadow-sm -space-x-px")],
     links,
   )
 }
@@ -205,10 +205,15 @@ fn make_html_from_link(
 }
 
 pub fn render_flash_messages(messages: List(FlashMessage)) -> Element(c) {
-  h.div(
-    [a.class("container max-w-md mx-auto")],
-    messages |> list.map(render_flash_message),
-  )
+  case list.is_empty(messages) {
+    True -> element.none()
+    False -> {
+      h.div(
+        [a.class("container max-w-md mx-auto")],
+        messages |> list.map(render_flash_message),
+      )
+    }
+  }
 }
 
 fn render_flash_message(message: FlashMessage) -> Element(b) {
@@ -249,7 +254,7 @@ pub fn render_search_box(initial_value: String) {
       a.name("q"),
       a.value(initial_value),
       a.class(
-        "w-xs py-2 ps-10 pe-4 text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40",
+        "sm:w-xs py-2 ps-10 pe-4 text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40",
       ),
     ]),
   ])

@@ -31,6 +31,8 @@ pub fn parse_to_route(
     "/", _ -> HomePage
     "/login", _ -> LoginPage
     "/logout", _ -> LoginPage
+    "/posts/new", _ -> PostEditPage("")
+    "/posts/" <> pid, _ -> PostEditPage(pid)
     "/posts", queries -> {
       let query_dict = dict.from_list(queries)
       let page =
@@ -82,6 +84,8 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
         |> option.map(fn(p) { [#("page", int.to_string(p))] })
         |> option.map(uri.query_to_string),
     )
+    PostEditPage("") -> #("/posts/new", None)
+    PostEditPage(id) -> #("/posts/" <> id, None)
     _ -> #("/not-found", None)
   }
 }

@@ -18,12 +18,14 @@ import views/posts
 
 import core.{
   ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
-  RouterInitDone, TryingLogin, UserSubmittedLoginForm,
+  ApiReturnedPosts, ApiReturnedSinglePost, LoggedIn, NonLogin, OnRouteChange,
+  PostFilterSubmitted, RouterInitDone, TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
-import routes.{HomePage, LoginPage, PostListPage, on_url_change, parse_to_route}
+import routes.{
+  HomePage, LoginPage, PostEditPage, PostListPage, on_url_change, parse_to_route,
+}
 import updates
 import views/simple.{make_login_page}
 
@@ -118,6 +120,23 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           }
           #(effect.batch([load_posts_action, load_categories_action]), True)
         }
+        PostEditPage(id), _ -> {
+          let #(load_post_action, is_loading) = case id {
+            "" -> #(effect.none(), False)
+            s -> #(actions.load_single_post(s), True)
+          }
+          let load_categories_action = case
+            categories,
+            partial_load_categories
+          {
+            [], _o -> actions.load_categories(1)
+            _, _ -> effect.none()
+          }
+          #(
+            effect.batch([load_post_action, load_categories_action]),
+            is_loading,
+          )
+        }
         // Already logged in, just serve, no redirect
         _, LoggedIn(_u) -> #(effect.none(), False)
         _, _ -> {
@@ -161,6 +180,8 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         routes.to_uri_parts(route) |> routes.prefix(mounted_path)
       #(model, modem.push(path, Some(query), None))
     }
+    ApiReturnedSinglePost(res) ->
+      updates.handle_api_load_post_result(model, res)
     _ -> #(model, effect.none())
   }
 }
@@ -174,8 +195,9 @@ fn view(model: Model) -> Element(AppMsg) {
     }
     LoginPage, TryingLogin(form) -> make_login_page(form)
     PostListPage(p, q, cat_id), _ -> {
-      posts.render_post_table_view(option.unwrap(p, 1), q, cat_id, model)
+      posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
+    PostEditPage(id), LoggedIn(_u) -> posts.render_post_edit_page(id, model)
     _, _ -> {
       echo route
       echo login_state
