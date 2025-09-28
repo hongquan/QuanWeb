@@ -96,11 +96,13 @@ pub fn render_paginator(
     |> iterators.chain(links)
     |> iterators.chain({ next_link |> list.wrap |> iterators.from_list })
     |> iterators.to_list
-  keyed.element(
-    "nav",
-    [a.class("relative inline-flex rounded-md shadow-sm -space-x-px")],
-    links,
-  )
+  h.div([a.class("text-center mb-4")], [
+    keyed.element(
+      "nav",
+      [a.class("relative inline-flex rounded-md shadow-sm -space-x-px")],
+      links,
+    ),
+  ])
 }
 
 fn gen_links(current_page: Int, total: Int) -> Iterator(PageLink) {
