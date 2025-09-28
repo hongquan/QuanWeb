@@ -1,7 +1,7 @@
 import gleam/dynamic/decode
 import gleam/javascript/array
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, Some}
 import gleam/result
 import gleam/string
 import lustre/attribute as a
@@ -45,7 +45,16 @@ pub fn render_post_table_view(
     False -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
-      let paginator = render_paginator(page, total_pages, [])
+      let query_list = []
+      let query_list = case q {
+        Some(q) -> [#("q", q), ..query_list]
+        _ -> query_list
+      }
+      let query_list = case cat_id {
+        Some(q) -> [#("cat_id", q), ..query_list]
+        _ -> query_list
+      }
+      let paginator = render_paginator(page, total_pages, query_list)
       let rows = posts |> list.map(render_post_row)
       let body =
         h.div(
