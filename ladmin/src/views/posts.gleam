@@ -76,7 +76,7 @@ pub fn render_post_table_page(
                 h.tbody(
                   [
                     a.class(
-                      "bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+                      "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
                     ),
                   ],
                   rows,
