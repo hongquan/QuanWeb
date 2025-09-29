@@ -155,3 +155,62 @@ pub fn refresh_ccw(attributes: List(Attribute(a))) {
     ],
   )
 }
+
+pub fn flame(attributes: List(Attribute(a))) {
+  svg.svg(
+    [
+      attribute("stroke-linejoin", "round"),
+      attribute("stroke-linecap", "round"),
+      attribute("stroke-width", "2"),
+      attribute("stroke", "currentColor"),
+      attribute("fill", "none"),
+      attribute("viewBox", "0 0 24 24"),
+      attribute("height", "24"),
+      attribute("width", "24"),
+      ..attributes
+    ],
+    [
+      svg.path([
+        attribute(
+          "d",
+          "M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4",
+        ),
+      ]),
+    ],
+  )
+}
+
+pub fn circle_alert(attributes: List(Attribute(a))) {
+  svg.svg(
+    [
+      attribute("stroke-linejoin", "round"),
+      attribute("stroke-linecap", "round"),
+      attribute("stroke-width", "2"),
+      attribute("stroke", "currentColor"),
+      attribute("fill", "none"),
+      attribute("viewBox", "0 0 24 24"),
+      attribute("height", "24"),
+      attribute("width", "24"),
+      ..attributes
+    ],
+    [
+      svg.circle([
+        attribute("r", "10"),
+        attribute("cy", "12"),
+        attribute("cx", "12"),
+      ]),
+      svg.line([
+        attribute("y2", "12"),
+        attribute("y1", "8"),
+        attribute("x2", "12"),
+        attribute("x1", "12"),
+      ]),
+      svg.line([
+        attribute("y2", "16"),
+        attribute("y1", "16"),
+        attribute("x2", "12.01"),
+        attribute("x1", "12"),
+      ]),
+    ],
+  )
+}

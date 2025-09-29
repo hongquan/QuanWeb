@@ -1,10 +1,15 @@
 import gleam/option.{None}
+import gleam/time/timestamp
+import lustre/effect
+import plinth/javascript/global
 
 import core.{
   type Category, type FlashMessage, type LoginState, type Msg,
   type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditing,
+  FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
+import utils
 
 pub type Model {
   Model(
@@ -43,13 +48,40 @@ pub const default_model = Model(
 )
 
 pub fn create_success_message(content: String) {
-  core.FlashMessage(content:, severity: core.Success)
+  let id = utils.gen_nano_id()
+  FlashMessage(
+    content:,
+    severity: core.Success,
+    id:,
+    created_at: timestamp.system_time(),
+  )
 }
 
 pub fn create_info_message(content: String) {
-  core.FlashMessage(content:, severity: core.Info)
+  let id = utils.gen_nano_id()
+  FlashMessage(
+    content:,
+    severity: core.Info,
+    id:,
+    created_at: timestamp.system_time(),
+  )
 }
 
 pub fn create_danger_message(content: String) {
-  core.FlashMessage(content:, severity: core.Danger)
+  let id = utils.gen_nano_id()
+  FlashMessage(
+    content:,
+    severity: core.Danger,
+    id:,
+    created_at: timestamp.system_time(),
+  )
+}
+
+pub fn schedule_cleaning_flash_messages() {
+  use dispatch <- effect.from
+  {
+    use <- global.set_timeout(5000)
+    dispatch(FlashMessageTimeUp)
+  }
+  Nil
 }

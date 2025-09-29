@@ -1,5 +1,6 @@
 import formal/form.{type Form}
 import gleam/option.{type Option}
+import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
 import rsvp
 import tempo.{type DateTime}
@@ -71,7 +72,12 @@ pub type Severity {
 }
 
 pub type FlashMessage {
-  FlashMessage(content: String, severity: Severity)
+  FlashMessage(
+    content: String,
+    severity: Severity,
+    id: String,
+    created_at: Timestamp,
+  )
 }
 
 pub type PostFormData {
@@ -100,4 +106,5 @@ pub type Msg(r) {
   ApiReturnedSlug(Result(String, rsvp.Error))
   ApiUpdatedPost(Result(Post, rsvp.Error))
   ApiCreatedPost(Result(Post, rsvp.Error))
+  FlashMessageTimeUp
 }

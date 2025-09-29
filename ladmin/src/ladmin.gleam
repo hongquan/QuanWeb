@@ -5,8 +5,11 @@ import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/order
 import gleam/result
 import gleam/string
+import gleam/time/duration
+import gleam/time/timestamp
 import gleam/uri
 import lustre
 import lustre/effect.{type Effect}
@@ -19,8 +22,9 @@ import views/posts
 import core.{
   ApiCreatedPost, ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
   ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
-  LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
-  RouterInitDone, SlugGeneratorClicked, TryingLogin, UserSubmittedLoginForm,
+  FlashMessageTimeUp, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
+  PostFormSubmitted, RouterInitDone, SlugGeneratorClicked, TryingLogin,
+  UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -167,8 +171,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, actions.initiate_logout())
     }
     ApiReturnedLogOutDone(Ok(_s)) -> {
-      let model = updates.handle_successful_logout(model)
-      #(model, effect.none())
+      updates.handle_successful_logout(model)
     }
     PostFilterSubmitted(values) -> {
       let cleaned_data =
@@ -199,6 +202,17 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiCreatedPost(_res) -> #(model, effect.none())
     ApiUpdatedPost(res) -> updates.handle_api_update_post_result(model, res)
+    FlashMessageTimeUp -> {
+      let flash_messages =
+        model.flash_messages
+        |> list.filter(fn(m) {
+          m.created_at
+          |> timestamp.add(duration.seconds(5))
+          |> timestamp.compare(timestamp.system_time())
+          == order.Gt
+        })
+      #(Model(..model, flash_messages:), effect.none())
+    }
     _ -> #(model, effect.none())
   }
 }

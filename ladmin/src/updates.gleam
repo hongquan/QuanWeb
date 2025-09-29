@@ -14,7 +14,7 @@ import rsvp
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Category, type LoginData, type Post,
+  type ApiListingResponse, type Category, type LoginData, type Msg, type Post,
   type PostFormData, type User, ApiListingResponse, LoggedIn, NonLogin,
   PageOwnedObjectPaging, PageOwnedPosts, PostCreating, PostEditing, TryingLogin,
 }
@@ -47,10 +47,7 @@ pub fn handle_login_submission(
   }
 }
 
-pub fn handle_login_api_result(
-  model: Model,
-  res: Result(User, rsvp.Error),
-) -> #(Model, Effect(a)) {
+pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
   case res {
     Ok(user) -> {
       let login_state = LoggedIn(user)
@@ -72,7 +69,8 @@ pub fn handle_login_api_result(
         ..model.flash_messages
       ]
       let model = Model(..model, flash_messages:)
-      #(model, go_next)
+      let schedule = models.schedule_cleaning_flash_messages()
+      #(model, effect.batch([go_next, schedule]))
     }
     Error(err) -> {
       let detail = case err {
@@ -143,7 +141,7 @@ pub fn handle_api_list_post_result(
   }
 }
 
-pub fn handle_successful_logout(model: Model) -> Model {
+pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
   let login_state = NonLogin
   // Delete user from localStorage
   storage.local()
@@ -157,7 +155,7 @@ pub fn handle_successful_logout(model: Model) -> Model {
     ..model.flash_messages
   ]
   let model = Model(..model, login_state:, flash_messages:)
-  model
+  #(model, models.schedule_cleaning_flash_messages())
 }
 
 pub fn handle_landing_on_page(new_route: Route, model: Model) {
@@ -368,7 +366,10 @@ pub fn handle_api_update_post_result(
         PostEditing(form:, ..) -> PostEditing(post, form)
         _ -> core.NoPostEditing
       }
-      #(Model(..model, post_editing:, flash_messages:), effect.none())
+      #(
+        Model(..model, post_editing:, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
     }
   }
 }

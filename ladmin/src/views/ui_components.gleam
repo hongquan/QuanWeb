@@ -219,20 +219,20 @@ pub fn render_flash_messages(messages: List(FlashMessage)) -> Element(c) {
 }
 
 fn render_flash_message(message: FlashMessage) -> Element(b) {
-  let color_class = case message.severity {
-    Success -> "bg-emerald-500"
-    Info -> "bg-blue-500"
-    Warning -> "bg-yellow-400"
-    Danger -> "bg-red-500"
+  let #(color_class, icon) = case message.severity {
+    Success -> #("bg-emerald-500", icons.circle_check([a.class("w-8")]))
+    Info -> #("bg-blue-500", icons.circle_alert([]))
+    Warning -> #("bg-yellow-400", icons.circle_alert([]))
+    Danger -> #("bg-red-500", icons.flame([]))
   }
   h.div(
     [
       a.class("flex items-center justify-between px-6 py-4"),
-      a.class(color_class),
+      a.class(color_class <> " transition-opacity duration-1200"),
     ],
     [
-      h.div([a.class("flex")], [
-        icons.circle_check([]),
+      h.div([a.class("flex flex-row items-center")], [
+        icon,
         h.p([a.class("ms-3")], [h.text(message.content)]),
       ]),
       h.button(
