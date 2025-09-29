@@ -14,9 +14,9 @@ import rsvp
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Category, type LoginData, type Post, type User,
-  ApiListingResponse, LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts,
-  TryingLogin,
+  type ApiListingResponse, type Category, type LoginData, type Post,
+  type PostFormData, type User, ApiListingResponse, LoggedIn, NonLogin,
+  PageOwnedObjectPaging, PageOwnedPosts, PostCreating, PostEditing, TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -299,6 +299,48 @@ pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) 
           is_loading: False,
         )
       #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_api_slug_result(
+  model: Model,
+  res: Result(String, rsvp.Error),
+) -> Model {
+  case res {
+    Error(_e) -> model
+    Ok(s) -> {
+      let post_editing = case model.post_editing {
+        PostEditing(post:, form:) -> {
+          PostEditing(post, formlib.add_string(form, "slug", s))
+        }
+        PostCreating(form) -> PostCreating(formlib.add_string(form, "slug", s))
+        n -> n
+      }
+      Model(..model, post_editing:)
+    }
+  }
+}
+
+pub fn handle_post_form_submission(
+  model: Model,
+  res: Result(PostFormData, formlib.Form(PostFormData)),
+) {
+  case res {
+    Ok(_data) -> {
+      let message = models.create_success_message("Data has been saved.")
+      let flash_messages = [message, ..model.flash_messages]
+      Model(..model, flash_messages:)
+    }
+    Error(form) -> {
+      let post_editing = case model.post_editing {
+        PostEditing(post:, ..) -> {
+          PostEditing(post, form)
+        }
+        PostCreating(_f) -> PostCreating(form)
+        n -> n
+      }
+      Model(..model, post_editing:)
     }
   }
 }

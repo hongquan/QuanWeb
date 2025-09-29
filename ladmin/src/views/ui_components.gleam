@@ -211,7 +211,7 @@ pub fn render_flash_messages(messages: List(FlashMessage)) -> Element(c) {
     True -> element.none()
     False -> {
       h.div(
-        [a.class("container max-w-md mx-auto")],
+        [a.class("container max-w-md mx-auto text-white")],
         messages |> list.map(render_flash_message),
       )
     }
