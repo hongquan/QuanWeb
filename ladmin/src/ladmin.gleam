@@ -17,10 +17,10 @@ import plinth/javascript/storage
 import views/posts
 
 import core.{
-  ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, LoggedIn, NonLogin,
-  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
-  SlugGeneratorClicked, TryingLogin, UserSubmittedLoginForm,
+  ApiCreatedPost, ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
+  ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
+  LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
+  RouterInitDone, SlugGeneratorClicked, TryingLogin, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -195,8 +195,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(updates.handle_api_slug_result(model, res), effect.none())
     }
     PostFormSubmitted(res) -> {
-      #(updates.handle_post_form_submission(model, res), effect.none())
+      updates.handle_post_form_submission(model, res)
     }
+    ApiCreatedPost(_res) -> #(model, effect.none())
+    ApiUpdatedPost(res) -> updates.handle_api_update_post_result(model, res)
     _ -> #(model, effect.none())
   }
 }

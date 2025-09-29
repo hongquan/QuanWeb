@@ -1,6 +1,5 @@
 import formal/form as formlib
 import gleam/dynamic/decode
-import gleam/io
 import gleam/javascript/array
 import gleam/list
 import gleam/option.{type Option, None, Some}

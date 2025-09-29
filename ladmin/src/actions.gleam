@@ -1,13 +1,17 @@
+import gleam/http
+import gleam/http/request
 import gleam/int
 import gleam/json
 import gleam/option.{type Option, None, Some}
+import gleam/result
 import gleam/uri.{type Uri}
 import lustre/effect.{type Effect}
 import rsvp
 
 import consts
 import core.{
-  type LoginData, type Msg, ApiReturnedSinglePost, ApiReturnedSlug, LoginData,
+  type LoginData, type Msg, type PostFormData, ApiCreatedPost,
+  ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost, LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -75,4 +79,39 @@ pub fn load_single_post(id: String) -> Effect(Msg(c)) {
 pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
   let handler = rsvp.expect_text(ApiReturnedSlug)
   rsvp.post(consts.api_slug_generator, json.string(title), handler)
+}
+
+pub fn update_post_via_api(id: String, data: PostFormData) -> Effect(Msg(f)) {
+  let body =
+    json.object([
+      #("title", json.string(data.title)),
+      #("slug", json.string(data.slug)),
+    ])
+    |> json.to_string
+  let decoder = decoders.make_post_decoder()
+  let handler = rsvp.expect_json(decoder, ApiUpdatedPost)
+  let url = consts.api_posts <> id
+  url
+  |> rsvp.parse_relative_uri
+  |> result.try(request.from_uri)
+  |> result.map(request.set_header(_, "content-type", "application/json"))
+  |> result.map(request.set_method(_, http.Patch))
+  |> result.map(request.set_body(_, body))
+  |> result.map(rsvp.send(_, handler))
+  |> result.map_error(fn(_e) {
+    use dispatch <- effect.from
+    dispatch(ApiUpdatedPost(Error(rsvp.BadUrl(url))))
+  })
+  |> result.unwrap_both
+}
+
+pub fn create_post_via_api(data: PostFormData) {
+  let body =
+    json.object([
+      #("title", json.string(data.title)),
+      #("slug", json.string(data.slug)),
+    ])
+  let decoder = decoders.make_post_decoder()
+  let handler = rsvp.expect_json(decoder, ApiCreatedPost)
+  rsvp.post(consts.api_posts, body, handler)
 }

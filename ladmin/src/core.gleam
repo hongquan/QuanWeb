@@ -98,4 +98,6 @@ pub type Msg(r) {
   PostFormSubmitted(Result(PostFormData, Form(PostFormData)))
   SlugGeneratorClicked(String)
   ApiReturnedSlug(Result(String, rsvp.Error))
+  ApiUpdatedPost(Result(Post, rsvp.Error))
+  ApiCreatedPost(Result(Post, rsvp.Error))
 }

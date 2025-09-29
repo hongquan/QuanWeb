@@ -327,10 +327,13 @@ pub fn handle_post_form_submission(
   res: Result(PostFormData, formlib.Form(PostFormData)),
 ) {
   case res {
-    Ok(_data) -> {
-      let message = models.create_success_message("Data has been saved.")
-      let flash_messages = [message, ..model.flash_messages]
-      Model(..model, flash_messages:)
+    Ok(data) -> {
+      let whatsnext = case model.post_editing {
+        PostEditing(post:, ..) -> actions.update_post_via_api(post.id, data)
+        PostCreating(_f) -> actions.create_post_via_api(data)
+        _ -> effect.none()
+      }
+      #(model, whatsnext)
     }
     Error(form) -> {
       let post_editing = case model.post_editing {
@@ -340,7 +343,32 @@ pub fn handle_post_form_submission(
         PostCreating(_f) -> PostCreating(form)
         n -> n
       }
-      Model(..model, post_editing:)
+      #(Model(..model, post_editing:), effect.none())
+    }
+  }
+}
+
+pub fn handle_api_update_post_result(
+  model: Model,
+  res: Result(Post, rsvp.Error),
+) {
+  case res {
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save post.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(Model(..model, flash_messages:), effect.none())
+    }
+    Ok(post) -> {
+      let message =
+        models.create_success_message(
+          "Post " <> post.id <> " has been updated.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      let post_editing = case model.post_editing {
+        PostEditing(form:, ..) -> PostEditing(post, form)
+        _ -> core.NoPostEditing
+      }
+      #(Model(..model, post_editing:, flash_messages:), effect.none())
     }
   }
 }
