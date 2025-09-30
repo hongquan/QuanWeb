@@ -8,7 +8,7 @@ import lustre/event as ev
 import plinth/browser/element as br_element
 
 import core.{
-  type Post, type PostFormData, PostFormSubmitted, SlugGeneratorClicked,
+  type Post, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
 }
 import ffi
 import lucide_lustre as lucide_icon
@@ -21,7 +21,10 @@ const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 
 const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md sm:mx-2 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
 
-pub fn render_post_form(_post: Option(Post), form: formlib.Form(PostFormData)) {
+pub fn render_post_form(
+  _post: Option(Post),
+  form: formlib.Form(PostEditablePart),
+) {
   let children = [
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Title")]),
@@ -61,7 +64,7 @@ pub fn render_post_form(_post: Option(Post), form: formlib.Form(PostFormData)) {
   )
 }
 
-fn render_slug_field(form: formlib.Form(PostFormData)) {
+fn render_slug_field(form: formlib.Form(PostEditablePart)) {
   let handler_slug_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_title = case br_element.cast(elm) {

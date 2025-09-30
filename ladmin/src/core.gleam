@@ -80,14 +80,15 @@ pub type FlashMessage {
   )
 }
 
-pub type PostFormData {
-  PostFormData(title: String, slug: String)
+// The part of Post with editable fields
+pub type PostEditablePart {
+  PostEditablePart(title: String, slug: String)
 }
 
 pub type PostEditing {
   NoPostEditing
-  PostCreating(Form(PostFormData))
-  PostEditing(post: Post, form: Form(PostFormData))
+  PostCreating(Form(PostEditablePart))
+  PostEditing(post: Post, form: Form(PostEditablePart))
 }
 
 pub type Msg(r) {
@@ -101,7 +102,7 @@ pub type Msg(r) {
   ApiReturnedLogOutDone(Result(String, rsvp.Error))
   PostFilterSubmitted(List(#(String, String)))
   ApiReturnedSinglePost(Result(Post, rsvp.Error))
-  PostFormSubmitted(Result(PostFormData, Form(PostFormData)))
+  PostFormSubmitted(Result(PostEditablePart, Form(PostEditablePart)))
   SlugGeneratorClicked(String)
   ApiReturnedSlug(Result(String, rsvp.Error))
   ApiUpdatedPost(Result(Post, rsvp.Error))

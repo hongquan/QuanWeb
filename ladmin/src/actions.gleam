@@ -10,7 +10,7 @@ import rsvp
 
 import consts
 import core.{
-  type LoginData, type Msg, type PostFormData, ApiCreatedPost,
+  type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
   ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost, LoginData,
 }
 import decoders.{make_user_decoder}
@@ -81,7 +81,7 @@ pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
   rsvp.post(consts.api_slug_generator, json.string(title), handler)
 }
 
-pub fn update_post_via_api(id: String, data: PostFormData) -> Effect(Msg(f)) {
+pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f)) {
   let body =
     json.object([
       #("title", json.string(data.title)),
@@ -105,7 +105,7 @@ pub fn update_post_via_api(id: String, data: PostFormData) -> Effect(Msg(f)) {
   |> result.unwrap_both
 }
 
-pub fn create_post_via_api(data: PostFormData) {
+pub fn create_post_via_api(data: PostEditablePart) {
   let body =
     json.object([
       #("title", json.string(data.title)),

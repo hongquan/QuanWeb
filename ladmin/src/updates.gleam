@@ -15,7 +15,7 @@ import actions
 import consts
 import core.{
   type ApiListingResponse, type Category, type LoginData, type Msg, type Post,
-  type PostFormData, type User, ApiListingResponse, LoggedIn, NonLogin,
+  type PostEditablePart, type User, ApiListingResponse, LoggedIn, NonLogin,
   PageOwnedObjectPaging, PageOwnedPosts, PostCreating, PostEditing, TryingLogin,
 }
 import decoders.{encode_user}
@@ -322,7 +322,7 @@ pub fn handle_api_slug_result(
 
 pub fn handle_post_form_submission(
   model: Model,
-  res: Result(PostFormData, formlib.Form(PostFormData)),
+  res: Result(PostEditablePart, formlib.Form(PostEditablePart)),
 ) {
   case res {
     Ok(data) -> {

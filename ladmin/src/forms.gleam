@@ -1,7 +1,7 @@
 import formal/form.{type Form}
 import gleam/option.{type Option, Some}
 
-import core.{type LoginData, type Post, LoginData, PostFormData}
+import core.{type LoginData, type Post, LoginData, PostEditablePart}
 
 pub fn create_login_form() -> Form(LoginData) {
   form.new({
@@ -14,7 +14,7 @@ pub fn create_login_form() -> Form(LoginData) {
   })
 }
 
-pub fn make_post_form(post: Option(Post)) -> Form(core.PostFormData) {
+pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
   let form =
     form.new({
       use title <- form.field(
@@ -22,7 +22,7 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostFormData) {
         form.parse_string |> form.check_not_empty,
       )
       use slug <- form.field("slug", form.parse_string |> form.check_not_empty)
-      form.success(PostFormData(title:, slug:))
+      form.success(PostEditablePart(title:, slug:))
     })
   case post {
     Some(p) -> {
