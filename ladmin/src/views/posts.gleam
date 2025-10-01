@@ -230,7 +230,7 @@ fn render_filter_form(
 }
 
 pub fn render_post_edit_page(_id: String, model: Model) {
-  let Model(post_editing:, is_loading:, ..) = model
+  let Model(post_editing:, is_loading:, categories:, ..) = model
   case is_loading {
     True ->
       skeleton.render_main_block(
@@ -244,8 +244,9 @@ pub fn render_post_edit_page(_id: String, model: Model) {
       )
     False -> {
       let form = case post_editing {
-        core.PostEditing(post:, form:) -> render_post_form(Some(post.id), form)
-        core.PostCreating(form) -> render_post_form(None, form)
+        core.PostEditing(post:, form:) ->
+          render_post_form(Some(post.id), form, categories)
+        core.PostCreating(form) -> render_post_form(None, form, categories)
         _ -> element.none()
       }
       element.fragment([

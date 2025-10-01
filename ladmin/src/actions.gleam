@@ -2,6 +2,7 @@ import gleam/http
 import gleam/http/request
 import gleam/int
 import gleam/json
+import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/uri.{type Uri}
@@ -82,12 +83,7 @@ pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
 }
 
 pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f)) {
-  let body =
-    json.object([
-      #("title", json.string(data.title)),
-      #("slug", json.string(data.slug)),
-    ])
-    |> json.to_string
+  let body = dump_post_to_json(data) |> json.to_string
   let decoder = decoders.make_post_decoder()
   let handler = rsvp.expect_json(decoder, ApiUpdatedPost)
   let url = consts.api_posts <> id
@@ -106,12 +102,16 @@ pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f))
 }
 
 pub fn create_post_via_api(data: PostEditablePart) {
-  let body =
-    json.object([
-      #("title", json.string(data.title)),
-      #("slug", json.string(data.slug)),
-    ])
+  let body = dump_post_to_json(data)
   let decoder = decoders.make_post_decoder()
   let handler = rsvp.expect_json(decoder, ApiCreatedPost)
   rsvp.post(consts.api_posts, body, handler)
+}
+
+fn dump_post_to_json(post: PostEditablePart) -> json.Json {
+  json.object([
+    #("title", json.string(post.title)),
+    #("slug", json.string(post.slug)),
+    #("categories", post.categories |> json.array(json.string)),
+  ])
 }

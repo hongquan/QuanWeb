@@ -1,5 +1,6 @@
 import formal/form as formlib
 import gleam/dynamic/decode
+import gleam/list
 import gleam/option.{type Option}
 import gleam/result
 import lustre/attribute as a
@@ -7,9 +8,12 @@ import lustre/element/html as h
 import lustre/event as ev
 import plinth/browser/element as br_element
 
-import core.{type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked}
+import core.{
+  type Category, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
+  UserMovedCategoryBetweenPane,
+}
 import ffi
-import lucide_lustre as lucide_icon
+import lucide_lustre as lc_icons
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
 
@@ -17,11 +21,16 @@ const class_label = "block font-medium leading-6 dark:text-white sm:pt-2"
 
 const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 
-const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md sm:mx-2 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+
+const class_pane_in_field = "border border-gray-300 dark:border-gray-600 rounded-md"
+
+const class_pane_header = "block px-2 py-1 rounded-t-md dark:bg-gray-900"
 
 pub fn render_post_form(
   _post_id: Option(String),
   form: formlib.Form(PostEditablePart),
+  categories: List(Category),
 ) {
   let children = [
     h.div([a.class(class_row)], [
@@ -36,6 +45,7 @@ pub fn render_post_form(
       ]),
     ]),
     render_slug_field(form),
+    render_category_dual_pane_field(form, categories),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -88,7 +98,7 @@ fn render_slug_field(form: formlib.Form(PostEditablePart)) {
           ev.on("click", handler_slug_click),
         ],
         [
-          lucide_icon.refresh_ccw([
+          lc_icons.refresh_ccw([
             a.class(
               "w-5 h-5 text-gray-400 transition-colors duration-300 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400",
             ),
@@ -102,5 +112,70 @@ fn render_slug_field(form: formlib.Form(PostEditablePart)) {
         a.class(class_text_input <> " ps-4 pe-10"),
       ]),
     ]),
+  ])
+}
+
+fn render_category_dual_pane_field(
+  form: formlib.Form(PostEditablePart),
+  categories: List(Category),
+) {
+  let selected_values = formlib.field_values(form, "categories")
+  let #(selected_categories, available_categories) =
+    categories
+    |> list.partition(fn(c) { list.contains(selected_values, c.id) })
+  h.div([a.class(class_row)], [
+    h.label([a.class(class_label)], [h.text("Categories")]),
+    h.div([a.class(class_input_col <> " grid grid-cols-2 gap-4 text-sm")], [
+      h.div(
+        [
+          a.class(class_pane_in_field <> " min-h-20"),
+        ],
+        [
+          h.label([a.class(class_pane_header)], [
+            h.text("Available"),
+          ]),
+          h.div([a.class("py-2 ps-2")], [
+            h.ol(
+              [a.class("overflow-y-auto max-h-20 pe-3")],
+              available_categories |> list.map(category_as_choice(_, False)),
+            ),
+          ]),
+        ],
+      ),
+      h.div(
+        [
+          a.class(class_pane_in_field),
+        ],
+        [
+          h.label([a.class(class_pane_header)], [h.text("Selected")]),
+          h.div([a.class("py-2 ps-2")], [
+            h.ol(
+              [a.class("overflow-y-auto max-h-20 pe-3")],
+              selected_categories |> list.map(category_as_choice(_, True)),
+            ),
+          ]),
+        ],
+      ),
+    ]),
+  ])
+}
+
+fn category_as_choice(category: Category, selected: Bool) {
+  let icon = case selected {
+    True -> lc_icons.arrow_left_from_line([a.class("h-5 w-5")])
+    _ -> lc_icons.arrow_right_from_line([a.class("h-5 w-5")])
+  }
+  h.li([], [
+    h.button(
+      [
+        a.type_("button"),
+        a.class(
+          "w-full cursor-pointer rounded py-0.5 px-1 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white flex  justify-between",
+        ),
+        a.classes([#("flex-row-reverse", selected)]),
+        ev.on_click(UserMovedCategoryBetweenPane(category.id, !selected)),
+      ],
+      [h.span([], [h.text(category.title)]), icon],
+    ),
   ])
 }

@@ -24,7 +24,7 @@ import core.{
   ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
   FlashMessageTimeUp, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
   PostFormSubmitted, RouterInitDone, SlugGeneratorClicked, TryingLogin,
-  UserSubmittedLoginForm,
+  UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -213,6 +213,11 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         })
       #(Model(..model, flash_messages:), effect.none())
     }
+    UserMovedCategoryBetweenPane(id, selected) -> #(
+      updates.handle_category_moved_between_panes(model, id, selected),
+      effect.none(),
+    )
+
     _ -> #(model, effect.none())
   }
 }

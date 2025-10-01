@@ -405,3 +405,37 @@ pub fn handle_api_create_post_result(
     }
   }
 }
+
+pub fn handle_category_moved_between_panes(
+  model: Model,
+  id: String,
+  to_move_in: Bool,
+) -> Model {
+  let post_editing = case model.post_editing {
+    PostCreating(form) -> {
+      push_in_or_out_category_from_form(form, id, to_move_in)
+      |> PostCreating
+    }
+    PostEditing(p, form) -> {
+      push_in_or_out_category_from_form(form, id, to_move_in)
+      |> PostEditing(p, _)
+    }
+    n -> n
+  }
+  Model(..model, post_editing:)
+}
+
+fn push_in_or_out_category_from_form(
+  form: formlib.Form(PostEditablePart),
+  value: String,
+  to_move_in: Bool,
+) {
+  let values_in_form = formlib.field_values(form, "categories")
+  case to_move_in, list.contains(values_in_form, value) {
+    True, False -> [value, ..values_in_form]
+    False, True -> values_in_form |> list.filter(fn(v) { v != value })
+    _, _ -> values_in_form
+  }
+  |> list.map(fn(v) { #("categories", v) })
+  |> formlib.add_values(form, _)
+}

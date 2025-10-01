@@ -214,3 +214,45 @@ pub fn circle_alert(attributes: List(Attribute(a))) {
     ],
   )
 }
+
+pub fn arrow_right_from_line(attributes: List(Attribute(a))) {
+  svg.svg(
+    [
+      attribute("stroke-linejoin", "round"),
+      attribute("stroke-linecap", "round"),
+      attribute("stroke-width", "2"),
+      attribute("stroke", "currentColor"),
+      attribute("fill", "none"),
+      attribute("viewBox", "0 0 24 24"),
+      attribute("height", "24"),
+      attribute("width", "24"),
+      ..attributes
+    ],
+    [
+      svg.path([attribute("d", "M3 5v14")]),
+      svg.path([attribute("d", "M21 12H7")]),
+      svg.path([attribute("d", "m15 18 6-6-6-6")]),
+    ],
+  )
+}
+
+pub fn arrow_left_from_line(attributes: List(Attribute(a))) {
+  svg.svg(
+    [
+      attribute("stroke-linejoin", "round"),
+      attribute("stroke-linecap", "round"),
+      attribute("stroke-width", "2"),
+      attribute("stroke", "currentColor"),
+      attribute("fill", "none"),
+      attribute("viewBox", "0 0 24 24"),
+      attribute("height", "24"),
+      attribute("width", "24"),
+      ..attributes
+    ],
+    [
+      svg.path([attribute("d", "m9 6-6 6 6 6")]),
+      svg.path([attribute("d", "M3 12h14")]),
+      svg.path([attribute("d", "M21 19V5")]),
+    ],
+  )
+}

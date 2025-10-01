@@ -82,7 +82,7 @@ pub type FlashMessage {
 
 // The part of Post with editable fields
 pub type PostEditablePart {
-  PostEditablePart(title: String, slug: String)
+  PostEditablePart(title: String, slug: String, categories: List(String))
 }
 
 pub type PostEditing {
@@ -108,4 +108,5 @@ pub type Msg(r) {
   ApiUpdatedPost(Result(Post, rsvp.Error))
   ApiCreatedPost(Result(Post, rsvp.Error))
   FlashMessageTimeUp
+  UserMovedCategoryBetweenPane(id: String, selected: Bool)
 }
