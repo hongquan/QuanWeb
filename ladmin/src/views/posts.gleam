@@ -244,7 +244,7 @@ pub fn render_post_edit_page(_id: String, model: Model) {
       )
     False -> {
       let form = case post_editing {
-        core.PostEditing(post:, form:) -> render_post_form(Some(post), form)
+        core.PostEditing(post:, form:) -> render_post_form(Some(post.id), form)
         core.PostCreating(form) -> render_post_form(None, form)
         _ -> element.none()
       }

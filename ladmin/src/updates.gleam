@@ -359,7 +359,7 @@ pub fn handle_api_update_post_result(
     Ok(post) -> {
       let message =
         models.create_success_message(
-          "Post " <> post.id <> " has been updated.",
+          "Post " <> post.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
       let post_editing = case model.post_editing {
@@ -370,6 +370,38 @@ pub fn handle_api_update_post_result(
         Model(..model, post_editing:, flash_messages:),
         models.schedule_cleaning_flash_messages(),
       )
+    }
+  }
+}
+
+// Handle the case that a Post has just been created.
+// We will redirect user to the edit page.
+pub fn handle_api_create_post_result(
+  model: Model,
+  res: Result(Post, rsvp.Error),
+) {
+  case res {
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save post.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(Model(..model, flash_messages:), effect.none())
+    }
+    Ok(post) -> {
+      let message =
+        models.create_success_message(
+          "Post " <> post.title <> " has been created.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      let post_editing = case model.post_editing {
+        PostCreating(form) -> PostEditing(post, form)
+        _ -> core.NoPostEditing
+      }
+      let whatsnext =
+        effect.batch([
+          routes.goto(PostEditPage(post.id), model.mounted_path),
+          models.schedule_cleaning_flash_messages(),
+        ])
+      #(Model(..model, post_editing:, flash_messages:), whatsnext)
     }
   }
 }

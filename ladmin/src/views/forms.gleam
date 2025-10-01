@@ -7,9 +7,7 @@ import lustre/element/html as h
 import lustre/event as ev
 import plinth/browser/element as br_element
 
-import core.{
-  type Post, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
-}
+import core.{type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked}
 import ffi
 import lucide_lustre as lucide_icon
 
@@ -22,7 +20,7 @@ const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md sm:mx-2 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
 
 pub fn render_post_form(
-  _post: Option(Post),
+  _post_id: Option(String),
   form: formlib.Form(PostEditablePart),
 ) {
   let children = [

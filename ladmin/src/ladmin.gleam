@@ -200,7 +200,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     PostFormSubmitted(res) -> {
       updates.handle_post_form_submission(model, res)
     }
-    ApiCreatedPost(_res) -> #(model, effect.none())
+    ApiCreatedPost(res) -> updates.handle_api_create_post_result(model, res)
     ApiUpdatedPost(res) -> updates.handle_api_update_post_result(model, res)
     FlashMessageTimeUp -> {
       let flash_messages =
