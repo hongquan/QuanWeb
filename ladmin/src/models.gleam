@@ -49,7 +49,7 @@ pub const default_model = Model(
 )
 
 pub fn create_success_message(content: String) {
-  let id = utils.gen_nano_id()
+  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Success,
@@ -59,7 +59,7 @@ pub fn create_success_message(content: String) {
 }
 
 pub fn create_info_message(content: String) {
-  let id = utils.gen_nano_id()
+  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Info,
@@ -69,7 +69,7 @@ pub fn create_info_message(content: String) {
 }
 
 pub fn create_danger_message(content: String) {
-  let id = utils.gen_nano_id()
+  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Danger,

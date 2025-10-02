@@ -10,7 +10,6 @@ packages = [
   { name = "formal", version = "3.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "formal", source = "hex", outer_checksum = "686D0C4C9CB36397DBAC2EC8C6ED9BD0F81B2DF2E88F75A7DB75F56768DDD8FC" },
   { name = "fs", version = "11.4.1", build_tools = ["rebar3"], requirements = [], otp_app = "fs", source = "hex", outer_checksum = "DD00A61D89EAC01D16D3FC51D5B0EB5F0722EF8E3C1A3A547CD086957F3260A9" },
   { name = "glam", version = "2.0.3", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glam", source = "hex", outer_checksum = "237C2CE218A2A0A5D46D625F8EF5B78F964BC91018B78D692B17E1AB84295229" },
-  { name = "glanoid", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_crypto", "gleam_stdlib"], otp_app = "glanoid", source = "hex", outer_checksum = "234440F3ED19BD65D166D31CA107991B14C6104AABFC0B75E3581358DCC7D0F3" },
   { name = "gleam_community_ansi", version = "1.4.3", build_tools = ["gleam"], requirements = ["gleam_community_colour", "gleam_regexp", "gleam_stdlib"], otp_app = "gleam_community_ansi", source = "hex", outer_checksum = "8A62AE9CC6EA65BEA630D95016D6C07E4F9973565FA3D0DE68DC4200D8E0DD27" },
   { name = "gleam_community_colour", version = "2.0.2", build_tools = ["gleam"], requirements = ["gleam_json", "gleam_stdlib"], otp_app = "gleam_community_colour", source = "hex", outer_checksum = "E34DD2C896AC3792151EDA939DA435FF3B69922F33415ED3C4406C932FBE9634" },
   { name = "gleam_crypto", version = "1.5.1", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_crypto", source = "hex", outer_checksum = "50774BAFFF1144E7872814C566C5D653D83A3EBF23ACC3156B757A1B6819086E" },
@@ -62,7 +61,6 @@ packages = [
 
 [requirements]
 formal = { version = ">= 3.0.0 and < 4.0.0" }
-glanoid = { version = ">= 1.0.1 and < 2.0.0" }
 gleam_http = { version = ">= 4.2.0 and < 5.0.0" }
 gleam_javascript = { version = ">= 1.0.0 and < 2.0.0" }
 gleam_json = { version = ">= 3.0.2 and < 4.0.0" }

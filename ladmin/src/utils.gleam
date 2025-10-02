@@ -1,9 +1,11 @@
-import glanoid
-import gleam/int
+import gleam/list
+import gleam/string
 
-pub fn gen_nano_id() -> String {
-  case glanoid.make_generator(glanoid.default_alphabet) {
-    Ok(func) -> func(4)
-    _ -> int.random(1000) |> int.to_base16
-  }
+const default_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-"
+
+const default_size = 8
+
+pub fn gen_simple_random_id() {
+  let pool = string.to_graphemes(default_alphabet)
+  list.sample(pool, default_size) |> list.shuffle |> string.concat
 }

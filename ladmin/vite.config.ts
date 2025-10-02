@@ -19,6 +19,21 @@ export default defineConfig({
   ],
   // Our prod site will be at http://domain/ladmin/
   base: BASE_PATH,
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+          if (id.includes('/gleam')) {
+            return 'gleam'
+          }
+          return null
+        }
+      }
+    }
+  },
   server: {
     port: 5111,
     fs: {
