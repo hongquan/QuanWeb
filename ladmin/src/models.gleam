@@ -1,11 +1,12 @@
-import gleam/option.{None}
+import formal/form.{type Form}
+import gleam/option.{type Option, None}
 import gleam/time/timestamp
 import lustre/effect
 import plinth/javascript/global
 
 import core.{
   type Category, type FlashMessage, type LoginState, type Msg,
-  type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditing,
+  type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
   FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
@@ -22,7 +23,7 @@ pub type Model {
     is_loading: Bool,
     categories: List(Category),
     partial_load_categories: List(Category),
-    post_editing: PostEditing,
+    post_form: Option(Form(PostEditablePart)),
   )
 }
 
@@ -44,7 +45,7 @@ pub const default_model = Model(
   is_loading: False,
   categories: [],
   partial_load_categories: [],
-  post_editing: core.NoPostEditing,
+  post_form: None,
 )
 
 pub fn create_success_message(content: String) {

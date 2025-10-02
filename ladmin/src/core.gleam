@@ -85,12 +85,6 @@ pub type PostEditablePart {
   PostEditablePart(title: String, slug: String, categories: List(String))
 }
 
-pub type PostEditing {
-  NoPostEditing
-  PostCreating(Form(PostEditablePart))
-  PostEditing(post: Post, form: Form(PostEditablePart))
-}
-
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))

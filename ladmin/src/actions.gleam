@@ -2,7 +2,6 @@ import gleam/http
 import gleam/http/request
 import gleam/int
 import gleam/json
-import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/uri.{type Uri}
@@ -87,18 +86,21 @@ pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f))
   let decoder = decoders.make_post_decoder()
   let handler = rsvp.expect_json(decoder, ApiUpdatedPost)
   let url = consts.api_posts <> id
-  url
-  |> rsvp.parse_relative_uri
-  |> result.try(request.from_uri)
-  |> result.map(request.set_header(_, "content-type", "application/json"))
-  |> result.map(request.set_method(_, http.Patch))
-  |> result.map(request.set_body(_, body))
-  |> result.map(rsvp.send(_, handler))
-  |> result.map_error(fn(_e) {
-    use dispatch <- effect.from
-    dispatch(ApiUpdatedPost(Error(rsvp.BadUrl(url))))
-  })
-  |> result.unwrap_both
+  case
+    rsvp.parse_relative_uri(url)
+    |> result.try(request.from_uri)
+    |> result.map(request.set_header(_, "content-type", "application/json"))
+    |> result.map(request.set_method(_, http.Patch))
+    |> result.map(request.set_body(_, body))
+    |> result.map(rsvp.send(_, handler))
+    |> result.map_error(fn(_e) {
+      use dispatch <- effect.from
+      dispatch(ApiUpdatedPost(Error(rsvp.BadUrl(url))))
+    })
+  {
+    Ok(x) -> x
+    Error(x) -> x
+  }
 }
 
 pub fn create_post_via_api(data: PostEditablePart) {

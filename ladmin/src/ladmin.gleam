@@ -148,11 +148,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           #(routes.goto(LoginPage, mounted_path), False)
         }
       }
-      let post_editing = case route {
-        PostEditPage("") -> core.PostCreating(forms.make_post_form(None))
-        _ -> model.post_editing
+      // If the initial page is the "create post" page, create a form
+      let post_form = case route {
+        PostEditPage("") -> Some(forms.make_post_form(None))
+        _ -> model.post_form
       }
-      let model = Model(..model, is_loading:, post_editing:)
+      let model = Model(..model, is_loading:, post_form:)
       #(model, whatsnext)
     }
     OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)

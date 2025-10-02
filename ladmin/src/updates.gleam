@@ -16,7 +16,7 @@ import consts
 import core.{
   type ApiListingResponse, type Category, type LoginData, type Msg, type Post,
   type PostEditablePart, type User, ApiListingResponse, LoggedIn, NonLogin,
-  PageOwnedObjectPaging, PageOwnedPosts, PostCreating, PostEditing, TryingLogin,
+  PageOwnedObjectPaging, PageOwnedPosts, TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -190,13 +190,10 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     _, _ -> #(effect.none(), False)
   }
-  let #(post_editing, page_owned_objects) = case new_route {
-    PostEditPage("") -> #(
-      core.PostCreating(forms.make_post_form(None)),
-      PageOwnedPosts([]),
-    )
-    PostEditPage(_id) -> #(model.post_editing, PageOwnedPosts([]))
-    _ -> #(core.NoPostEditing, model.page_owned_objects)
+  let #(post_form, page_owned_objects) = case new_route {
+    PostEditPage("") -> #(Some(forms.make_post_form(None)), PageOwnedPosts([]))
+    PostEditPage(_id) -> #(model.post_form, PageOwnedPosts([]))
+    _ -> #(None, model.page_owned_objects)
   }
   let model =
     Model(
@@ -204,7 +201,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       route: new_route,
       login_state:,
       is_loading:,
-      post_editing:,
+      post_form:,
       page_owned_objects:,
     )
   #(model, go_next)
@@ -279,12 +276,7 @@ pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) 
   case res {
     Ok(p) -> {
       let form = forms.make_post_form(Some(p))
-      let model =
-        Model(
-          ..model,
-          post_editing: core.PostEditing(p, form),
-          is_loading: False,
-        )
+      let model = Model(..model, post_form: Some(form), is_loading: False)
       #(model, effect.none())
     }
     Error(_e) -> {
@@ -307,15 +299,10 @@ pub fn handle_api_slug_result(
 ) -> Model {
   case res {
     Error(_e) -> model
-    Ok(s) -> {
-      let post_editing = case model.post_editing {
-        PostEditing(post:, form:) -> {
-          PostEditing(post, formlib.add_string(form, "slug", s))
-        }
-        PostCreating(form) -> PostCreating(formlib.add_string(form, "slug", s))
-        n -> n
-      }
-      Model(..model, post_editing:)
+    Ok(slug) -> {
+      let post_form =
+        model.post_form |> option.map(formlib.add_string(_, "slug", slug))
+      Model(..model, post_form:)
     }
   }
 }
@@ -326,22 +313,16 @@ pub fn handle_post_form_submission(
 ) {
   case res {
     Ok(data) -> {
-      let whatsnext = case model.post_editing {
-        PostEditing(post:, ..) -> actions.update_post_via_api(post.id, data)
-        PostCreating(_f) -> actions.create_post_via_api(data)
+      let whatsnext = case model.route {
+        PostEditPage("") -> actions.create_post_via_api(data)
+        PostEditPage(id) -> actions.update_post_via_api(id, data)
         _ -> effect.none()
       }
       #(model, whatsnext)
     }
     Error(form) -> {
-      let post_editing = case model.post_editing {
-        PostEditing(post:, ..) -> {
-          PostEditing(post, form)
-        }
-        PostCreating(_f) -> PostCreating(form)
-        n -> n
-      }
-      #(Model(..model, post_editing:), effect.none())
+      let post_form = model.post_form |> option.map(fn(_f) { form })
+      #(Model(..model, post_form:), effect.none())
     }
   }
 }
@@ -362,12 +343,8 @@ pub fn handle_api_update_post_result(
           "Post " <> post.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
-      let post_editing = case model.post_editing {
-        PostEditing(form:, ..) -> PostEditing(post, form)
-        _ -> core.NoPostEditing
-      }
       #(
-        Model(..model, post_editing:, flash_messages:),
+        Model(..model, flash_messages:),
         models.schedule_cleaning_flash_messages(),
       )
     }
@@ -392,16 +369,12 @@ pub fn handle_api_create_post_result(
           "Post " <> post.title <> " has been created.",
         )
       let flash_messages = [message, ..model.flash_messages]
-      let post_editing = case model.post_editing {
-        PostCreating(form) -> PostEditing(post, form)
-        _ -> core.NoPostEditing
-      }
       let whatsnext =
         effect.batch([
           routes.goto(PostEditPage(post.id), model.mounted_path),
           models.schedule_cleaning_flash_messages(),
         ])
-      #(Model(..model, post_editing:, flash_messages:), whatsnext)
+      #(Model(..model, flash_messages:), whatsnext)
     }
   }
 }
@@ -411,18 +384,10 @@ pub fn handle_category_moved_between_panes(
   id: String,
   to_move_in: Bool,
 ) -> Model {
-  let post_editing = case model.post_editing {
-    PostCreating(form) -> {
-      push_in_or_out_category_from_form(form, id, to_move_in)
-      |> PostCreating
-    }
-    PostEditing(p, form) -> {
-      push_in_or_out_category_from_form(form, id, to_move_in)
-      |> PostEditing(p, _)
-    }
-    n -> n
-  }
-  Model(..model, post_editing:)
+  let post_form =
+    model.post_form
+    |> option.map(push_in_or_out_category_from_form(_, id, to_move_in))
+  Model(..model, post_form:)
 }
 
 fn push_in_or_out_category_from_form(
