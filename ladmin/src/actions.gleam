@@ -33,7 +33,7 @@ pub fn load_posts(
   cat_id: Option(String),
 ) -> Effect(Msg(a)) {
   let response_decoder =
-    decoders.make_listing_api_decoder(decoders.make_post_decoder())
+    decoders.make_listing_api_decoder(decoders.mini_post_decoder())
   let handler = rsvp.expect_json(response_decoder, core.ApiReturnedPosts)
   let query_list = [#("page", int.to_string(page))]
   let query_list = case q {

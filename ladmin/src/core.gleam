@@ -9,12 +9,28 @@ pub type Category {
   Category(id: String, title: String, title_vi: Option(String), slug: String)
 }
 
+// Post with a subset of fields, just enough
+// to show on a list
+pub type MiniPost {
+  MiniPost(
+    id: String,
+    title: String,
+    slug: String,
+    is_published: Bool,
+    created_at: DateTime,
+    updated_at: DateTime,
+    categories: List(Category),
+  )
+}
+
+// Post with all fields
 pub type Post {
   Post(
     id: String,
     title: String,
     slug: String,
     is_published: Bool,
+    body: String,
     created_at: DateTime,
     updated_at: DateTime,
     categories: List(Category),
@@ -52,7 +68,7 @@ pub type ApiListingResponse(o) {
 
 // Objects to be rendered in a page
 pub type PageOwnedObjects {
-  PageOwnedPosts(List(Post))
+  PageOwnedPosts(List(MiniPost))
   PageOwnedCategories(List(Category))
 }
 
@@ -82,14 +98,19 @@ pub type FlashMessage {
 
 // The part of Post with editable fields
 pub type PostEditablePart {
-  PostEditablePart(title: String, slug: String, categories: List(String))
+  PostEditablePart(
+    title: String,
+    slug: String,
+    categories: List(String),
+    body: String,
+  )
 }
 
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error))
-  ApiReturnedPosts(Result(ApiListingResponse(Post), rsvp.Error))
+  ApiReturnedPosts(Result(ApiListingResponse(MiniPost), rsvp.Error))
   ApiReturnedCategories(Result(ApiListingResponse(Category), rsvp.Error))
   OnRouteChange(r)
   LogOutClicked

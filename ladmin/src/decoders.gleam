@@ -7,7 +7,10 @@ import gleam/uri
 import tempo.{type DateTime}
 import tempo/datetime
 
-import core.{type Category, type User, ApiListingResponse, Category, Post, User}
+import core.{
+  type Category, type MiniPost, type User, ApiListingResponse, Category,
+  MiniPost, Post, User,
+}
 
 pub fn make_user_decoder() -> Decoder(User) {
   use id <- decode.field("id", decode.string)
@@ -56,10 +59,32 @@ pub fn make_uri_decoder() -> Decoder(uri.Uri) {
   |> result.replace_error(uri.empty)
 }
 
+pub fn mini_post_decoder() -> decode.Decoder(MiniPost) {
+  use id <- decode.field("id", decode.string)
+  use title <- decode.field("title", decode.string)
+  use slug <- decode.field("slug", decode.string)
+  use is_published <- decode.field("is_published", decode.bool)
+  let datetime_decoder = make_datetime_decoder()
+  use created_at <- decode.field("created_at", datetime_decoder)
+  use updated_at <- decode.field("updated_at", datetime_decoder)
+  let category_decoder = make_category_decoder()
+  use categories <- decode.field("categories", decode.list(category_decoder))
+  decode.success(MiniPost(
+    id:,
+    title:,
+    slug:,
+    is_published:,
+    created_at:,
+    updated_at:,
+    categories:,
+  ))
+}
+
 pub fn make_post_decoder() -> Decoder(core.Post) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
+  use body <- decode.field("body", decode.string)
   use is_published <- decode.field("is_published", decode.bool)
   let datetime_decoder = make_datetime_decoder()
   use created_at <- decode.field("created_at", datetime_decoder)
@@ -70,6 +95,7 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
     id:,
     title:,
     slug:,
+    body:,
     is_published:,
     created_at:,
     updated_at:,

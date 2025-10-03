@@ -14,9 +14,9 @@ import rsvp
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Category, type LoginData, type Msg, type Post,
-  type PostEditablePart, type User, ApiListingResponse, LoggedIn, NonLogin,
-  PageOwnedObjectPaging, PageOwnedPosts, TryingLogin,
+  type ApiListingResponse, type Category, type LoginData, type MiniPost,
+  type Msg, type Post, type PostEditablePart, type User, ApiListingResponse,
+  LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts, TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -111,7 +111,7 @@ pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
 
 pub fn handle_api_list_post_result(
   model: Model,
-  res: Result(ApiListingResponse(Post), rsvp.Error),
+  res: Result(ApiListingResponse(MiniPost), rsvp.Error),
 ) -> Model {
   case res {
     Ok(info) -> {

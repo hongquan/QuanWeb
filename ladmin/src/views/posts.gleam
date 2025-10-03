@@ -12,7 +12,9 @@ import plinth/browser/element as br_element
 import tempo.{DateFormat}
 import tempo/datetime
 
-import core.{type Category, type Post, PageOwnedPosts, Post, PostFilterSubmitted}
+import core.{
+  type Category, type MiniPost, MiniPost, PageOwnedPosts, PostFilterSubmitted,
+}
 import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
@@ -138,8 +140,8 @@ fn render_post_table_header() {
   ])
 }
 
-fn render_post_row(post: Post, mounted_path: String) {
-  let Post(id:, title:, slug:, created_at:, ..) = post
+fn render_post_row(post: MiniPost, mounted_path: String) {
+  let MiniPost(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
     datetime.format(created_at, DateFormat(tempo.CustomDate("DD MMM YYYY")))
   let categories =
@@ -245,9 +247,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
     False -> {
       let form = case post_form, id {
         Some(form), "" -> render_post_form(None, form, categories)
-
         Some(form), pid -> render_post_form(Some(pid), form, categories)
-
         _, _ -> element.none()
       }
       element.fragment([

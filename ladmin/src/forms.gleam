@@ -27,14 +27,15 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         "categories",
         form.parse_list(form.parse_string),
       )
-      form.success(PostEditablePart(title:, slug:, categories:))
+      use body <- form.field("slug", form.parse_string)
+      form.success(PostEditablePart(title:, slug:, categories:, body:))
     })
   case post {
     Some(p) -> {
       let serialized_categories =
         p.categories |> list.map(fn(c) { #("categories", c.id) })
       let initial =
-        [#("title", p.title), #("slug", p.slug)]
+        [#("title", p.title), #("slug", p.slug), #("body", p.body)]
         |> list.append(serialized_categories)
       form.add_values(form, initial)
     }

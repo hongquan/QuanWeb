@@ -46,6 +46,7 @@ pub fn render_post_form(
     ]),
     render_slug_field(form),
     render_category_dual_pane_field(form, categories),
+    render_body_field(form),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -77,7 +78,6 @@ fn render_slug_field(form: formlib.Form(PostEditablePart)) {
     use elm <- decode.field("target", decode.dynamic)
     let editing_title = case br_element.cast(elm) {
       Ok(elm) -> {
-        echo elm
         ffi.get_form_field_value(elm, "title")
       }
       Error(_e) -> Error(Nil)
@@ -177,5 +177,30 @@ fn category_as_choice(category: Category, selected: Bool) {
       ],
       [h.span([], [h.text(category.title)]), icon],
     ),
+  ])
+}
+
+fn render_body_field(form: formlib.Form(PostEditablePart)) {
+  h.div([a.class("mt-2 space-y-2")], [
+    h.div([a.class("flex justify-between")], [
+      h.label([a.class(class_label)], [h.text("Body")]),
+      h.button(
+        [
+          a.type_("button"),
+          a.class(
+            "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border dark:border-gray-700 cursor-pointer",
+          ),
+        ],
+        [h.text("Preview")],
+      ),
+    ]),
+    h.div([a.class("border rounded font-mono py-4")], [
+      h.div([a.class("px-2 h-80")], [
+        h.textarea(
+          [a.name("body"), a.type_("text"), a.class("w-full h-full")],
+          formlib.field_value(form, "body"),
+        ),
+      ]),
+    ]),
   ])
 }
