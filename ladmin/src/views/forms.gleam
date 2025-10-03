@@ -4,13 +4,14 @@ import gleam/list
 import gleam/option.{type Option}
 import gleam/result
 import lustre/attribute as a
+import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
-  UserMovedCategoryBetweenPane,
+  type Category, type Msg, type PostEditablePart, PostFormSubmitted,
+  SlugGeneratorClicked, UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
 }
 import ffi
 import lucide_lustre as lc_icons
@@ -180,7 +181,21 @@ fn category_as_choice(category: Category, selected: Bool) {
   ])
 }
 
-fn render_body_field(form: formlib.Form(PostEditablePart)) {
+fn render_body_field(form: formlib.Form(PostEditablePart)) -> Element(Msg(a)) {
+  let handler_preview_click = {
+    use elm <- decode.field("target", decode.dynamic)
+    let editing_body = case br_element.cast(elm) {
+      Ok(elm) -> {
+        ffi.get_form_field_value(elm, "body")
+      }
+      Error(_e) -> Error(Nil)
+    }
+    editing_body
+    |> result.map(fn(s) { decode.success(UserClickMarkdownPreview(s)) })
+    |> result.lazy_unwrap(fn() {
+      decode.failure(UserClickMarkdownPreview(""), "HTMLElement")
+    })
+  }
   h.div([a.class("mt-2 space-y-2")], [
     h.div([a.class("flex justify-between")], [
       h.label([a.class(class_label)], [h.text("Body")]),
@@ -190,6 +205,7 @@ fn render_body_field(form: formlib.Form(PostEditablePart)) {
           a.class(
             "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border dark:border-gray-700 cursor-pointer",
           ),
+          ev.on("click", handler_preview_click),
         ],
         [h.text("Preview")],
       ),

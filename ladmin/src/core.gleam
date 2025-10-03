@@ -124,4 +124,6 @@ pub type Msg(r) {
   ApiCreatedPost(Result(Post, rsvp.Error))
   FlashMessageTimeUp
   UserMovedCategoryBetweenPane(id: String, selected: Bool)
+  UserClickMarkdownPreview(text: String)
+  ApiRenderedMarkdown(Result(String, rsvp.Error))
 }

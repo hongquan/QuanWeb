@@ -15,15 +15,16 @@ import lustre
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html as h
+import lustre/portal
 import modem
 import plinth/javascript/storage
-import views/posts
 
 import core.{
-  ApiCreatedPost, ApiLoginReturned, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
-  FlashMessageTimeUp, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
-  PostFormSubmitted, RouterInitDone, SlugGeneratorClicked, TryingLogin,
+  ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
+  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
+  ApiReturnedSlug, ApiUpdatedPost, FlashMessageTimeUp, LoggedIn, NonLogin,
+  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
+  SlugGeneratorClicked, TryingLogin, UserClickMarkdownPreview,
   UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
@@ -32,10 +33,12 @@ import routes.{
   HomePage, LoginPage, PostEditPage, PostListPage, on_url_change, parse_to_route,
 }
 import updates
+import views/posts
 import views/simple.{make_login_page}
 
 pub fn main(base_path: String) -> Nil {
   let app = lustre.application(init, update, view)
+  let assert Ok(_) = portal.register()
   let assert Ok(_a) = lustre.start(app, "#app", base_path)
   Nil
 }
@@ -218,7 +221,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       updates.handle_category_moved_between_panes(model, id, selected),
       effect.none(),
     )
-
+    UserClickMarkdownPreview(s) -> {
+      #(model, actions.try_render_markdown_via_api(s))
+    }
+    ApiRenderedMarkdown(Ok(html)) -> {
+      updates.handle_rendered_markdown_received(model, html)
+    }
     _ -> #(model, effect.none())
   }
 }

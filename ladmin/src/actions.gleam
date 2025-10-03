@@ -11,7 +11,8 @@ import rsvp
 import consts
 import core.{
   type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
-  ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost, LoginData,
+  ApiRenderedMarkdown, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
+  LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -116,4 +117,24 @@ fn dump_post_to_json(post: PostEditablePart) -> json.Json {
     #("slug", json.string(post.slug)),
     #("categories", post.categories |> json.array(json.string)),
   ])
+}
+
+pub fn try_render_markdown_via_api(text: String) -> Effect(Msg(a)) {
+  let handler = rsvp.expect_text(ApiRenderedMarkdown)
+  let url = consts.api_render_markdown
+  case
+    rsvp.parse_relative_uri(url)
+    |> result.try(request.from_uri)
+    |> result.map(request.set_header(_, "content-type", "text/plain"))
+    |> result.map(request.set_method(_, http.Post))
+    |> result.map(request.set_body(_, text))
+    |> result.map(rsvp.send(_, handler))
+    |> result.map_error(fn(_e) {
+      use dispatch <- effect.from
+      dispatch(ApiRenderedMarkdown(Error(rsvp.BadUrl(url))))
+    })
+  {
+    Ok(x) -> x
+    Error(x) -> x
+  }
 }

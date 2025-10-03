@@ -19,3 +19,13 @@ export function getFormFieldValue(elm, name) {
   }
   return new Ok(field.value)
 }
+
+export function showDialog(selector) {
+  const dialog = document.querySelector(selector)
+  if (dialog) {
+    dialog.showModal()
+    return true
+  }
+  console.warn(`${selector} is not found!`)
+  return false
+}

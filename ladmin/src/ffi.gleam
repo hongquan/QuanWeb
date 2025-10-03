@@ -9,3 +9,6 @@ pub fn get_form_field_value(
   select: Element,
   name: String,
 ) -> Result(String, Nil)
+
+@external(javascript, "./element.ffi.mjs", "showDialog")
+pub fn show_dialog(selector: String) -> Bool

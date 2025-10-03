@@ -1,5 +1,8 @@
+import consts
 import gleam/dynamic/decode
+import gleam/io
 import gleam/javascript/array
+import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -8,6 +11,7 @@ import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
+import lustre/portal
 import plinth/browser/element as br_element
 import tempo.{DateFormat}
 import tempo/datetime
@@ -250,10 +254,33 @@ pub fn render_post_edit_page(id: String, model: Model) {
         Some(form), pid -> render_post_form(Some(pid), form, categories)
         _, _ -> element.none()
       }
+      io.println("Post preview?")
+      echo model.post_body_preview
+      let preview_dialog =
+        model.post_body_preview
+        |> option.map(fn(content) {
+          h.dialog(
+            [
+              a.class(consts.selector_post_body_preview_dialog),
+              a.class(
+                "p-4 w-screen sm:start-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2 sm:w-120 md:w-220 h-120",
+              ),
+              a.attribute("closedby", "any"),
+            ],
+            [
+              h.iframe([
+                a.class("w-full h-full"),
+                a.property("srcdoc", json.string(content)),
+              ]),
+            ],
+          )
+        })
+        |> option.unwrap(element.none())
       element.fragment([
         skeleton.render_header_bar(core.LogOutClicked),
         skeleton.render_main_block(
           [
+            portal.to("body", [], [preview_dialog]),
             h.div([a.class("space-y-8")], [
               render_flash_messages(model.flash_messages),
               form,

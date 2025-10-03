@@ -1,3 +1,4 @@
+import ffi
 import formal/form as formlib
 import forms
 import gleam/dynamic/decode
@@ -403,4 +404,14 @@ fn push_in_or_out_category_from_form(
   }
   |> list.map(fn(v) { #("categories", v) })
   |> formlib.add_values(form, _)
+}
+
+pub fn handle_rendered_markdown_received(model: Model, html: String) {
+  let model = Model(..model, post_body_preview: Some(html))
+  let whatsnext = {
+    use _dispatch, _root <- effect.after_paint
+    ffi.show_dialog("." <> consts.selector_post_body_preview_dialog)
+    Nil
+  }
+  #(model, whatsnext)
 }

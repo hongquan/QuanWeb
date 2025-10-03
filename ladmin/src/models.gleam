@@ -24,6 +24,7 @@ pub type Model {
     categories: List(Category),
     partial_load_categories: List(Category),
     post_form: Option(Form(PostEditablePart)),
+    post_body_preview: Option(String),
   )
 }
 
@@ -46,6 +47,7 @@ pub const default_model = Model(
   categories: [],
   partial_load_categories: [],
   post_form: None,
+  post_body_preview: None,
 )
 
 pub fn create_success_message(content: String) {
