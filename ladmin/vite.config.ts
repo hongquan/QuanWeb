@@ -1,4 +1,4 @@
-import { defineConfig, PluginOption } from 'vite'
+import { defineConfig, type PluginOption } from 'vite'
 import gleam from 'vite-gleam'
 // import encrecss from 'encre-css-vite'
 // import UnoCSS from 'unocss/vite'
@@ -6,7 +6,7 @@ import gleam from 'vite-gleam'
 const runEncreCss = (): PluginOption => ({
   name: 'run-encre-css',
   buildStart: async () => {
-    console.log(`[run-encre-css] Running 'encrecss' for build...`);
+    console.debug(`[run-encre-css] Running 'encrecss' for build...`);
     const proc = Bun.spawn(['encrecss', 'build', '-o', 'generated-encre.css']);
     const output = await proc.exited;
     if (output !== 0) {
@@ -15,15 +15,20 @@ const runEncreCss = (): PluginOption => ({
       console.log(`[run-encre-css] Successfully generated CSS`);
     }
   },
-  handleHotUpdate: async ({ file }) => {
-    console.log(`[run-encre-css] File changed: ${file}. Running 'encrecss'...`);
-    const proc = Bun.spawn(['encrecss', 'build', '-o', 'generated-encre.css']);
-    const output = await proc.exited;
+  handleHotUpdate: ({ file, modules }) => {
+    console.debug(`[run-encre-css] File changed: ${file}.`);
+    if (!file.endsWith('.gleam') && !file.endsWith('.html')) {
+      return modules
+    }
+    console.debug('[run-encre-css] Run encrecss to build...')
+    const proc = Bun.spawnSync(['encrecss', 'build', '-o', 'generated-encre.css']);
+    const output = proc.exitCode;
     if (output !== 0) {
       console.error(`[run-encre-css] Error: Process exited with code ${output}`);
     } else {
       console.log(`[run-encre-css] Successfully generated CSS`);
     }
+    return modules
   },
 });
 
