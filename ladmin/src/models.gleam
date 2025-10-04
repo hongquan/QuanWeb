@@ -5,7 +5,7 @@ import lustre/effect
 import plinth/javascript/global
 
 import core.{
-  type Category, type FlashMessage, type LoginState, type Msg,
+  type Category, type FlashMessage, type LoginState, type MiniUser, type Msg,
   type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
   FlashMessage, FlashMessageTimeUp,
 }
@@ -23,6 +23,7 @@ pub type Model {
     is_loading: Bool,
     categories: List(Category),
     partial_load_categories: List(Category),
+    users: List(MiniUser),
     post_form: Option(Form(PostEditablePart)),
     post_body_preview: Option(String),
   )
@@ -46,6 +47,7 @@ pub const default_model = Model(
   is_loading: False,
   categories: [],
   partial_load_categories: [],
+  users: [],
   post_form: None,
   post_body_preview: None,
 )

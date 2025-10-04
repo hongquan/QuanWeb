@@ -29,7 +29,15 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
       )
       use body <- form.field("body", form.parse_string)
       use locale <- form.field("locale", form.parse_string)
-      form.success(PostEditablePart(title:, slug:, categories:, body:, locale:))
+      use author <- form.field("author", form.parse_string)
+      form.success(PostEditablePart(
+        title:,
+        slug:,
+        categories:,
+        body:,
+        locale:,
+        author:,
+      ))
     })
   case post {
     Some(p) -> {
@@ -41,6 +49,10 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
           #("slug", p.slug),
           #("body", p.body),
           #("locale", p.locale),
+          #(
+            "author",
+            p.author |> option.map(fn(u) { u.id }) |> option.unwrap(""),
+          ),
         ]
         |> list.append(serialized_categories)
       form.add_values(form, initial)

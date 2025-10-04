@@ -1,7 +1,7 @@
 import formal/form as formlib
 import gleam/dynamic/decode
 import gleam/list
-import gleam/option.{type Option, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import lucide_lustre as lc_icons
 import lustre/attribute as a
@@ -11,8 +11,9 @@ import lustre/event as ev
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type Msg, type PostEditablePart, PostFormSubmitted,
-  SlugGeneratorClicked, UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  type Category, type MiniUser, type Msg, type PostEditablePart,
+  PostFormSubmitted, SlugGeneratorClicked, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane,
 }
 import ffi
 import views/widgets
@@ -33,6 +34,7 @@ pub fn render_post_form(
   _post_id: Option(String),
   form: formlib.Form(PostEditablePart),
   categories: List(Category),
+  users: List(MiniUser),
 ) {
   let children = [
     h.div([a.class(class_row)], [
@@ -50,6 +52,7 @@ pub fn render_post_form(
     render_category_dual_pane_field(form, categories),
     render_body_field(form),
     render_locale_field(form),
+    render_author_field(form, users),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -245,6 +248,25 @@ fn render_locale_field(form: formlib.Form(PostEditablePart)) {
         choices,
         Some(formlib.field_value(form, "locale")),
         Some("Choose locale..."),
+      ),
+    ]),
+  ])
+}
+
+fn render_author_field(
+  form: formlib.Form(PostEditablePart),
+  users: List(MiniUser),
+) {
+  let choices = users |> list.map(fn(u) { #(u.id, u.email) })
+
+  h.div([a.class(class_row)], [
+    h.label([a.class(class_label)], [h.text("Author")]),
+    h.div([], [
+      widgets.render_single_select(
+        "author",
+        choices,
+        Some(formlib.field_value(form, "author")),
+        Some("Choose author..."),
       ),
     ]),
   ])

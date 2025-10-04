@@ -1,3 +1,4 @@
+import gleam/dynamic/decode
 import gleam/http
 import gleam/http/request
 import gleam/int
@@ -11,8 +12,8 @@ import rsvp
 import consts
 import core.{
   type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
-  ApiRenderedMarkdown, ApiReturnedSinglePost, ApiReturnedSlug, ApiUpdatedPost,
-  LoginData,
+  ApiRenderedMarkdown, ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers,
+  ApiUpdatedPost, LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -118,6 +119,7 @@ fn dump_post_to_json(post: PostEditablePart) -> json.Json {
     #("categories", post.categories |> json.array(json.string)),
     #("body", json.string(post.body)),
     #("locale", json.string(post.locale)),
+    #("author", json.string(post.author)),
   ])
 }
 
@@ -139,4 +141,10 @@ pub fn try_render_markdown_via_api(text: String) -> Effect(Msg(a)) {
     Ok(x) -> x
     Error(x) -> x
   }
+}
+
+pub fn load_users() -> Effect(Msg(a)) {
+  let response_decoder = decode.list(decoders.mini_user_decoder())
+  let handler = rsvp.expect_json(response_decoder, ApiReturnedUsers)
+  rsvp.get(consts.api_users, handler)
 }

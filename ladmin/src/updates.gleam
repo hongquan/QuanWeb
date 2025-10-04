@@ -187,7 +187,14 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         [], _o -> actions.load_categories(1)
         _, _ -> effect.none()
       }
-      #(effect.batch([load_post_action, load_categories_action]), is_loading)
+      #(
+        effect.batch([
+          load_post_action,
+          load_categories_action,
+          actions.load_users(),
+        ]),
+        is_loading,
+      )
     }
     _, _ -> #(effect.none(), False)
   }

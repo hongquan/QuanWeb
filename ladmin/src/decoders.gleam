@@ -8,8 +8,8 @@ import tempo.{type DateTime}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, type User, ApiListingResponse, Category,
-  MiniPost, Post, User,
+  type Category, type MiniPost, type MiniUser, type User, ApiListingResponse,
+  Category, MiniPost, MiniUser, Post, User,
 }
 
 pub fn make_user_decoder() -> Decoder(User) {
@@ -59,7 +59,7 @@ pub fn make_uri_decoder() -> Decoder(uri.Uri) {
   |> result.replace_error(uri.empty)
 }
 
-pub fn mini_post_decoder() -> decode.Decoder(MiniPost) {
+pub fn mini_post_decoder() -> Decoder(MiniPost) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
@@ -92,6 +92,7 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   let category_decoder = make_category_decoder()
   use categories <- decode.field("categories", decode.list(category_decoder))
   use locale <- decode.field("locale", decode.string)
+  use author <- decode.field("author", decode.optional(mini_user_decoder()))
   decode.success(Post(
     id:,
     title:,
@@ -102,6 +103,7 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
     updated_at:,
     categories:,
     locale:,
+    author:,
   ))
 }
 
@@ -125,4 +127,10 @@ pub fn make_listing_api_decoder(
   decode.success(
     ApiListingResponse(count:, objects:, total_pages:, links: #(prev, next)),
   )
+}
+
+pub fn mini_user_decoder() -> Decoder(MiniUser) {
+  use id <- decode.field("id", decode.string)
+  use email <- decode.field("email", decode.string)
+  decode.success(MiniUser(id:, email:))
 }

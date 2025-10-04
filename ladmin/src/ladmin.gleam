@@ -22,10 +22,10 @@ import plinth/javascript/storage
 import core.{
   ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
   ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiUpdatedPost, FlashMessageTimeUp, LogOutClicked, LoggedIn,
-  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
-  RouterInitDone, SlugGeneratorClicked, TryingLogin, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, FlashMessageTimeUp,
+  LogOutClicked, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
+  PostFormSubmitted, RouterInitDone, SlugGeneratorClicked, TryingLogin,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -141,7 +141,11 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
             _, _ -> effect.none()
           }
           #(
-            effect.batch([load_post_action, load_categories_action]),
+            effect.batch([
+              load_post_action,
+              load_categories_action,
+              actions.load_users(),
+            ]),
             is_loading,
           )
         }
@@ -226,6 +230,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiRenderedMarkdown(Ok(html)) -> {
       updates.handle_rendered_markdown_received(model, html)
+    }
+    ApiReturnedUsers(Ok(users)) -> {
+      let model = Model(..model, users:)
+      #(model, effect.none())
     }
     _ -> #(model, effect.none())
   }

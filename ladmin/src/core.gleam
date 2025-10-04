@@ -23,6 +23,11 @@ pub type MiniPost {
   )
 }
 
+// Part of User with just few fields to render dropdown
+pub type MiniUser {
+  MiniUser(id: String, email: String)
+}
+
 // Post with all fields
 pub type Post {
   Post(
@@ -35,6 +40,7 @@ pub type Post {
     updated_at: DateTime,
     categories: List(Category),
     locale: String,
+    author: Option(MiniUser),
   )
 }
 
@@ -105,6 +111,7 @@ pub type PostEditablePart {
     categories: List(String),
     body: String,
     locale: String,
+    author: String,
   )
 }
 
@@ -128,4 +135,5 @@ pub type Msg(r) {
   UserMovedCategoryBetweenPane(id: String, selected: Bool)
   UserClickMarkdownPreview(text: String)
   ApiRenderedMarkdown(Result(String, rsvp.Error))
+  ApiReturnedUsers(Result(List(MiniUser), rsvp.Error))
 }

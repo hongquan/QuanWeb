@@ -250,8 +250,9 @@ pub fn render_post_edit_page(id: String, model: Model) {
       )
     False -> {
       let form = case post_form, id {
-        Some(form), "" -> render_post_form(None, form, categories)
-        Some(form), pid -> render_post_form(Some(pid), form, categories)
+        Some(form), "" -> render_post_form(None, form, categories, model.users)
+        Some(form), pid ->
+          render_post_form(Some(pid), form, categories, model.users)
         _, _ -> element.none()
       }
       io.println("Post preview?")
