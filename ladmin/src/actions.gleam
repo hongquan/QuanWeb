@@ -116,6 +116,8 @@ fn dump_post_to_json(post: PostEditablePart) -> json.Json {
     #("title", json.string(post.title)),
     #("slug", json.string(post.slug)),
     #("categories", post.categories |> json.array(json.string)),
+    #("body", json.string(post.body)),
+    #("locale", json.string(post.locale)),
   ])
 }
 

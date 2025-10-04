@@ -27,7 +27,7 @@ pub fn render_header_bar(logout_click_msg: msg) -> Element(msg) {
     ],
     [
       h.div([a.class("sm:flex item-center justify-between")], [
-        h.a([a.class("text-3xl")], [h.text("Admin")]),
+        h.a([a.class("text-3xl"), a.href("/ladmin/")], [h.text("Admin")]),
         h.nav([a.class("space-x-4")], [
           h.a(
             [

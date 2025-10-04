@@ -22,9 +22,9 @@ import plinth/javascript/storage
 import core.{
   ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
   ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiUpdatedPost, FlashMessageTimeUp, LoggedIn, NonLogin,
-  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
-  SlugGeneratorClicked, TryingLogin, UserClickMarkdownPreview,
+  ApiReturnedSlug, ApiUpdatedPost, FlashMessageTimeUp, LogOutClicked, LoggedIn,
+  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
+  RouterInitDone, SlugGeneratorClicked, TryingLogin, UserClickMarkdownPreview,
   UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import forms.{create_login_form}
@@ -171,7 +171,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiReturnedCategories(res) ->
       updates.handle_api_list_category_result(model, res)
-    core.LogOutClicked -> {
+    LogOutClicked -> {
       #(model, actions.initiate_logout())
     }
     ApiReturnedLogOutDone(Ok(_s)) -> {

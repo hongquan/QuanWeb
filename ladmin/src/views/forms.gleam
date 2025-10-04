@@ -1,8 +1,9 @@
 import formal/form as formlib
 import gleam/dynamic/decode
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, Some}
 import gleam/result
+import lucide_lustre as lc_icons
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
@@ -14,7 +15,7 @@ import core.{
   SlugGeneratorClicked, UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
 }
 import ffi
-import lucide_lustre as lc_icons
+import views/widgets
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
 
@@ -48,6 +49,7 @@ pub fn render_post_form(
     render_slug_field(form),
     render_category_dual_pane_field(form, categories),
     render_body_field(form),
+    render_locale_field(form),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -229,5 +231,21 @@ fn render_body_field(form: formlib.Form(PostEditablePart)) -> Element(Msg(a)) {
         ]),
       ],
     ),
+  ])
+}
+
+fn render_locale_field(form: formlib.Form(PostEditablePart)) {
+  let choices = [#("en", "English"), #("vi", "Tiếng Việt")]
+
+  h.div([a.class(class_row)], [
+    h.label([a.class(class_label)], [h.text("Locale")]),
+    h.div([], [
+      widgets.render_single_select(
+        "locale",
+        choices,
+        Some(formlib.field_value(form, "locale")),
+        Some("Choose locale..."),
+      ),
+    ]),
   ])
 }

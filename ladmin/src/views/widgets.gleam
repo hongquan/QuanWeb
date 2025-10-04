@@ -1,3 +1,5 @@
+import gleam/list
+import gleam/option.{type Option, Some}
 import lustre/attribute as a
 import lustre/element/html as h
 
@@ -23,4 +25,39 @@ pub fn create_password_field(field_name: String, label: String) {
     a.placeholder(label),
     a.attribute("aria-label", label),
   ])
+}
+
+pub fn render_single_select(
+  field_name: String,
+  choices: List(#(String, String)),
+  selected_value: Option(String),
+  title: Option(String),
+) {
+  let options =
+    choices
+    |> list.map(fn(kv) {
+      let #(value, name) = kv
+      h.option(
+        [
+          a.value(value),
+          a.selected(
+            selected_value
+            |> option.map(fn(x) { x == value })
+            |> option.unwrap(False),
+          ),
+        ],
+        name,
+      )
+    })
+  let options = case title {
+    Some(title) -> [h.option([a.disabled(True)], title), ..options]
+    _ -> options
+  }
+  h.select(
+    [
+      a.name(field_name),
+      a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4"),
+    ],
+    options,
+  )
 }
