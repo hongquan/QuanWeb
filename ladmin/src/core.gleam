@@ -34,6 +34,7 @@ pub type Post {
     created_at: DateTime,
     updated_at: DateTime,
     categories: List(Category),
+    locale: String,
   )
 }
 
@@ -103,6 +104,7 @@ pub type PostEditablePart {
     slug: String,
     categories: List(String),
     body: String,
+    locale: String,
   )
 }
 

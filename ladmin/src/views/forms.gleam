@@ -22,11 +22,11 @@ const class_label = "block font-medium leading-6 dark:text-white sm:pt-2"
 
 const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 
-const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
 
 const class_pane_in_field = "border border-gray-300 dark:border-gray-600 rounded-md"
 
-const class_pane_header = "block px-2 py-1 rounded-t-md dark:bg-gray-900"
+const class_pane_header = "block px-2 py-1 rounded-t-md bg-gray-500 dark:bg-gray-900 text-white"
 
 pub fn render_post_form(
   _post_id: Option(String),
@@ -203,20 +203,31 @@ fn render_body_field(form: formlib.Form(PostEditablePart)) -> Element(Msg(a)) {
         [
           a.type_("button"),
           a.class(
-            "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border dark:border-gray-700 cursor-pointer",
+            "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border border-gray-400 dark:border-gray-700 cursor-pointer",
           ),
           ev.on("click", handler_preview_click),
         ],
         [h.text("Preview")],
       ),
     ]),
-    h.div([a.class("border rounded font-mono py-4")], [
-      h.div([a.class("px-2 h-80")], [
-        h.textarea(
-          [a.name("body"), a.type_("text"), a.class("w-full h-full")],
-          formlib.field_value(form, "body"),
+    h.div(
+      [
+        a.class(
+          "border border-gray-300 dark:border-gray-600 rounded-md font-mono py-4",
         ),
-      ]),
-    ]),
+      ],
+      [
+        h.div([a.class("px-2 h-80")], [
+          h.textarea(
+            [
+              a.name("body"),
+              a.type_("text"),
+              a.class("w-full h-full focus:outline-none"),
+            ],
+            formlib.field_value(form, "body"),
+          ),
+        ]),
+      ],
+    ),
   ])
 }

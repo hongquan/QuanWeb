@@ -91,6 +91,7 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   use updated_at <- decode.field("updated_at", datetime_decoder)
   let category_decoder = make_category_decoder()
   use categories <- decode.field("categories", decode.list(category_decoder))
+  use locale <- decode.field("locale", decode.string)
   decode.success(Post(
     id:,
     title:,
@@ -100,6 +101,7 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
     created_at:,
     updated_at:,
     categories:,
+    locale:,
   ))
 }
 

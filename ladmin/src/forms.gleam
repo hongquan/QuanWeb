@@ -27,8 +27,9 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         "categories",
         form.parse_list(form.parse_string),
       )
-      use body <- form.field("slug", form.parse_string)
-      form.success(PostEditablePart(title:, slug:, categories:, body:))
+      use body <- form.field("body", form.parse_string)
+      use locale <- form.field("locale", form.parse_string)
+      form.success(PostEditablePart(title:, slug:, categories:, body:, locale:))
     })
   case post {
     Some(p) -> {
