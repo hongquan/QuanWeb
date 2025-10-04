@@ -66,6 +66,9 @@ jobs:
       - name: Add WASM target for Rust
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
         run: rustup target add wasm32-unknown-unknown
+      - name: Install encre-css
+        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        run: cargo install encre-css
       - name: Download Gleam dependencies
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
         run: gleam deps download

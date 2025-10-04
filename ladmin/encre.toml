@@ -1,0 +1,1 @@
+input = ["index.html", "src/**/*.gleam"]
