@@ -40,6 +40,8 @@ pub type Post {
     categories: List(Category),
     locale: Option(String),
     author: Option(MiniUser),
+    og_image: Option(String),
+    seo_description: Option(String),
   )
 }
 
@@ -112,6 +114,7 @@ pub type PostEditablePart {
     locale: Option(String),
     author: String,
     is_published: Bool,
+    og_image: Option(String),
   )
 }
 

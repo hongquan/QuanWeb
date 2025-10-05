@@ -32,6 +32,10 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
       use author <- form.field("author", form.parse_string)
       // This field is rendered as checkbox, which has special behaviour
       use is_published <- form.field("is_published", form.parse_checkbox)
+      use og_image <- form.field(
+        "og_image",
+        form.parse_optional(form.parse_string),
+      )
       form.success(PostEditablePart(
         title:,
         slug:,
@@ -40,6 +44,7 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         locale:,
         author:,
         is_published:,
+        og_image:,
       ))
     })
   case post {
@@ -51,6 +56,7 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         #("slug", p.slug),
         #("author", p.author |> option.map(fn(u) { u.id }) |> option.unwrap("")),
       ]
+      // These fields are Option
       let extra =
         [
           p.locale |> option.map(fn(s) { #("locale", s) }),
@@ -60,6 +66,7 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
             True -> Some(#("is_published", "on"))
             _ -> None
           },
+          p.og_image |> option.map(fn(s) { #("og_image", s) }),
         ]
         |> option.values
 

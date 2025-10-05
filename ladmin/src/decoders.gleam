@@ -5,8 +5,8 @@ import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
 
 import core.{
-  type Category, type MiniPost, type MiniUser, type User, ApiListingResponse,
-  Category, MiniPost, MiniUser, Post, User,
+  type Category, type MiniPost, type MiniUser, type Post, type User,
+  ApiListingResponse, Category, MiniPost, MiniUser, Post, User,
 }
 
 pub fn make_user_decoder() -> Decoder(User) {
@@ -67,7 +67,7 @@ pub fn mini_post_decoder() -> Decoder(MiniPost) {
   ))
 }
 
-pub fn make_post_decoder() -> Decoder(core.Post) {
+pub fn make_post_decoder() -> Decoder(Post) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
@@ -79,6 +79,11 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   use categories <- decode.field("categories", decode.list(category_decoder))
   use locale <- decode.field("locale", decode.optional(decode.string))
   use author <- decode.field("author", decode.optional(mini_user_decoder()))
+  use og_image <- decode.field("og_image", decode.optional(decode.string))
+  use seo_description <- decode.field(
+    "seo_description",
+    decode.optional(decode.string),
+  )
   decode.success(Post(
     id:,
     title:,
@@ -90,6 +95,8 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
     categories:,
     locale:,
     author:,
+    og_image:,
+    seo_description:,
   ))
 }
 

@@ -1,7 +1,9 @@
 import formal/form as formlib
 import gleam/dynamic/decode
+import gleam/io
 import gleam/list
 import gleam/option.{type Option, Some}
+import gleam/pair
 import gleam/result
 import lucide_lustre as lc_icons
 import lustre/attribute as a
@@ -55,6 +57,17 @@ pub fn render_post_form(
     render_locale_field(form),
     render_author_field(form, users),
     render_is_published_field(form, checkboxes.is_published),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("OpenGraph image")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("og_image"),
+          a.type_("url"),
+          a.value(formlib.field_value(form, "og_image")),
+          a.class(class_text_input <> " px-4"),
+        ]),
+      ]),
+    ]),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -70,8 +83,15 @@ pub fn render_post_form(
   ]
   let handle_submit = fn(submitted_values) {
     // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
+    // When the checkbox value is missing, we should clear its previous data from the "formal" form.
+    // formal doesn't provide a function like remove_value, so we have to use set_values.
+    let multi_value_field = "categories"
+    let new_values =
+      formlib.field_values(form, multi_value_field)
+      |> list.map(pair.new(multi_value_field, _))
+      |> list.append(submitted_values, _)
     form
-    |> formlib.set_values(submitted_values)
+    |> formlib.set_values(new_values)
     |> formlib.run
     |> PostFormSubmitted
   }
