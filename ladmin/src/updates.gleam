@@ -17,7 +17,8 @@ import consts
 import core.{
   type ApiListingResponse, type Category, type LoginData, type MiniPost,
   type Msg, type Post, type PostEditablePart, type User, ApiListingResponse,
-  LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts, TryingLogin,
+  CheckBoxes, LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts,
+  TryingLogin,
 }
 import decoders.{encode_user}
 import models.{type AppMsg, type Model, Model}
@@ -284,7 +285,13 @@ pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) 
   case res {
     Ok(p) -> {
       let form = forms.make_post_form(Some(p))
-      let model = Model(..model, post_form: Some(form), is_loading: False)
+      let model =
+        Model(
+          ..model,
+          post_form: Some(form),
+          checkboxes: CheckBoxes(is_published: p.is_published),
+          is_loading: False,
+        )
       #(model, effect.none())
     }
     Error(_e) -> {
@@ -343,7 +350,10 @@ pub fn handle_api_update_post_result(
     Error(_e) -> {
       let message = models.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
-      #(Model(..model, flash_messages:), effect.none())
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
     }
     Ok(post) -> {
       let message =

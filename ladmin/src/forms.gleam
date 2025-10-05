@@ -1,6 +1,6 @@
 import formal/form.{type Form}
 import gleam/list
-import gleam/option.{type Option, Some}
+import gleam/option.{type Option, None, Some}
 
 import core.{type LoginData, type Post, LoginData, PostEditablePart}
 
@@ -27,9 +27,11 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         "categories",
         form.parse_list(form.parse_string),
       )
-      use body <- form.field("body", form.parse_string)
-      use locale <- form.field("locale", form.parse_string)
+      use body <- form.field("body", form.parse_optional(form.parse_string))
+      use locale <- form.field("locale", form.parse_optional(form.parse_string))
       use author <- form.field("author", form.parse_string)
+      // This field is rendered as checkbox, which has special behaviour
+      use is_published <- form.field("is_published", form.parse_checkbox)
       form.success(PostEditablePart(
         title:,
         slug:,
@@ -37,23 +39,33 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
         body:,
         locale:,
         author:,
+        is_published:,
       ))
     })
   case post {
     Some(p) -> {
       let serialized_categories =
         p.categories |> list.map(fn(c) { #("categories", c.id) })
-      let initial =
+      let initial = [
+        #("title", p.title),
+        #("slug", p.slug),
+        #("author", p.author |> option.map(fn(u) { u.id }) |> option.unwrap("")),
+      ]
+      let extra =
         [
-          #("title", p.title),
-          #("slug", p.slug),
-          #("body", p.body),
-          #("locale", p.locale),
-          #(
-            "author",
-            p.author |> option.map(fn(u) { u.id }) |> option.unwrap(""),
-          ),
+          p.locale |> option.map(fn(s) { #("locale", s) }),
+          p.body |> option.map(fn(s) { #("body", s) }),
+          // This field is a checkbox, so we must not add value to it if we want it to represent "False".
+          case p.is_published {
+            True -> Some(#("is_published", "on"))
+            _ -> None
+          },
         ]
+        |> option.values
+
+      let initial =
+        initial
+        |> list.append(extra)
         |> list.append(serialized_categories)
       form.add_values(form, initial)
     }

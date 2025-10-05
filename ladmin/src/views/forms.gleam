@@ -1,5 +1,6 @@
 import formal/form as formlib
 import gleam/dynamic/decode
+import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -11,9 +12,9 @@ import lustre/event as ev
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type MiniUser, type Msg, type PostEditablePart,
+  type Category, type CheckBoxes, type MiniUser, type Msg, type PostEditablePart,
   PostFormSubmitted, SlugGeneratorClicked, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane,
+  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
 }
 import ffi
 import views/widgets
@@ -35,6 +36,7 @@ pub fn render_post_form(
   form: formlib.Form(PostEditablePart),
   categories: List(Category),
   users: List(MiniUser),
+  checkboxes: CheckBoxes,
 ) {
   let children = [
     h.div([a.class(class_row)], [
@@ -53,6 +55,7 @@ pub fn render_post_form(
     render_body_field(form),
     render_locale_field(form),
     render_author_field(form, users),
+    render_is_published_field(form, checkboxes.is_published),
     h.hr([a.class("my-4")]),
     h.div([], [
       h.button(
@@ -66,8 +69,12 @@ pub fn render_post_form(
       ),
     ]),
   ]
-  let handle_submit = fn(values) {
-    form |> formlib.add_values(values) |> formlib.run |> PostFormSubmitted
+  let handle_submit = fn(submitted_values) {
+    // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
+    form
+    |> formlib.set_values(submitted_values)
+    |> formlib.run
+    |> PostFormSubmitted
   }
   h.form(
     [
@@ -268,6 +275,29 @@ fn render_author_field(
         Some(formlib.field_value(form, "author")),
         Some("Choose author..."),
       ),
+    ]),
+  ])
+}
+
+// Render "is_published" field with checkbox.
+// Currently, with lustre + formal, user clicking to the checkbox
+// doesn't make change to the value that "formal" manages.
+// Then, when the form is submitted, the submitted value for checkbox field
+// is still the one before user clicked.
+// So we need to use "on_check" event handler to make form data in sync with what users see.
+fn render_is_published_field(
+  _form: formlib.Form(PostEditablePart),
+  is_published: Bool,
+) {
+  h.div([a.class(class_row)], [
+    h.label([a.class(class_label)], [h.text("Published")]),
+    h.div([a.class("pt-2")], [
+      h.input([
+        a.name("is_published"),
+        a.type_("checkbox"),
+        a.checked(is_published),
+        ev.on_check(UserToggledIsPublishedCheckbox),
+      ]),
     ]),
   ])
 }

@@ -249,14 +249,14 @@ pub fn render_post_edit_page(id: String, model: Model) {
         "",
       )
     False -> {
+      let Model(users:, checkboxes:, ..) = model
       let form = case post_form, id {
-        Some(form), "" -> render_post_form(None, form, categories, model.users)
+        Some(form), "" ->
+          render_post_form(None, form, categories, users, checkboxes)
         Some(form), pid ->
-          render_post_form(Some(pid), form, categories, model.users)
+          render_post_form(Some(pid), form, categories, users, checkboxes)
         _, _ -> element.none()
       }
-      io.println("Post preview?")
-      echo model.post_body_preview
       let preview_dialog =
         model.post_body_preview
         |> option.map(fn(content) {

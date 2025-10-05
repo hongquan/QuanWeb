@@ -84,14 +84,14 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
-  use body <- decode.field("body", decode.string)
+  use body <- decode.field("body", decode.optional(decode.string))
   use is_published <- decode.field("is_published", decode.bool)
   let datetime_decoder = make_datetime_decoder()
   use created_at <- decode.field("created_at", datetime_decoder)
   use updated_at <- decode.field("updated_at", datetime_decoder)
   let category_decoder = make_category_decoder()
   use categories <- decode.field("categories", decode.list(category_decoder))
-  use locale <- decode.field("locale", decode.string)
+  use locale <- decode.field("locale", decode.optional(decode.string))
   use author <- decode.field("author", decode.optional(mini_user_decoder()))
   decode.success(Post(
     id:,

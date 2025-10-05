@@ -5,9 +5,9 @@ import lustre/effect
 import plinth/javascript/global
 
 import core.{
-  type Category, type FlashMessage, type LoginState, type MiniUser, type Msg,
-  type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
-  FlashMessage, FlashMessageTimeUp,
+  type Category, type CheckBoxes, type FlashMessage, type LoginState,
+  type MiniUser, type Msg, type PageOwnedObjectPaging, type PageOwnedObjects,
+  type PostEditablePart, CheckBoxes, FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
 import utils
@@ -26,12 +26,15 @@ pub type Model {
     users: List(MiniUser),
     post_form: Option(Form(PostEditablePart)),
     post_body_preview: Option(String),
+    checkboxes: CheckBoxes,
   )
 }
 
 // `Msg` is generic with route type, we make concrete type here
 pub type AppMsg =
   Msg(Route)
+
+pub const default_checkboxes = CheckBoxes(is_published: False)
 
 pub const default_model = Model(
   mounted_path: "/",
@@ -50,6 +53,7 @@ pub const default_model = Model(
   users: [],
   post_form: None,
   post_body_preview: None,
+  checkboxes: default_checkboxes,
 )
 
 pub fn create_success_message(content: String) {

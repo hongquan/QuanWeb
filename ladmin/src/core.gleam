@@ -35,11 +35,11 @@ pub type Post {
     title: String,
     slug: String,
     is_published: Bool,
-    body: String,
+    body: Option(String),
     created_at: DateTime,
     updated_at: DateTime,
     categories: List(Category),
-    locale: String,
+    locale: Option(String),
     author: Option(MiniUser),
   )
 }
@@ -109,10 +109,18 @@ pub type PostEditablePart {
     title: String,
     slug: String,
     categories: List(String),
-    body: String,
-    locale: String,
+    body: Option(String),
+    locale: Option(String),
     author: String,
+    is_published: Bool,
   )
+}
+
+// Keep the states of the checkboxes in page.
+// The "formal" library doesn't support a way to let us know if a  checkbox is checked,
+// so we need to track it ourselves.
+pub type CheckBoxes {
+  CheckBoxes(is_published: Bool)
 }
 
 pub type Msg(r) {
@@ -136,4 +144,5 @@ pub type Msg(r) {
   UserClickMarkdownPreview(text: String)
   ApiRenderedMarkdown(Result(String, rsvp.Error))
   ApiReturnedUsers(Result(List(MiniUser), rsvp.Error))
+  UserToggledIsPublishedCheckbox(Bool)
 }

@@ -22,10 +22,11 @@ import plinth/javascript/storage
 import core.{
   ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
   ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, FlashMessageTimeUp,
-  LogOutClicked, LoggedIn, NonLogin, OnRouteChange, PostFilterSubmitted,
-  PostFormSubmitted, RouterInitDone, SlugGeneratorClicked, TryingLogin,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, CheckBoxes,
+  FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
+  PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
+  TryingLogin, UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -233,6 +234,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiReturnedUsers(Ok(users)) -> {
       let model = Model(..model, users:)
+      #(model, effect.none())
+    }
+    UserToggledIsPublishedCheckbox(checked) -> {
+      let model = Model(..model, checkboxes: CheckBoxes(is_published: checked))
       #(model, effect.none())
     }
     _ -> #(model, effect.none())
