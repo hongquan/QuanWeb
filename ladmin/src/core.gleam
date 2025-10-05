@@ -3,7 +3,6 @@ import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
 import rsvp
-import tempo.{type DateTime}
 
 pub type Category {
   Category(id: String, title: String, title_vi: Option(String), slug: String)
@@ -17,8 +16,8 @@ pub type MiniPost {
     title: String,
     slug: String,
     is_published: Bool,
-    created_at: DateTime,
-    updated_at: DateTime,
+    created_at: Timestamp,
+    updated_at: Timestamp,
     categories: List(Category),
   )
 }
@@ -36,8 +35,8 @@ pub type Post {
     slug: String,
     is_published: Bool,
     body: Option(String),
-    created_at: DateTime,
-    updated_at: DateTime,
+    created_at: Timestamp,
+    updated_at: Timestamp,
     categories: List(Category),
     locale: Option(String),
     author: Option(MiniUser),

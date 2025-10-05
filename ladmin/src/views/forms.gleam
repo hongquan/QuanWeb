@@ -1,8 +1,7 @@
 import formal/form as formlib
 import gleam/dynamic/decode
-import gleam/io
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{type Option, Some}
 import gleam/result
 import lucide_lustre as lc_icons
 import lustre/attribute as a

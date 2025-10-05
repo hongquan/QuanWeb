@@ -1,6 +1,5 @@
 import consts
 import gleam/dynamic/decode
-import gleam/io
 import gleam/javascript/array
 import gleam/json
 import gleam/list
@@ -147,7 +146,9 @@ fn render_post_table_header() {
 fn render_post_row(post: MiniPost, mounted_path: String) {
   let MiniPost(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
-    datetime.format(created_at, DateFormat(tempo.CustomDate("DD MMM YYYY")))
+    created_at
+    |> datetime.from_timestamp
+    |> datetime.format(DateFormat(tempo.CustomDate("DD MMM YYYY")))
   let categories =
     post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
   let url = routes.as_url_string(PostEditPage(id), mounted_path)

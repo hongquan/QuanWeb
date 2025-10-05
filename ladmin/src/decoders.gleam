@@ -1,11 +1,8 @@
-import gleam/dynamic.{type Dynamic}
 import gleam/dynamic/decode.{type Decoder}
 import gleam/json
 import gleam/result
-import gleam/time/timestamp
+import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
-import tempo.{type DateTime}
-import tempo/datetime
 
 import core.{
   type Category, type MiniPost, type MiniUser, type User, ApiListingResponse,
@@ -31,24 +28,7 @@ pub fn encode_user(user: User) -> json.Json {
   ])
 }
 
-pub fn decode_datetime(
-  data: Dynamic,
-) -> Result(DateTime, List(decode.DecodeError)) {
-  data
-  |> decode.run(decode.string)
-  |> result.try(fn(s) {
-    timestamp.parse_rfc3339(s)
-    |> result.map_error(fn(_e) { decode.decode_error("RFC-3339 string", data) })
-    |> result.map(datetime.from_timestamp)
-  })
-}
-
-pub fn make_datetime_decoder() -> Decoder(DateTime) {
-  use data <- decode.new_primitive_decoder("DateTime")
-  data |> decode_datetime |> result.replace_error(datetime.unix_epoch)
-}
-
-pub fn make_uri_decoder() -> Decoder(uri.Uri) {
+pub fn uri_decoder() -> Decoder(uri.Uri) {
   use data <- decode.new_primitive_decoder("Uri")
   data
   |> decode.run(decode.string)
@@ -59,14 +39,21 @@ pub fn make_uri_decoder() -> Decoder(uri.Uri) {
   |> result.replace_error(uri.empty)
 }
 
+pub fn timestamp_decoder() -> Decoder(Timestamp) {
+  use data <- decode.new_primitive_decoder("Timestamp")
+  decode.run(data, decode.string)
+  |> result.replace_error(Nil)
+  |> result.try(timestamp.parse_rfc3339)
+  |> result.replace_error(timestamp.from_unix_seconds(0))
+}
+
 pub fn mini_post_decoder() -> Decoder(MiniPost) {
   use id <- decode.field("id", decode.string)
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
   use is_published <- decode.field("is_published", decode.bool)
-  let datetime_decoder = make_datetime_decoder()
-  use created_at <- decode.field("created_at", datetime_decoder)
-  use updated_at <- decode.field("updated_at", datetime_decoder)
+  use created_at <- decode.field("created_at", timestamp_decoder())
+  use updated_at <- decode.field("updated_at", timestamp_decoder())
   let category_decoder = make_category_decoder()
   use categories <- decode.field("categories", decode.list(category_decoder))
   decode.success(MiniPost(
@@ -86,9 +73,8 @@ pub fn make_post_decoder() -> Decoder(core.Post) {
   use slug <- decode.field("slug", decode.string)
   use body <- decode.field("body", decode.optional(decode.string))
   use is_published <- decode.field("is_published", decode.bool)
-  let datetime_decoder = make_datetime_decoder()
-  use created_at <- decode.field("created_at", datetime_decoder)
-  use updated_at <- decode.field("updated_at", datetime_decoder)
+  use created_at <- decode.field("created_at", timestamp_decoder())
+  use updated_at <- decode.field("updated_at", timestamp_decoder())
   let category_decoder = make_category_decoder()
   use categories <- decode.field("categories", decode.list(category_decoder))
   use locale <- decode.field("locale", decode.optional(decode.string))
@@ -120,7 +106,7 @@ pub fn make_listing_api_decoder(
 ) -> Decoder(core.ApiListingResponse(o)) {
   use count <- decode.field("count", decode.int)
   use total_pages <- decode.field("total_pages", decode.int)
-  let uri_decoder = make_uri_decoder()
+  let uri_decoder = uri_decoder()
   use prev <- decode.subfield(["links", "prev"], decode.optional(uri_decoder))
   use next <- decode.subfield(["links", "next"], decode.optional(uri_decoder))
   use objects <- decode.field("objects", decode.list(object_decoder))
