@@ -4,6 +4,7 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/pair
 import gleam/result
 import gleam/string
 import gleam/uri
@@ -78,16 +79,28 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   case route {
     HomePage -> #("/", None)
     LoginPage -> #("/login", None)
-    PostListPage(page, _q, _c) -> #(
-      "/posts",
-      page
-        |> option.map(fn(p) { [#("page", int.to_string(p))] })
-        |> option.map(uri.query_to_string),
-    )
+    PostListPage(page, _q, _c) -> #("/posts", to_page_query(page))
     PostEditPage("") -> #("/posts/new", None)
     PostEditPage(id) -> #("/posts/" <> id, None)
+    CategoryListPage(p) -> #("/categories/", to_page_query(p))
     _ -> #("/not-found", None)
   }
+}
+
+fn to_page_query(page: Option(Int)) {
+  page |> option.map(int.to_string) |> option.map(pair.new("page", _))
+  case page {
+    Some(p) ->
+      int.to_string(p)
+      |> pair.new("page", _)
+      |> list.wrap
+      |> uri.query_to_string
+      |> Some
+    None -> None
+  }
+  page
+  |> option.map(fn(p) { [#("page", int.to_string(p))] })
+  |> option.map(uri.query_to_string)
 }
 
 pub fn prefix(uri_parts: #(String, a), mounted_path: String) -> #(String, a) {
@@ -115,4 +128,14 @@ pub fn replace_page(
 ) -> List(#(String, String)) {
   let wo_page = query |> list.filter(fn(kv) { kv.0 != "page" })
   [#("page", int.to_string(page)), ..wo_page]
+}
+
+pub fn are_routes_matched(current: Route, link: Route) {
+  case current, link {
+    HomePage, HomePage -> True
+    PostListPage(..), PostListPage(..) -> True
+    PostEditPage(..), PostListPage(..) -> True
+    CategoryListPage(..), CategoryListPage(..) -> True
+    _, _ -> False
+  }
 }

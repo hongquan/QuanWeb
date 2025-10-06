@@ -16,7 +16,8 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, MiniPost, PageOwnedPosts, PostFilterSubmitted,
+  type Category, type MiniPost, LogOutClicked, MiniPost, PageOwnedPosts,
+  PostFilterSubmitted,
 }
 import ffi
 import icons/heroicons.{globe_asia_australia}
@@ -40,15 +41,18 @@ pub fn render_post_table_page(
 ) {
   case model.is_loading {
     True ->
-      skeleton.render_main_block(
-        [
-          h.div([a.class("mt-12 space-y-12")], [
-            render_flash_messages(model.flash_messages),
-            render_three_bar_pulse(),
-          ]),
-        ],
-        "",
-      )
+      element.fragment([
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
     False -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
@@ -93,7 +97,8 @@ pub fn render_post_table_page(
       let url_new_post =
         routes.as_url_string(PostEditPage(""), model.mounted_path)
       element.fragment([
-        skeleton.render_header_bar(core.LogOutClicked),
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
@@ -240,15 +245,18 @@ pub fn render_post_edit_page(id: String, model: Model) {
   let Model(post_form:, is_loading:, categories:, ..) = model
   case is_loading {
     True ->
-      skeleton.render_main_block(
-        [
-          h.div([a.class("mt-12 space-y-12")], [
-            render_flash_messages(model.flash_messages),
-            render_three_bar_pulse(),
-          ]),
-        ],
-        "",
-      )
+      element.fragment([
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
     False -> {
       let Model(users:, checkboxes:, ..) = model
       let form = case post_form, id {
@@ -279,7 +287,8 @@ pub fn render_post_edit_page(id: String, model: Model) {
         })
         |> option.unwrap(element.none())
       element.fragment([
-        skeleton.render_header_bar(core.LogOutClicked),
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
         skeleton.render_main_block(
           [
             portal.to("body", [], [preview_dialog]),
