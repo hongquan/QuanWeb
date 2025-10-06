@@ -1,11 +1,15 @@
 import { Ok, Error } from "./gleam.mjs"
 
-export function getFormData(select) {
+/**
+ * Go up from the passed element to the form
+ * and build FormData.
+ */
+export function getUpFormData(select) {
   const form = select.closest("form")
   if (!form) {
     return []
   }
-  return Array.from(form.elements).map(e => [e.name, e.value])
+  return Array.from(new FormData(form).entries())
 }
 
 export function getFormFieldValue(elm, name) {
@@ -28,4 +32,12 @@ export function showDialog(selector) {
   }
   console.warn(`${selector} is not found!`)
   return false
+}
+
+export function submitForm(form) {
+  form.submit()
+}
+
+export function getFormData(form) {
+  return Array.from(new FormData(form).entries())
 }

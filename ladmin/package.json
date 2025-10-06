@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.2.23",
+    "encre-css-vite": "https://gitlab.com/encre-org/encre-css-vite",
     "ts-gleam": "^1.0.1",
     "typescript": "~5.8.3",
     "unocss": "^66.5.2",

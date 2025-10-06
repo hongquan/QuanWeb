@@ -1,6 +1,5 @@
 import formal/form as formlib
 import gleam/dynamic/decode
-import gleam/io
 import gleam/list
 import gleam/option.{type Option, Some}
 import gleam/pair
@@ -10,12 +9,14 @@ import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
+import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
   type Category, type CheckBoxes, type MiniUser, type Msg, type PostEditablePart,
-  PostFormSubmitted, SlugGeneratorClicked, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
+  PostFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  UserToggledIsPublishedCheckbox,
 }
 import ffi
 import views/widgets
@@ -69,17 +70,7 @@ pub fn render_post_form(
       ]),
     ]),
     h.hr([a.class("my-4")]),
-    h.div([], [
-      h.button(
-        [
-          a.type_("submit"),
-          a.class(
-            "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-sky-700 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
-          ),
-        ],
-        [h.text("Save")],
-      ),
-    ]),
+    render_bottom_buttons(),
   ]
   let handle_submit = fn(submitted_values) {
     // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
@@ -93,12 +84,12 @@ pub fn render_post_form(
     form
     |> formlib.set_values(new_values)
     |> formlib.run
-    |> PostFormSubmitted
+    |> PostFormSubmitted(False)
   }
   h.form(
     [
       a.method("post"),
-      a.class("max-w-3xl mx-auto"),
+      a.class("max-w-3xl mx-auto mb-8"),
       ev.on_submit(handle_submit),
     ],
     children,
@@ -318,5 +309,51 @@ fn render_is_published_field(
         ev.on_check(UserToggledIsPublishedCheckbox),
       ]),
     ]),
+  ])
+}
+
+fn render_bottom_buttons() -> Element(Msg(a)) {
+  let submit_stay_click_handler =
+    ev.on("click", {
+      use elm <- decode.field("target", decode.dynamic)
+      case br_element.cast(elm) {
+        Ok(button) -> decode.success(SubmitStayButtonClicked(button))
+        Error(_e) ->
+          decode.failure(
+            SubmitStayButtonClicked(document.body()),
+            "HTMLButtonElement",
+          )
+      }
+    })
+  h.div([a.class("flex flex-row space-x-4")], [
+    h.button(
+      [
+        a.type_("submit"),
+        a.class(
+          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-sky-700 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
+        ),
+      ],
+      [h.text("Save and finish")],
+    ),
+    h.button(
+      [
+        a.type_("button"),
+        a.class(
+          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
+        ),
+        submit_stay_click_handler,
+      ],
+      [h.text("Save and stay")],
+    ),
+    h.div([a.class("grow")], []),
+    h.button(
+      [
+        a.type_("reset"),
+        a.class(
+          "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border border-gray-400 dark:border-gray-700 cursor-pointer",
+        ),
+      ],
+      [h.text("Reset")],
+    ),
   ])
 }

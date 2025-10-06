@@ -41,8 +41,7 @@ export default defineConfig({
     // UnoCSS(),
     // encrecss({
     //   include: [
-    //     // /build\/dev\/javascript\/ladmin\/.+\.mjs/,
-    //     /ladmin/,
+    //     /\.(ts|mjs|html|gleam)($|\?)/,
     //   ]
     // }),
     runEncreCss()

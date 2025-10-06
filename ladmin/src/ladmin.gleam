@@ -25,8 +25,9 @@ import core.{
   ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, CheckBoxes,
   FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
   PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
-  TryingLogin, UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
-  UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
+  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  UserToggledIsPublishedCheckbox,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -206,11 +207,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     ApiReturnedSlug(res) -> {
       #(updates.handle_api_slug_result(model, res), effect.none())
     }
-    PostFormSubmitted(res) -> {
-      updates.handle_post_form_submission(model, res)
+    PostFormSubmitted(result:, stay:) -> {
+      updates.handle_post_form_submission(model, result, stay)
     }
     ApiCreatedPost(res) -> updates.handle_api_create_post_result(model, res)
-    ApiUpdatedPost(res) -> updates.handle_api_update_post_result(model, res)
+    ApiUpdatedPost(res, stay) ->
+      updates.handle_api_update_post_result(model, res, stay)
     FlashMessageTimeUp -> {
       let flash_messages =
         model.flash_messages
@@ -239,6 +241,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     UserToggledIsPublishedCheckbox(checked) -> {
       let model = Model(..model, checkboxes: CheckBoxes(is_published: checked))
       #(model, effect.none())
+    }
+    SubmitStayButtonClicked(dom_element) -> {
+      updates.handle_submit_stay_button_clicked(model, dom_element)
     }
     _ -> #(model, effect.none())
   }

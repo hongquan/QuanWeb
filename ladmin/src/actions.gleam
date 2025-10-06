@@ -83,10 +83,14 @@ pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
   rsvp.post(consts.api_slug_generator, json.string(title), handler)
 }
 
-pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f)) {
+pub fn update_post_via_api(
+  id: String,
+  data: PostEditablePart,
+  stay: Bool,
+) -> Effect(Msg(f)) {
   let body = dump_post_to_json(data) |> json.to_string
   let decoder = decoders.make_post_decoder()
-  let handler = rsvp.expect_json(decoder, ApiUpdatedPost)
+  let handler = rsvp.expect_json(decoder, ApiUpdatedPost(_, stay))
   let url = consts.api_posts <> id
   case
     rsvp.parse_relative_uri(url)
@@ -97,7 +101,7 @@ pub fn update_post_via_api(id: String, data: PostEditablePart) -> Effect(Msg(f))
     |> result.map(rsvp.send(_, handler))
     |> result.map_error(fn(_e) {
       use dispatch <- effect.from
-      dispatch(ApiUpdatedPost(Error(rsvp.BadUrl(url))))
+      dispatch(ApiUpdatedPost(Error(rsvp.BadUrl(url)), stay))
     })
   {
     Ok(x) -> x

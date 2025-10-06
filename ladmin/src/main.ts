@@ -1,7 +1,7 @@
 import './main.css'
 // import 'virtual:uno.css'
+// import 'virtual:encre.css'
 import './load-indicators.css'
-// import '/encre.css'
 
 const BASE_PATH = import.meta.env.BASE_URL
 

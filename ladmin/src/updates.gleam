@@ -1,14 +1,16 @@
-import ffi
 import formal/form as formlib
 import forms
 import gleam/dynamic/decode
 import gleam/http/response.{Response}
 import gleam/io
+import gleam/javascript/array
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/pair
 import gleam/result
 import lustre/effect.{type Effect}
+import plinth/browser/element.{type Element}
 import plinth/javascript/storage
 import rsvp
 
@@ -18,9 +20,10 @@ import core.{
   type ApiListingResponse, type Category, type LoginData, type MiniPost,
   type Msg, type Post, type PostEditablePart, type User, ApiListingResponse,
   CheckBoxes, LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts,
-  TryingLogin,
+  PostFormSubmitted, TryingLogin,
 }
 import decoders.{encode_user}
+import ffi
 import models.{type AppMsg, type Model, Model}
 import routes.{
   type Route, CategoryListPage, HomePage, LoginPage, PostEditPage, PostListPage,
@@ -325,12 +328,13 @@ pub fn handle_api_slug_result(
 pub fn handle_post_form_submission(
   model: Model,
   res: Result(PostEditablePart, formlib.Form(PostEditablePart)),
+  stay: Bool,
 ) {
   case res {
     Ok(data) -> {
       let whatsnext = case model.route {
         PostEditPage("") -> actions.create_post_via_api(data)
-        PostEditPage(id) -> actions.update_post_via_api(id, data)
+        PostEditPage(id) -> actions.update_post_via_api(id, data, stay)
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -345,6 +349,7 @@ pub fn handle_post_form_submission(
 pub fn handle_api_update_post_result(
   model: Model,
   res: Result(Post, rsvp.Error),
+  stay: Bool,
 ) {
   case res {
     Error(_e) -> {
@@ -361,9 +366,16 @@ pub fn handle_api_update_post_result(
           "Post " <> post.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
+      let gonext = case stay {
+        False -> routes.goto(PostListPage(None, None, None), model.mounted_path)
+        True -> effect.none()
+      }
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          gonext,
+        ]),
       )
     }
   }
@@ -431,4 +443,45 @@ pub fn handle_rendered_markdown_received(model: Model, html: String) {
     Nil
   }
   #(model, whatsnext)
+}
+
+pub fn handle_submit_stay_button_clicked(
+  model: Model,
+  button: Element,
+) -> #(Model, Effect(Msg(a))) {
+  let whatsnext = case model.post_form {
+    Some(form) -> {
+      let whatsnext = {
+        use dispatch, _root <- effect.after_paint
+        let app_msg =
+          element.closest(button, "form")
+          |> result.map(ffi.get_form_data)
+          |> result.map(array.to_list)
+          |> result.map(process_post_form_data_to_produce_msg(_, form, True))
+        app_msg |> result.map(dispatch) |> result.unwrap(Nil)
+      }
+      whatsnext
+    }
+    None -> effect.none()
+  }
+  #(model, whatsnext)
+}
+
+fn process_post_form_data_to_produce_msg(
+  submitted_values: List(#(String, String)),
+  form: formlib.Form(PostEditablePart),
+  stay: Bool,
+) {
+  // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
+  // When the checkbox value is missing, we should clear its previous data from the "formal" form.
+  // formal doesn't provide a function like remove_value, so we have to use set_values.
+  let multi_value_field = "categories"
+  let new_values =
+    formlib.field_values(form, multi_value_field)
+    |> list.map(pair.new(multi_value_field, _))
+    |> list.append(submitted_values, _)
+  form
+  |> formlib.set_values(new_values)
+  |> formlib.run
+  |> PostFormSubmitted(stay)
 }

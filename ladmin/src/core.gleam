@@ -2,6 +2,7 @@ import formal/form.{type Form}
 import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
+import plinth/browser/element.{type Element}
 import rsvp
 
 pub type Category {
@@ -136,10 +137,13 @@ pub type Msg(r) {
   ApiReturnedLogOutDone(Result(String, rsvp.Error))
   PostFilterSubmitted(List(#(String, String)))
   ApiReturnedSinglePost(Result(Post, rsvp.Error))
-  PostFormSubmitted(Result(PostEditablePart, Form(PostEditablePart)))
+  PostFormSubmitted(
+    result: Result(PostEditablePart, Form(PostEditablePart)),
+    stay: Bool,
+  )
   SlugGeneratorClicked(String)
   ApiReturnedSlug(Result(String, rsvp.Error))
-  ApiUpdatedPost(Result(Post, rsvp.Error))
+  ApiUpdatedPost(result: Result(Post, rsvp.Error), stay: Bool)
   ApiCreatedPost(Result(Post, rsvp.Error))
   FlashMessageTimeUp
   UserMovedCategoryBetweenPane(id: String, selected: Bool)
@@ -147,4 +151,5 @@ pub type Msg(r) {
   ApiRenderedMarkdown(Result(String, rsvp.Error))
   ApiReturnedUsers(Result(List(MiniUser), rsvp.Error))
   UserToggledIsPublishedCheckbox(Bool)
+  SubmitStayButtonClicked(Element)
 }

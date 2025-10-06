@@ -195,7 +195,7 @@ fn render_filter_form(
     use el <- decode.field("target", decode.dynamic)
     let form_data =
       br_element.cast(el)
-      |> result.map(ffi.get_form_data)
+      |> result.map(ffi.get_up_form_data)
       |> result.map(array.to_list)
     form_data
     |> result.map(fn(data) { decode.success(PostFilterSubmitted(data)) })
