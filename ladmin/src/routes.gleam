@@ -51,6 +51,21 @@ pub fn parse_to_route(
       let cat_id = query_dict |> dict.get("cat_id") |> option.from_result
       PostListPage(page, q:, cat_id:)
     }
+    "/categories", queries -> {
+      let query_dict = dict.from_list(queries)
+      let page =
+        query_dict
+        |> dict.get("page")
+        |> result.try(int.parse)
+        |> result.map(fn(p) {
+          case p {
+            n if n < 1 -> 1
+            n -> n
+          }
+        })
+        |> option.from_result
+      CategoryListPage(page)
+    }
     _, _ -> {
       io.println("Unknown " <> path)
       NotFound
@@ -82,7 +97,7 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     PostListPage(page, _q, _c) -> #("/posts", to_page_query(page))
     PostEditPage("") -> #("/posts/new", None)
     PostEditPage(id) -> #("/posts/" <> id, None)
-    CategoryListPage(p) -> #("/categories/", to_page_query(p))
+    CategoryListPage(p) -> #("/categories", to_page_query(p))
     _ -> #("/not-found", None)
   }
 }

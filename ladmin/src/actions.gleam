@@ -12,8 +12,8 @@ import rsvp
 import consts
 import core.{
   type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
-  ApiRenderedMarkdown, ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers,
-  ApiUpdatedPost, LoginData,
+  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedSinglePost,
+  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -56,10 +56,10 @@ pub fn initiate_logout() -> Effect(Msg(b)) {
   rsvp.post("/_api/logout", json.bool(True), handler)
 }
 
-pub fn load_categories(page: Int) {
+pub fn load_categories(page: Int) -> Effect(Msg(a)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_category_decoder())
-  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedCategories)
+  let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
   let query = uri.query_to_string([#("page", int.to_string(page))]) |> Some
   let url = uri.Uri(..uri.empty, path: consts.api_categories, query:)
   rsvp.get(uri.to_string(url), handler)
@@ -68,7 +68,7 @@ pub fn load_categories(page: Int) {
 pub fn load_categories_by_url(url: Uri) -> Effect(Msg(d)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_category_decoder())
-  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedCategories)
+  let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
   rsvp.get(uri.to_string(url), handler)
 }
 

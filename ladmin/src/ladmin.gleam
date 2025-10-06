@@ -24,15 +24,16 @@ import core.{
   ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
   ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, CheckBoxes,
   FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
-  PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
-  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  PageOwnedCategories, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
+  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
   UserToggledIsPublishedCheckbox,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
 import routes.{
-  HomePage, LoginPage, PostEditPage, PostListPage, on_url_change, parse_to_route,
+  CategoryListPage, HomePage, LoginPage, PostEditPage, PostListPage,
+  on_url_change, parse_to_route,
 }
 import updates
 import views/posts
@@ -151,6 +152,13 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
             is_loading,
           )
         }
+        // In CategoryListPagei page, call API to load categories
+        CategoryListPage(Some(p)), _ if p < 1 -> {
+          #(routes.goto(CategoryListPage(None), mounted_path), False)
+        }
+        CategoryListPage(p), _ -> {
+          #(actions.load_categories(option.unwrap(p, 1)), True)
+        }
         // Already logged in, just serve, no redirect
         _, LoggedIn(_u) -> #(effect.none(), False)
         _, _ -> {
@@ -261,6 +269,9 @@ fn view(model: Model) -> Element(AppMsg) {
       posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
     PostEditPage(id), LoggedIn(_u) -> posts.render_post_edit_page(id, model)
+    CategoryListPage(page), _ -> {
+      posts.render_category_table_page(option.unwrap(page, 1), model)
+    }
     _, _ -> {
       echo route
       echo login_state

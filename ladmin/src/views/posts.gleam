@@ -9,6 +9,7 @@ import gleam/string
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
+import lustre/element/keyed
 import lustre/event as ev
 import lustre/portal
 import plinth/browser/element as br_element
@@ -16,8 +17,8 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, LogOutClicked, MiniPost, PageOwnedPosts,
-  PostFilterSubmitted,
+  type Category, type MiniPost, Category, LogOutClicked, MiniPost,
+  PageOwnedCategories, PageOwnedPosts, PostFilterSubmitted,
 }
 import ffi
 import icons/heroicons.{globe_asia_australia}
@@ -79,7 +80,7 @@ pub fn render_post_table_page(
               [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
               [
                 render_post_table_header(),
-                h.tbody(
+                keyed.tbody(
                   [
                     a.class(
                       "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
@@ -157,31 +158,35 @@ fn render_post_row(post: MiniPost, mounted_path: String) {
   let categories =
     post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
   let url = routes.as_url_string(PostEditPage(id), mounted_path)
-  h.tr([], [
-    h.td([a.class(class_cell)], [
-      h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
-    ]),
-    h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
-    h.td([a.class(class_cell), a.class("text-sm")], [h.text(categories)]),
-    h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
-    h.td([a.class(class_cell), a.class("text-sm")], [
-      h.div([a.class("flex items-center space-x-4")], [
-        h.a(
-          [
-            a.href("#"),
-            a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
-          ],
-          [globe_asia_australia()],
-        ),
-        h.a([a.href("#"), a.class("hover:text-blue-600")], [
-          lucide_icon.view([a.class("w-5 h-auto")]),
-        ]),
-        h.a([a.href("#"), a.class("hover:text-red-600")], [
-          lucide_icon.eraser([a.class("w-5 h-auto")]),
+
+  #(
+    id,
+    h.tr([], [
+      h.td([a.class(class_cell)], [
+        h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
+      ]),
+      h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
+      h.td([a.class(class_cell), a.class("text-sm")], [h.text(categories)]),
+      h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
+      h.td([a.class(class_cell), a.class("text-sm")], [
+        h.div([a.class("flex items-center space-x-4")], [
+          h.a(
+            [
+              a.href("#"),
+              a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
+            ],
+            [globe_asia_australia()],
+          ),
+          h.a([a.href("#"), a.class("hover:text-blue-600")], [
+            lucide_icon.view([a.class("w-5 h-auto")]),
+          ]),
+          h.a([a.href("#"), a.class("hover:text-red-600")], [
+            lucide_icon.eraser([a.class("w-5 h-auto")]),
+          ]),
         ]),
       ]),
     ]),
-  ])
+  )
 }
 
 fn render_filter_form(
@@ -302,4 +307,115 @@ pub fn render_post_edit_page(id: String, model: Model) {
       ])
     }
   }
+}
+
+pub fn render_category_table_page(page: Int, model: Model) {
+  case model.is_loading {
+    True ->
+      element.fragment([
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+    False -> {
+      let categories = case model.page_owned_objects {
+        PageOwnedCategories(objects) -> objects
+        _ -> []
+      }
+      let total_pages = model.page_owned_object_paging.total_pages
+      let query_list = []
+      let paginator = render_paginator(page, total_pages, query_list)
+      let rows =
+        categories |> list.map(render_category_row(_, model.mounted_path))
+      let body =
+        h.div(
+          [
+            a.class(
+              "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
+            ),
+          ],
+          [
+            h.table(
+              [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
+              [
+                render_category_table_header(),
+                keyed.tbody(
+                  [
+                    a.class(
+                      "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+                    ),
+                  ],
+                  rows,
+                ),
+              ],
+            ),
+          ],
+        )
+
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            render_flash_messages(model.flash_messages),
+            body,
+            paginator,
+          ],
+          "space-y-8",
+        ),
+      ])
+    }
+  }
+}
+
+fn render_category_table_header() {
+  let columns = ["Title", "Slug", "Title (Vi)"]
+  let cells =
+    columns
+    |> list.map(fn(label) {
+      h.th(
+        [
+          a.class(
+            "py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400",
+          ),
+          a.scope("col"),
+        ],
+        [h.text(label)],
+      )
+    })
+  let action_column = h.th([a.class("sr-only")], [h.text("Action")])
+  h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
+    h.tr([], cells |> list.append([action_column])),
+  ])
+}
+
+fn render_category_row(category: Category, mounted_path: String) {
+  let Category(id:, title:, slug:, title_vi:) = category
+
+  #(
+    id,
+    h.tr([], [
+      h.td([a.class(class_cell)], [
+        h.a([a.href(mounted_path), a.class("hover:underline")], [
+          h.text(title),
+        ]),
+      ]),
+      h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
+      h.td([a.class(class_cell), a.class("text-sm")], [
+        h.text(title_vi |> option.unwrap("")),
+      ]),
+      h.td([a.class(class_cell), a.class("text-sm")], [
+        h.a([a.href("#"), a.class("hover:text-red-600")], [
+          lucide_icon.eraser([a.class("w-5 h-auto")]),
+        ]),
+      ]),
+    ]),
+  )
 }

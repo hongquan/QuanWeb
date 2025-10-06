@@ -19,8 +19,8 @@ import consts
 import core.{
   type ApiListingResponse, type Category, type LoginData, type MiniPost,
   type Msg, type Post, type PostEditablePart, type User, ApiListingResponse,
-  CheckBoxes, LoggedIn, NonLogin, PageOwnedObjectPaging, PageOwnedPosts,
-  PostFormSubmitted, TryingLogin,
+  CheckBoxes, LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging,
+  PageOwnedPosts, PostFormSubmitted, TryingLogin,
 }
 import decoders.{encode_user}
 import ffi
@@ -200,8 +200,14 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         is_loading,
       )
     }
+    CategoryListPage(p), _ -> {
+      let load_categories_action = actions.load_categories(option.unwrap(p, 1))
+      #(load_categories_action, True)
+    }
     _, _ -> #(effect.none(), False)
   }
+  io.println("Reset page_owned_objects")
+  echo new_route
   let #(post_form, page_owned_objects) = case new_route {
     PostEditPage("") -> #(Some(forms.make_post_form(None)), PageOwnedPosts([]))
     PostEditPage(_id) -> #(model.post_form, PageOwnedPosts([]))
@@ -266,7 +272,7 @@ pub fn handle_api_list_category_result(
           let model =
             Model(
               ..model,
-              page_owned_objects: core.PageOwnedCategories(info.objects),
+              page_owned_objects: PageOwnedCategories(info.objects),
               page_owned_object_paging: PageOwnedObjectPaging(
                 count:,
                 total_pages:,
