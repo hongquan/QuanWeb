@@ -21,10 +21,10 @@ import plinth/javascript/storage
 
 import core.{
   ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
-  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, CheckBoxes,
-  FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
-  PageOwnedCategories, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
+  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSingleCategory,
+  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost,
+  CheckBoxes, FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin,
+  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
   SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
   UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
   UserToggledIsPublishedCheckbox,
@@ -32,8 +32,8 @@ import core.{
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
 import routes.{
-  CategoryListPage, HomePage, LoginPage, PostEditPage, PostListPage,
-  on_url_change, parse_to_route,
+  CategoryEditPage, CategoryListPage, HomePage, LoginPage, PostEditPage,
+  PostListPage, on_url_change, parse_to_route,
 }
 import updates
 import views/posts
@@ -96,84 +96,11 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   io.println("In update()")
-  let Model(
-    route:,
-    login_state:,
-    mounted_path:,
-    categories:,
-    partial_load_categories:,
-    ..,
-  ) = model
+  let Model(route:, mounted_path:, ..) = model
   case msg {
-    RouterInitDone -> {
-      io.println("RouterInitDone")
-      echo route
-      let #(whatsnext, is_loading) = case route, login_state {
-        LoginPage, _ -> #(effect.none(), False)
-        // If user has already logged-in, and visiting HomePage, redirect to PostList
-        HomePage, LoggedIn(_u) -> {
-          #(routes.goto(PostListPage(None, None, None), mounted_path), False)
-        }
-        // In PostList page, call API to load posts
-        PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
-          routes.goto(PostListPage(None, None, None), mounted_path),
-          False,
-        )
-        PostListPage(p, q, cat_id), LoggedIn(_u) -> {
-          let load_posts_action =
-            actions.load_posts(option.unwrap(p, 1), q, cat_id)
-          let load_categories_action = case
-            categories,
-            partial_load_categories
-          {
-            [], _o -> actions.load_categories(1)
-            _, _ -> effect.none()
-          }
-          #(effect.batch([load_posts_action, load_categories_action]), True)
-        }
-        PostEditPage(id), _ -> {
-          let #(load_post_action, is_loading) = case id {
-            "" -> #(effect.none(), False)
-            s -> #(actions.load_single_post(s), True)
-          }
-          let load_categories_action = case
-            categories,
-            partial_load_categories
-          {
-            [], _o -> actions.load_categories(1)
-            _, _ -> effect.none()
-          }
-          #(
-            effect.batch([
-              load_post_action,
-              load_categories_action,
-              actions.load_users(),
-            ]),
-            is_loading,
-          )
-        }
-        // In CategoryListPagei page, call API to load categories
-        CategoryListPage(Some(p)), _ if p < 1 -> {
-          #(routes.goto(CategoryListPage(None), mounted_path), False)
-        }
-        CategoryListPage(p), _ -> {
-          #(actions.load_categories(option.unwrap(p, 1)), True)
-        }
-        // Already logged in, just serve, no redirect
-        _, LoggedIn(_u) -> #(effect.none(), False)
-        _, _ -> {
-          #(routes.goto(LoginPage, mounted_path), False)
-        }
-      }
-      // If the initial page is the "create post" page, create a form
-      let post_form = case route {
-        PostEditPage("") -> Some(forms.make_post_form(None))
-        _ -> model.post_form
-      }
-      let model = Model(..model, is_loading:, post_form:)
-      #(model, whatsnext)
-    }
+    RouterInitDone -> updates.handle_router_init_done(model)
     OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)
+
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")
       updates.handle_login_submission(model, form)
@@ -207,13 +134,13 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, modem.push(path, Some(query), None))
     }
     ApiReturnedSinglePost(res) ->
-      updates.handle_api_load_post_result(model, res)
+      updates.handle_api_retrieve_post_result(model, res)
     SlugGeneratorClicked(title) -> #(
       model,
       actions.initiate_generate_slug(title),
     )
     ApiReturnedSlug(res) -> {
-      #(updates.handle_api_slug_result(model, res), effect.none())
+      #(updates.handle_api_slug_generation(model, res), effect.none())
     }
     PostFormSubmitted(result:, stay:) -> {
       updates.handle_post_form_submission(model, result, stay)
@@ -253,6 +180,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     SubmitStayButtonClicked(dom_element) -> {
       updates.handle_submit_stay_button_clicked(model, dom_element)
     }
+    ApiReturnedSingleCategory(res) -> {
+      updates.handle_api_retrieve_category_result(model, res)
+    }
     _ -> #(model, effect.none())
   }
 }
@@ -272,6 +202,8 @@ fn view(model: Model) -> Element(AppMsg) {
     CategoryListPage(page), _ -> {
       posts.render_category_table_page(option.unwrap(page, 1), model)
     }
+    CategoryEditPage(id), LoggedIn(_u) ->
+      posts.render_category_edit_page(id, model)
     _, _ -> {
       echo route
       echo login_state

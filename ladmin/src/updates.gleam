@@ -26,11 +26,86 @@ import decoders.{encode_user}
 import ffi
 import models.{type AppMsg, type Model, Model}
 import routes.{
-  type Route, CategoryListPage, HomePage, LoginPage, PostEditPage, PostListPage,
+  type Route, CategoryEditPage, CategoryListPage, HomePage, LoginPage,
+  PostEditPage, PostListPage,
 }
 
 pub type LoginValidationDetail {
   LoginFailureDetail(message: String, email: String, password: String)
+}
+
+pub fn handle_router_init_done(model: Model) {
+  io.println("RouterInitDone")
+  let Model(
+    route:,
+    login_state:,
+    mounted_path:,
+    categories:,
+    partial_load_categories:,
+    ..,
+  ) = model
+  echo route
+
+  let #(whatsnext, is_loading) = case route, login_state {
+    LoginPage, _ -> #(effect.none(), False)
+    // If user has already logged-in, and visiting HomePage, redirect to PostList
+    HomePage, LoggedIn(_u) -> {
+      #(routes.goto(PostListPage(None, None, None), mounted_path), False)
+    }
+    // In PostList page, call API to load posts
+    PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
+      routes.goto(PostListPage(None, None, None), mounted_path),
+      False,
+    )
+    PostListPage(p, q, cat_id), LoggedIn(_u) -> {
+      let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
+      let load_categories_action = case categories, partial_load_categories {
+        [], _o -> actions.load_categories(1)
+        _, _ -> effect.none()
+      }
+      #(effect.batch([load_posts_action, load_categories_action]), True)
+    }
+    PostEditPage(id), _ -> {
+      let #(load_post_action, is_loading) = case id {
+        "" -> #(effect.none(), False)
+        s -> #(actions.load_single_post(s), True)
+      }
+      let load_categories_action = case categories, partial_load_categories {
+        [], _o -> actions.load_categories(1)
+        _, _ -> effect.none()
+      }
+      #(
+        effect.batch([
+          load_post_action,
+          load_categories_action,
+          actions.load_users(),
+        ]),
+        is_loading,
+      )
+    }
+    // In CategoryListPagei page, call API to load categories
+    CategoryListPage(Some(p)), _ if p < 1 -> {
+      #(routes.goto(CategoryListPage(None), mounted_path), False)
+    }
+    CategoryListPage(p), _ -> {
+      #(actions.load_categories(option.unwrap(p, 1)), True)
+    }
+    CategoryEditPage(id), _ -> {
+      #(actions.load_single_category(id), True)
+    }
+    // Already logged in, just serve, no redirect
+    _, LoggedIn(_u) -> #(effect.none(), False)
+    _, _ -> {
+      #(routes.goto(LoginPage, mounted_path), False)
+    }
+  }
+  // If the initial page is the "create post" page, create a form
+  let post_form = case route {
+    PostEditPage("") -> Some(forms.make_post_form(None))
+    _ -> model.post_form
+  }
+  let model = Model(..model, is_loading:, post_form:)
+  #(model, whatsnext)
 }
 
 pub fn handle_login_submission(
@@ -290,7 +365,10 @@ pub fn handle_api_list_category_result(
   }
 }
 
-pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) {
+pub fn handle_api_retrieve_post_result(
+  model: Model,
+  res: Result(Post, rsvp.Error),
+) {
   case res {
     Ok(p) -> {
       let form = forms.make_post_form(Some(p))
@@ -304,7 +382,7 @@ pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) 
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load posts")
+      let message = models.create_danger_message("Failed to load post")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -317,16 +395,28 @@ pub fn handle_api_load_post_result(model: Model, res: Result(Post, rsvp.Error)) 
   }
 }
 
-pub fn handle_api_slug_result(
+pub fn handle_api_slug_generation(
   model: Model,
   res: Result(String, rsvp.Error),
 ) -> Model {
   case res {
     Error(_e) -> model
     Ok(slug) -> {
-      let post_form =
-        model.post_form |> option.map(formlib.add_string(_, "slug", slug))
-      Model(..model, post_form:)
+      let #(post_form, category_form) = case
+        model.post_form,
+        model.category_form
+      {
+        Some(form), None -> #(
+          Some(formlib.add_string(form, "slug", slug)),
+          None,
+        )
+        None, Some(form) -> #(
+          None,
+          Some(formlib.add_string(form, "slug", slug)),
+        )
+        p, q -> #(p, q)
+      }
+      Model(..model, post_form:, category_form:)
     }
   }
 }
@@ -490,4 +580,28 @@ fn process_post_form_data_to_produce_msg(
   |> formlib.set_values(new_values)
   |> formlib.run
   |> PostFormSubmitted(stay)
+}
+
+pub fn handle_api_retrieve_category_result(
+  model: Model,
+  res: Result(Category, rsvp.Error),
+) {
+  case res {
+    Ok(cat) -> {
+      let form = forms.make_category_form(Some(cat))
+      let model = Model(..model, category_form: Some(form), is_loading: False)
+      #(model, effect.none())
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load category")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          is_loading: False,
+        )
+      #(model, effect.none())
+    }
+  }
 }

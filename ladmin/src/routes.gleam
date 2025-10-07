@@ -17,6 +17,7 @@ pub type Route {
   PostListPage(page: Option(Int), q: Option(String), cat_id: Option(String))
   PostEditPage(id: String)
   CategoryListPage(page: Option(Int))
+  CategoryEditPage(id: String)
   NotFound
 }
 
@@ -66,6 +67,7 @@ pub fn parse_to_route(
         |> option.from_result
       CategoryListPage(page)
     }
+    "/categories/" <> id, _ -> CategoryEditPage(id)
     _, _ -> {
       io.println("Unknown " <> path)
       NotFound
@@ -97,7 +99,9 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     PostListPage(page, _q, _c) -> #("/posts", to_page_query(page))
     PostEditPage("") -> #("/posts/new", None)
     PostEditPage(id) -> #("/posts/" <> id, None)
-    CategoryListPage(p) -> #("/categories", to_page_query(p))
+    CategoryListPage(page) -> #("/categories", to_page_query(page))
+    CategoryEditPage("") -> #("/categories/new", None)
+    CategoryEditPage(id) -> #("/categories/" <> id, None)
     _ -> #("/not-found", None)
   }
 }
@@ -151,6 +155,7 @@ pub fn are_routes_matched(current: Route, link: Route) {
     PostListPage(..), PostListPage(..) -> True
     PostEditPage(..), PostListPage(..) -> True
     CategoryListPage(..), CategoryListPage(..) -> True
+    CategoryEditPage(..), CategoryListPage(..) -> True
     _, _ -> False
   }
 }

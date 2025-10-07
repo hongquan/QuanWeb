@@ -24,7 +24,7 @@ import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model, Model}
-import routes.{PostEditPage}
+import routes.{CategoryEditPage, PostEditPage}
 import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
@@ -398,12 +398,13 @@ fn render_category_table_header() {
 
 fn render_category_row(category: Category, mounted_path: String) {
   let Category(id:, title:, slug:, title_vi:) = category
+  let url = routes.as_url_string(CategoryEditPage(id), mounted_path)
 
   #(
     id,
     h.tr([], [
       h.td([a.class(class_cell)], [
-        h.a([a.href(mounted_path), a.class("hover:underline")], [
+        h.a([a.href(url), a.class("hover:underline")], [
           h.text(title),
         ]),
       ]),
@@ -418,4 +419,48 @@ fn render_category_row(category: Category, mounted_path: String) {
       ]),
     ]),
   )
+}
+
+pub fn render_category_edit_page(id: String, model: Model) {
+  let Model(category_form:, is_loading:, ..) = model
+  case is_loading {
+    True -> {
+      element.fragment([
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+    }
+    False -> {
+      let form = case category_form, id {
+        Some(form), "" -> {
+          forms.render_category_form(None, form)
+        }
+        Some(form), cid -> {
+          forms.render_category_form(Some(cid), form)
+        }
+        _, _ -> element.none()
+      }
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("space-y-8")], [
+              render_flash_messages(model.flash_messages),
+              form,
+            ]),
+          ],
+          "",
+        ),
+      ])
+    }
+  }
 }

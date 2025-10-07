@@ -13,10 +13,10 @@ import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type CheckBoxes, type MiniUser, type Msg, type PostEditablePart,
-  PostFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
-  UserToggledIsPublishedCheckbox,
+  type Category, type CategoryEditablePart, type CheckBoxes, type MiniUser,
+  type Msg, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
+  SubmitStayButtonClicked, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
 }
 import ffi
 import views/widgets
@@ -96,7 +96,7 @@ pub fn render_post_form(
   )
 }
 
-fn render_slug_field(form: formlib.Form(PostEditablePart)) {
+fn render_slug_field(form: formlib.Form(o)) {
   let handler_slug_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_title = case br_element.cast(elm) {
@@ -356,4 +356,26 @@ fn render_bottom_buttons() -> Element(Msg(a)) {
       [h.text("Reset")],
     ),
   ])
+}
+
+pub fn render_category_form(
+  _cid: Option(String),
+  form: formlib.Form(CategoryEditablePart),
+) {
+  let children = [
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Title")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("title"),
+          a.type_("text"),
+          a.value(formlib.field_value(form, "title")),
+          a.class(class_text_input <> " px-4"),
+        ]),
+      ]),
+    ]),
+    render_slug_field(form),
+  ]
+
+  h.form([a.method("post")], children)
 }

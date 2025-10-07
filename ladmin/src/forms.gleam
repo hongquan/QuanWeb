@@ -2,7 +2,10 @@ import formal/form.{type Form}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 
-import core.{type LoginData, type Post, LoginData, PostEditablePart}
+import core.{
+  type Category, type CategoryEditablePart, type LoginData, type Post,
+  CategoryEditablePart, LoginData, PostEditablePart,
+}
 
 pub fn create_login_form() -> Form(LoginData) {
   form.new({
@@ -79,5 +82,34 @@ pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
     _ -> {
       form
     }
+  }
+}
+
+pub fn make_category_form(
+  category: Option(Category),
+) -> Form(CategoryEditablePart) {
+  let form =
+    form.new({
+      use title <- form.field(
+        "title",
+        form.parse_string |> form.check_not_empty,
+      )
+      use slug <- form.field("slug", form.parse_string |> form.check_not_empty)
+      use title_vi <- form.field(
+        "title_vi",
+        form.parse_optional(form.parse_string),
+      )
+      form.success(CategoryEditablePart(title:, slug:, title_vi:))
+    })
+  case category {
+    Some(c) -> {
+      let initial = [
+        #("title", c.title),
+        #("slug", c.slug),
+        #("title", c.title_vi |> option.unwrap("")),
+      ]
+      form.add_values(form, initial)
+    }
+    _ -> form
   }
 }

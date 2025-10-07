@@ -5,9 +5,10 @@ import lustre/effect
 import plinth/javascript/global
 
 import core.{
-  type Category, type CheckBoxes, type FlashMessage, type LoginState,
-  type MiniUser, type Msg, type PageOwnedObjectPaging, type PageOwnedObjects,
-  type PostEditablePart, CheckBoxes, FlashMessage, FlashMessageTimeUp,
+  type Category, type CategoryEditablePart, type CheckBoxes, type FlashMessage,
+  type LoginState, type MiniUser, type Msg, type PageOwnedObjectPaging,
+  type PageOwnedObjects, type PostEditablePart, CheckBoxes, FlashMessage,
+  FlashMessageTimeUp,
 }
 import routes.{type Route}
 import utils
@@ -26,6 +27,7 @@ pub type Model {
     users: List(MiniUser),
     post_form: Option(Form(PostEditablePart)),
     post_body_preview: Option(String),
+    category_form: Option(Form(CategoryEditablePart)),
     checkboxes: CheckBoxes,
   )
 }
@@ -53,6 +55,7 @@ pub const default_model = Model(
   users: [],
   post_form: None,
   post_body_preview: None,
+  category_form: None,
   checkboxes: default_checkboxes,
 )
 

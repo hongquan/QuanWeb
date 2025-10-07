@@ -12,8 +12,9 @@ import rsvp
 import consts
 import core.{
   type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
-  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost, LoginData,
+  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedSingleCategory,
+  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost,
+  LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -76,6 +77,15 @@ pub fn load_single_post(id: String) -> Effect(Msg(c)) {
   let handler =
     rsvp.expect_json(decoders.make_post_decoder(), ApiReturnedSinglePost)
   rsvp.get(consts.api_posts <> id, handler)
+}
+
+pub fn load_single_category(id: String) {
+  let handler =
+    rsvp.expect_json(
+      decoders.make_category_decoder(),
+      ApiReturnedSingleCategory,
+    )
+  rsvp.get(consts.api_categories <> id, handler)
 }
 
 pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
