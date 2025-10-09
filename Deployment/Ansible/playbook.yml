@@ -34,7 +34,7 @@
     - name: Build ladmin
       ansible.builtin.command: bun run --bun build
       args:
-        chdir: "{{ base_folder }}"
+        chdir: "{{ ladmin_folder }}"
       register: build_ladmin
       changed_when: build_ladmin.rc == 0
 
