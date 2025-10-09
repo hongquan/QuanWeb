@@ -67,6 +67,7 @@ pub fn parse_to_route(
         |> option.from_result
       CategoryListPage(page)
     }
+    "/categories/new", _ -> CategoryEditPage("")
     "/categories/" <> id, _ -> CategoryEditPage(id)
     _, _ -> {
       io.println("Unknown " <> path)

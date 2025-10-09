@@ -20,12 +20,13 @@ import modem
 import plinth/javascript/storage
 
 import core.{
-  ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown, ApiReturnedCategories,
-  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedSingleCategory,
-  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost,
-  CheckBoxes, FlashMessageTimeUp, LogOutClicked, LoggedIn, NonLogin,
-  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
-  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
+  ApiCreatedCategory, ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown,
+  ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedPosts,
+  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
+  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryFormSubmitted,
+  CheckBoxes, FlashMessageTimeUp, FormCancelClicked, LogOutClicked, LoggedIn,
+  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
+  RouterInitDone, SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
   UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
   UserToggledIsPublishedCheckbox,
 }
@@ -182,6 +183,26 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiReturnedSingleCategory(res) -> {
       updates.handle_api_retrieve_category_result(model, res)
+    }
+    FormCancelClicked -> {
+      let whatsnext = case route {
+        CategoryEditPage(..) ->
+          routes.goto(CategoryListPage(None), mounted_path)
+        PostEditPage(..) -> {
+          routes.goto(PostListPage(None, None, None), mounted_path)
+        }
+        _ -> effect.none()
+      }
+      #(model, whatsnext)
+    }
+    CategoryFormSubmitted(res) -> {
+      updates.handle_category_form_submission(model, res)
+    }
+    ApiUpdatedCategory(res) -> {
+      updates.handle_api_update_category_result(model, res)
+    }
+    ApiCreatedCategory(res) -> {
+      updates.handle_api_create_category_result(model, res)
     }
     _ -> #(model, effect.none())
   }

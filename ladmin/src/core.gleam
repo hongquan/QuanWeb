@@ -1,4 +1,5 @@
 import formal/form.{type Form}
+import gleam/json
 import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
@@ -157,4 +158,10 @@ pub type Msg(r) {
   UserToggledIsPublishedCheckbox(Bool)
   SubmitStayButtonClicked(Element)
   ApiReturnedSingleCategory(Result(Category, rsvp.Error))
+  FormCancelClicked
+  CategoryFormSubmitted(
+    result: Result(CategoryEditablePart, Form(CategoryEditablePart)),
+  )
+  ApiCreatedCategory(Result(Category, rsvp.Error))
+  ApiUpdatedCategory(Result(Category, rsvp.Error))
 }

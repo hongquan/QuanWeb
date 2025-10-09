@@ -14,9 +14,10 @@ import plinth/browser/element as br_element
 
 import core.{
   type Category, type CategoryEditablePart, type CheckBoxes, type MiniUser,
-  type Msg, type PostEditablePart, PostFormSubmitted, SlugGeneratorClicked,
-  SubmitStayButtonClicked, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
+  type Msg, type PostEditablePart, CategoryFormSubmitted, FormCancelClicked,
+  PostFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  UserToggledIsPublishedCheckbox,
 }
 import ffi
 import views/widgets
@@ -375,7 +376,57 @@ pub fn render_category_form(
       ]),
     ]),
     render_slug_field(form),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Vietnamese title")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("title_vi"),
+          a.type_("text"),
+          a.value(formlib.field_value(form, "title_vi")),
+          a.class(class_text_input <> " px-4"),
+        ]),
+      ]),
+    ]),
+    h.hr([a.class("p-4 border-b border-t-0")]),
+    render_category_form_buttons(),
   ]
 
-  h.form([a.method("post")], children)
+  let handle_submit = fn(submitted_values) {
+    form
+    |> formlib.set_values(submitted_values)
+    |> formlib.run
+    |> CategoryFormSubmitted
+  }
+  h.form(
+    [
+      a.method("post"),
+      a.class("space-y-4 sm:space-y-0"),
+      ev.on_submit(handle_submit),
+    ],
+    children,
+  )
+}
+
+fn render_category_form_buttons() {
+  h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
+    h.button(
+      [
+        a.type_("submit"),
+        a.class(
+          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-sky-700 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
+        ),
+      ],
+      [h.text("Save")],
+    ),
+    h.button(
+      [
+        a.type_("reset"),
+        a.class(
+          "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border border-gray-400 dark:border-gray-700 cursor-pointer",
+        ),
+        ev.on_click(FormCancelClicked),
+      ],
+      [h.text("Cancel")],
+    ),
+  ])
 }

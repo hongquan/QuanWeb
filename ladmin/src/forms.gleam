@@ -106,7 +106,7 @@ pub fn make_category_form(
       let initial = [
         #("title", c.title),
         #("slug", c.slug),
-        #("title", c.title_vi |> option.unwrap("")),
+        #("title_vi", c.title_vi |> option.unwrap("")),
       ]
       form.add_values(form, initial)
     }

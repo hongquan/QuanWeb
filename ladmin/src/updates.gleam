@@ -1,4 +1,4 @@
-import formal/form as formlib
+import formal/form.{type Form} as formlib
 import forms
 import gleam/dynamic/decode
 import gleam/http/response.{Response}
@@ -17,10 +17,11 @@ import rsvp
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Category, type LoginData, type MiniPost,
-  type Msg, type Post, type PostEditablePart, type User, ApiListingResponse,
-  CheckBoxes, LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging,
-  PageOwnedPosts, PostFormSubmitted, TryingLogin,
+  type ApiListingResponse, type Category, type CategoryEditablePart,
+  type LoginData, type MiniPost, type Msg, type Post, type PostEditablePart,
+  type User, ApiListingResponse, CheckBoxes, LoggedIn, NonLogin,
+  PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts, PostFormSubmitted,
+  TryingLogin,
 }
 import decoders.{encode_user}
 import ffi
@@ -90,7 +91,7 @@ pub fn handle_router_init_done(model: Model) {
     CategoryListPage(p), _ -> {
       #(actions.load_categories(option.unwrap(p, 1)), True)
     }
-    CategoryEditPage(id), _ -> {
+    CategoryEditPage(id), _ if id != "" -> {
       #(actions.load_single_category(id), True)
     }
     // Already logged in, just serve, no redirect
@@ -104,13 +105,17 @@ pub fn handle_router_init_done(model: Model) {
     PostEditPage("") -> Some(forms.make_post_form(None))
     _ -> model.post_form
   }
-  let model = Model(..model, is_loading:, post_form:)
+  let category_form = case route {
+    CategoryEditPage("") -> Some(forms.make_category_form(None))
+    _ -> model.category_form
+  }
+  let model = Model(..model, is_loading:, post_form:, category_form:)
   #(model, whatsnext)
 }
 
 pub fn handle_login_submission(
   model: Model,
-  form: Result(LoginData, formlib.Form(LoginData)),
+  form: Result(LoginData, Form(LoginData)),
 ) -> #(Model, Effect(AppMsg)) {
   case form {
     Ok(login_data) -> {
@@ -279,14 +284,24 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       let load_categories_action = actions.load_categories(option.unwrap(p, 1))
       #(load_categories_action, True)
     }
+    CategoryEditPage(id), _ if id != "" -> {
+      #(actions.load_single_category(id), True)
+    }
     _, _ -> #(effect.none(), False)
   }
   io.println("Reset page_owned_objects")
   echo new_route
-  let #(post_form, page_owned_objects) = case new_route {
-    PostEditPage("") -> #(Some(forms.make_post_form(None)), PageOwnedPosts([]))
-    PostEditPage(_id) -> #(model.post_form, PageOwnedPosts([]))
-    _ -> #(None, model.page_owned_objects)
+  let post_form = case new_route {
+    PostEditPage("") -> Some(forms.make_post_form(None))
+    _ -> model.post_form
+  }
+  let category_form = case new_route {
+    CategoryEditPage("") -> Some(forms.make_category_form(None))
+    _ -> model.category_form
+  }
+  let page_owned_objects = case new_route {
+    PostEditPage(..) | CategoryEditPage(..) -> PageOwnedPosts([])
+    _ -> model.page_owned_objects
   }
   let model =
     Model(
@@ -295,6 +310,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       login_state:,
       is_loading:,
       post_form:,
+      category_form:,
       page_owned_objects:,
     )
   #(model, go_next)
@@ -423,7 +439,7 @@ pub fn handle_api_slug_generation(
 
 pub fn handle_post_form_submission(
   model: Model,
-  res: Result(PostEditablePart, formlib.Form(PostEditablePart)),
+  res: Result(PostEditablePart, Form(PostEditablePart)),
   stay: Bool,
 ) {
   case res {
@@ -517,7 +533,7 @@ pub fn handle_category_moved_between_panes(
 }
 
 fn push_in_or_out_category_from_form(
-  form: formlib.Form(PostEditablePart),
+  form: Form(PostEditablePart),
   value: String,
   to_move_in: Bool,
 ) {
@@ -565,7 +581,7 @@ pub fn handle_submit_stay_button_clicked(
 
 fn process_post_form_data_to_produce_msg(
   submitted_values: List(#(String, String)),
-  form: formlib.Form(PostEditablePart),
+  form: Form(PostEditablePart),
   stay: Bool,
 ) {
   // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
@@ -602,6 +618,86 @@ pub fn handle_api_retrieve_category_result(
           is_loading: False,
         )
       #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_category_form_submission(
+  model: Model,
+  res: Result(CategoryEditablePart, Form(CategoryEditablePart)),
+) {
+  case res {
+    Ok(data) -> {
+      let whatsnext = case model.route {
+        CategoryEditPage("") -> actions.create_category_via_api(data)
+        CategoryEditPage(id) -> actions.update_category_via_api(id, data)
+        _ -> effect.none()
+      }
+      #(model, whatsnext)
+    }
+    Error(form) -> {
+      let category_form = model.category_form |> option.map(fn(_f) { form })
+      #(Model(..model, category_form:), effect.none())
+    }
+  }
+}
+
+pub fn handle_api_update_category_result(
+  model: Model,
+  res: Result(Category, rsvp.Error),
+) {
+  case res {
+    Ok(cat) -> {
+      let message =
+        models.create_success_message(
+          "Category " <> cat.title <> " has been updated.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(CategoryListPage(None), model.mounted_path),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save category.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+pub fn handle_api_create_category_result(
+  model: Model,
+  res: Result(Category, rsvp.Error),
+) {
+  case res {
+    Ok(cat) -> {
+      let message =
+        models.create_success_message(
+          "Category " <> cat.title <> " has been created.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(CategoryEditPage(cat.id), model.mounted_path),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save category.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
     }
   }
 }

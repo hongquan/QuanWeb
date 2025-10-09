@@ -11,14 +11,15 @@ import rsvp
 
 import consts
 import core.{
-  type LoginData, type Msg, type PostEditablePart, ApiCreatedPost,
-  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedSingleCategory,
-  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedPost,
+  type CategoryEditablePart, type LoginData, type Msg, type PostEditablePart,
+  ApiCreatedCategory, ApiCreatedPost, ApiRenderedMarkdown, ApiReturnedCategories,
+  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
+  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryEditablePart,
   LoginData,
 }
 import decoders.{make_user_decoder}
 
-pub fn login_via_api(login_data: LoginData) -> Effect(Msg(r)) {
+pub fn login_via_api(login_data: LoginData) -> Effect(Msg(a)) {
   let LoginData(email:, password:) = login_data
   let post_data =
     json.object([
@@ -52,7 +53,7 @@ pub fn load_posts(
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn initiate_logout() -> Effect(Msg(b)) {
+pub fn initiate_logout() -> Effect(Msg(a)) {
   let handler = rsvp.expect_text(core.ApiReturnedLogOutDone)
   rsvp.post("/_api/logout", json.bool(True), handler)
 }
@@ -66,14 +67,14 @@ pub fn load_categories(page: Int) -> Effect(Msg(a)) {
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_categories_by_url(url: Uri) -> Effect(Msg(d)) {
+pub fn load_categories_by_url(url: Uri) -> Effect(Msg(a)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_category_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_single_post(id: String) -> Effect(Msg(c)) {
+pub fn load_single_post(id: String) -> Effect(Msg(a)) {
   let handler =
     rsvp.expect_json(decoders.make_post_decoder(), ApiReturnedSinglePost)
   rsvp.get(consts.api_posts <> id, handler)
@@ -88,7 +89,7 @@ pub fn load_single_category(id: String) {
   rsvp.get(consts.api_categories <> id, handler)
 }
 
-pub fn initiate_generate_slug(title: String) -> Effect(Msg(e)) {
+pub fn initiate_generate_slug(title: String) -> Effect(Msg(a)) {
   let handler = rsvp.expect_text(ApiReturnedSlug)
   rsvp.post(consts.api_slug_generator, json.string(title), handler)
 }
@@ -97,7 +98,7 @@ pub fn update_post_via_api(
   id: String,
   data: PostEditablePart,
   stay: Bool,
-) -> Effect(Msg(f)) {
+) -> Effect(Msg(a)) {
   let body = dump_post_to_json(data) |> json.to_string
   let decoder = decoders.make_post_decoder()
   let handler = rsvp.expect_json(decoder, ApiUpdatedPost(_, stay))
@@ -162,4 +163,45 @@ pub fn load_users() -> Effect(Msg(a)) {
   let response_decoder = decode.list(decoders.mini_user_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedUsers)
   rsvp.get(consts.api_users, handler)
+}
+
+fn dump_category_to_json(category: CategoryEditablePart) -> json.Json {
+  let CategoryEditablePart(title:, slug:, title_vi:) = category
+  json.object([
+    #("title", json.string(title)),
+    #("slug", json.string(slug)),
+    #("title_vi", json.nullable(title_vi, json.string)),
+  ])
+}
+
+pub fn create_category_via_api(data: CategoryEditablePart) {
+  let body = dump_category_to_json(data)
+  let decoder = decoders.make_category_decoder()
+  let handler = rsvp.expect_json(decoder, ApiCreatedCategory)
+  rsvp.post(consts.api_categories, body, handler)
+}
+
+pub fn update_category_via_api(
+  id: String,
+  data: CategoryEditablePart,
+) -> Effect(Msg(a)) {
+  let body = dump_category_to_json(data) |> json.to_string
+  let decoder = decoders.make_category_decoder()
+  let handler = rsvp.expect_json(decoder, ApiUpdatedCategory)
+  let url = consts.api_categories <> id
+  case
+    rsvp.parse_relative_uri(url)
+    |> result.try(request.from_uri)
+    |> result.map(request.set_header(_, "content-type", "application/json"))
+    |> result.map(request.set_method(_, http.Patch))
+    |> result.map(request.set_body(_, body))
+    |> result.map(rsvp.send(_, handler))
+    |> result.map_error(fn(_e) {
+      use dispatch <- effect.from
+      dispatch(ApiUpdatedCategory(Error(rsvp.BadUrl(url))))
+    })
+  {
+    Ok(x) -> x
+    Error(x) -> x
+  }
 }

@@ -310,10 +310,11 @@ pub fn render_post_edit_page(id: String, model: Model) {
 }
 
 pub fn render_category_table_page(page: Int, model: Model) {
+  let Model(route:, mounted_path:, ..) = model
   case model.is_loading {
     True ->
       element.fragment([
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -332,8 +333,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
       let total_pages = model.page_owned_object_paging.total_pages
       let query_list = []
       let paginator = render_paginator(page, total_pages, query_list)
-      let rows =
-        categories |> list.map(render_category_row(_, model.mounted_path))
+      let rows = categories |> list.map(render_category_row(_, mounted_path))
       let body =
         h.div(
           [
@@ -359,12 +359,26 @@ pub fn render_category_table_page(page: Int, model: Model) {
           ],
         )
 
+      let url_new_category =
+        routes.as_url_string(CategoryEditPage(""), mounted_path)
+
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
+            h.div([a.class("text-end")], [
+              h.a(
+                [
+                  a.href(url_new_category),
+                  a.class(
+                    "px-6 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80",
+                  ),
+                ],
+                [h.text("New category")],
+              ),
+            ]),
             body,
             paginator,
           ],
