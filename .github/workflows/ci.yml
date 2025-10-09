@@ -93,6 +93,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
       - name: Run Ansible playbook
-        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ env.SERVER_USERNAME }}
+        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }}
 
 
