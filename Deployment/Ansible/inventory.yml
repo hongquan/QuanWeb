@@ -1,0 +1,5 @@
+prod:
+  hosts:
+    quan.hoabinh.vn:
+      ansible_python_interpreter: /usr/bin/python3
+

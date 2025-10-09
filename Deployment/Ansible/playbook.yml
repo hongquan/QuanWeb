@@ -1,0 +1,47 @@
+---
+- name: Deploy Quan personal website
+  hosts: all
+  # This is needed to make ansible_env work
+  gather_facts: true
+  gather_subset:
+    - "!all"
+  vars:
+    base_folder: /home/{{ ansible_user }}/QuanWeb/quanweb/
+    ladmin_folder: "{{ base_folder }}ladmin"
+
+  tasks:
+    - name: Clean source  # noqa command-instead-of-module
+      ansible.builtin.command: git reset --hard
+      args:
+        chdir: "{{ base_folder }}"
+      register: git_reset
+      changed_when: git_reset.rc == 0
+
+    - name: Update source
+      ansible.builtin.git:
+        repo: "git@bitbucket.org:hongquan/quanweb.git"
+        dest: "{{ base_folder }}"
+        version: "main"
+      register: git_out
+
+    - name: Install JS packages
+      ansible.builtin.command: bun i
+      args:
+        chdir: "{{ base_folder }}"
+      register: install_js_packages
+      changed_when: install_js_packages.rc == 0
+
+    - name: Build ladmin
+      ansible.builtin.command: bun run --bun build
+      args:
+        chdir: "{{ base_folder }}"
+      register: build_ladmin
+      changed_when: build_ladmin.rc == 0
+
+    - name: Debug git_out
+      ansible.builtin.debug:
+        var: git_out
+
+  environment:
+    # Modify PATH so that bun can be found.
+    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.HOME }}/.bun/bin"

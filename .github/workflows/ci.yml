@@ -78,3 +78,21 @@ jobs:
       - name: Build lustre app
         if: steps.changed-lustre-app.outputs.any_changed == 'true'
         run: bun run --bun build
+
+  deploy-lustre-app:
+    runs-on: ubuntu-latest
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: False
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Cowsay
+        # Ansible is already installed by GitHub
+        run: sudo apt-get install cowsay
+      - name: Install SSH priv key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+      - name: Run Ansible playbook
+        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ env.SERVER_USERNAME }}
+
+
