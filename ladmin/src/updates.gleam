@@ -239,8 +239,14 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
     models.create_info_message("Logged out successfully."),
     ..model.flash_messages
   ]
+
   let model = Model(..model, login_state:, flash_messages:)
-  #(model, models.schedule_cleaning_flash_messages())
+  let gonext =
+    effect.batch([
+      routes.goto(HomePage, model.mounted_path),
+      models.schedule_cleaning_flash_messages(),
+    ])
+  #(model, gonext)
 }
 
 pub fn handle_landing_on_page(new_route: Route, model: Model) {
@@ -253,6 +259,10 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     // If user has logged-in, redirect to "/posts" page
     HomePage, LoggedIn(_u) -> {
       #(routes.goto(PostListPage(None, None, None), mounted_path), False)
+    }
+    // If user has not logged-in, redirect to Login page
+    _, NonLogin -> {
+      #(routes.goto(LoginPage, mounted_path), False)
     }
     PostListPage(p, q, cat_id), _ -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)

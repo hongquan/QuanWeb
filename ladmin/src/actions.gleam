@@ -13,9 +13,9 @@ import consts
 import core.{
   type CategoryEditablePart, type LoginData, type Msg, type PostEditablePart,
   ApiCreatedCategory, ApiCreatedPost, ApiRenderedMarkdown, ApiReturnedCategories,
-  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
-  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryEditablePart,
-  LoginData,
+  ApiReturnedLogOutDone, ApiReturnedSingleCategory, ApiReturnedSinglePost,
+  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost,
+  CategoryEditablePart, LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -54,7 +54,7 @@ pub fn load_posts(
 }
 
 pub fn initiate_logout() -> Effect(Msg(a)) {
-  let handler = rsvp.expect_text(core.ApiReturnedLogOutDone)
+  let handler = rsvp.expect_text(ApiReturnedLogOutDone)
   rsvp.post("/_api/logout", json.bool(True), handler)
 }
 

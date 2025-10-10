@@ -247,11 +247,13 @@ fn render_filter_form(
 }
 
 pub fn render_post_edit_page(id: String, model: Model) {
-  let Model(post_form:, is_loading:, categories:, ..) = model
+  let Model(route:, post_form:, is_loading:, categories:, mounted_path:, ..) =
+    model
   case is_loading {
     True ->
       element.fragment([
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -293,7 +295,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
         |> option.unwrap(element.none())
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             portal.to("body", [], [preview_dialog]),
