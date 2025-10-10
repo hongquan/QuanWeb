@@ -9,7 +9,7 @@
     base_folder: /home/{{ ansible_user }}/QuanWeb/quanweb/
     ladmin_folder: "{{ base_folder }}ladmin"
     source_folder: '{{ playbook_dir | dirname | dirname }}'
-    ladmin_built_source: '{{ source_folder }}/ladmin/dist'
+    ladmin_built_source: '{{ source_folder }}/ladmin-built'
 
   tasks:
     - name: Clean source  # noqa command-instead-of-module
