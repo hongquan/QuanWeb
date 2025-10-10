@@ -19,9 +19,9 @@ import consts
 import core.{
   type ApiListingResponse, type Category, type CategoryEditablePart,
   type LoginData, type MiniPost, type Msg, type Post, type PostEditablePart,
-  type User, ApiListingResponse, CheckBoxes, LoggedIn, NonLogin,
-  PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts, PostFormSubmitted,
-  TryingLogin,
+  type User, ApiListingResponse, CheckBoxes, IsLoading, IsSubmitting, LoggedIn,
+  NonLogin, PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
+  PostFormSubmitted, TryingLogin,
 }
 import decoders.{encode_user}
 import ffi
@@ -47,16 +47,16 @@ pub fn handle_router_init_done(model: Model) {
   ) = model
   echo route
 
-  let #(whatsnext, is_loading) = case route, login_state {
-    LoginPage, _ -> #(effect.none(), False)
+  let #(whatsnext, loading_status) = case route, login_state {
+    LoginPage, _ -> #(effect.none(), core.Idle)
     // If user has already logged-in, and visiting HomePage, redirect to PostList
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None), mounted_path), False)
+      #(routes.goto(PostListPage(None, None, None), mounted_path), core.Idle)
     }
     // In PostList page, call API to load posts
     PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
       routes.goto(PostListPage(None, None, None), mounted_path),
-      False,
+      core.Idle,
     )
     PostListPage(p, q, cat_id), LoggedIn(_u) -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
@@ -64,12 +64,12 @@ pub fn handle_router_init_done(model: Model) {
         [], _o -> actions.load_categories(1)
         _, _ -> effect.none()
       }
-      #(effect.batch([load_posts_action, load_categories_action]), True)
+      #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
     }
     PostEditPage(id), _ -> {
-      let #(load_post_action, is_loading) = case id {
-        "" -> #(effect.none(), False)
-        s -> #(actions.load_single_post(s), True)
+      let #(load_post_action, loading_status) = case id {
+        "" -> #(effect.none(), core.Idle)
+        s -> #(actions.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
         [], _o -> actions.load_categories(1)
@@ -81,23 +81,23 @@ pub fn handle_router_init_done(model: Model) {
           load_categories_action,
           actions.load_users(),
         ]),
-        is_loading,
+        loading_status,
       )
     }
     // In CategoryListPagei page, call API to load categories
     CategoryListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(CategoryListPage(None), mounted_path), False)
+      #(routes.goto(CategoryListPage(None), mounted_path), core.Idle)
     }
     CategoryListPage(p), _ -> {
-      #(actions.load_categories(option.unwrap(p, 1)), True)
+      #(actions.load_categories(option.unwrap(p, 1)), IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
-      #(actions.load_single_category(id), True)
+      #(actions.load_single_category(id), IsLoading)
     }
     // Already logged in, just serve, no redirect
-    _, LoggedIn(_u) -> #(effect.none(), False)
+    _, LoggedIn(_u) -> #(effect.none(), core.Idle)
     _, _ -> {
-      #(routes.goto(LoginPage, mounted_path), False)
+      #(routes.goto(LoginPage, mounted_path), core.Idle)
     }
   }
   // If the initial page is the "create post" page, create a form
@@ -109,7 +109,7 @@ pub fn handle_router_init_done(model: Model) {
     CategoryEditPage("") -> Some(forms.make_category_form(None))
     _ -> model.category_form
   }
-  let model = Model(..model, is_loading:, post_form:, category_form:)
+  let model = Model(..model, loading_status:, post_form:, category_form:)
   #(model, whatsnext)
 }
 
@@ -119,12 +119,11 @@ pub fn handle_login_submission(
 ) -> #(Model, Effect(AppMsg)) {
   case form {
     Ok(login_data) -> {
-      io.println("Form valid")
+      let model = Model(..model, loading_status: IsSubmitting)
       // Form is validated, call API
       #(model, actions.login_via_api(login_data))
     }
     Error(form) -> {
-      io.println("Form invalid")
       echo formlib.all_errors(form)
       let model = Model(..model, login_state: TryingLogin(form))
       #(model, effect.none())
@@ -133,6 +132,8 @@ pub fn handle_login_submission(
 }
 
 pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
+  // Reset loading status
+  let model = Model(..model, loading_status: core.Idle)
   case res {
     Ok(user) -> {
       let login_state = LoggedIn(user)
@@ -209,7 +210,7 @@ pub fn handle_api_list_post_result(
           total_pages:,
           links:,
         ),
-        is_loading: False,
+        loading_status: core.Idle,
       )
     }
     Error(e) -> {
@@ -220,7 +221,7 @@ pub fn handle_api_list_post_result(
       Model(
         ..model,
         flash_messages: [message, ..flash_messages],
-        is_loading: False,
+        loading_status: core.Idle,
       )
     }
   }
@@ -255,14 +256,14 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     LoginPage, NonLogin -> TryingLogin(forms.create_login_form())
     _, state -> state
   }
-  let #(go_next, is_loading) = case new_route, login_state {
+  let #(go_next, loading_status) = case new_route, login_state {
     // If user has logged-in, redirect to "/posts" page
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None), mounted_path), False)
+      #(routes.goto(PostListPage(None, None, None), mounted_path), core.Idle)
     }
     // If user has not logged-in, redirect to Login page
     _, NonLogin -> {
-      #(routes.goto(LoginPage, mounted_path), False)
+      #(routes.goto(LoginPage, mounted_path), core.Idle)
     }
     PostListPage(p, q, cat_id), _ -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
@@ -270,12 +271,12 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         [], _o -> actions.load_categories(1)
         _, _ -> effect.none()
       }
-      #(effect.batch([load_posts_action, load_categories_action]), True)
+      #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
     }
     PostEditPage(id), _ -> {
-      let #(load_post_action, is_loading) = case id {
-        "" -> #(effect.none(), False)
-        s -> #(actions.load_single_post(s), True)
+      let #(load_post_action, loading_status) = case id {
+        "" -> #(effect.none(), core.Idle)
+        s -> #(actions.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
         [], _o -> actions.load_categories(1)
@@ -287,17 +288,17 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
           load_categories_action,
           actions.load_users(),
         ]),
-        is_loading,
+        loading_status,
       )
     }
     CategoryListPage(p), _ -> {
       let load_categories_action = actions.load_categories(option.unwrap(p, 1))
-      #(load_categories_action, True)
+      #(load_categories_action, IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
-      #(actions.load_single_category(id), True)
+      #(actions.load_single_category(id), IsLoading)
     }
-    _, _ -> #(effect.none(), False)
+    _, _ -> #(effect.none(), IsLoading)
   }
   io.println("Reset page_owned_objects")
   echo new_route
@@ -318,7 +319,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       ..model,
       route: new_route,
       login_state:,
-      is_loading:,
+      loading_status:,
       post_form:,
       category_form:,
       page_owned_objects:,
@@ -341,7 +342,7 @@ pub fn handle_api_list_category_result(
         Model(
           ..model,
           flash_messages: [message, ..flash_messages],
-          is_loading: False,
+          loading_status: core.Idle,
         )
       #(model, effect.none())
     }
@@ -379,7 +380,7 @@ pub fn handle_api_list_category_result(
                 total_pages:,
                 links:,
               ),
-              is_loading: False,
+              loading_status: core.Idle,
             )
           #(model, effect.none())
         }
@@ -403,7 +404,7 @@ pub fn handle_api_retrieve_post_result(
           ..model,
           post_form: Some(form),
           checkboxes: CheckBoxes(is_published: p.is_published),
-          is_loading: False,
+          loading_status: core.Idle,
         )
       #(model, effect.none())
     }
@@ -414,7 +415,7 @@ pub fn handle_api_retrieve_post_result(
         Model(
           ..model,
           flash_messages: [message, ..flash_messages],
-          is_loading: False,
+          loading_status: core.Idle,
         )
       #(model, effect.none())
     }
@@ -615,7 +616,8 @@ pub fn handle_api_retrieve_category_result(
   case res {
     Ok(cat) -> {
       let form = forms.make_category_form(Some(cat))
-      let model = Model(..model, category_form: Some(form), is_loading: False)
+      let model =
+        Model(..model, category_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
@@ -625,7 +627,7 @@ pub fn handle_api_retrieve_category_result(
         Model(
           ..model,
           flash_messages: [message, ..flash_messages],
-          is_loading: False,
+          loading_status: core.Idle,
         )
       #(model, effect.none())
     }

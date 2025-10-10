@@ -17,7 +17,7 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, Category, LogOutClicked, MiniPost,
+  type Category, type MiniPost, Category, IsLoading, LogOutClicked, MiniPost,
   PageOwnedCategories, PageOwnedPosts, PostFilterSubmitted,
 }
 import ffi
@@ -40,8 +40,8 @@ pub fn render_post_table_page(
   cat_id: Option(String),
   model: Model,
 ) {
-  case model.is_loading {
-    True ->
+  case model.loading_status {
+    IsLoading ->
       element.fragment([
         skeleton.render_tab_navbar(model.route, model.mounted_path),
         skeleton.render_main_block(
@@ -54,7 +54,7 @@ pub fn render_post_table_page(
           "",
         ),
       ])
-    False -> {
+    _ -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
       let query_list = []
@@ -247,10 +247,10 @@ fn render_filter_form(
 }
 
 pub fn render_post_edit_page(id: String, model: Model) {
-  let Model(route:, post_form:, is_loading:, categories:, mounted_path:, ..) =
+  let Model(route:, post_form:, loading_status:, categories:, mounted_path:, ..) =
     model
-  case is_loading {
-    True ->
+  case loading_status {
+    IsLoading ->
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route, mounted_path),
@@ -264,7 +264,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
           "",
         ),
       ])
-    False -> {
+    _ -> {
       let Model(users:, checkboxes:, ..) = model
       let form = case post_form, id {
         Some(form), "" ->
@@ -313,8 +313,8 @@ pub fn render_post_edit_page(id: String, model: Model) {
 
 pub fn render_category_table_page(page: Int, model: Model) {
   let Model(route:, mounted_path:, ..) = model
-  case model.is_loading {
-    True ->
+  case model.loading_status {
+    IsLoading ->
       element.fragment([
         skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
@@ -327,7 +327,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
           "",
         ),
       ])
-    False -> {
+    _ -> {
       let categories = case model.page_owned_objects {
         PageOwnedCategories(objects) -> objects
         _ -> []
@@ -438,9 +438,9 @@ fn render_category_row(category: Category, mounted_path: String) {
 }
 
 pub fn render_category_edit_page(id: String, model: Model) {
-  let Model(category_form:, is_loading:, ..) = model
-  case is_loading {
-    True -> {
+  let Model(category_form:, loading_status:, ..) = model
+  case loading_status {
+    IsLoading -> {
       element.fragment([
         skeleton.render_tab_navbar(model.route, model.mounted_path),
         skeleton.render_main_block(
@@ -454,7 +454,7 @@ pub fn render_category_edit_page(id: String, model: Model) {
         ),
       ])
     }
-    False -> {
+    _ -> {
       let form = case category_form, id {
         Some(form), "" -> {
           forms.render_category_form(None, form)

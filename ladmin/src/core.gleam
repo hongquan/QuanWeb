@@ -67,6 +67,12 @@ pub type LoginState {
   LoggedIn(User)
 }
 
+pub type LoadingStatus {
+  Idle
+  IsLoading
+  IsSubmitting
+}
+
 pub type ApiListingResponse(o) {
   ApiListingResponse(
     count: Int,

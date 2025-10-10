@@ -6,9 +6,9 @@ import plinth/javascript/global
 
 import core.{
   type Category, type CategoryEditablePart, type CheckBoxes, type FlashMessage,
-  type LoginState, type MiniUser, type Msg, type PageOwnedObjectPaging,
-  type PageOwnedObjects, type PostEditablePart, CheckBoxes, FlashMessage,
-  FlashMessageTimeUp,
+  type LoadingStatus, type LoginState, type MiniUser, type Msg,
+  type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
+  CheckBoxes, FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
 import utils
@@ -21,7 +21,7 @@ pub type Model {
     page_owned_objects: PageOwnedObjects,
     page_owned_object_paging: PageOwnedObjectPaging,
     flash_messages: List(FlashMessage),
-    is_loading: Bool,
+    loading_status: LoadingStatus,
     categories: List(Category),
     partial_load_categories: List(Category),
     users: List(MiniUser),
@@ -49,7 +49,7 @@ pub const default_model = Model(
     links: #(None, None),
   ),
   flash_messages: [],
-  is_loading: False,
+  loading_status: core.Idle,
   categories: [],
   partial_load_categories: [],
   users: [],

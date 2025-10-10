@@ -215,7 +215,7 @@ fn view(model: Model) -> Element(AppMsg) {
     HomePage, _ -> {
       dummy_view()
     }
-    LoginPage, TryingLogin(form) -> make_login_page(form)
+    LoginPage, TryingLogin(form) -> make_login_page(model.loading_status, form)
     PostListPage(p, q, cat_id), _ -> {
       posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }

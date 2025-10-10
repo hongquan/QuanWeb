@@ -12,10 +12,10 @@ import rsvp
 import consts
 import core.{
   type CategoryEditablePart, type LoginData, type Msg, type PostEditablePart,
-  ApiCreatedCategory, ApiCreatedPost, ApiRenderedMarkdown, ApiReturnedCategories,
-  ApiReturnedLogOutDone, ApiReturnedSingleCategory, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost,
-  CategoryEditablePart, LoginData,
+  ApiCreatedCategory, ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown,
+  ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedSingleCategory,
+  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory,
+  ApiUpdatedPost, CategoryEditablePart, LoginData,
 }
 import decoders.{make_user_decoder}
 
@@ -27,7 +27,7 @@ pub fn login_via_api(login_data: LoginData) -> Effect(Msg(a)) {
       #("password", json.string(password)),
     ])
   let user_decoder = make_user_decoder()
-  let handler = rsvp.expect_json(user_decoder, core.ApiLoginReturned)
+  let handler = rsvp.expect_json(user_decoder, ApiLoginReturned)
   rsvp.post(consts.api_login, post_data, handler)
 }
 

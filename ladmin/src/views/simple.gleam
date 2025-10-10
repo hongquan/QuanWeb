@@ -3,10 +3,12 @@ import lustre/attribute as a
 import lustre/element/html as h
 import lustre/event as ev
 
-import core.{type LoginData, UserSubmittedLoginForm}
+import core.{
+  type LoadingStatus, type LoginData, IsSubmitting, UserSubmittedLoginForm,
+}
 import views/widgets
 
-pub fn make_login_page(form: Form(LoginData)) {
+pub fn make_login_page(loading_status: LoadingStatus, form: Form(LoginData)) {
   let handle_submit = fn(values) {
     form |> formlib.add_values(values) |> formlib.run |> UserSubmittedLoginForm
   }
@@ -43,15 +45,7 @@ pub fn make_login_page(form: Form(LoginData)) {
               ],
               [h.text("Forget Password?")],
             ),
-            h.button(
-              [
-                a.class(
-                  "px-6 py-2 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50 cursor-pointer",
-                ),
-                a.type_("submit"),
-              ],
-              [h.text("Sign In")],
-            ),
+            widgets.submit_button(loading_status == IsSubmitting),
           ]),
         ]),
       ]),
