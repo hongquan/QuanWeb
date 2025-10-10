@@ -27,7 +27,7 @@
     - name: Install JS packages
       ansible.builtin.command: bun i
       args:
-        chdir: "{{ base_folder }}"
+        chdir: "{{ ladmin_folder }}"
       register: install_js_packages
       changed_when: install_js_packages.rc == 0
 
