@@ -96,6 +96,8 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: ladmin-built
+      - name: Check downloaded artifact
+        run: ls -R ladmin-built
       - name: Install Cowsay
         # Ansible is already installed by GitHub
         run: sudo apt-get install cowsay

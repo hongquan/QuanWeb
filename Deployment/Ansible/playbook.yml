@@ -12,6 +12,12 @@
     ladmin_built_source: '{{ source_folder }}/ladmin-built'
 
   tasks:
+    - name: Check artifact
+      ansible.builtin.find:
+        paths: '{{ source_folder }}'
+      delegate_to: localhost
+      register: check_artifact
+
     - name: Clean source  # noqa command-instead-of-module
       ansible.builtin.command: git reset --hard
       args:
@@ -36,6 +42,10 @@
     - name: Debug git_out
       ansible.builtin.debug:
         var: git_out
+
+    - name: Debug check_artifact
+      ansible.builtin.debug:
+        var: check_artifact
 
   environment:
     # Modify PATH so that bun can be found.
