@@ -47,7 +47,7 @@ jobs:
         working-directory: ladmin
     steps:
       - uses: actions/checkout@v4
-      - name: Get lustre app changes
+      - name: Get ladmin app changes
         id: changed-ladmin-app
         uses: tj-actions/changed-files@v47.0.0
         with:
@@ -75,7 +75,7 @@ jobs:
       - name: Install JS dependencies
         if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: bun i
-      - name: Build lustre app
+      - name: Build ladmin app
         if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: bun run --bun build
       - name: Upload Build Artifact
@@ -85,7 +85,7 @@ jobs:
           name: ladmin-built
           path: ladmin/dist
 
-  deploy-lustre-app:
+  deploy-ladmin-app:
     runs-on: ubuntu-latest
     needs: [build-ladmin-app]
     env:
