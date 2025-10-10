@@ -96,7 +96,8 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: ladmin-built
-      - name: Check downloaded artifact
+          path: ladmin-built
+      - name: List downloaded artifact
         run: ls -l
       - name: Install Cowsay
         # Ansible is already installed by GitHub
