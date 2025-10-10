@@ -40,7 +40,7 @@ jobs:
           name: Built binaries
           path: target/${{ matrix.BUILD_TARGET }}/quanweb
 
-  build-lustre-app:
+  build-ladmin-app:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -48,43 +48,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Get lustre app changes
-        id: changed-lustre-app
+        id: changed-ladmin-app
         uses: tj-actions/changed-files@v47.0.0
         with:
           files: |
             ladmin/**
             **.yml
       - uses: oven-sh/setup-bun@v2
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
       - uses: erlef/setup-beam@v1
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         with:
           otp-version: "27.1.2"
           gleam-version: "1.12.0"
           rebar3-version: "3"
           # elixir-version: "1"
       - name: Add WASM target for Rust
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: rustup target add wasm32-unknown-unknown
       - name: Install encre-css-cli
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: cargo install encre-css-cli
       - name: Download Gleam dependencies
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: gleam deps download
       - name: Install JS dependencies
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: bun i
       - name: Build lustre app
-        if: steps.changed-lustre-app.outputs.any_changed == 'true'
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
         run: bun run --bun build
+      - name: Upload Build Artifact
+        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ladmin-built
+          path: ladmin/dist
 
   deploy-lustre-app:
     runs-on: ubuntu-latest
+    needs: [build-ladmin-app]
     env:
       ANSIBLE_HOST_KEY_CHECKING: False
     steps:
       - uses: actions/checkout@v5
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: ladmin-built
       - name: Install Cowsay
         # Ansible is already installed by GitHub
         run: sudo apt-get install cowsay
