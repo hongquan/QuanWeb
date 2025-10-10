@@ -97,7 +97,7 @@ jobs:
         with:
           name: ladmin-built
       - name: Check downloaded artifact
-        run: ls -R ladmin-built
+        run: ls -l
       - name: Install Cowsay
         # Ansible is already installed by GitHub
         run: sudo apt-get install cowsay
