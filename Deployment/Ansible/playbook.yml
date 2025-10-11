@@ -12,12 +12,6 @@
     ladmin_built_source: '{{ source_folder }}/ladmin-built/'
 
   tasks:
-    - name: Check artifact
-      ansible.builtin.find:
-        paths: '{{ source_folder }}'
-      delegate_to: localhost
-      register: check_artifact
-
     - name: Clean source  # noqa command-instead-of-module
       ansible.builtin.command: git reset --hard
       args:
