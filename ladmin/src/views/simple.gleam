@@ -45,7 +45,11 @@ pub fn make_login_page(loading_status: LoadingStatus, form: Form(LoginData)) {
               ],
               [h.text("Forget Password?")],
             ),
-            widgets.submit_button(loading_status == IsSubmitting),
+            widgets.auto_submit_button(
+              core.Blue,
+              "Login",
+              loading_status == IsSubmitting,
+            ),
           ]),
         ]),
       ]),

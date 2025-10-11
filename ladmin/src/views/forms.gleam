@@ -1,4 +1,4 @@
-import formal/form as formlib
+import formal/form.{type Form} as formlib
 import gleam/dynamic/decode
 import gleam/list
 import gleam/option.{type Option, Some}
@@ -13,11 +13,11 @@ import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type CategoryEditablePart, type CheckBoxes, type MiniUser,
-  type Msg, type PostEditablePart, CategoryFormSubmitted, FormCancelClicked,
-  PostFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
-  UserToggledIsPublishedCheckbox,
+  type Category, type CategoryEditablePart, type CheckBoxes, type LoadingStatus,
+  type MiniUser, type Msg, type PostEditablePart, CategoryFormSubmitted,
+  FormCancelClicked, IsSubmitting, PostFormSubmitted, SlugGeneratorClicked,
+  SubmitStayButtonClicked, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
 }
 import ffi
 import views/widgets
@@ -36,10 +36,11 @@ const class_pane_header = "block px-2 py-1 rounded-t-md bg-gray-500 dark:bg-gray
 
 pub fn render_post_form(
   _post_id: Option(String),
-  form: formlib.Form(PostEditablePart),
+  form: Form(PostEditablePart),
   categories: List(Category),
   users: List(MiniUser),
   checkboxes: CheckBoxes,
+  loading_status: LoadingStatus,
 ) {
   let children = [
     h.div([a.class(class_row)], [
@@ -71,7 +72,7 @@ pub fn render_post_form(
       ]),
     ]),
     h.hr([a.class("my-4")]),
-    render_bottom_buttons(),
+    render_bottom_buttons(loading_status),
   ]
   let handle_submit = fn(submitted_values) {
     // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
@@ -97,7 +98,7 @@ pub fn render_post_form(
   )
 }
 
-fn render_slug_field(form: formlib.Form(o)) {
+fn render_slug_field(form: Form(o)) {
   let handler_slug_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_title = case br_element.cast(elm) {
@@ -140,7 +141,7 @@ fn render_slug_field(form: formlib.Form(o)) {
 }
 
 fn render_category_dual_pane_field(
-  form: formlib.Form(PostEditablePart),
+  form: Form(PostEditablePart),
   categories: List(Category),
 ) {
   let selected_values = formlib.field_values(form, "categories")
@@ -204,7 +205,7 @@ fn category_as_choice(category: Category, selected: Bool) {
   ])
 }
 
-fn render_body_field(form: formlib.Form(PostEditablePart)) -> Element(Msg(a)) {
+fn render_body_field(form: Form(PostEditablePart)) -> Element(Msg(a)) {
   let handler_preview_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_body = case br_element.cast(elm) {
@@ -255,7 +256,7 @@ fn render_body_field(form: formlib.Form(PostEditablePart)) -> Element(Msg(a)) {
   ])
 }
 
-fn render_locale_field(form: formlib.Form(PostEditablePart)) {
+fn render_locale_field(form: Form(PostEditablePart)) {
   let choices = [#("en", "English"), #("vi", "Tiếng Việt")]
 
   h.div([a.class(class_row)], [
@@ -271,10 +272,7 @@ fn render_locale_field(form: formlib.Form(PostEditablePart)) {
   ])
 }
 
-fn render_author_field(
-  form: formlib.Form(PostEditablePart),
-  users: List(MiniUser),
-) {
+fn render_author_field(form: Form(PostEditablePart), users: List(MiniUser)) {
   let choices = users |> list.map(fn(u) { #(u.id, u.email) })
 
   h.div([a.class(class_row)], [
@@ -296,10 +294,7 @@ fn render_author_field(
 // Then, when the form is submitted, the submitted value for checkbox field
 // is still the one before user clicked.
 // So we need to use "on_check" event handler to make form data in sync with what users see.
-fn render_is_published_field(
-  _form: formlib.Form(PostEditablePart),
-  is_published: Bool,
-) {
+fn render_is_published_field(_form: Form(PostEditablePart), is_published: Bool) {
   h.div([a.class(class_row)], [
     h.label([a.class(class_label)], [h.text("Published")]),
     h.div([a.class("pt-2")], [
@@ -313,7 +308,7 @@ fn render_is_published_field(
   ])
 }
 
-fn render_bottom_buttons() -> Element(Msg(a)) {
+fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Msg(a)) {
   let submit_stay_click_handler =
     ev.on("click", {
       use elm <- decode.field("target", decode.dynamic)
@@ -326,25 +321,18 @@ fn render_bottom_buttons() -> Element(Msg(a)) {
           )
       }
     })
+
   h.div([a.class("flex flex-row space-x-4")], [
-    h.button(
-      [
-        a.type_("submit"),
-        a.class(
-          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-sky-700 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
-        ),
-      ],
-      [h.text("Save and finish")],
+    widgets.auto_submit_button(
+      core.Sky,
+      "Save and finish",
+      loading_status == IsSubmitting,
     ),
-    h.button(
-      [
-        a.type_("button"),
-        a.class(
-          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
-        ),
-        submit_stay_click_handler,
-      ],
-      [h.text("Save and stay")],
+    widgets.manual_submit_button(
+      core.Purple,
+      "Save and stay",
+      submit_stay_click_handler,
+      loading_status == IsSubmitting,
     ),
     h.div([a.class("grow")], []),
     h.button(
@@ -361,7 +349,8 @@ fn render_bottom_buttons() -> Element(Msg(a)) {
 
 pub fn render_category_form(
   _cid: Option(String),
-  form: formlib.Form(CategoryEditablePart),
+  form: Form(CategoryEditablePart),
+  loading_status: LoadingStatus,
 ) {
   let children = [
     h.div([a.class(class_row)], [
@@ -388,7 +377,7 @@ pub fn render_category_form(
       ]),
     ]),
     h.hr([a.class("p-4 border-b border-t-0")]),
-    render_category_form_buttons(),
+    render_category_form_buttons(loading_status),
   ]
 
   let handle_submit = fn(submitted_values) {
@@ -407,17 +396,9 @@ pub fn render_category_form(
   )
 }
 
-fn render_category_form_buttons() {
+fn render_category_form_buttons(loading_status: LoadingStatus) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
-    h.button(
-      [
-        a.type_("submit"),
-        a.class(
-          "px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-sky-700 rounded-md hover:bg-sky-600 focus:outline-none focus:bg-sky-600 cursor-pointer",
-        ),
-      ],
-      [h.text("Save")],
-    ),
+    widgets.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
     h.button(
       [
         a.type_("reset"),

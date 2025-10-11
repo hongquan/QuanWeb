@@ -40,10 +40,12 @@ pub fn render_post_table_page(
   cat_id: Option(String),
   model: Model,
 ) {
-  case model.loading_status {
+  let Model(route:, mounted_path:, loading_status:, ..) = model
+  case loading_status {
     IsLoading ->
       element.fragment([
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -67,7 +69,7 @@ pub fn render_post_table_page(
         _ -> query_list
       }
       let paginator = render_paginator(page, total_pages, query_list)
-      let rows = posts |> list.map(render_post_row(_, model.mounted_path))
+      let rows = posts |> list.map(render_post_row(_, mounted_path))
       let body =
         h.div(
           [
@@ -95,11 +97,10 @@ pub fn render_post_table_page(
 
       let initial_q = q |> option.unwrap("")
       let initial_cat_id = cat_id |> option.unwrap("")
-      let url_new_post =
-        routes.as_url_string(PostEditPage(""), model.mounted_path)
+      let url_new_post = routes.as_url_string(PostEditPage(""), mounted_path)
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
@@ -265,12 +266,26 @@ pub fn render_post_edit_page(id: String, model: Model) {
         ),
       ])
     _ -> {
-      let Model(users:, checkboxes:, ..) = model
+      let Model(users:, checkboxes:, loading_status:, ..) = model
       let form = case post_form, id {
         Some(form), "" ->
-          render_post_form(None, form, categories, users, checkboxes)
+          render_post_form(
+            None,
+            form,
+            categories,
+            users,
+            checkboxes,
+            loading_status,
+          )
         Some(form), pid ->
-          render_post_form(Some(pid), form, categories, users, checkboxes)
+          render_post_form(
+            Some(pid),
+            form,
+            categories,
+            users,
+            checkboxes,
+            loading_status,
+          )
         _, _ -> element.none()
       }
       let preview_dialog =
@@ -457,10 +472,10 @@ pub fn render_category_edit_page(id: String, model: Model) {
     _ -> {
       let form = case category_form, id {
         Some(form), "" -> {
-          forms.render_category_form(None, form)
+          forms.render_category_form(None, form, loading_status)
         }
         Some(form), cid -> {
-          forms.render_category_form(Some(cid), form)
+          forms.render_category_form(Some(cid), form, loading_status)
         }
         _, _ -> element.none()
       }

@@ -1,5 +1,4 @@
 import formal/form.{type Form}
-import gleam/json
 import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
@@ -135,6 +134,12 @@ pub type CategoryEditablePart {
 // so we need to track it ourselves.
 pub type CheckBoxes {
   CheckBoxes(is_published: Bool)
+}
+
+pub type Color {
+  Blue
+  Sky
+  Purple
 }
 
 pub type Msg(r) {
