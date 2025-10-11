@@ -17,9 +17,9 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, Category, CategoryDeletionClicked, IsLoading,
-  LogOutClicked, MiniPost, PageOwnedCategories, PageOwnedPosts,
-  PostFilterSubmitted,
+  type Category, type MiniPost, Category, CategoryId, ContentItemDeletionClicked,
+  IsLoading, LogOutClicked, MiniPost, PageOwnedCategories, PageOwnedPosts,
+  PostFilterSubmitted, PostId,
 }
 import ffi
 import icons/heroicons.{globe_asia_australia}
@@ -70,7 +70,10 @@ pub fn render_post_table_page(
         _ -> query_list
       }
       let paginator = render_paginator(page, total_pages, query_list)
-      let rows = posts |> list.map(render_post_row(_, mounted_path))
+      let deletion_handler = fn(id) { ContentItemDeletionClicked(PostId(id)) }
+      let rows =
+        posts
+        |> list.map(render_post_row(_, mounted_path, deletion_handler))
       let body =
         h.div(
           [
@@ -151,7 +154,11 @@ fn render_post_table_header() {
   ])
 }
 
-fn render_post_row(post: MiniPost, mounted_path: String) {
+fn render_post_row(
+  post: MiniPost,
+  mounted_path: String,
+  deletion_click_handler: fn(String) -> msg,
+) {
   let MiniPost(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
     created_at
@@ -182,9 +189,16 @@ fn render_post_row(post: MiniPost, mounted_path: String) {
           h.a([a.href("#"), a.class("hover:text-blue-600")], [
             lucide_icon.view([a.class("w-5 h-auto")]),
           ]),
-          h.a([a.href("#"), a.class("hover:text-red-600")], [
-            lucide_icon.eraser([a.class("w-5 h-auto")]),
-          ]),
+          h.button(
+            [
+              a.type_("button"),
+              a.class("hover:text-red-600 cursor-pointer"),
+              ev.on_click(deletion_click_handler(id)),
+            ],
+            [
+              lucide_icon.eraser([a.class("w-5 h-auto")]),
+            ],
+          ),
         ]),
       ]),
     ]),
@@ -352,13 +366,12 @@ pub fn render_category_table_page(page: Int, model: Model) {
       let total_pages = model.page_owned_object_paging.total_pages
       let query_list = []
       let paginator = render_paginator(page, total_pages, query_list)
+      let deletion_handler = fn(id) {
+        ContentItemDeletionClicked(CategoryId(id))
+      }
       let rows =
         categories
-        |> list.map(render_category_row(
-          _,
-          mounted_path,
-          CategoryDeletionClicked,
-        ))
+        |> list.map(render_category_row(_, mounted_path, deletion_handler))
       let body =
         h.div(
           [

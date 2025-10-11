@@ -11,12 +11,12 @@ import rsvp
 
 import consts
 import core.{
-  type CategoryEditablePart, type LoginData, type Msg, type PostEditablePart,
-  ApiCreatedCategory, ApiCreatedPost, ApiDeletedCategory, ApiLoginReturned,
-  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
-  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryEditablePart,
-  LoginData,
+  type CategoryEditablePart, type ContentItemId, type LoginData, type Msg,
+  type PostEditablePart, ApiCreatedCategory, ApiCreatedPost,
+  ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
+  ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedSingleCategory,
+  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory,
+  ApiUpdatedPost, CategoryEditablePart, CategoryId, LoginData, PostId,
 }
 import decoders.{make_user_decoder}
 
@@ -207,18 +207,21 @@ pub fn update_category_via_api(
   }
 }
 
-pub fn delete_category_via_api(id: String) -> Effect(Msg(a)) {
-  let url = consts.api_categories <> id
+pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Msg(a)) {
+  let url = case id {
+    PostId(id) -> consts.api_posts <> id
+    CategoryId(id) -> consts.api_categories <> id
+  }
   let handler =
     rsvp.expect_ok_response(fn(r) {
-      r |> result.replace(id) |> ApiDeletedCategory
+      r |> result.replace(id) |> ApiDeletedContentItem
     })
   case
     rsvp.parse_relative_uri(url)
     |> result.try(request.from_uri)
     |> result.map_error(fn(_e) {
       use dispatch <- effect.from
-      dispatch(ApiDeletedCategory(Error(rsvp.BadUrl(url))))
+      dispatch(ApiDeletedContentItem(Error(rsvp.BadUrl(url))))
     })
     |> result.map(request.set_header(_, "content-type", "application/json"))
     |> result.map(request.set_method(_, http.Delete))

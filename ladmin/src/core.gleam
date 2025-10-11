@@ -147,6 +147,11 @@ pub type Color {
 //   CategoryDeletionClicked(id: String)
 // }
 
+pub type ContentItemId {
+  PostId(String)
+  CategoryId(String)
+}
+
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
@@ -180,8 +185,7 @@ pub type Msg(r) {
   )
   ApiCreatedCategory(Result(Category, rsvp.Error))
   ApiUpdatedCategory(Result(Category, rsvp.Error))
-  PostDeletionClicked(id: String)
-  CategoryDeletionClicked(id: String)
-  UserConfirmedCategoryDeletion(id: String)
-  ApiDeletedCategory(Result(String, rsvp.Error))
+  ContentItemDeletionClicked(ContentItemId)
+  UserConfirmedDeletion(ContentItemId)
+  ApiDeletedContentItem(Result(ContentItemId, rsvp.Error))
 }

@@ -18,10 +18,10 @@ import actions
 import consts
 import core.{
   type ApiListingResponse, type Category, type CategoryEditablePart,
-  type LoginData, type MiniPost, type Msg, type Post, type PostEditablePart,
-  type User, ApiListingResponse, CheckBoxes, IsLoading, IsSubmitting, LoggedIn,
-  NonLogin, PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
-  PostFormSubmitted, TryingLogin,
+  type ContentItemId, type LoginData, type MiniPost, type Msg, type Post,
+  type PostEditablePart, type User, ApiListingResponse, CheckBoxes, IsLoading,
+  IsSubmitting, LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging,
+  PageOwnedPosts, PostFormSubmitted, PostId, TryingLogin,
 }
 import decoders.{encode_user}
 import ffi
@@ -714,36 +714,54 @@ pub fn handle_api_create_category_result(
   }
 }
 
-pub fn handle_api_delete_category_result(
-  res: Result(String, rsvp.Error),
+pub fn handle_api_delete_content_item_result(
+  res: Result(ContentItemId, rsvp.Error),
   model: Model,
 ) {
   case res {
     Ok(id) -> {
-      let #(message, page_owned_objects) = case model.page_owned_objects {
-        PageOwnedCategories(categories) -> {
-          // Find the deleted item in the current list and
-          // generate message.
+      let #(message, page_owned_objects) = case id, model.page_owned_objects {
+        PostId(id), PageOwnedPosts(posts) -> {
           let message =
-            categories
-            |> list.find_map(fn(c) {
-              case c.id == id {
-                True -> Ok("Category " <> c.title <> " has been deleted.")
-                False -> Error(Nil)
+            posts
+            |> list.find_map(fn(p) {
+              case p.id == id {
+                True -> Ok("Post " <> p.title <> " has been deleted.")
+                _ -> Error(Nil)
               }
             })
-            |> result.map(models.create_success_message)
             |> option.from_result
           // Remove from the list of objects
           let remaining =
-            categories
+            posts
+            |> list.filter(fn(p) { p.id != id })
+            |> PageOwnedPosts
+          #(message, remaining)
+        }
+        core.CategoryId(id), PageOwnedCategories(cats) -> {
+          let message =
+            cats
+            |> list.find_map(fn(c) {
+              case c.id == id {
+                True -> Ok("Category " <> c.title <> " has been deleted.")
+                _ -> Error(Nil)
+              }
+            })
+            |> option.from_result
+          // Remove from the list of objects
+          let remaining =
+            cats
             |> list.filter(fn(c) { c.id != id })
             |> PageOwnedCategories
           #(message, remaining)
         }
-        _ -> #(None, model.page_owned_objects)
+        _, _ -> {
+          #(None, model.page_owned_objects)
+        }
       }
-      let flash_messages = case message {
+      let flash_messages = case
+        message |> option.map(models.create_success_message)
+      {
         Some(m) -> [m, ..model.flash_messages]
         None -> model.flash_messages
       }
@@ -753,7 +771,7 @@ pub fn handle_api_delete_category_result(
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to delete category.")
+      let message = models.create_danger_message("Failed to delete.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
