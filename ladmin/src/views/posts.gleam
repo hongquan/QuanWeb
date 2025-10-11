@@ -148,7 +148,9 @@ fn render_post_table_header() {
         [h.text(label)],
       )
     })
-  let action_column = h.th([a.class("sr-only")], [h.text("Action")])
+  // let public_column = h.th([a.class("sr-only")], [h.text("Public Link")])
+  let action_column =
+    h.th([a.colspan(2)], [h.span([a.class("sr-only")], [h.text("Action")])])
   h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
     h.tr([], cells |> list.append([action_column])),
   ])
@@ -167,6 +169,12 @@ fn render_post_row(
   let categories =
     post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
   let url = routes.as_url_string(PostEditPage(id), mounted_path)
+  let date_string =
+    post.created_at
+    |> datetime.from_timestamp
+    |> datetime.format(tempo.Custom("YYYY/MM/"))
+  let pub_url = "/post/" <> date_string <> post.slug
+  let preview_url = "/preview/" <> post.id
 
   #(
     id,
@@ -177,16 +185,22 @@ fn render_post_row(
       h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
       h.td([a.class(class_cell), a.class("text-sm")], [h.text(categories)]),
       h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
+      h.td([a.class("py-4 ps-4"), a.class("text-sm")], [
+        case post.is_published {
+          True ->
+            h.a(
+              [
+                a.href(pub_url),
+                a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
+              ],
+              [globe_asia_australia()],
+            )
+          _ -> element.none()
+        },
+      ]),
       h.td([a.class(class_cell), a.class("text-sm")], [
         h.div([a.class("flex items-center space-x-4")], [
-          h.a(
-            [
-              a.href("#"),
-              a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
-            ],
-            [globe_asia_australia()],
-          ),
-          h.a([a.href("#"), a.class("hover:text-blue-600")], [
+          h.a([a.href(preview_url), a.class("hover:text-blue-600")], [
             lucide_icon.view([a.class("w-5 h-auto")]),
           ]),
           h.button(
