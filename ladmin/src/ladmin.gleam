@@ -1,6 +1,8 @@
 import actions
 import consts
 import decoders
+import ffi
+import gleam/bool
 import gleam/io
 import gleam/json
 import gleam/list
@@ -23,12 +25,13 @@ import core.{
   ApiCreatedCategory, ApiCreatedPost, ApiLoginReturned, ApiRenderedMarkdown,
   ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedPosts,
   ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
-  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryFormSubmitted,
-  CheckBoxes, FlashMessageTimeUp, FormCancelClicked, LogOutClicked, LoggedIn,
-  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
-  RouterInitDone, SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
-  UserToggledIsPublishedCheckbox,
+  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryDeletionClicked,
+  CategoryFormSubmitted, CheckBoxes, FlashMessageTimeUp, FormCancelClicked,
+  IsSubmitting, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
+  PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
+  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
+  UserConfirmedCategoryDeletion, UserMovedCategoryBetweenPane,
+  UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
 }
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -203,6 +206,25 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiCreatedCategory(res) -> {
       updates.handle_api_create_category_result(model, res)
+    }
+    CategoryDeletionClicked(id) if id != "" -> {
+      io.println("CategoryDeletionClicked")
+      // To show dialog for deletion confirmation
+      let whatsnext = {
+        use dispatch, _root <- effect.before_paint
+        let agreed = ffi.confirm("Are you sure want to delete?")
+        io.println("User agree? " <> bool.to_string(agreed))
+        use <- bool.guard(!agreed, Nil)
+        dispatch(UserConfirmedCategoryDeletion(id))
+      }
+      #(model, whatsnext)
+    }
+    UserConfirmedCategoryDeletion(id) if id != "" -> {
+      let model = Model(..model, loading_status: IsSubmitting)
+      #(model, actions.delete_category_via_api(id))
+    }
+    core.ApiDeletedCategory(res) -> {
+      updates.handle_api_delete_category_result(res, model)
     }
     _ -> #(model, effect.none())
   }

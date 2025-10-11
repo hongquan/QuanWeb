@@ -18,3 +18,6 @@ pub fn submit_form(form: Element) -> Nil
 
 @external(javascript, "./element.ffi.mjs", "getFormData")
 pub fn get_form_data(form: Element) -> JSArray(#(String, String))
+
+@external(javascript, "./element.ffi.mjs", "confirm")
+pub fn confirm(message: String) -> Bool

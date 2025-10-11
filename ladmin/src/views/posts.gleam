@@ -17,8 +17,9 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, Category, IsLoading, LogOutClicked, MiniPost,
-  PageOwnedCategories, PageOwnedPosts, PostFilterSubmitted,
+  type Category, type MiniPost, Category, CategoryDeletionClicked, IsLoading,
+  LogOutClicked, MiniPost, PageOwnedCategories, PageOwnedPosts,
+  PostFilterSubmitted,
 }
 import ffi
 import icons/heroicons.{globe_asia_australia}
@@ -331,6 +332,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
   case model.loading_status {
     IsLoading ->
       element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route, mounted_path),
         skeleton.render_main_block(
           [
@@ -350,7 +352,13 @@ pub fn render_category_table_page(page: Int, model: Model) {
       let total_pages = model.page_owned_object_paging.total_pages
       let query_list = []
       let paginator = render_paginator(page, total_pages, query_list)
-      let rows = categories |> list.map(render_category_row(_, mounted_path))
+      let rows =
+        categories
+        |> list.map(render_category_row(
+          _,
+          mounted_path,
+          CategoryDeletionClicked,
+        ))
       let body =
         h.div(
           [
@@ -427,7 +435,11 @@ fn render_category_table_header() {
   ])
 }
 
-fn render_category_row(category: Category, mounted_path: String) {
+fn render_category_row(
+  category: Category,
+  mounted_path: String,
+  deletion_click_handler: fn(String) -> msg,
+) -> #(String, Element(msg)) {
   let Category(id:, title:, slug:, title_vi:) = category
   let url = routes.as_url_string(CategoryEditPage(id), mounted_path)
 
@@ -444,9 +456,15 @@ fn render_category_row(category: Category, mounted_path: String) {
         h.text(title_vi |> option.unwrap("")),
       ]),
       h.td([a.class(class_cell), a.class("text-sm")], [
-        h.a([a.href("#"), a.class("hover:text-red-600")], [
-          lucide_icon.eraser([a.class("w-5 h-auto")]),
-        ]),
+        h.button(
+          [
+            a.class("hover:text-red-600 cursor-pointer"),
+            ev.on_click(deletion_click_handler(id)),
+          ],
+          [
+            lucide_icon.eraser([a.class("w-5 h-auto")]),
+          ],
+        ),
       ]),
     ]),
   )

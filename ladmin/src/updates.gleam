@@ -298,7 +298,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     CategoryEditPage(id), _ if id != "" -> {
       #(actions.load_single_category(id), IsLoading)
     }
-    _, _ -> #(effect.none(), IsLoading)
+    _, _ -> #(effect.none(), core.Idle)
   }
   io.println("Reset page_owned_objects")
   echo new_route
@@ -705,6 +705,55 @@ pub fn handle_api_create_category_result(
     }
     Error(_e) -> {
       let message = models.create_danger_message("Failed to save category.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+pub fn handle_api_delete_category_result(
+  res: Result(String, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(id) -> {
+      let #(message, page_owned_objects) = case model.page_owned_objects {
+        PageOwnedCategories(categories) -> {
+          // Find the deleted item in the current list and
+          // generate message.
+          let message =
+            categories
+            |> list.find_map(fn(c) {
+              case c.id == id {
+                True -> Ok("Category " <> c.title <> " has been deleted.")
+                False -> Error(Nil)
+              }
+            })
+            |> result.map(models.create_success_message)
+            |> option.from_result
+          // Remove from the list of objects
+          let remaining =
+            categories
+            |> list.filter(fn(c) { c.id != id })
+            |> PageOwnedCategories
+          #(message, remaining)
+        }
+        _ -> #(None, model.page_owned_objects)
+      }
+      let flash_messages = case message {
+        Some(m) -> [m, ..model.flash_messages]
+        None -> model.flash_messages
+      }
+      #(
+        Model(..model, flash_messages:, page_owned_objects:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to delete category.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
