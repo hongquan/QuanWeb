@@ -47,7 +47,7 @@ packages = [
   { name = "lustre_portal", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre"], otp_app = "lustre_portal", source = "hex", outer_checksum = "8D45CD689749119DEA664E6BF0F3CF8055C07CF689FA98220DDD1B3F04107F34" },
   { name = "marceau", version = "1.3.0", build_tools = ["gleam"], requirements = [], otp_app = "marceau", source = "hex", outer_checksum = "2D1C27504BEF45005F5DFB18591F8610FB4BFA91744878210BDC464412EC44E9" },
   { name = "mist", version = "5.0.3", build_tools = ["gleam"], requirements = ["exception", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "gleam_yielder", "glisten", "gramps", "hpack_erl", "logging"], otp_app = "mist", source = "hex", outer_checksum = "7C4BE717A81305323C47C8A591E6B9BA4AC7F56354BF70B4D3DF08CC01192668" },
-  { name = "modem", version = "2.1.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre"], otp_app = "modem", source = "hex", outer_checksum = "444332FF806610B955D57389B3643245BBEC61A705A61B4FF7E67E3AF148F339" },
+  { name = "modem", version = "2.1.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "lustre"], source = "git", repo = "https://github.com/hayleigh-dot-dev/modem.git", commit = "57bc1bbd74330843f52cb5acf5a31f74a3a0a564" },
   { name = "platform", version = "1.0.0", build_tools = ["gleam"], requirements = [], otp_app = "platform", source = "hex", outer_checksum = "8339420A95AD89AAC0F82F4C3DB8DD401041742D6C3F46132A8739F6AEB75391" },
   { name = "plinth", version = "0.7.2", build_tools = ["gleam"], requirements = ["gleam_javascript", "gleam_json", "gleam_stdlib"], otp_app = "plinth", source = "hex", outer_checksum = "3D70AF096A6F46DC71023C28B16BCCC6D7FAB9A467711426DAEB05902022B08F" },
   { name = "repeatedly", version = "2.1.2", build_tools = ["gleam"], requirements = [], otp_app = "repeatedly", source = "hex", outer_checksum = "93AE1938DDE0DC0F7034F32C1BF0D4E89ACEBA82198A1FE21F604E849DA5F589" },
@@ -77,6 +77,6 @@ lucide_lustre = { version = ">= 2.0.1 and < 3.0.0" }
 lustre = { version = ">= 5.3.5 and < 6.0.0" }
 lustre_dev_tools = { version = ">= 1.9.2 and < 2.0.0" }
 lustre_portal = { version = ">= 1.0.0 and < 2.0.0" }
-modem = { version = ">= 2.1.1 and < 3.0.0" }
+modem = { git = "https://github.com/hayleigh-dot-dev/modem.git", ref = "57bc1bb" }
 plinth = { version = ">= 0.7.2 and < 1.0.0" }
 rsvp = { version = ">= 1.1.3 and < 2.0.0" }
