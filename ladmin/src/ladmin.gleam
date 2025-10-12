@@ -1,7 +1,3 @@
-import actions
-import consts
-import decoders
-import ffi
 import gleam/bool
 import gleam/io
 import gleam/json
@@ -21,6 +17,8 @@ import lustre/portal
 import modem
 import plinth/javascript/storage
 
+import actions
+import consts.{mounted_path}
 import core.{
   ApiCreatedCategory, ApiCreatedPost, ApiDeletedContentItem, ApiLoginReturned,
   ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedLogOutDone,
@@ -33,6 +31,8 @@ import core.{
   UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
   UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
 }
+import decoders
+import ffi
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
 import routes.{
@@ -50,7 +50,7 @@ pub fn main(base_path: String) -> Nil {
   Nil
 }
 
-fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
+fn init(_args) -> #(Model, Effect(AppMsg)) {
   let #(path, query) =
     modem.initial_uri()
     |> result.map(fn(u) { #(u.path, u.query) })
@@ -61,7 +61,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     |> option.to_result(Nil)
     |> result.flatten
     |> result.unwrap([])
-  let route = parse_to_route(mounted_path, path, query)
+  let route = parse_to_route(path, query)
   let saved_user =
     storage.local()
     |> result.map_error(fn(_e) {
@@ -84,9 +84,8 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
     _, Ok(user) -> LoggedIn(user)
     _, _ -> NonLogin
   }
-  let model = Model(..default_model, mounted_path:, route:, login_state:)
-  let route_react_setup =
-    modem.init(on_url_change(_, mounted_path, OnRouteChange))
+  let model = Model(..default_model, route:, login_state:)
+  let route_react_setup = modem.init(on_url_change(_, OnRouteChange))
   let whatsnext =
     effect.batch([
       route_react_setup,
@@ -100,7 +99,7 @@ fn init(mounted_path: String) -> #(Model, Effect(AppMsg)) {
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   io.println("In update()")
-  let Model(route:, mounted_path:, ..) = model
+  let Model(route:, ..) = model
   case msg {
     RouterInitDone -> updates.handle_router_init_done(model)
     OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)
@@ -189,10 +188,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     FormCancelClicked -> {
       let whatsnext = case route {
-        CategoryEditPage(..) ->
-          routes.goto(CategoryListPage(None), mounted_path)
+        CategoryEditPage(..) -> routes.goto(CategoryListPage(None))
         PostEditPage(..) -> {
-          routes.goto(PostListPage(None, None, None), mounted_path)
+          routes.goto(PostListPage(None, None, None))
         }
         _ -> effect.none()
       }

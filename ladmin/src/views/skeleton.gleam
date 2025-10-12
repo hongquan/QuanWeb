@@ -54,7 +54,7 @@ pub fn render_header_bar(logout_click_msg: msg) -> Element(msg) {
   )
 }
 
-pub fn render_tab_navbar(current_route: Route, mounted_path: String) {
+pub fn render_tab_navbar(current_route: Route) {
   let class_link_common =
     "inline-flex items-center h-10 px-4 -mb-px text-sm text-center text-blue-600 bg-transparent border-b-2 sm:text-base  whitespace-nowrap focus:outline-none"
   let class_link_active =
@@ -72,7 +72,7 @@ pub fn render_tab_navbar(current_route: Route, mounted_path: String) {
       h.li([], [
         h.a(
           [
-            a.href(routes.as_url_string(link_route, mounted_path)),
+            a.href(routes.as_url_string(link_route)),
             a.class(class_link_common),
             case are_routes_matched(current_route, link_route) {
               True -> a.class(class_link_active)

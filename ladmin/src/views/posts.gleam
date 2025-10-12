@@ -41,12 +41,12 @@ pub fn render_post_table_page(
   cat_id: Option(String),
   model: Model,
 ) {
-  let Model(route:, mounted_path:, loading_status:, ..) = model
+  let Model(route:, loading_status:, ..) = model
   case loading_status {
     IsLoading ->
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -73,7 +73,7 @@ pub fn render_post_table_page(
       let deletion_handler = fn(id) { ContentItemDeletionClicked(PostId(id)) }
       let rows =
         posts
-        |> list.map(render_post_row(_, mounted_path, deletion_handler))
+        |> list.map(render_post_row(_, deletion_handler))
       let body =
         h.div(
           [
@@ -101,10 +101,10 @@ pub fn render_post_table_page(
 
       let initial_q = q |> option.unwrap("")
       let initial_cat_id = cat_id |> option.unwrap("")
-      let url_new_post = routes.as_url_string(PostEditPage(""), mounted_path)
+      let url_new_post = routes.as_url_string(PostEditPage(""))
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
@@ -156,11 +156,7 @@ fn render_post_table_header() {
   ])
 }
 
-fn render_post_row(
-  post: MiniPost,
-  mounted_path: String,
-  deletion_click_handler: fn(String) -> msg,
-) {
+fn render_post_row(post: MiniPost, deletion_click_handler: fn(String) -> msg) {
   let MiniPost(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
     created_at
@@ -168,7 +164,7 @@ fn render_post_row(
     |> datetime.format(DateFormat(tempo.CustomDate("DD MMM YYYY")))
   let categories =
     post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
-  let url = routes.as_url_string(PostEditPage(id), mounted_path)
+  let url = routes.as_url_string(PostEditPage(id))
   let date_string =
     post.created_at
     |> datetime.from_timestamp
@@ -191,6 +187,7 @@ fn render_post_row(
             h.a(
               [
                 a.href(pub_url),
+                a.target("_blank"),
                 a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
               ],
               [globe_asia_australia()],
@@ -200,9 +197,16 @@ fn render_post_row(
       ]),
       h.td([a.class(class_cell), a.class("text-sm")], [
         h.div([a.class("flex items-center space-x-4")], [
-          h.a([a.href(preview_url), a.class("hover:text-blue-600")], [
-            lucide_icon.view([a.class("w-5 h-auto")]),
-          ]),
+          h.a(
+            [
+              a.href(preview_url),
+              a.target("_blank"),
+              a.class("hover:text-blue-600"),
+            ],
+            [
+              lucide_icon.view([a.class("w-5 h-auto")]),
+            ],
+          ),
           h.button(
             [
               a.type_("button"),
@@ -277,13 +281,12 @@ fn render_filter_form(
 }
 
 pub fn render_post_edit_page(id: String, model: Model) {
-  let Model(route:, post_form:, loading_status:, categories:, mounted_path:, ..) =
-    model
+  let Model(route:, post_form:, loading_status:, categories:, ..) = model
   case loading_status {
     IsLoading ->
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -339,7 +342,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
         |> option.unwrap(element.none())
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             portal.to("body", [], [preview_dialog]),
@@ -356,12 +359,12 @@ pub fn render_post_edit_page(id: String, model: Model) {
 }
 
 pub fn render_category_table_page(page: Int, model: Model) {
-  let Model(route:, mounted_path:, ..) = model
+  let Model(route:, ..) = model
   case model.loading_status {
     IsLoading ->
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -385,7 +388,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
       }
       let rows =
         categories
-        |> list.map(render_category_row(_, mounted_path, deletion_handler))
+        |> list.map(render_category_row(_, deletion_handler))
       let body =
         h.div(
           [
@@ -411,12 +414,11 @@ pub fn render_category_table_page(page: Int, model: Model) {
           ],
         )
 
-      let url_new_category =
-        routes.as_url_string(CategoryEditPage(""), mounted_path)
+      let url_new_category = routes.as_url_string(CategoryEditPage(""))
 
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(route, mounted_path),
+        skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
@@ -464,11 +466,10 @@ fn render_category_table_header() {
 
 fn render_category_row(
   category: Category,
-  mounted_path: String,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
   let Category(id:, title:, slug:, title_vi:) = category
-  let url = routes.as_url_string(CategoryEditPage(id), mounted_path)
+  let url = routes.as_url_string(CategoryEditPage(id))
 
   #(
     id,
@@ -502,7 +503,7 @@ pub fn render_category_edit_page(id: String, model: Model) {
   case loading_status {
     IsLoading -> {
       element.fragment([
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(model.route),
         skeleton.render_main_block(
           [
             h.div([a.class("mt-12 space-y-12")], [
@@ -526,7 +527,7 @@ pub fn render_category_edit_page(id: String, model: Model) {
       }
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
-        skeleton.render_tab_navbar(model.route, model.mounted_path),
+        skeleton.render_tab_navbar(model.route),
         skeleton.render_main_block(
           [
             h.div([a.class("space-y-8")], [

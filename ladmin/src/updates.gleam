@@ -37,25 +37,19 @@ pub type LoginValidationDetail {
 
 pub fn handle_router_init_done(model: Model) {
   io.println("RouterInitDone")
-  let Model(
-    route:,
-    login_state:,
-    mounted_path:,
-    categories:,
-    partial_load_categories:,
-    ..,
-  ) = model
+  let Model(route:, login_state:, categories:, partial_load_categories:, ..) =
+    model
   echo route
 
   let #(whatsnext, loading_status) = case route, login_state {
     LoginPage, _ -> #(effect.none(), core.Idle)
     // If user has already logged-in, and visiting HomePage, redirect to PostList
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None), mounted_path), core.Idle)
+      #(routes.goto(PostListPage(None, None, None)), core.Idle)
     }
     // In PostList page, call API to load posts
     PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
-      routes.goto(PostListPage(None, None, None), mounted_path),
+      routes.goto(PostListPage(None, None, None)),
       core.Idle,
     )
     PostListPage(p, q, cat_id), LoggedIn(_u) -> {
@@ -86,7 +80,7 @@ pub fn handle_router_init_done(model: Model) {
     }
     // In CategoryListPagei page, call API to load categories
     CategoryListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(CategoryListPage(None), mounted_path), core.Idle)
+      #(routes.goto(CategoryListPage(None)), core.Idle)
     }
     CategoryListPage(p), _ -> {
       #(actions.load_categories(option.unwrap(p, 1)), IsLoading)
@@ -97,7 +91,7 @@ pub fn handle_router_init_done(model: Model) {
     // Already logged in, just serve, no redirect
     _, LoggedIn(_u) -> #(effect.none(), core.Idle)
     _, _ -> {
-      #(routes.goto(LoginPage, mounted_path), core.Idle)
+      #(routes.goto(LoginPage), core.Idle)
     }
   }
   // If the initial page is the "create post" page, create a form
@@ -138,7 +132,7 @@ pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
     Ok(user) -> {
       let login_state = LoggedIn(user)
       // User has logged-in successfully. Redirect to home page
-      let go_next = routes.goto(HomePage, model.mounted_path)
+      let go_next = routes.goto(HomePage)
       let model = Model(..model, login_state:)
       // Save to localstorage
       storage.local()
@@ -244,14 +238,14 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
   let model = Model(..model, login_state:, flash_messages:)
   let gonext =
     effect.batch([
-      routes.goto(HomePage, model.mounted_path),
+      routes.goto(HomePage),
       models.schedule_cleaning_flash_messages(),
     ])
   #(model, gonext)
 }
 
 pub fn handle_landing_on_page(new_route: Route, model: Model) {
-  let Model(mounted_path:, categories:, partial_load_categories:, ..) = model
+  let Model(categories:, partial_load_categories:, ..) = model
   let login_state = case new_route, model.login_state {
     LoginPage, NonLogin -> TryingLogin(forms.create_login_form())
     _, state -> state
@@ -259,11 +253,11 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
   let #(go_next, loading_status) = case new_route, login_state {
     // If user has logged-in, redirect to "/posts" page
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None), mounted_path), core.Idle)
+      #(routes.goto(PostListPage(None, None, None)), core.Idle)
     }
     // If user has not logged-in, redirect to Login page
     _, NonLogin -> {
-      #(routes.goto(LoginPage, mounted_path), core.Idle)
+      #(routes.goto(LoginPage), core.Idle)
     }
     PostListPage(p, q, cat_id), _ -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
@@ -490,7 +484,7 @@ pub fn handle_api_update_post_result(
         )
       let flash_messages = [message, ..model.flash_messages]
       let gonext = case stay {
-        False -> routes.goto(PostListPage(None, None, None), model.mounted_path)
+        False -> routes.goto(PostListPage(None, None, None))
         True -> effect.none()
       }
       #(
@@ -524,7 +518,7 @@ pub fn handle_api_create_post_result(
       let flash_messages = [message, ..model.flash_messages]
       let whatsnext =
         effect.batch([
-          routes.goto(PostEditPage(post.id), model.mounted_path),
+          routes.goto(PostEditPage(post.id)),
           models.schedule_cleaning_flash_messages(),
         ])
       #(Model(..model, flash_messages:), whatsnext)
@@ -669,7 +663,7 @@ pub fn handle_api_update_category_result(
         Model(..model, flash_messages:),
         effect.batch([
           models.schedule_cleaning_flash_messages(),
-          routes.goto(CategoryListPage(None), model.mounted_path),
+          routes.goto(CategoryListPage(None)),
         ]),
       )
     }
@@ -699,7 +693,7 @@ pub fn handle_api_create_category_result(
         Model(..model, flash_messages:),
         effect.batch([
           models.schedule_cleaning_flash_messages(),
-          routes.goto(CategoryEditPage(cat.id), model.mounted_path),
+          routes.goto(CategoryEditPage(cat.id)),
         ]),
       )
     }

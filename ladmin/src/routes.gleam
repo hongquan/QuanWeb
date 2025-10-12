@@ -21,8 +21,9 @@ pub type Route {
   NotFound
 }
 
+import consts.{mounted_path}
+
 pub fn parse_to_route(
-  mounted_path: String,
   full_path: String,
   query: List(#(String, String)),
 ) -> Route {
@@ -76,17 +77,13 @@ pub fn parse_to_route(
   }
 }
 
-pub fn on_url_change(
-  url: uri.Uri,
-  mounted_path: String,
-  notify: fn(Route) -> msg,
-) -> msg {
+pub fn on_url_change(url: uri.Uri, notify: fn(Route) -> msg) -> msg {
   let route =
     url.query
     |> option.map(fn(q) { option.from_result(uri.parse_query(q)) })
     |> option.flatten
     |> option.unwrap([])
-    |> parse_to_route(mounted_path, url.path, _)
+    |> parse_to_route(url.path, _)
   io.println("URL changed to: " <> uri.to_string(url))
   notify(route)
 }
@@ -128,12 +125,12 @@ pub fn prefix(uri_parts: #(String, a), mounted_path: String) -> #(String, a) {
   #({ mounted_path <> path } |> string.replace("//", "/"), query)
 }
 
-pub fn goto(route: Route, mounted_path: String) -> Effect(b) {
+pub fn goto(route: Route) -> Effect(b) {
   let #(full_path, q) = to_uri_parts(route) |> prefix(mounted_path)
   modem.push(full_path, q, None)
 }
 
-pub fn as_url_string(route: Route, mounted_path: String) {
+pub fn as_url_string(route: Route) {
   let #(full_path, query) = to_uri_parts(route) |> prefix(mounted_path)
   case query {
     Some("") -> full_path

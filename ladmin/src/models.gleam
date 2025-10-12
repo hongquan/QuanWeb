@@ -15,7 +15,6 @@ import utils
 
 pub type Model {
   Model(
-    mounted_path: String,
     route: Route,
     login_state: LoginState,
     page_owned_objects: PageOwnedObjects,
@@ -39,7 +38,6 @@ pub type AppMsg =
 pub const default_checkboxes = CheckBoxes(is_published: False)
 
 pub const default_model = Model(
-  mounted_path: "/",
   route: routes.HomePage,
   login_state: core.NonLogin,
   page_owned_objects: core.PageOwnedPosts([]),
