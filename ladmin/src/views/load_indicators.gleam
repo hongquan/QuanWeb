@@ -15,7 +15,14 @@ pub fn render_dense_dots_spinner() {
 
 // Collections: https://cssloaders.github.io/
 pub fn render_three_bar_pulse() -> Element(a) {
-  h.div([a.class("three-bar-pulse mx-auto")], [])
+  h.div(
+    [
+      a.class(
+        "three-bar-pulse mx-auto text-blue-500 dark:text-white bg-blue-500 before:bg-blue-500 after:bg-blue-500 dark:bg-white dark:before:bg-white dark:after:bg-white",
+      ),
+    ],
+    [],
+  )
 }
 
 pub fn spinner_one_circle_one_inner_arc() {
