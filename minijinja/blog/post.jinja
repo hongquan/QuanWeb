@@ -3,6 +3,7 @@
 
 {% block meta_og %}
   <meta property='og:type' content='article' />
+  <meta property='og:title' content='{{ post.title }}' />
   {% if post.og_image %}
     <meta property='og:image' content='{{ post.og_image }}' />
   {% endif %}
