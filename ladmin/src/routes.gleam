@@ -94,7 +94,19 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   case route {
     HomePage -> #("/", None)
     LoginPage -> #("/login", None)
-    PostListPage(page, _q, _c) -> #("/posts", to_page_query(page))
+    PostListPage(page, q, cat_id) -> {
+      io.println("cat_id")
+      echo cat_id
+      let query =
+        [
+          cat_id |> option.map(pair.new("cat_id", _)),
+          q |> option.map(pair.new("q", _)),
+          page |> option.map(int.to_string) |> option.map(pair.new("page", _)),
+        ]
+        |> option.values
+        |> uri.query_to_string
+      #("/posts", Some(query))
+    }
     PostEditPage("") -> #("/posts/new", None)
     PostEditPage(id) -> #("/posts/" <> id, None)
     CategoryListPage(page) -> #("/categories", to_page_query(page))

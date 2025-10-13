@@ -5,7 +5,6 @@ import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import gleam/string
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
@@ -25,7 +24,7 @@ import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model, Model}
-import routes.{CategoryEditPage, PostEditPage}
+import routes.{CategoryEditPage, PostEditPage, PostListPage}
 import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
@@ -162,8 +161,13 @@ fn render_post_row(post: MiniPost, deletion_click_handler: fn(String) -> msg) {
     created_at
     |> datetime.from_timestamp
     |> datetime.format(DateFormat(tempo.CustomDate("DD MMM YYYY")))
-  let categories =
-    post.categories |> list.map(fn(c) { c.title }) |> string.join(", ")
+  let category_links =
+    post.categories
+    |> list.map(fn(c) {
+      let url = routes.as_url_string(PostListPage(None, None, Some(c.id)))
+      h.a([a.href(url), a.class("hover:underline")], [h.text(c.title)])
+    })
+    |> list.intersperse(h.text(", "))
   let url = routes.as_url_string(PostEditPage(id))
   let date_string =
     post.created_at
@@ -179,7 +183,7 @@ fn render_post_row(post: MiniPost, deletion_click_handler: fn(String) -> msg) {
         h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
       ]),
       h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
-      h.td([a.class(class_cell), a.class("text-sm")], [h.text(categories)]),
+      h.td([a.class(class_cell), a.class("text-sm")], category_links),
       h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
       h.td([a.class("py-4 ps-4"), a.class("text-sm")], [
         case post.is_published {
