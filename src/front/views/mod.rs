@@ -10,8 +10,6 @@ use axum::extract::{OriginalUri, Query, State};
 use axum::response::{Html, IntoResponse, Result as AxumResult};
 use http::{HeaderName, StatusCode, Uri};
 use minijinja::context;
-use minijinja::Environment;
-use serde::ser::Serialize;
 use tower_sessions::Session;
 use unic_langid::LanguageIdentifier;
 
@@ -21,16 +19,7 @@ use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG, STATIC_URL};
 pub use crate::errors::PageError;
 use crate::stores;
 use crate::types::{AppState, Paginator, StaticFile};
-
-pub fn render_with<S: Serialize>(
-    template_name: &str,
-    context: S,
-    engine: Environment,
-) -> Result<String, PageError> {
-    let tpl = engine.get_template(template_name)?;
-    let content = tpl.render(context)?;
-    Ok(content)
-}
+use crate::utils::html::render_with;
 
 pub async fn fallback_view() -> (StatusCode, &'static str) {
     (StatusCode::NOT_FOUND, "Not found")

@@ -13,6 +13,6 @@ pub const api_users = "/_api/users/"
 
 pub const api_slug_generator = "/_api/generate-slug"
 
-pub const api_render_markdown = "/_api/markdown-to-html/"
+pub const api_render_markdown = "/_api/markdown-to-html-document/"
 
 pub const selector_post_body_preview_dialog = "post-body-preview"

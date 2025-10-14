@@ -25,8 +25,8 @@ use crate::auth::AuthSession;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::models::{BlogCategory, MinimalObject, User};
 use crate::stores;
-use crate::types::EdgeSelectable;
-use crate::utils::markdown::markdown_to_html;
+use crate::types::{AppState, EdgeSelectable};
+use crate::utils::markdown::{markdown_to_html, markdown_to_html_document};
 
 pub async fn root() -> &'static str {
     "API root"
@@ -181,6 +181,16 @@ pub async fn create_category(
 
 pub async fn convert_to_html(body: String) -> AxumResult<Html<String>> {
     let html = markdown_to_html(&body);
+    Ok(Html(html))
+}
+
+#[axum::debug_handler]
+pub async fn convert_to_html_document(
+    State(app_state): State<AppState>,
+    body: String,
+) -> AxumResult<Html<String>> {
+    let AppState { jinja, .. } = app_state;
+    let html = markdown_to_html_document(&body, jinja).unwrap_or_default();
     Ok(Html(html))
 }
 

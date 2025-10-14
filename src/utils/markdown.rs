@@ -4,12 +4,15 @@ use std::io::Write;
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
 use comrak::{
-    markdown_to_html_with_plugins, ExtensionOptions, Options, Plugins, RenderOptions, RenderPlugins,
+    ExtensionOptions, Options, Plugins, RenderOptions, RenderPlugins, markdown_to_html_with_plugins,
 };
+use minijinja::{Environment, context};
 use serde_json5;
 
 use crate::consts::{ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ATTR_CODEFENCE_EXTRA};
+use crate::errors::PageError;
 use crate::types::CodeFenceOptions;
+use crate::utils::html::render_with;
 
 // A simple adapter that defers highlighting job to the client side
 pub struct JsHighlightAdapter;
@@ -109,4 +112,29 @@ pub fn make_excerpt(markdown: &str) -> String {
     let reduced = lines.join("\n");
     let html = markdown_to_html(&reduced);
     html + "..."
+}
+
+// Convert markdown to full HTML document (enough markups), suitable to be
+// shown in an iframe.
+pub fn markdown_to_html_document(markdown: &str, engine: Environment) -> Result<String, PageError> {
+    let extension = ExtensionOptions::builder()
+        .table(true)
+        .autolink(true)
+        .build();
+    let render = RenderOptions::builder().full_info_string(true).build();
+    let options = Options {
+        extension,
+        render,
+        ..Default::default()
+    };
+    let adapter = JsHighlightAdapter;
+    let render = RenderPlugins::builder()
+        .codefence_syntax_highlighter(&adapter)
+        .build();
+    let plugins = Plugins::builder().render(render).build();
+    let html = markdown_to_html_with_plugins(markdown, &options, &plugins);
+    let vcontext = context! {
+        content => html,
+    };
+    render_with("mini-preview.jinja", vcontext, engine)
 }

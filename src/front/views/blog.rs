@@ -11,13 +11,13 @@ use tower_sessions::Session;
 use uuid::Uuid;
 
 use super::super::structs::{LaxPaging, PostPageParams};
-use super::render_with;
 use crate::auth::AuthSession;
 use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG};
 use crate::errors::PageError;
 use crate::stores;
 use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous_post};
 use crate::types::{AppState, Paginator};
+use crate::utils::html::render_with;
 
 pub async fn show_post(
     auth_session: AuthSession,

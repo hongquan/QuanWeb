@@ -331,11 +331,13 @@ pub fn render_post_edit_page(id: String, model: Model) {
             [
               a.class(consts.selector_post_body_preview_dialog),
               a.class(
-                "p-4 w-screen sm:start-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2 sm:w-120 md:w-220 h-120",
+                "p-4 w-screen sm:start-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2 sm:w-120 md:w-220 h-120 rounded-lg",
               ),
               a.attribute("closedby", "any"),
             ],
             [
+              h.h1([a.class("text-xl text-center")], [h.text("Preview")]),
+              h.hr([a.class("pb-4")]),
               h.iframe([
                 a.class("w-full h-full"),
                 a.property("srcdoc", json.string(content)),

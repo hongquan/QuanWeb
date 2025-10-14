@@ -11,8 +11,7 @@ use crate::stores::{
     minors::{get_all_books, get_all_talks},
 };
 use crate::types::AppState;
-
-use super::render_with;
+use crate::utils::html::render_with;
 
 pub async fn list_talks(
     auth_session: AuthSession,
@@ -20,9 +19,7 @@ pub async fn list_talks(
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let presentations = get_all_talks(&db)
-        .await
-        .map_err(PageError::GelQueryError)?;
+    let presentations = get_all_talks(&db).await.map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
@@ -44,9 +41,7 @@ pub async fn list_books(
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
     let AppState { db, jinja } = state;
-    let books = get_all_books(&db)
-        .await
-        .map_err(PageError::GelQueryError)?;
+    let books = get_all_books(&db).await.map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
         .await
