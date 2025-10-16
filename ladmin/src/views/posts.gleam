@@ -56,6 +56,7 @@ pub fn render_post_table_page(
           "",
         ),
       ])
+
     _ -> {
       let assert PageOwnedPosts(posts) = model.page_owned_objects
       let total_pages = model.page_owned_object_paging.total_pages
@@ -68,11 +69,13 @@ pub fn render_post_table_page(
         Some(q) -> [#("cat_id", q), ..query_list]
         _ -> query_list
       }
+
       let paginator = render_paginator(page, total_pages, query_list)
       let deletion_handler = fn(id) { ContentItemDeletionClicked(PostId(id)) }
       let rows =
         posts
         |> list.map(render_post_row(_, deletion_handler))
+
       let body =
         h.div(
           [
@@ -101,6 +104,7 @@ pub fn render_post_table_page(
       let initial_q = q |> option.unwrap("")
       let initial_cat_id = cat_id |> option.unwrap("")
       let url_new_post = routes.as_url_string(PostEditPage(""))
+
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route),
@@ -147,15 +151,18 @@ fn render_post_table_header() {
         [h.text(label)],
       )
     })
-  // let public_column = h.th([a.class("sr-only")], [h.text("Public Link")])
   let action_column =
     h.th([a.colspan(2)], [h.span([a.class("sr-only")], [h.text("Action")])])
+
   h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
     h.tr([], cells |> list.append([action_column])),
   ])
 }
 
-fn render_post_row(post: MiniPost, deletion_click_handler: fn(String) -> msg) {
+fn render_post_row(
+  post: MiniPost,
+  deletion_click_handler: fn(String) -> msg,
+) -> #(String, Element(msg)) {
   let MiniPost(id:, title:, slug:, created_at:, ..) = post
   let created_at_str =
     created_at
@@ -176,55 +183,54 @@ fn render_post_row(post: MiniPost, deletion_click_handler: fn(String) -> msg) {
   let pub_url = "/post/" <> date_string <> post.slug
   let preview_url = "/preview/" <> post.id
 
-  #(
-    id,
-    h.tr([], [
-      h.td([a.class(class_cell)], [
-        h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
-      ]),
-      h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
-      h.td([a.class(class_cell), a.class("text-sm")], category_links),
-      h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
-      h.td([a.class("py-4 ps-4"), a.class("text-sm")], [
-        case post.is_published {
-          True ->
-            h.a(
-              [
-                a.href(pub_url),
-                a.target("_blank"),
-                a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
-              ],
-              [globe_asia_australia()],
-            )
-          _ -> element.none()
-        },
-      ]),
-      h.td([a.class(class_cell), a.class("text-sm")], [
-        h.div([a.class("flex items-center space-x-4")], [
+  let cells = [
+    h.td([a.class(class_cell)], [
+      h.a([a.href(url), a.class("hover:underline")], [h.text(title)]),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
+    h.td([a.class(class_cell), a.class("text-sm")], category_links),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(created_at_str)]),
+    h.td([a.class("py-4 ps-4"), a.class("text-sm")], [
+      case post.is_published {
+        True ->
           h.a(
             [
-              a.href(preview_url),
+              a.href(pub_url),
               a.target("_blank"),
-              a.class("hover:text-blue-600"),
+              a.class("block w-5 h-auto text-green-600 hover:text-green-400"),
             ],
-            [
-              lucide_icon.view([a.class("w-5 h-auto")]),
-            ],
-          ),
-          h.button(
-            [
-              a.type_("button"),
-              a.class("hover:text-red-600 cursor-pointer"),
-              ev.on_click(deletion_click_handler(id)),
-            ],
-            [
-              lucide_icon.eraser([a.class("w-5 h-auto")]),
-            ],
-          ),
-        ]),
+            [globe_asia_australia()],
+          )
+        _ -> element.none()
+      },
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.div([a.class("flex items-center space-x-4")], [
+        h.a(
+          [
+            a.href(preview_url),
+            a.target("_blank"),
+            a.class("hover:text-blue-600"),
+          ],
+          [
+            lucide_icon.view([a.class("w-5 h-auto")]),
+          ],
+        ),
+        h.button(
+          [
+            a.type_("button"),
+            a.class("hover:text-red-600 cursor-pointer"),
+            ev.on_click(deletion_click_handler(id)),
+          ],
+          [
+            lucide_icon.eraser([a.class("w-5 h-auto")]),
+          ],
+        ),
       ]),
     ]),
-  )
+  ]
+
+  #(id, h.tr([], cells))
 }
 
 fn render_filter_form(
@@ -239,6 +245,7 @@ fn render_filter_form(
       h.option([a.value(c.id), a.selected(c.id == initial_cat_id)], c.title)
     })
   let choices = [h.option([a.value("")], "Category..."), ..choices]
+
   let select_handler = {
     use el <- decode.field("target", decode.dynamic)
     let form_data =
@@ -251,6 +258,7 @@ fn render_filter_form(
       decode.failure(PostFilterSubmitted([]), "FormData")
     })
   }
+
   let category_select =
     h.select(
       [
@@ -260,6 +268,7 @@ fn render_filter_form(
       ],
       choices,
     )
+
   h.form(
     [
       a.class(
@@ -301,6 +310,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
           "",
         ),
       ])
+
     _ -> {
       let Model(users:, checkboxes:, loading_status:, ..) = model
       let form = case post_form, id {
@@ -346,19 +356,19 @@ pub fn render_post_edit_page(id: String, model: Model) {
           )
         })
         |> option.unwrap(element.none())
+
+      let main_content = [
+        portal.to("body", [], [preview_dialog]),
+        h.div([a.class("space-y-8")], [
+          render_flash_messages(model.flash_messages),
+          form,
+        ]),
+      ]
+
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route),
-        skeleton.render_main_block(
-          [
-            portal.to("body", [], [preview_dialog]),
-            h.div([a.class("space-y-8")], [
-              render_flash_messages(model.flash_messages),
-              form,
-            ]),
-          ],
-          "",
-        ),
+        skeleton.render_main_block(main_content, ""),
       ])
     }
   }
@@ -381,6 +391,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
           "",
         ),
       ])
+
     _ -> {
       let categories = case model.page_owned_objects {
         PageOwnedCategories(objects) -> objects
@@ -392,9 +403,21 @@ pub fn render_category_table_page(page: Int, model: Model) {
       let deletion_handler = fn(id) {
         ContentItemDeletionClicked(CategoryId(id))
       }
+
       let rows =
         categories
         |> list.map(render_category_row(_, deletion_handler))
+
+      let table_body =
+        keyed.tbody(
+          [
+            a.class(
+              "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+            ),
+          ],
+          rows,
+        )
+
       let body =
         h.div(
           [
@@ -407,20 +430,23 @@ pub fn render_category_table_page(page: Int, model: Model) {
               [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
               [
                 render_category_table_header(),
-                keyed.tbody(
-                  [
-                    a.class(
-                      "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
-                    ),
-                  ],
-                  rows,
-                ),
+                table_body,
               ],
             ),
           ],
         )
 
       let url_new_category = routes.as_url_string(CategoryEditPage(""))
+      let link_create_category =
+        h.a(
+          [
+            a.href(url_new_category),
+            a.class(
+              "px-6 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80",
+            ),
+          ],
+          [h.text("New category")],
+        )
 
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
@@ -429,15 +455,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
           [
             render_flash_messages(model.flash_messages),
             h.div([a.class("text-end")], [
-              h.a(
-                [
-                  a.href(url_new_category),
-                  a.class(
-                    "px-6 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-600 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80",
-                  ),
-                ],
-                [h.text("New category")],
-              ),
+              link_create_category,
             ]),
             body,
             paginator,
@@ -465,6 +483,7 @@ fn render_category_table_header() {
       )
     })
   let action_column = h.th([a.class("sr-only")], [h.text("Action")])
+
   h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
     h.tr([], cells |> list.append([action_column])),
   ])
@@ -476,32 +495,30 @@ fn render_category_row(
 ) -> #(String, Element(msg)) {
   let Category(id:, title:, slug:, title_vi:) = category
   let url = routes.as_url_string(CategoryEditPage(id))
-
-  #(
-    id,
-    h.tr([], [
-      h.td([a.class(class_cell)], [
-        h.a([a.href(url), a.class("hover:underline")], [
-          h.text(title),
-        ]),
-      ]),
-      h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
-      h.td([a.class(class_cell), a.class("text-sm")], [
-        h.text(title_vi |> option.unwrap("")),
-      ]),
-      h.td([a.class(class_cell), a.class("text-sm")], [
-        h.button(
-          [
-            a.class("hover:text-red-600 cursor-pointer"),
-            ev.on_click(deletion_click_handler(id)),
-          ],
-          [
-            lucide_icon.eraser([a.class("w-5 h-auto")]),
-          ],
-        ),
+  let cells = [
+    h.td([a.class(class_cell)], [
+      h.a([a.href(url), a.class("hover:underline")], [
+        h.text(title),
       ]),
     ]),
-  )
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.text(title_vi |> option.unwrap("")),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.button(
+        [
+          a.class("hover:text-red-600 cursor-pointer"),
+          ev.on_click(deletion_click_handler(id)),
+        ],
+        [
+          lucide_icon.eraser([a.class("w-5 h-auto")]),
+        ],
+      ),
+    ]),
+  ]
+
+  #(id, h.tr([], cells))
 }
 
 pub fn render_category_edit_page(id: String, model: Model) {
@@ -521,6 +538,7 @@ pub fn render_category_edit_page(id: String, model: Model) {
         ),
       ])
     }
+
     _ -> {
       let form = case category_form, id {
         Some(form), "" -> {
