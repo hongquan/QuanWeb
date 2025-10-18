@@ -4,7 +4,7 @@ import gleam/option.{type Option, None, Some}
 
 import core.{
   type Category, type CategoryEditablePart, type LoginData, type Post,
-  CategoryEditablePart, LoginData, PostEditablePart,
+  type PostEditablePart, CategoryEditablePart, LoginData, PostEditablePart,
 }
 
 pub fn create_login_form() -> Form(LoginData) {
@@ -18,7 +18,7 @@ pub fn create_login_form() -> Form(LoginData) {
   })
 }
 
-pub fn make_post_form(post: Option(Post)) -> Form(core.PostEditablePart) {
+pub fn make_post_form(post: Option(Post)) -> Form(PostEditablePart) {
   let form =
     form.new({
       use title <- form.field(
