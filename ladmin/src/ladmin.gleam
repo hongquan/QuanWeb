@@ -132,8 +132,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           }
         })
       let query = uri.query_to_string(cleaned_data)
-      let #(path, _q) =
-        routes.to_uri_parts(route) |> routes.prefix(mounted_path)
+      let #(path, _q) = routes.to_uri_parts(route) |> routes.prefix
       #(model, modem.push(path, Some(query), None))
     }
     ApiReturnedSinglePost(res) ->
