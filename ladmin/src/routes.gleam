@@ -132,18 +132,18 @@ fn to_page_query(page: Option(Int)) {
   |> option.map(uri.query_to_string)
 }
 
-pub fn prefix(uri_parts: #(String, a), mounted_path: String) -> #(String, a) {
+pub fn prefix(uri_parts: #(String, a)) -> #(String, a) {
   let #(path, query) = uri_parts
   #({ mounted_path <> path } |> string.replace("//", "/"), query)
 }
 
 pub fn goto(route: Route) -> Effect(b) {
-  let #(full_path, q) = to_uri_parts(route) |> prefix(mounted_path)
+  let #(full_path, q) = to_uri_parts(route) |> prefix
   modem.push(full_path, q, None)
 }
 
 pub fn as_url_string(route: Route) {
-  let #(full_path, query) = to_uri_parts(route) |> prefix(mounted_path)
+  let #(full_path, query) = to_uri_parts(route) |> prefix
   case query {
     Some("") -> full_path
     Some(s) -> full_path <> "?" <> s
