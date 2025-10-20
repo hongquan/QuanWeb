@@ -145,9 +145,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(updates.handle_api_slug_generation(model, res), effect.none())
     }
     PostFormSubmitted(result:, stay:) -> {
-      updates.handle_post_form_submission(model, result, stay)
+      updates.handle_post_form_submission(result, stay, model)
     }
-    ApiCreatedPost(res) -> updates.handle_api_create_post_result(model, res)
+    ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
       updates.handle_api_update_post_result(model, res, stay)
     FlashMessageTimeUp -> {

@@ -95,8 +95,6 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     HomePage -> #("/", None)
     LoginPage -> #("/login", None)
     PostListPage(page, q, cat_id) -> {
-      io.println("cat_id")
-      echo cat_id
       let query =
         [
           cat_id |> option.map(pair.new("cat_id", _)),

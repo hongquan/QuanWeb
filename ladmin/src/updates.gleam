@@ -443,9 +443,9 @@ pub fn handle_api_slug_generation(
 }
 
 pub fn handle_post_form_submission(
-  model: Model,
   res: Result(PostEditablePart, Form(PostEditablePart)),
   stay: Bool,
+  model: Model,
 ) {
   case res {
     Ok(data) -> {
@@ -457,6 +457,8 @@ pub fn handle_post_form_submission(
       #(model, whatsnext)
     }
     Error(form) -> {
+      io.println("Form errors:")
+      echo formlib.all_errors(form)
       let post_form = model.post_form |> option.map(fn(_f) { form })
       #(Model(..model, post_form:), effect.none())
     }
@@ -501,14 +503,21 @@ pub fn handle_api_update_post_result(
 // Handle the case that a Post has just been created.
 // We will redirect user to the edit page.
 pub fn handle_api_create_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
+  model: Model,
 ) {
   case res {
-    Error(_e) -> {
+    Error(err) -> {
       let message = models.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
-      #(Model(..model, flash_messages:), effect.none())
+      let #(login_state, whatnext) = case err {
+        rsvp.HttpError(Response(401, ..)) -> {
+          io.println("Redirecting to Login page...")
+          #(NonLogin, routes.goto(LoginPage))
+        }
+        _ -> #(model.login_state, effect.none())
+      }
+      #(Model(..model, flash_messages:, login_state:), whatnext)
     }
     Ok(post) -> {
       let message =

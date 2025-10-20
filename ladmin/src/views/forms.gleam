@@ -49,6 +49,7 @@ pub fn render_post_form(
         h.input([
           a.name("title"),
           a.type_("text"),
+          a.required(True),
           a.value(formlib.field_value(form, "title")),
           a.class(class_text_input <> " px-4"),
         ]),
@@ -133,6 +134,7 @@ fn render_slug_field(form: Form(o)) {
       h.input([
         a.name("slug"),
         a.type_("text"),
+        a.required(True),
         a.value(formlib.field_value(form, "slug")),
         a.class(class_text_input <> " ps-4 pe-10"),
       ]),
