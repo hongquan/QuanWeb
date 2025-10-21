@@ -108,8 +108,8 @@ pub fn handle_router_init_done(model: Model) {
 }
 
 pub fn handle_login_submission(
-  model: Model,
   form: Result(LoginData, Form(LoginData)),
+  model: Model,
 ) -> #(Model, Effect(AppMsg)) {
   case form {
     Ok(login_data) -> {
@@ -125,7 +125,7 @@ pub fn handle_login_submission(
   }
 }
 
-pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
+pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
   // Reset loading status
   let model = Model(..model, loading_status: core.Idle)
   case res {
@@ -190,8 +190,8 @@ pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
 }
 
 pub fn handle_api_list_post_result(
-  model: Model,
   res: Result(ApiListingResponse(MiniPost), rsvp.Error),
+  model: Model,
 ) -> Model {
   case res {
     Ok(info) -> {
@@ -322,8 +322,8 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
 }
 
 pub fn handle_api_list_category_result(
-  model: Model,
   res: Result(ApiListingResponse(Category), rsvp.Error),
+  model: Model,
 ) {
   let Model(route:, ..) = model
   case res {
@@ -387,8 +387,8 @@ pub fn handle_api_list_category_result(
 }
 
 pub fn handle_api_retrieve_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(p) -> {
@@ -417,8 +417,8 @@ pub fn handle_api_retrieve_post_result(
 }
 
 pub fn handle_api_slug_generation(
-  model: Model,
   res: Result(String, rsvp.Error),
+  model: Model,
 ) -> Model {
   case res {
     Error(_e) -> model
@@ -466,9 +466,9 @@ pub fn handle_post_form_submission(
 }
 
 pub fn handle_api_update_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
   stay: Bool,
+  model: Model,
 ) {
   case res {
     Error(_e) -> {
@@ -536,9 +536,9 @@ pub fn handle_api_create_post_result(
 }
 
 pub fn handle_category_moved_between_panes(
-  model: Model,
   id: String,
   to_move_in: Bool,
+  model: Model,
 ) -> Model {
   let post_form =
     model.post_form
@@ -561,7 +561,7 @@ fn push_in_or_out_category_from_form(
   |> formlib.add_values(form, _)
 }
 
-pub fn handle_rendered_markdown_received(model: Model, html: String) {
+pub fn handle_rendered_markdown_received(html: String, model: Model) {
   let model = Model(..model, post_body_preview: Some(html))
   let whatsnext = {
     use _dispatch, _root <- effect.after_paint
@@ -572,8 +572,8 @@ pub fn handle_rendered_markdown_received(model: Model, html: String) {
 }
 
 pub fn handle_submit_stay_button_clicked(
-  model: Model,
   button: Element,
+  model: Model,
 ) -> #(Model, Effect(Msg(a))) {
   let whatsnext = case model.post_form {
     Some(form) -> {
@@ -613,8 +613,8 @@ fn process_post_form_data_to_produce_msg(
 }
 
 pub fn handle_api_retrieve_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {
@@ -638,8 +638,8 @@ pub fn handle_api_retrieve_category_result(
 }
 
 pub fn handle_category_form_submission(
-  model: Model,
   res: Result(CategoryEditablePart, Form(CategoryEditablePart)),
+  model: Model,
 ) {
   case res {
     Ok(data) -> {
@@ -658,8 +658,8 @@ pub fn handle_category_form_submission(
 }
 
 pub fn handle_api_update_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {
@@ -688,8 +688,8 @@ pub fn handle_api_update_category_result(
 }
 
 pub fn handle_api_create_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {

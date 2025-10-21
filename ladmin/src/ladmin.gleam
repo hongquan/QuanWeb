@@ -106,15 +106,15 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
 
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")
-      updates.handle_login_submission(model, form)
+      updates.handle_login_submission(form, model)
     }
-    ApiLoginReturned(res) -> updates.handle_login_api_result(model, res)
+    ApiLoginReturned(res) -> updates.handle_login_api_result(res, model)
     ApiReturnedPosts(res) -> {
-      let model = updates.handle_api_list_post_result(model, res)
+      let model = updates.handle_api_list_post_result(res, model)
       #(model, effect.none())
     }
     ApiReturnedCategories(res) ->
-      updates.handle_api_list_category_result(model, res)
+      updates.handle_api_list_category_result(res, model)
     LogOutClicked -> {
       #(model, actions.initiate_logout())
     }
@@ -136,20 +136,20 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, modem.push(path, Some(query), None))
     }
     ApiReturnedSinglePost(res) ->
-      updates.handle_api_retrieve_post_result(model, res)
+      updates.handle_api_retrieve_post_result(res, model)
     SlugGeneratorClicked(title) -> #(
       model,
       actions.initiate_generate_slug(title),
     )
     ApiReturnedSlug(res) -> {
-      #(updates.handle_api_slug_generation(model, res), effect.none())
+      #(updates.handle_api_slug_generation(res, model), effect.none())
     }
     PostFormSubmitted(result:, stay:) -> {
       updates.handle_post_form_submission(result, stay, model)
     }
     ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
-      updates.handle_api_update_post_result(model, res, stay)
+      updates.handle_api_update_post_result(res, stay, model)
     FlashMessageTimeUp -> {
       let flash_messages =
         model.flash_messages
@@ -162,14 +162,14 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(Model(..model, flash_messages:), effect.none())
     }
     UserMovedCategoryBetweenPane(id, selected) -> #(
-      updates.handle_category_moved_between_panes(model, id, selected),
+      updates.handle_category_moved_between_panes(id, selected, model),
       effect.none(),
     )
     UserClickMarkdownPreview(s) -> {
       #(model, actions.try_render_markdown_via_api(s))
     }
     ApiRenderedMarkdown(Ok(html)) -> {
-      updates.handle_rendered_markdown_received(model, html)
+      updates.handle_rendered_markdown_received(html, model)
     }
     ApiReturnedUsers(Ok(users)) -> {
       let model = Model(..model, users:)
@@ -180,10 +180,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, effect.none())
     }
     SubmitStayButtonClicked(dom_element) -> {
-      updates.handle_submit_stay_button_clicked(model, dom_element)
+      updates.handle_submit_stay_button_clicked(dom_element, model)
     }
     ApiReturnedSingleCategory(res) -> {
-      updates.handle_api_retrieve_category_result(model, res)
+      updates.handle_api_retrieve_category_result(res, model)
     }
     FormCancelClicked -> {
       let whatsnext = case route {
@@ -196,13 +196,13 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, whatsnext)
     }
     CategoryFormSubmitted(res) -> {
-      updates.handle_category_form_submission(model, res)
+      updates.handle_category_form_submission(res, model)
     }
     ApiUpdatedCategory(res) -> {
-      updates.handle_api_update_category_result(model, res)
+      updates.handle_api_update_category_result(res, model)
     }
     ApiCreatedCategory(res) -> {
-      updates.handle_api_create_category_result(model, res)
+      updates.handle_api_create_category_result(res, model)
     }
     ContentItemDeletionClicked(id) -> {
       // To show dialog for deletion confirmation
