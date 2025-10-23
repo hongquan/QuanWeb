@@ -27,6 +27,7 @@ DB
 .vscode
 .idea
 .helix
+.zed
 
 # Logs
 logs

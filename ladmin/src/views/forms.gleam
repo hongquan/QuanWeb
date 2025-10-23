@@ -11,6 +11,7 @@ import lustre/element/html as h
 import lustre/event as ev
 import plinth/browser/document
 import plinth/browser/element as br_element
+import updates
 
 import core.{
   type Category, type CategoryEditablePart, type CheckBoxes, type LoadingStatus,
@@ -75,20 +76,13 @@ pub fn render_post_form(
     h.hr([a.class("my-4")]),
     render_bottom_buttons(loading_status),
   ]
-  let handle_submit = fn(submitted_values) {
-    // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
-    // When the checkbox value is missing, we should clear its previous data from the "formal" form.
-    // formal doesn't provide a function like remove_value, so we have to use set_values.
-    let multi_value_field = "categories"
-    let new_values =
-      formlib.field_values(form, multi_value_field)
-      |> list.map(pair.new(multi_value_field, _))
-      |> list.append(submitted_values, _)
-    form
-    |> formlib.set_values(new_values)
-    |> formlib.run
-    |> PostFormSubmitted(False)
-  }
+
+  let handle_submit = updates.process_post_form_data_to_produce_msg(
+    _,
+    form,
+    False,
+  )
+
   h.form(
     [
       a.method("post"),

@@ -144,9 +144,11 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     ApiReturnedSlug(res) -> {
       #(updates.handle_api_slug_generation(res, model), effect.none())
     }
+
     PostFormSubmitted(result:, stay:) -> {
       updates.handle_post_form_submission(result, stay, model)
     }
+
     ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
       updates.handle_api_update_post_result(res, stay, model)

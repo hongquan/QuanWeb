@@ -593,7 +593,7 @@ pub fn handle_submit_stay_button_clicked(
   #(model, whatsnext)
 }
 
-fn process_post_form_data_to_produce_msg(
+pub fn process_post_form_data_to_produce_msg(
   submitted_values: List(#(String, String)),
   form: Form(PostEditablePart),
   stay: Bool,
@@ -601,11 +601,17 @@ fn process_post_form_data_to_produce_msg(
   // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
   // When the checkbox value is missing, we should clear its previous data from the "formal" form.
   // formal doesn't provide a function like remove_value, so we have to use set_values.
+
+  // We are about to overwrite the data which `Form` is keeping.
+  // Our rendered-HTML form is missing "categories" field, this field
+  // will be absent in the submitted values.
+  // So we need to retrieve it from the stored values.
   let multi_value_field = "categories"
   let new_values =
     formlib.field_values(form, multi_value_field)
     |> list.map(pair.new(multi_value_field, _))
     |> list.append(submitted_values, _)
+
   form
   |> formlib.set_values(new_values)
   |> formlib.run
