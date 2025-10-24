@@ -2,24 +2,31 @@ import formal/form.{type Form} as formlib
 import lustre/attribute as a
 import lustre/element/html as h
 import lustre/event as ev
+import views/ui_components.{render_flash_messages}
 
 import core.{
-  type LoadingStatus, type LoginData, IsSubmitting, UserSubmittedLoginForm,
+  type FlashMessage, type LoadingStatus, type LoginData, IsSubmitting,
+  UserSubmittedLoginForm,
 }
 import views/widgets
 
-pub fn make_login_page(loading_status: LoadingStatus, form: Form(LoginData)) {
+pub fn make_login_page(
+  loading_status: LoadingStatus,
+  form: Form(LoginData),
+  flash_messages: List(FlashMessage),
+) {
   let handle_submit = fn(values) {
     form |> formlib.add_values(values) |> formlib.run |> UserSubmittedLoginForm
   }
   h.div(
     [
       a.class(
-        "w-full max-w-sm mx-auto mt-16 overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800",
+        "w-full max-w-md mx-auto mt-16 overflow-hidden bg-white rounded-lg shadow-md dark:bg-gray-800",
       ),
     ],
     [
-      h.div([a.class("px-6 py-4")], [
+      render_flash_messages(flash_messages),
+      h.div([a.class("max-w-sm mx-auto px-6 py-4")], [
         h.h3(
           [
             a.class(

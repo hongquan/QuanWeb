@@ -7,13 +7,14 @@ import gleam/option.{type Option, None, Some}
 import gleam/pair
 import gleam/result
 import gleam/string
-import gleam/uri.{type Uri}
+import gleam/uri.{type Uri, Uri}
 import lustre/effect.{type Effect}
 import modem
 
 pub type Route {
   HomePage
-  LoginPage
+  // The payload is the previous attempt URL
+  LoginPage(Uri)
   PostListPage(page: Option(Int), q: Option(String), cat_id: Option(String))
   PostEditPage(id: String)
   CategoryListPage(page: Option(Int))
@@ -35,8 +36,12 @@ pub fn parse_to_route(
   let path = string.drop_start(full_path, string.length(mounted_path) - 1)
   case path, query {
     "/", _ -> HomePage
-    "/login", _ -> LoginPage
-    "/logout", _ -> LoginPage
+    "/login", [] -> {
+      LoginPage(uri.empty)
+    }
+    "/login", [#("attempt", s), ..] -> {
+      LoginPage(uri.parse(s) |> result.unwrap(uri.empty))
+    }
     "/posts/new", _ -> PostEditPage("")
     "/posts/" <> pid, _ -> PostEditPage(pid)
     "/posts", queries -> {
@@ -96,7 +101,13 @@ pub fn on_url_change(url: Uri, notify: fn(Route) -> msg) -> msg {
 pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
   case route {
     HomePage -> #("/", None)
-    LoginPage -> #("/login", None)
+    LoginPage(attempt) -> {
+      let query = case uri.to_string(attempt) {
+        "" -> None
+        u -> uri.query_to_string([#("attempt", u)]) |> Some
+      }
+      #("/login", query)
+    }
     PostListPage(page, q, cat_id) -> {
       let query =
         [
@@ -150,6 +161,11 @@ pub fn as_url_string(route: Route) {
     Some(s) -> full_path <> "?" <> s
     _ -> full_path
   }
+}
+
+pub fn as_uri(route: Route) -> Uri {
+  let #(full_path, query) = to_uri_parts(route) |> prefix
+  Uri(..uri.empty, path: full_path, query:)
 }
 
 pub fn replace_page(

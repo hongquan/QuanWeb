@@ -9,7 +9,9 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/pair
 import gleam/result
+import gleam/uri
 import lustre/effect.{type Effect}
+import modem
 import plinth/browser/element.{type Element}
 import plinth/javascript/storage
 import rsvp
@@ -42,7 +44,7 @@ pub fn handle_router_init_done(model: Model) {
   echo route
 
   let #(whatsnext, loading_status) = case route, login_state {
-    LoginPage, _ -> #(effect.none(), core.Idle)
+    LoginPage(_u), _ -> #(effect.none(), core.Idle)
     // If user has already logged-in, and visiting HomePage, redirect to PostList
     HomePage, LoggedIn(_u) -> {
       #(routes.goto(PostListPage(None, None, None)), core.Idle)
@@ -90,8 +92,9 @@ pub fn handle_router_init_done(model: Model) {
     }
     // Already logged in, just serve, no redirect
     _, LoggedIn(_u) -> #(effect.none(), core.Idle)
-    _, _ -> {
-      #(routes.goto(LoginPage), core.Idle)
+    r, _ -> {
+      let attempt = routes.as_uri(r)
+      #(routes.goto(LoginPage(attempt)), core.Idle)
     }
   }
   // If the initial page is the "create post" page, create a form
@@ -131,8 +134,27 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
   case res {
     Ok(user) -> {
       let login_state = LoggedIn(user)
-      // User has logged-in successfully. Redirect to home page
-      let go_next = routes.goto(HomePage)
+      // User has logged-in successfully. Redirect to the previous attempt page.
+      // But don't redirect to LoginPage.
+      let login_uri = routes.as_uri(LoginPage(uri.empty))
+      echo model.route
+      let go_next = case model.route {
+        LoginPage(attempt_uri) -> {
+          io.println(
+            "To redirect to attempt URI " <> uri.to_string(attempt_uri),
+          )
+          case attempt_uri.path == login_uri.path {
+            True -> routes.goto(HomePage)
+            False ->
+              modem.push(
+                attempt_uri.path,
+                attempt_uri.query,
+                attempt_uri.fragment,
+              )
+          }
+        }
+        _ -> routes.goto(HomePage)
+      }
       let model = Model(..model, login_state:)
       // Save to localstorage
       storage.local()
@@ -247,7 +269,7 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
 pub fn handle_landing_on_page(new_route: Route, model: Model) {
   let Model(categories:, partial_load_categories:, ..) = model
   let login_state = case new_route, model.login_state {
-    LoginPage, NonLogin -> TryingLogin(forms.create_login_form())
+    LoginPage(_u), NonLogin -> TryingLogin(forms.create_login_form())
     _, state -> state
   }
   let #(go_next, loading_status) = case new_route, login_state {
@@ -256,8 +278,9 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       #(routes.goto(PostListPage(None, None, None)), core.Idle)
     }
     // If user has not logged-in, redirect to Login page
-    _, NonLogin -> {
-      #(routes.goto(LoginPage), core.Idle)
+    r, NonLogin -> {
+      let attempt = routes.as_uri(r)
+      #(routes.goto(LoginPage(attempt)), core.Idle)
     }
     PostListPage(p, q, cat_id), _ -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
@@ -505,17 +528,10 @@ pub fn handle_api_create_post_result(
   model: Model,
 ) {
   case res {
-    Error(err) -> {
+    Error(_e) -> {
       let message = models.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
-      let #(login_state, whatnext) = case err {
-        rsvp.HttpError(Response(401, ..)) -> {
-          io.println("Redirecting to Login page...")
-          #(NonLogin, routes.goto(LoginPage))
-        }
-        _ -> #(model.login_state, effect.none())
-      }
-      #(Model(..model, flash_messages:, login_state:), whatnext)
+      #(Model(..model, flash_messages:), effect.none())
     }
     Ok(post) -> {
       let message =

@@ -1,4 +1,5 @@
 import gleam/bool
+import gleam/http/response.{Response}
 import gleam/io
 import gleam/json
 import gleam/list
@@ -16,6 +17,7 @@ import lustre/element/html as h
 import lustre/portal
 import modem
 import plinth/javascript/storage
+import rsvp.{HttpError}
 
 import actions
 import consts.{mounted_path}
@@ -80,7 +82,7 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
       })
     })
   let login_state = case route, saved_user {
-    LoginPage, _ -> TryingLogin(create_login_form())
+    LoginPage(_u), _ -> TryingLogin(create_login_form())
     _, Ok(user) -> LoggedIn(user)
     _, _ -> NonLogin
   }
@@ -157,6 +159,21 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       updates.handle_post_form_submission(result, stay, model)
     }
 
+    ApiCreatedPost(Error(HttpError(Response(401, ..))))
+    | ApiUpdatedPost(Error(HttpError(Response(401, ..))), ..)
+    | ApiCreatedCategory(Error(HttpError(Response(401, ..))))
+    | ApiUpdatedCategory(Error(HttpError(Response(401, ..))))
+    | ApiDeletedContentItem(Error(HttpError(Response(401, ..)))) -> {
+      let attempt = routes.as_uri(model.route)
+      let flash_messages = [
+        models.create_info_message("Please login..."),
+        ..model.flash_messages
+      ]
+      let model = Model(..model, login_state: NonLogin, flash_messages:)
+      io.println("Redirecting to Login page...")
+      echo LoginPage(attempt)
+      #(model, routes.goto(LoginPage(attempt)))
+    }
     ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
       updates.handle_api_update_post_result(res, stay, model)
@@ -244,7 +261,8 @@ fn view(model: Model) -> Element(AppMsg) {
     HomePage, _ -> {
       dummy_view()
     }
-    LoginPage, TryingLogin(form) -> make_login_page(model.loading_status, form)
+    LoginPage(_u), TryingLogin(form) ->
+      make_login_page(model.loading_status, form, model.flash_messages)
     PostListPage(p, q, cat_id), _ -> {
       posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
