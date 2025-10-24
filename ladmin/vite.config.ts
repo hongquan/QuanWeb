@@ -13,6 +13,7 @@ export default defineConfig({
     encrecss({
       include: [
         /\.(ts|html|gleam)($|\?)/,
+        /build\/dev\/javascript\/ladmin/,
       ]
     }),
   ],
