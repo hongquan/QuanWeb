@@ -2,7 +2,6 @@ import formal/form.{type Form} as formlib
 import gleam/dynamic/decode
 import gleam/list
 import gleam/option.{type Option, Some}
-import gleam/pair
 import gleam/result
 import lucide_lustre as lc_icons
 import lustre/attribute as a
@@ -11,16 +10,16 @@ import lustre/element/html as h
 import lustre/event as ev
 import plinth/browser/document
 import plinth/browser/element as br_element
-import updates
 
 import core.{
   type Category, type CategoryEditablePart, type CheckBoxes, type LoadingStatus,
   type MiniUser, type Msg, type PostEditablePart, CategoryFormSubmitted,
-  FormCancelClicked, IsSubmitting, PostFormSubmitted, SlugGeneratorClicked,
-  SubmitStayButtonClicked, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane, UserToggledIsPublishedCheckbox,
+  FormCancelClicked, IsSubmitting, SlugGeneratorClicked, SubmitStayButtonClicked,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  UserToggledIsPublishedCheckbox,
 }
 import ffi
+import updates
 import views/widgets
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
