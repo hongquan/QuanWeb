@@ -108,8 +108,8 @@ pub fn handle_router_init_done(model: Model) {
 }
 
 pub fn handle_login_submission(
-  model: Model,
   form: Result(LoginData, Form(LoginData)),
+  model: Model,
 ) -> #(Model, Effect(AppMsg)) {
   case form {
     Ok(login_data) -> {
@@ -125,7 +125,7 @@ pub fn handle_login_submission(
   }
 }
 
-pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
+pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
   // Reset loading status
   let model = Model(..model, loading_status: core.Idle)
   case res {
@@ -190,8 +190,8 @@ pub fn handle_login_api_result(model: Model, res: Result(User, rsvp.Error)) {
 }
 
 pub fn handle_api_list_post_result(
-  model: Model,
   res: Result(ApiListingResponse(MiniPost), rsvp.Error),
+  model: Model,
 ) -> Model {
   case res {
     Ok(info) -> {
@@ -322,8 +322,8 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
 }
 
 pub fn handle_api_list_category_result(
-  model: Model,
   res: Result(ApiListingResponse(Category), rsvp.Error),
+  model: Model,
 ) {
   let Model(route:, ..) = model
   case res {
@@ -387,8 +387,8 @@ pub fn handle_api_list_category_result(
 }
 
 pub fn handle_api_retrieve_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(p) -> {
@@ -417,8 +417,8 @@ pub fn handle_api_retrieve_post_result(
 }
 
 pub fn handle_api_slug_generation(
-  model: Model,
   res: Result(String, rsvp.Error),
+  model: Model,
 ) -> Model {
   case res {
     Error(_e) -> model
@@ -443,9 +443,9 @@ pub fn handle_api_slug_generation(
 }
 
 pub fn handle_post_form_submission(
-  model: Model,
   res: Result(PostEditablePart, Form(PostEditablePart)),
   stay: Bool,
+  model: Model,
 ) {
   case res {
     Ok(data) -> {
@@ -457,6 +457,8 @@ pub fn handle_post_form_submission(
       #(model, whatsnext)
     }
     Error(form) -> {
+      io.println("Form errors:")
+      echo formlib.all_errors(form)
       let post_form = model.post_form |> option.map(fn(_f) { form })
       #(Model(..model, post_form:), effect.none())
     }
@@ -464,9 +466,9 @@ pub fn handle_post_form_submission(
 }
 
 pub fn handle_api_update_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
   stay: Bool,
+  model: Model,
 ) {
   case res {
     Error(_e) -> {
@@ -501,14 +503,21 @@ pub fn handle_api_update_post_result(
 // Handle the case that a Post has just been created.
 // We will redirect user to the edit page.
 pub fn handle_api_create_post_result(
-  model: Model,
   res: Result(Post, rsvp.Error),
+  model: Model,
 ) {
   case res {
-    Error(_e) -> {
+    Error(err) -> {
       let message = models.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
-      #(Model(..model, flash_messages:), effect.none())
+      let #(login_state, whatnext) = case err {
+        rsvp.HttpError(Response(401, ..)) -> {
+          io.println("Redirecting to Login page...")
+          #(NonLogin, routes.goto(LoginPage))
+        }
+        _ -> #(model.login_state, effect.none())
+      }
+      #(Model(..model, flash_messages:, login_state:), whatnext)
     }
     Ok(post) -> {
       let message =
@@ -527,9 +536,9 @@ pub fn handle_api_create_post_result(
 }
 
 pub fn handle_category_moved_between_panes(
-  model: Model,
   id: String,
   to_move_in: Bool,
+  model: Model,
 ) -> Model {
   let post_form =
     model.post_form
@@ -552,7 +561,7 @@ fn push_in_or_out_category_from_form(
   |> formlib.add_values(form, _)
 }
 
-pub fn handle_rendered_markdown_received(model: Model, html: String) {
+pub fn handle_rendered_markdown_received(html: String, model: Model) {
   let model = Model(..model, post_body_preview: Some(html))
   let whatsnext = {
     use _dispatch, _root <- effect.after_paint
@@ -563,8 +572,8 @@ pub fn handle_rendered_markdown_received(model: Model, html: String) {
 }
 
 pub fn handle_submit_stay_button_clicked(
-  model: Model,
   button: Element,
+  model: Model,
 ) -> #(Model, Effect(Msg(a))) {
   let whatsnext = case model.post_form {
     Some(form) -> {
@@ -584,7 +593,7 @@ pub fn handle_submit_stay_button_clicked(
   #(model, whatsnext)
 }
 
-fn process_post_form_data_to_produce_msg(
+pub fn process_post_form_data_to_produce_msg(
   submitted_values: List(#(String, String)),
   form: Form(PostEditablePart),
   stay: Bool,
@@ -592,11 +601,17 @@ fn process_post_form_data_to_produce_msg(
   // If the checkbox is unchecked, the "is_published" field will not be in submitted data.
   // When the checkbox value is missing, we should clear its previous data from the "formal" form.
   // formal doesn't provide a function like remove_value, so we have to use set_values.
+
+  // We are about to overwrite the data which `Form` is keeping.
+  // Our rendered-HTML form is missing "categories" field, this field
+  // will be absent in the submitted values.
+  // So we need to retrieve it from the stored values.
   let multi_value_field = "categories"
   let new_values =
     formlib.field_values(form, multi_value_field)
     |> list.map(pair.new(multi_value_field, _))
     |> list.append(submitted_values, _)
+
   form
   |> formlib.set_values(new_values)
   |> formlib.run
@@ -604,8 +619,8 @@ fn process_post_form_data_to_produce_msg(
 }
 
 pub fn handle_api_retrieve_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {
@@ -629,8 +644,8 @@ pub fn handle_api_retrieve_category_result(
 }
 
 pub fn handle_category_form_submission(
-  model: Model,
   res: Result(CategoryEditablePart, Form(CategoryEditablePart)),
+  model: Model,
 ) {
   case res {
     Ok(data) -> {
@@ -649,8 +664,8 @@ pub fn handle_category_form_submission(
 }
 
 pub fn handle_api_update_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {
@@ -679,8 +694,8 @@ pub fn handle_api_update_category_result(
 }
 
 pub fn handle_api_create_category_result(
-  model: Model,
   res: Result(Category, rsvp.Error),
+  model: Model,
 ) {
   case res {
     Ok(cat) -> {

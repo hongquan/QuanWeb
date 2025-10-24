@@ -22,10 +22,12 @@ secret.py
 custom_settings.toml
 .secrets.toml
 .env
+gel.local.toml
 DB
 .vscode
 .idea
 .helix
+.zed
 
 # Logs
 logs

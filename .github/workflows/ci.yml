@@ -88,6 +88,7 @@ jobs:
   deploy-ladmin-app:
     runs-on: ubuntu-latest
     needs: [build-ladmin-app]
+    if: github.ref == 'refs/heads/main'
     env:
       ANSIBLE_HOST_KEY_CHECKING: False
     steps:
