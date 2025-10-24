@@ -102,7 +102,15 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   let Model(route:, ..) = model
   case msg {
     RouterInitDone -> updates.handle_router_init_done(model)
-    OnRouteChange(new_route) -> updates.handle_landing_on_page(new_route, model)
+    OnRouteChange(new_route) -> {
+      case new_route {
+        routes.External(url) -> {
+          io.println("To go to external: " <> uri.to_string(url))
+          #(model, modem.load(url))
+        }
+        _ -> updates.handle_landing_on_page(new_route, model)
+      }
+    }
 
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")

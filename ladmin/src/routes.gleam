@@ -7,7 +7,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/pair
 import gleam/result
 import gleam/string
-import gleam/uri
+import gleam/uri.{type Uri}
 import lustre/effect.{type Effect}
 import modem
 
@@ -18,6 +18,7 @@ pub type Route {
   PostEditPage(id: String)
   CategoryListPage(page: Option(Int))
   CategoryEditPage(id: String)
+  External(Uri)
   NotFound
 }
 
@@ -27,7 +28,9 @@ pub fn parse_to_route(
   full_path: String,
   query: List(#(String, String)),
 ) -> Route {
-  use <- bool.guard(!string.starts_with(full_path, mounted_path), NotFound)
+  use <- bool.lazy_guard(!string.starts_with(full_path, mounted_path), fn() {
+    uri.parse(full_path) |> result.map(External) |> result.unwrap(NotFound)
+  })
   // If full_path == "/base/abc", we get "/abc"
   let path = string.drop_start(full_path, string.length(mounted_path) - 1)
   case path, query {
@@ -77,7 +80,7 @@ pub fn parse_to_route(
   }
 }
 
-pub fn on_url_change(url: uri.Uri, notify: fn(Route) -> msg) -> msg {
+pub fn on_url_change(url: Uri, notify: fn(Route) -> msg) -> msg {
   let route =
     url.query
     |> option.map(fn(q) { option.from_result(uri.parse_query(q)) })

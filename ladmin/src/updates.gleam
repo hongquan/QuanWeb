@@ -294,8 +294,6 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     _, _ -> #(effect.none(), core.Idle)
   }
-  io.println("Reset page_owned_objects")
-  echo new_route
   let post_form = case new_route {
     PostEditPage("") -> Some(forms.make_post_form(None))
     _ -> model.post_form
