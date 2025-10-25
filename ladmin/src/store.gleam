@@ -58,8 +58,8 @@ pub fn load_store() -> Result(Store, Nil) {
   }
 }
 
-pub fn load_user() -> Result(User, Nil) {
-  load_store() |> result.map(fn(s) { s.user })
+pub fn load_user() -> Result(#(User, Timestamp), Nil) {
+  load_store() |> result.map(fn(s) { #(s.user, s.last_auth) })
 }
 
 pub fn save_user(user: User) {

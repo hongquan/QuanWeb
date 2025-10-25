@@ -62,11 +62,22 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
     |> result.flatten
     |> result.unwrap([])
   let route = parse_to_route(path, query)
-  let saved_user = store.load_user()
-  let login_state = case route, saved_user {
-    LoginPage(_u), _ -> TryingLogin(create_login_form())
-    _, Ok(user) -> LoggedIn(user)
-    _, _ -> NonLogin
+  let #(saved_user, last_auth) = case store.load_user() |> option.from_result {
+    Some(#(a, b)) -> #(Some(a), Some(b))
+    _ -> #(None, None)
+  }
+  let auth_expired =
+    {
+      last_auth
+      |> option.map(timestamp.add(_, duration.minutes(30)))
+      |> option.map(timestamp.compare(_, timestamp.system_time()))
+      |> option.unwrap(order.Lt)
+    }
+    == order.Lt
+  let login_state = case route, saved_user, auth_expired {
+    LoginPage(_u), _, _ -> TryingLogin(create_login_form())
+    _, Some(user), False -> LoggedIn(user)
+    _, _, _ -> NonLogin
   }
   let model = Model(..default_model, route:, login_state:)
   let route_react_setup = modem.init(on_url_change(_, OnRouteChange))
