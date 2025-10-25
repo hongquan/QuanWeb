@@ -13,8 +13,8 @@ import gleam/uri
 import lustre/effect.{type Effect}
 import modem
 import plinth/browser/element.{type Element}
-import plinth/javascript/storage
 import rsvp
+import store
 
 import actions
 import consts
@@ -25,7 +25,6 @@ import core.{
   IsSubmitting, LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging,
   PageOwnedPosts, PostFormSubmitted, PostId, TryingLogin,
 }
-import decoders.{encode_user}
 import ffi
 import models.{type AppMsg, type Model, Model}
 import routes.{
@@ -157,15 +156,7 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
       }
       let model = Model(..model, login_state:)
       // Save to localstorage
-      storage.local()
-      |> result.try(storage.set_item(
-        _,
-        consts.key_store_user,
-        json.to_string(encode_user(user)),
-      ))
-      |> result.lazy_unwrap(fn() {
-        io.println_error("Failed to acquire localStorage!")
-      })
+      store.save_user(user) |> result.unwrap(Nil)
       let flash_messages = [
         models.create_success_message("Login successfully!"),
         ..model.flash_messages
@@ -246,12 +237,7 @@ pub fn handle_api_list_post_result(
 pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
   let login_state = NonLogin
   // Delete user from localStorage
-  storage.local()
-  |> result.map(storage.remove_item(_, consts.key_store_user))
-  |> result.map(fn(_x) {
-    io.println("Deleted " <> consts.key_store_user <> " from localStorage!")
-  })
-  |> result.unwrap(Nil)
+  store.destroy()
   let flash_messages = [
     models.create_info_message("Logged out successfully."),
     ..model.flash_messages

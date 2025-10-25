@@ -18,7 +18,7 @@ import core.{
   ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory,
   ApiUpdatedPost, CategoryEditablePart, CategoryId, LoginData, PostId,
 }
-import decoders.{make_user_decoder}
+import decoders.{user_decoder}
 
 pub fn login_via_api(login_data: LoginData) -> Effect(Msg(a)) {
   let LoginData(email:, password:) = login_data
@@ -27,7 +27,7 @@ pub fn login_via_api(login_data: LoginData) -> Effect(Msg(a)) {
       #("email", json.string(email)),
       #("password", json.string(password)),
     ])
-  let user_decoder = make_user_decoder()
+  let user_decoder = user_decoder()
   let handler = rsvp.expect_json(user_decoder, ApiLoginReturned)
   rsvp.post(consts.api_login, post_data, handler)
 }

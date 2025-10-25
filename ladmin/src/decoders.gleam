@@ -9,7 +9,7 @@ import core.{
   ApiListingResponse, Category, MiniPost, MiniUser, Post, User,
 }
 
-pub fn make_user_decoder() -> Decoder(User) {
+pub fn user_decoder() -> Decoder(User) {
   use id <- decode.field("id", decode.string)
   use email <- decode.field("email", decode.string)
   use username <- decode.field("username", decode.string)

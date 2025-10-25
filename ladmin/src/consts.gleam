@@ -1,6 +1,8 @@
 // Must be the same as Vite's BASE_PATH
 pub const mounted_path = "/ladmin/"
 
+pub const key_store = "ladmin"
+
 pub const key_store_user = "user"
 
 pub const api_login = "/_api/login"

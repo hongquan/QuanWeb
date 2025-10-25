@@ -1,7 +1,6 @@
 import gleam/bool
 import gleam/http/response.{Response}
 import gleam/io
-import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/order
@@ -16,8 +15,8 @@ import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/portal
 import modem
-import plinth/javascript/storage
 import rsvp.{HttpError}
+import store
 
 import actions
 import consts.{mounted_path}
@@ -33,7 +32,6 @@ import core.{
   UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
   UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
 }
-import decoders
 import ffi
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
@@ -64,23 +62,7 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
     |> result.flatten
     |> result.unwrap([])
   let route = parse_to_route(path, query)
-  let saved_user =
-    storage.local()
-    |> result.map_error(fn(_e) {
-      io.println_error("Failed to acquire localStorage!")
-    })
-    |> result.try(storage.get_item(_, consts.key_store_user))
-    |> result.map_error(fn(_e) {
-      io.println("user is not found in localStorage.")
-    })
-    |> result.try(fn(s) {
-      json.parse(s, decoders.make_user_decoder())
-      |> result.map_error(fn(e) {
-        io.println_error("Failed to decode user.")
-        echo e
-        Nil
-      })
-    })
+  let saved_user = store.load_user()
   let login_state = case route, saved_user {
     LoginPage(_u), _ -> TryingLogin(create_login_form())
     _, Ok(user) -> LoggedIn(user)
