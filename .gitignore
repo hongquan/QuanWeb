@@ -14,6 +14,7 @@ quanweb.egg-info
 *.sw?
 *.beam
 *.ez
+.lustre
 build
 erl_crash.dump
 ladmin/priv
