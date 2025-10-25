@@ -29,6 +29,7 @@ DB
 .idea
 .helix
 .zed
+mise.toml
 
 # Logs
 logs
