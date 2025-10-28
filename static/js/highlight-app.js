@@ -107,7 +107,8 @@ document.addEventListener('alpine:init', () => {
 			const classes = Array.from(codeElm.classList.values())
 			const className = classes.find((c) => c.startsWith('language-'))
 			if (className) {
-				this.lang = className.split('-')[1]
+				// From 'language-vue-html' take 'vue-html'
+				this.lang = className.slice(9)
 			}
 			this.origClasses = classes
 			if (codeElm.dataset.startLine) {
