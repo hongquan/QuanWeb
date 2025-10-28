@@ -1,4 +1,4 @@
-import { createHighlighter } from 'https://esm.sh/shiki@2.2.0'
+import { createHighlighter } from 'https://esm.sh/shiki@3.14.0'
 
 let edgeQlGrammar = null
 
@@ -54,6 +54,7 @@ const LANGS = [
 	'http',
 	'log',
 	'ansi',
+	'typespec',
 ]
 
 const taskShiki = createHighlighter({
