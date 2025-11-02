@@ -1,7 +1,7 @@
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
-use axum::{response::Result as AxumResult, Json};
+use axum::{Json, response::Result as AxumResult};
 use axum_extra::extract::WithRejection;
 use gel_tokio::Client as EdgeClient;
 use http::StatusCode;

@@ -1,11 +1,11 @@
+use core::fmt;
+use std::borrow::Cow;
 use std::collections::HashMap;
-use std::io::Write;
 
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
-use comrak::{
-    ExtensionOptions, Options, Plugins, RenderOptions, RenderPlugins, markdown_to_html_with_plugins,
-};
+use comrak::options::{Extension, Plugins, Render, RenderPlugins};
+use comrak::{Options, markdown_to_html_with_plugins};
 use minijinja::{Environment, context};
 use serde_json5;
 
@@ -20,68 +20,65 @@ pub struct JsHighlightAdapter;
 impl SyntaxHighlighterAdapter for JsHighlightAdapter {
     fn write_highlighted(
         &self,
-        output: &mut dyn Write,
+        output: &mut dyn fmt::Write,
         _lang: Option<&str>,
         code: &str,
-    ) -> std::io::Result<()> {
-        html::escape(output, code.as_bytes())
+    ) -> fmt::Result {
+        html::escape(output, &code)
     }
 
     fn write_pre_tag(
         &self,
-        output: &mut dyn Write,
-        mut attributes: HashMap<String, String>,
-    ) -> std::io::Result<()> {
+        output: &mut dyn fmt::Write,
+        mut attributes: HashMap<&'static str, Cow<'_, str>>,
+    ) -> fmt::Result {
         // Adding HTML classes which are needed by our AlpineJS app
-        let classname = " q-need-highlight not-prose p-0";
-        if let Some(class) = attributes.get_mut("class") {
-            class.push_str(classname)
+        let classname = "q-need-highlight not-prose p-0";
+        if let Some(class) = attributes.remove("class") {
+            attributes.insert("class", Cow::from(format!("{class} {classname}")));
         } else {
-            attributes.insert("class".to_string(), classname.to_string());
+            attributes.insert("class", Cow::from(classname));
         };
-        attributes.insert("x-data".to_string(), ALPINE_HIGHLIGHTING_APP.to_string());
-        attributes.insert("x-html".to_string(), "highlight()".to_string());
+        attributes.insert("x-data", Cow::from(ALPINE_HIGHLIGHTING_APP));
+        attributes.insert("x-html", Cow::from("highlight()"));
         html::write_opening_tag(output, "pre", attributes)
     }
 
     fn write_code_tag(
         &self,
-        output: &mut dyn Write,
-        mut attributes: HashMap<String, String>,
-    ) -> std::io::Result<()> {
+        output: &mut dyn fmt::Write,
+        mut attributes: HashMap<&'static str, Cow<'_, str>>,
+    ) -> fmt::Result {
         // Adding HTML classes which are needed by our AlpineJS app
         tracing::info!("Attributes for code: {:?}", attributes);
         let mut class_names = vec!["q-code"];
         if let Some(info_string) = attributes.get(ATTR_CODEFENCE_EXTRA) {
             tracing::info!("Attempt to parse: {}", info_string);
-            let codefence_opts: CodeFenceOptions = serde_json5::from_str(info_string.as_str())
+            let codefence_opts: CodeFenceOptions = serde_json5::from_str(info_string.as_ref())
                 .inspect_err(|e| tracing::warn!("Failed to parse codefence extra. {e}"))
                 .unwrap_or_default();
             if codefence_opts.lines {
                 class_names.push("q-with-lineno")
             }
             attributes.insert(
-                "data-start-line".to_string(),
-                format!("{}", codefence_opts.start_line),
+                "data-start-line",
+                Cow::from(format!("{}", codefence_opts.start_line)),
             );
         };
         let extra_class = format!(" {}", class_names.join(" "));
-        if let Some(class) = attributes.get_mut("class") {
-            class.push_str(&extra_class)
+        if let Some(class) = attributes.remove("class") {
+            attributes.insert("class", Cow::from(format!("{class} {extra_class}")));
         } else {
-            attributes.insert("class".to_string(), extra_class);
+            attributes.insert("class", Cow::from(extra_class));
         };
-        attributes.insert("x-ref".to_string(), ALPINE_ORIG_CODE_ELM.to_string());
+        attributes.insert("x-ref", Cow::from(ALPINE_ORIG_CODE_ELM));
         html::write_opening_tag(output, "code", attributes)
     }
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {
-    let extension = ExtensionOptions::builder()
-        .table(true)
-        .autolink(true)
-        .build();
-    let render = RenderOptions::builder().full_info_string(true).build();
+    let extension = Extension::builder().table(true).autolink(true).build();
+    let render = Render::builder().full_info_string(true).build();
     let options = Options {
         extension,
         render,
@@ -117,11 +114,8 @@ pub fn make_excerpt(markdown: &str) -> String {
 // Convert markdown to full HTML document (enough markups), suitable to be
 // shown in an iframe.
 pub fn markdown_to_html_document(markdown: &str, engine: Environment) -> Result<String, PageError> {
-    let extension = ExtensionOptions::builder()
-        .table(true)
-        .autolink(true)
-        .build();
-    let render = RenderOptions::builder().full_info_string(true).build();
+    let extension = Extension::builder().table(true).autolink(true).build();
+    let render = Render::builder().full_info_string(true).build();
     let options = Options {
         extension,
         render,
