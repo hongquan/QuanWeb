@@ -129,13 +129,6 @@ pub type CategoryEditablePart {
   CategoryEditablePart(title: String, slug: String, title_vi: Option(String))
 }
 
-// Keep the states of the checkboxes in page.
-// The "formal" library doesn't support a way to let us know if a  checkbox is checked,
-// so we need to track it ourselves.
-pub type CheckBoxes {
-  CheckBoxes(is_published: Bool)
-}
-
 pub type Color {
   Blue
   Sky
@@ -176,7 +169,6 @@ pub type Msg(r) {
   UserClickMarkdownPreview(text: String)
   ApiRenderedMarkdown(Result(String, rsvp.Error))
   ApiReturnedUsers(Result(List(MiniUser), rsvp.Error))
-  UserToggledIsPublishedCheckbox(Bool)
   SubmitStayButtonClicked(Element)
   ApiReturnedSingleCategory(Result(Category, rsvp.Error))
   FormCancelClicked

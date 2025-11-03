@@ -21,9 +21,9 @@ import consts
 import core.{
   type ApiListingResponse, type Category, type CategoryEditablePart,
   type ContentItemId, type LoginData, type MiniPost, type Msg, type Post,
-  type PostEditablePart, type User, ApiListingResponse, CheckBoxes, IsLoading,
-  IsSubmitting, LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging,
-  PageOwnedPosts, PostFormSubmitted, PostId, TryingLogin,
+  type PostEditablePart, type User, ApiListingResponse, IsLoading, IsSubmitting,
+  LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
+  PostFormSubmitted, PostId, TryingLogin,
 }
 import ffi
 import models.{type AppMsg, type Model, Model}
@@ -401,12 +401,7 @@ pub fn handle_api_retrieve_post_result(
     Ok(p) -> {
       let form = forms.make_post_form(Some(p))
       let model =
-        Model(
-          ..model,
-          post_form: Some(form),
-          checkboxes: CheckBoxes(is_published: p.is_published),
-          loading_status: core.Idle,
-        )
+        Model(..model, post_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {

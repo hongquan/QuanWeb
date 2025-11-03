@@ -12,11 +12,10 @@ import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type CategoryEditablePart, type CheckBoxes, type LoadingStatus,
-  type MiniUser, type Msg, type PostEditablePart, CategoryFormSubmitted,
-  FormCancelClicked, IsSubmitting, SlugGeneratorClicked, SubmitStayButtonClicked,
+  type Category, type CategoryEditablePart, type LoadingStatus, type MiniUser,
+  type Msg, type PostEditablePart, CategoryFormSubmitted, FormCancelClicked,
+  IsSubmitting, SlugGeneratorClicked, SubmitStayButtonClicked,
   UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
-  UserToggledIsPublishedCheckbox,
 }
 import ffi
 import updates
@@ -39,7 +38,6 @@ pub fn render_post_form(
   form: Form(PostEditablePart),
   categories: List(Category),
   users: List(MiniUser),
-  checkboxes: CheckBoxes,
   loading_status: LoadingStatus,
 ) {
   let children = [
@@ -60,7 +58,7 @@ pub fn render_post_form(
     render_body_field(form),
     render_locale_field(form),
     render_author_field(form, users),
-    render_is_published_field(form, checkboxes.is_published),
+    render_is_published_field(form),
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("OpenGraph image")]),
       h.div([a.class(class_input_col)], [
@@ -289,15 +287,18 @@ fn render_author_field(form: Form(PostEditablePart), users: List(MiniUser)) {
 // Then, when the form is submitted, the submitted value for checkbox field
 // is still the one before user clicked.
 // So we need to use "on_check" event handler to make form data in sync with what users see.
-fn render_is_published_field(_form: Form(PostEditablePart), is_published: Bool) {
+fn render_is_published_field(form: Form(PostEditablePart)) {
+  let is_published = case formlib.field_value(form, "is_published") {
+    "" -> False
+    _ -> True
+  }
   h.div([a.class(class_row)], [
     h.label([a.class(class_label)], [h.text("Published")]),
     h.div([a.class("pt-2")], [
       h.input([
         a.name("is_published"),
         a.type_("checkbox"),
-        a.checked(is_published),
-        ev.on_check(UserToggledIsPublishedCheckbox),
+        a.default_checked(is_published),
       ]),
     ]),
   ])

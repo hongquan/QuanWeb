@@ -25,12 +25,12 @@ import core.{
   ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedLogOutDone,
   ApiReturnedPosts, ApiReturnedSingleCategory, ApiReturnedSinglePost,
   ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost,
-  CategoryFormSubmitted, CheckBoxes, ContentItemDeletionClicked,
-  FlashMessageTimeUp, FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn,
-  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
-  RouterInitDone, SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
+  CategoryFormSubmitted, ContentItemDeletionClicked, FlashMessageTimeUp,
+  FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn, NonLogin,
+  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
+  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
   UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
-  UserSubmittedLoginForm, UserToggledIsPublishedCheckbox,
+  UserSubmittedLoginForm,
 }
 import ffi
 import forms.{create_login_form}
@@ -93,7 +93,6 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
 }
 
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
-  io.println("In update()")
   let Model(route:, ..) = model
   case msg {
     RouterInitDone -> updates.handle_router_init_done(model)
@@ -195,10 +194,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       let model = Model(..model, users:)
       #(model, effect.none())
     }
-    UserToggledIsPublishedCheckbox(checked) -> {
-      let model = Model(..model, checkboxes: CheckBoxes(is_published: checked))
-      #(model, effect.none())
-    }
+
     SubmitStayButtonClicked(dom_element) -> {
       updates.handle_submit_stay_button_clicked(dom_element, model)
     }
@@ -248,7 +244,6 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
 }
 
 fn view(model: Model) -> Element(AppMsg) {
-  io.println("In view()")
   let Model(route:, login_state:, ..) = model
   case route, login_state {
     HomePage, _ -> {
