@@ -282,11 +282,6 @@ fn render_author_field(form: Form(PostEditablePart), users: List(MiniUser)) {
 }
 
 // Render "is_published" field with checkbox.
-// Currently, with lustre + formal, user clicking to the checkbox
-// doesn't make change to the value that "formal" manages.
-// Then, when the form is submitted, the submitted value for checkbox field
-// is still the one before user clicked.
-// So we need to use "on_check" event handler to make form data in sync with what users see.
 fn render_is_published_field(form: Form(PostEditablePart)) {
   let is_published = case formlib.field_value(form, "is_published") {
     "" -> False

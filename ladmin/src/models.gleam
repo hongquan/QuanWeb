@@ -11,7 +11,6 @@ import core.{
   FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
-import utils
 
 pub type Model {
   Model(
@@ -54,31 +53,25 @@ pub const default_model = Model(
 )
 
 pub fn create_success_message(content: String) {
-  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Success,
-    id:,
     created_at: timestamp.system_time(),
   )
 }
 
 pub fn create_info_message(content: String) {
-  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Info,
-    id:,
     created_at: timestamp.system_time(),
   )
 }
 
 pub fn create_danger_message(content: String) {
-  let id = utils.gen_simple_random_id()
   FlashMessage(
     content:,
     severity: core.Danger,
-    id:,
     created_at: timestamp.system_time(),
   )
 }

@@ -103,12 +103,7 @@ pub type Severity {
 }
 
 pub type FlashMessage {
-  FlashMessage(
-    content: String,
-    severity: Severity,
-    id: String,
-    created_at: Timestamp,
-  )
+  FlashMessage(content: String, severity: Severity, created_at: Timestamp)
 }
 
 // The part of Post with editable fields
@@ -134,11 +129,6 @@ pub type Color {
   Sky
   Purple
 }
-
-// pub type UserClickedDeleteButton {
-//   PostDeletionClicked(id: String)
-//   CategoryDeletionClicked(id: String)
-// }
 
 pub type ContentItemId {
   PostId(String)
