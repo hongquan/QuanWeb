@@ -1,4 +1,4 @@
-import { createHighlighter } from 'https://unpkg.com/shiki@3.14.0'
+import { createHighlighter } from 'https://unpkg.com/shiki@3.15.0'
 
 let edgeQlGrammar = null
 
