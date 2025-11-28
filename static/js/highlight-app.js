@@ -1,11 +1,18 @@
-import { createHighlighter } from 'https://esm.sh/shiki@3.14.0'
+import { createHighlighter } from 'https://esm.sh/shiki@3.17.0'
 
 let edgeQlGrammar = null
+let blueprintGrammar = null
 
 fetch('/static/js/edgeql.json')
 	.then((res) => res.json())
 	.then((o) => {
 		edgeQlGrammar = o
+	})
+
+fetch('/static/js/blueprint.json')
+	.then((res) => res.json())
+	.then((o) => {
+		blueprintGrammar = o
 	})
 
 const LANGS = [
@@ -64,6 +71,7 @@ const taskShiki = createHighlighter({
 	langs: LANGS,
 	langAlias: {
 		edgeql: 'EdgeQL',
+		blp: 'Blueprint',
 	},
 	themes: ['one-dark-pro'],
 })
@@ -123,10 +131,10 @@ document.addEventListener('alpine:init', () => {
 			const classes = this.origClasses
 			const opts = getShikiOpt(lang, classes, this.startLine)
 			const highlighter = await taskShiki
-			if (!edgeQlGrammar) {
+			if (!edgeQlGrammar || !blueprintGrammar) {
 				for (let i = 0; i < 5; i++) {
 					await delay()
-					if (edgeQlGrammar) {
+					if (edgeQlGrammar && blueprintGrammar) {
 						break
 					}
 				}
@@ -135,6 +143,11 @@ document.addEventListener('alpine:init', () => {
 				await highlighter.loadLanguage(edgeQlGrammar)
 			} else {
 				console.warn('EdgeQL grammar is not available!')
+			}
+			if (blueprintGrammar) {
+				await highlighter.loadLanguage(blueprintGrammar)
+			} else {
+				console.warn('Blueprint grammar is not available!')
 			}
 			const html = await highlighter.codeToHtml(this.code, opts)
 			return html
