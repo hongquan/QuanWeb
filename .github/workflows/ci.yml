@@ -1,4 +1,4 @@
-on: [push]
+on: [push, workflow_dispatch]
 
 name: CI
 
@@ -55,28 +55,28 @@ jobs:
             ladmin/**
             **.yml
       - uses: oven-sh/setup-bun@v2
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
       - uses: erlef/setup-beam@v1
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         with:
           otp-version: "27.1.2"
           gleam-version: "1.12.0"
           rebar3-version: "3"
           # elixir-version: "1"
       - name: Add WASM target for Rust
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: rustup target add wasm32-unknown-unknown
       - name: Download Gleam dependencies
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: gleam deps download
       - name: Install JS dependencies
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: bun i
       - name: Build ladmin app
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: bun run --bun build
       - name: Upload Build Artifact
-        if: steps.changed-ladmin-app.outputs.any_changed == 'true'
+        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
           name: ladmin-built
@@ -95,14 +95,19 @@ jobs:
         with:
           name: ladmin-built
           path: ladmin-built
+        id: download_step
+        continue-on-error: true
       - name: Install Cowsay
         # Ansible is already installed by GitHub
         run: sudo apt-get install cowsay
+        if: steps.download_step.outcome == 'success'
       - name: Install SSH priv key
         uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+        if: steps.download_step.outcome == 'success'
       - name: Run Ansible playbook
         run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }}
+        if: steps.download_step.outcome == 'success'
 
 
