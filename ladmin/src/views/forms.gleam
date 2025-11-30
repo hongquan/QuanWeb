@@ -27,7 +27,11 @@ const class_label = "block font-medium leading-6 dark:text-white sm:pt-2"
 
 const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 
-const class_text_input = "py-2 w-full text-gray-700 bg-white border rounded-md dark:bg-gray-900 dark:text-gray-300 border-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40"
+const class_input_common = "py-2 w-full border rounded-md focus:outline-none focus:ring text-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 focus:ring-opacity-40"
+
+const class_input_normal = "border-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300"
+
+const class_input_errorneous = "border-red-300 focus:border-red-400 focus:ring-red-300"
 
 const class_pane_in_field = "border border-gray-300 dark:border-gray-600 rounded-md"
 
@@ -49,7 +53,8 @@ pub fn render_post_form(
           a.type_("text"),
           a.required(True),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_text_input <> " px-4"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
         ]),
       ]),
     ]),
@@ -66,7 +71,8 @@ pub fn render_post_form(
           a.name("og_image"),
           a.type_("url"),
           a.value(formlib.field_value(form, "og_image")),
-          a.class(class_text_input <> " px-4"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
         ]),
       ]),
     ]),
@@ -91,6 +97,7 @@ pub fn render_post_form(
 }
 
 fn render_slug_field(form: Form(o)) {
+  let name = "slug"
   let handler_slug_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_title = case br_element.cast(elm) {
@@ -105,6 +112,7 @@ fn render_slug_field(form: Form(o)) {
       decode.failure(SlugGeneratorClicked(""), "HTMLElement")
     })
   }
+  let err_message = formlib.field_error_messages(form, name) |> list.first
   h.div([a.class(class_row)], [
     h.label([a.class(class_label)], [h.text("Slug")]),
     h.div([a.class(class_input_col), a.class("relative")], [
@@ -123,12 +131,20 @@ fn render_slug_field(form: Form(o)) {
         ],
       ),
       h.input([
-        a.name("slug"),
+        a.name(name),
         a.type_("text"),
         a.required(True),
-        a.value(formlib.field_value(form, "slug")),
-        a.class(class_text_input <> " ps-4 pe-10"),
+        a.value(formlib.field_value(form, name)),
+        a.class(class_input_common <> " ps-4 pe-10"),
+        case err_message {
+          Ok(_m) -> a.class(class_input_errorneous)
+          _ -> a.class(class_input_normal)
+        },
       ]),
+      case err_message {
+        Ok(m) -> h.div([a.class("text-xs text-red-300")], [h.text(m)])
+        _ -> element.none()
+      },
     ]),
   ])
 }
@@ -351,7 +367,8 @@ pub fn render_category_form(
           a.name("title"),
           a.type_("text"),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_text_input <> " px-4"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
         ]),
       ]),
     ]),
@@ -363,7 +380,8 @@ pub fn render_category_form(
           a.name("title_vi"),
           a.type_("text"),
           a.value(formlib.field_value(form, "title_vi")),
-          a.class(class_text_input <> " px-4"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
         ]),
       ]),
     ]),
