@@ -15,18 +15,18 @@ target = "javascript"
 
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
-lustre = ">= 5.4.0 and < 6.0.0"
-rsvp = ">= 1.1.3 and < 2.0.0"
-gleam_json = ">= 3.0.2 and < 4.0.0"
+lustre = ">= 5.5.1 and < 6.0.0"
+rsvp = ">= 1.2.0 and < 2.0.0"
+gleam_json = ">= 3.1.0 and < 4.0.0"
 gleam_javascript = ">= 1.0.0 and < 2.0.0"
-iv = ">= 1.3.3 and < 2.0.0"
+iv = ">= 1.4.0 and < 2.0.0"
 gleam_time = ">= 1.5.0 and < 2.0.0"
 # gtz = ">= 0.2.0 and < 1.0.0"
 gtempo = ">= 7.2.2 and < 8.0.0"
 gleam_regexp = ">= 1.1.1 and < 2.0.0"
 formal = ">= 3.0.0 and < 4.0.0"
-gleam_http = ">= 4.2.0 and < 5.0.0"
-plinth = ">= 0.7.2 and < 1.0.0"
+gleam_http = ">= 4.3.0 and < 5.0.0"
+plinth = ">= 0.9.1 and < 1.0.0"
 iterators = ">= 1.0.0 and < 2.0.0"
 gleroglero = ">= 1.2.0 and < 2.0.0"
 lustre_portal = ">= 1.0.1 and < 2.0.0"
@@ -35,7 +35,7 @@ modem = ">= 2.1.2 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
-lustre_dev_tools = ">= 2.2.2 and < 3.0.0"
+lustre_dev_tools = ">= 2.3.4 and < 3.0.0"
 lucide_lustre = ">= 2.0.1 and < 3.0.0"
 
 [javascript]
