@@ -26,4 +26,4 @@ line-length = 120
 quote-style = "single"
 
 [tool.ruff.lint]
-select = ["I"]
+select = ["I", "UP"]
