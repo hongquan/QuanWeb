@@ -55,21 +55,35 @@ async def process():
     # Improved pattern to capture direct image URLs
     imgur_pattern = re.compile(r'https?://i\.imgur\.com/[^\s"\')\]>]+')
 
-    # HTTP client for downloading images
-    async with httpx.AsyncClient(headers=base_headers) as http_client:
+    # HTTP client for downloading images with HTTP/2 support
+    async with httpx.AsyncClient(headers=base_headers, http2=True) as http_client:
         for obj in result_list:
             body_content = obj.body or ''
 
             # Find all imgur URLs in the body
-            imgur_urls = imgur_pattern.findall(body_content)
+            imgur_urls = tuple(imgur_pattern.findall(body_content))
+            
+            # Convert URLs to HTTPS
+            imgur_urls = tuple(url.replace('http://', 'https://') for url in imgur_urls)
 
             # Download each image
             downloaded_images = []
             for url in imgur_urls:
                 try:
-                    imgur_headers = base_headers | {
+                    click.secho(f'Downloading image: {url}', fg='blue')
+                    # Use exact headers from browser
+                    imgur_headers = {
+                        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0',
                         'Accept': 'image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5',
+                        'Accept-Language': 'vi,en-US;q=0.7,en;q=0.3',
+                        'Accept-Encoding': 'gzip, deflate, br, zstd',
+                        'Connection': 'keep-alive',
                         'Referer': 'https://quan.hoabinh.vn/',
+                        'Sec-Fetch-Dest': 'image',
+                        'Sec-Fetch-Mode': 'no-cors',
+                        'Sec-Fetch-Site': 'cross-site',
+                        'Pragma': 'no-cache',
+                        'Cache-Control': 'no-cache',
                     }
 
                     response = await http_client.get(url, headers=imgur_headers)
@@ -90,13 +104,13 @@ async def process():
             # Create a new entry with images table
             processed_obj = {
                 'id': obj.id,
-                'images': [{'imgur': url, 'bunny': None} for url in imgur_urls],
-                'downloaded_images': downloaded_images,
+                'images': tuple({'imgur': url, 'bunny': None} for url in imgur_urls),
+                'downloaded_images': tuple(downloaded_images),
             }
             processed_results.append(processed_obj)
 
     # Generate YAML from result using msgspec
-    yaml_data = msgspec.yaml.encode(processed_results)
+    yaml_data = msgspec.yaml.encode(tuple(processed_results))
 
     # Save YAML file
     yaml_path = base_dir / 'data.yaml'
