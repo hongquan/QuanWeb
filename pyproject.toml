@@ -1,0 +1,28 @@
+[project]
+name = "quanweb-devtool"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.3.1",
+    "gel>=3.1.0",
+    "gel-pydantic-codegen>=1.1.0",
+    "msgspec>=0.20.0",
+    "pydantic>=2.12.5",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+lint = [
+    "ruff>=0.14.11",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = ["I"]

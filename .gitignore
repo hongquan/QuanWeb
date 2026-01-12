@@ -30,6 +30,9 @@ DB
 .helix
 .zed
 mise.toml
+.aider.*
+.goosehints
+.python-version
 
 # Logs
 logs
