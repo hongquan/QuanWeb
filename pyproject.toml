@@ -8,10 +8,12 @@ dependencies = [
     "click>=8.3.1",
     "gel>=3.1.0",
     "gel-pydantic-codegen>=1.1.0",
-    "httpx[h2,http2]>=0.28.1",
+    "httpx[http2]>=0.28.1",
+    "logbook>=1.9.2",
     "msgspec>=0.20.0",
     "pydantic>=2.12.5",
     "pyyaml>=6.0.3",
+    "safe-result>=4.0.3",
 ]
 
 [dependency-groups]
