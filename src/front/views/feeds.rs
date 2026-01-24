@@ -2,18 +2,21 @@ use std::num::NonZeroU16;
 
 use atom_syndication::{Entry, FeedBuilder, LinkBuilder};
 use axum::extract::{OriginalUri, Query, State};
+use axum::http::header;
 use axum::response::{IntoResponseParts, Json, Result as AxumResult};
 use axum_extra::extract::Host;
 use chrono::{TimeZone, Utc};
 use gel_tokio::Client as EdgeClient;
-use http::{header::CONTENT_TYPE, Uri};
+use http::{HeaderName, StatusCode};
+use http::{Uri, header::CONTENT_TYPE};
+use sitemap_writer::SitemapWriter;
 
 use super::super::structs::LaxPaging;
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::errors::PageError;
-use crate::models::feeds::{EntryExt, JsonFeed, JsonItem, DEFAULT_SITE_URL};
+use crate::models::feeds::{DEFAULT_SITE_URL, EntryExt, JsonFeed, JsonItem};
 use crate::stores;
-use crate::types::{ext::UriExt, Paginator};
+use crate::types::{Paginator, ext::UriExt};
 
 // Generate from Python: uuid.uuid5(uuid.NAMESPACE_DNS, 'quan.hoabinh.vn'
 const SITE_UUID: &str = "4543aea6-ab17-5c18-9279-19e73529594d";
@@ -135,4 +138,19 @@ pub async fn gen_json_feeds(
     });
     feed.items = items;
     Ok(Json(feed))
+}
+
+pub async fn gen_sitemaps(
+    State(db): State<EdgeClient>,
+) -> AxumResult<(StatusCode, [(HeaderName, &'static str); 1], String)> {
+    let posts = stores::blog::get_all_published_mini_posts(&db)
+        .await
+        .map_err(PageError::GelQueryError)?;
+    let entries: Vec<_> = posts
+        .iter()
+        .map(|p| p.to_sitemap_entry(DEFAULT_SITE_URL))
+        .collect();
+    let headers = [(header::CONTENT_TYPE, "application/xml")];
+    let xml = SitemapWriter::build(entries);
+    Ok((StatusCode::OK, headers, xml))
 }

@@ -76,7 +76,7 @@ module default {
         link author: User {
             on target delete allow;
         }
-        multi link categories: BlogCategory {
+        multi categories: BlogCategory {
             on target delete allow;
         }
         seo_description: str {

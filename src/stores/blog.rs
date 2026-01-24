@@ -346,3 +346,12 @@ pub async fn get_mini_post_by_old_id(
     let post: Option<MiniBlogPost> = client.query_single(&q, &(old_id as i32,)).await?;
     Ok(post)
 }
+
+// Get mini data of all blog posts, for generating sitemaps
+pub async fn get_all_published_mini_posts(client: &Client) -> Result<Vec<MiniBlogPost>, Error> {
+    let field_names = MiniBlogPost::fields_as_shape();
+    let q = format!(
+        "SELECT BlogPost {field_names} FILTER .is_published = true ORDER BY .updated_at DESC"
+    );
+    client.query(&q, &()).await
+}

@@ -11,13 +11,14 @@ use gel_protocol::model::Datetime as EDatetime;
 use gel_protocol::value::Value as EValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JValue;
+use sitemap_writer::SitemapUrl;
 use strum::{Display, EnumString, IntoStaticStr};
 use uuid::Uuid;
 
 use super::feeds::{JsonAuthor, JsonItem};
 use super::users::MiniUser;
-use crate::types::conversions::{serialize_edge_datetime, serialize_optional_edge_datetime};
 use crate::types::EdgeSelectable;
+use crate::types::conversions::{serialize_edge_datetime, serialize_optional_edge_datetime};
 use crate::utils::html::strip_tags;
 
 #[derive(
@@ -314,6 +315,27 @@ pub struct MiniBlogPost {
     pub created_at: EDatetime,
     #[serde(serialize_with = "serialize_optional_edge_datetime")]
     pub updated_at: Option<EDatetime>,
+}
+
+impl MiniBlogPost {
+    pub fn to_sitemap_entry(&self, base_url: &str) -> SitemapUrl {
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        let loc = format!(
+            "{}/post/{}/{}",
+            base_url,
+            created_at.format("%Y/%m"),
+            self.slug
+        );
+        let lastmod = self
+            .updated_at
+            .map(DateTime::<Utc>::from)
+            .map(|d| format!("{}", d.format("%Y-%m-%d")));
+        SitemapUrl {
+            loc,
+            lastmod,
+            ..Default::default()
+        }
+    }
 }
 
 impl EdgeSelectable for MiniBlogPost {
