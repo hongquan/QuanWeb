@@ -34,17 +34,29 @@ log = Logger(__name__)
 
 @dataclass
 class MiniBlogPost:
+    """A minimal representation of a blog post with only ID and body."""
     id: UUID
     body: str
+    
+@dataclass
+class MediumBlogPost:
+    """A blog post with ID, body, and HTML content."""
+    id: UUID
+    title: str
+    excerpt: str
+    body: str
+    html: str
 
 # Type definitions
 @dataclass
 class ImageEntry:
+    """Represents an image with its Imgur URL and optional Bunny.net URL."""
     imgur: str
     bunny: str | None = None
 
 @dataclass
 class PostReport:
+    """Report for a post containing Imgur images."""
     id: UUID
     images: tuple[ImageEntry, ...]
 
@@ -82,7 +94,18 @@ def extract_imgur_images() -> None:
 async def download_image(
     http_client: httpx.AsyncClient, url: str, imgur_dir: Path, post_index: int, total_posts: int
 ) -> str | None:
-    """Download a single image from Imgur."""
+    """Download a single image from Imgur.
+    
+    Args:
+        http_client: HTTP client for making requests
+        url: Imgur image URL to download
+        imgur_dir: Directory to save downloaded images
+        post_index: Index of current post (for progress tracking)
+        total_posts: Total number of posts (for progress tracking)
+        
+    Returns:
+        Filename of downloaded image if successful, None otherwise
+    """
     try:
         log.info('Downloading image ({}/{}) {}', post_index + 1, total_posts, url)
 
@@ -107,6 +130,15 @@ async def download_image(
 
 
 async def process_extract() -> None:
+    """Process extraction of Imgur images from all blog posts.
+    
+    This function:
+    1. Queries the database for posts containing Imgur links
+    2. Creates a temporary directory for storing images and data
+    3. Extracts Imgur URLs from each post
+    4. Saves the extraction data to a YAML file
+    5. Downloads all Imgur images to the temporary directory
+    """
     client = gel.create_async_client()
     try:
         post_list: list[ListPostContainingImgurResult] = await list_post_containing_imgur(client)
@@ -189,7 +221,12 @@ async def process_extract() -> None:
 )
 @click.option('--bunny-key', '-k', required=True, help='Bunny.net API key')
 def replace_imgur_bunny(bunny_key: str, input_folder: str) -> None:
-    """Replace Imgur images with Bunny.net CDN URLs."""
+    """Replace Imgur images with Bunny.net CDN URLs.
+    
+    Args:
+        bunny_key: Bunny.net API key for authentication
+        input_folder: Path to folder containing YAML data and images
+    """
     asyncio.run(process_replace_imgur_bunny(input_folder, bunny_key))
 
 
@@ -216,7 +253,7 @@ async def upload_image_to_bunny(
     # Extract filename from Imgur URL
     parsed_url = urlparse(imgur_url)
     filename = Path(parsed_url.path).name
-    bunny_path = f'blogs/{current_year}/{filename}'
+    bunny_path = f'blogs/imgur/{current_year}/{filename}'
 
     # Bunny.net API setup
     base_url = f'https://{BUNNY_STORAGE_DOMAIN}/{BUNNY_STORAGE_ZONE}'
@@ -247,57 +284,62 @@ async def update_single_post(gel_client: gel.AsyncIOClient, post_id: UUID, imgur
         True if the post was successfully updated, False otherwise
     """
     # Get the current post body
-    query = """SELECT BlogPost { id, body } FILTER .id = <uuid>$post_id"""
+    query = """SELECT BlogPost { id, title, excerpt, body, html } FILTER .id = <uuid>$post_id"""
     try:
-        result = cast(MiniBlogPost | None, await gel_client.query_single(query, post_id=post_id))
+        post = cast(MediumBlogPost | None, await gel_client.query_single(query, post_id=post_id))
     except gel.errors.EdgeDBError as e:
         log.error('Database error querying post {}: {}', post_id, e)
         return False
 
-    if not result or not result.body:
+    if not post or not post.body:
         log.warning('No body found for post {}', post_id)
         return False
 
     # Replace Imgur URLs with Bunny URLs in the body
-    updated_body = result.body
+    updated_body = post.body
+    updated_html = post.html
+    updated_excerpt = post.excerpt
     replacements_made = 0
 
     for imgur_url, bunny_url in imgur_to_bunny_map.items():
         if imgur_url and bunny_url:
             updated_body = updated_body.replace(imgur_url, bunny_url)
+            updated_html = updated_html.replace(imgur_url, bunny_url)
+            updated_excerpt = updated_excerpt.replace(imgur_url, bunny_url)
             replacements_made += 1
+    if not replacements_made:
+        log.info('Nothing changed for the post "{}"', post.title)
+        return False
 
-    if replacements_made > 0:
-        # Update the post in the database
-        update_query = """
-            UPDATE BlogPost 
-            FILTER .id = <uuid>$post_id 
-            SET { 
-                body := <str>$body,
-                html := <str>$html
-            }
-        """
-
-        # Regenerate HTML from updated body (simplified - in practice you'd use your markdown processor)
-        updated_html = updated_body  # Placeholder - replace with actual HTML generation
-
-        try:
-            await gel_client.execute(update_query, post_id=post_id, body=updated_body, html=updated_html)
-            log.info('Updated post {} with {} replacements', post_id, replacements_made)
-            return True
-        except gel.errors.EdgeDBError as e:
-            log.error('Failed to update post {}: {}', post_id, e)
-            return False
-    else:
-        log.warning('No replacements made for post {}', post_id)
+    # Update the post in the database
+    query = """
+        UPDATE BlogPost 
+        FILTER .id = <uuid>$post_id 
+        SET { 
+            body := <str>$body,
+            html := <str>$html,
+            excerpt := <str>$excerpt
+        }
+    """
+    try:
+        await gel_client.execute(query, post_id=post_id, body=updated_body, html=updated_html, excerpt=updated_excerpt)
+        log.info('Updated post "{}" ({}) with {} replacements', post.title, post_id, replacements_made)
+        return True
+    except gel.errors.EdgeDBError as e:
+        log.error('Failed to update post {}: {}', post_id, e)
         return False
 
 
 async def upload_all_images(bunny_client: httpx.AsyncClient, input_path: Path, extractions: Iterable[PostReport]) -> tuple[tuple[PostReport, ...], list[str]]:
     """Upload all images to Bunny.net.
 
+    Args:
+        bunny_client: HTTP client configured for Bunny.net API
+        input_path: Path to directory containing images
+        extractions: List of post reports with Imgur URLs
+
     Returns:
-        List of failed upload files
+        Tuple of (updated post reports with Bunny URLs, list of failed upload URLs)
     """
     failed_upload_files = []
     post_complements = []
@@ -331,16 +373,20 @@ async def upload_all_images(bunny_client: httpx.AsyncClient, input_path: Path, e
     return tuple(post_complements), failed_upload_files
 
 
-async def update_all_posts(gel_client: gel.AsyncIOClient, extractions: Iterable[PostReport]) -> list[str]:
-    """Update all posts in the database.
+async def update_all_posts(gel_client: gel.AsyncIOClient, complements: Iterable[PostReport]) -> list[str]:
+    """Update all posts in the database with Bunny.net URLs.
+
+    Args:
+        gel_client: Gel database client
+        complements: Post reports with Bunny.net URLs
 
     Returns:
-        List of failed update posts
+        List of post IDs that failed to update
     """
     failed_update_posts = []
 
     # Update posts in Gel database
-    for post_info in extractions:
+    for post_info in complements:
         post_id = post_info.id
         images = post_info.images
 
@@ -362,7 +408,19 @@ async def update_all_posts(gel_client: gel.AsyncIOClient, extractions: Iterable[
 
 
 async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None:
-    """Process the replacement of Imgur images with Bunny.net CDN URLs."""
+    """Process the replacement of Imgur images with Bunny.net CDN URLs.
+    
+    This function:
+    1. Loads extraction data from YAML file
+    2. Uploads all images to Bunny.net CDN
+    3. Updates the YAML file with Bunny.net URLs
+    4. Updates blog posts in the database with new URLs
+    5. Provides a summary of successes and failures
+    
+    Args:
+        input_folder: Path to folder containing YAML data and images
+        bunny_key: Bunny.net API key for authentication
+    """
     input_path = Path(input_folder)
     yaml_path = input_path / 'data.yaml'
 
