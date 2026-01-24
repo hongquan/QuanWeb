@@ -362,8 +362,7 @@ async def upload_all_images(
 
         fillup: list[ImageEntry] = []
         for image_entry in images:
-            imgur_url = image_entry.imgur
-            if not imgur_url:
+            if not (imgur_url := image_entry.imgur):
                 continue
 
             # Extract filename from Imgur URL
@@ -372,10 +371,9 @@ async def upload_all_images(
 
             # Check if local image file exists
             image_path = input_path / 'imgur' / filename
-            bunny_url = await upload_image_to_bunny(bunny_client, image_path, imgur_url)
-            match bunny_url:
-                case Ok(u):
-                    fillup.append(ImageEntry(imgur_url, u))
+            match upload_image_to_bunny(bunny_client, image_path, imgur_url):
+                case Ok(bunny_url):
+                    fillup.append(ImageEntry(imgur_url, bunny_url))
                 case _:
                     fillup.append(ImageEntry(imgur_url))
                     failed_upload_files.append(imgur_url)
