@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import asyncio
-import datetime
 import re
 import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import urlparse
@@ -249,7 +248,7 @@ async def upload_image_to_bunny(
         return Err(e)
 
     # Generate Bunny.net path with year folder (in UTC)
-    current_year = datetime.datetime.now(UTC).year
+    current_year = datetime.now(UTC).year
     # Extract filename from Imgur URL
     parsed_url = urlparse(imgur_url)
     filename = Path(parsed_url.path).name
