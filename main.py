@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -31,33 +31,42 @@ BUNNY_STORAGE_DOMAIN = 'sg.storage.bunnycdn.com'
 BUNNY_HOST = 'quan-images.b-cdn.net'
 log = Logger(__name__)
 
+
 @dataclass
 class MiniBlogPost:
     """A minimal representation of a blog post with only ID and body."""
+
     id: UUID
     body: str
-    
+
+
 @dataclass
 class MediumBlogPost:
     """A blog post with ID, body, and HTML content."""
+
     id: UUID
     title: str
     excerpt: str
     body: str
     html: str
 
+
 # Type definitions
 @dataclass
 class ImageEntry:
     """Represents an image with its Imgur URL and optional Bunny.net URL."""
+
     imgur: str
     bunny: str | None = None
+
 
 @dataclass
 class PostReport:
     """Report for a post containing Imgur images."""
+
     id: UUID
     images: tuple[ImageEntry, ...]
+
 
 ExtractionResults = list[PostReport]
 
@@ -94,14 +103,14 @@ async def download_image(
     http_client: httpx.AsyncClient, url: str, imgur_dir: Path, post_index: int, total_posts: int
 ) -> str | None:
     """Download a single image from Imgur.
-    
+
     Args:
         http_client: HTTP client for making requests
         url: Imgur image URL to download
         imgur_dir: Directory to save downloaded images
         post_index: Index of current post (for progress tracking)
         total_posts: Total number of posts (for progress tracking)
-        
+
     Returns:
         Filename of downloaded image if successful, None otherwise
     """
@@ -130,7 +139,7 @@ async def download_image(
 
 async def process_extract() -> None:
     """Process extraction of Imgur images from all blog posts.
-    
+
     This function:
     1. Queries the database for posts containing Imgur links
     2. Creates a temporary directory for storing images and data
@@ -201,9 +210,11 @@ async def process_extract() -> None:
     log.info('  - YAML data: {}', yaml_path)
     log.info('  - Imgur images: {}', imgur_dir)
     log.info('Processed {} posts with Imgur images', len(processed_results))
-    
+
     # Final report
-    log.info('Download summary: {} successful, {} failed', len(processed_results) - len(failed_files), len(failed_files))
+    log.info(
+        'Download summary: {} successful, {} failed', len(processed_results) - len(failed_files), len(failed_files)
+    )
     if failed_files:
         log.info('Failed files:')
         for file in failed_files:
@@ -221,7 +232,7 @@ async def process_extract() -> None:
 @click.option('--bunny-key', '-k', required=True, help='Bunny.net API key')
 def replace_imgur_bunny(bunny_key: str, input_folder: str) -> None:
     """Replace Imgur images with Bunny.net CDN URLs.
-    
+
     Args:
         bunny_key: Bunny.net API key for authentication
         input_folder: Path to folder containing YAML data and images
@@ -255,15 +266,14 @@ async def upload_image_to_bunny(
     bunny_path = f'blogs/imgur/{current_year}/{filename}'
 
     # Bunny.net API setup
-    base_url = f'https://{BUNNY_STORAGE_DOMAIN}/{BUNNY_STORAGE_ZONE}'
-    upload_url = f'{base_url}/{bunny_path}'
+    upload_url = urljoin(f'https://{BUNNY_STORAGE_DOMAIN}', f'{BUNNY_STORAGE_ZONE}/{bunny_path}')
 
     try:
         response = await bunny_client.put(upload_url, content=image_data)
         response.raise_for_status()
 
         # Return Bunny.net URL
-        bunny_url = f'https://{BUNNY_HOST}/{bunny_path}'
+        bunny_url = urljoin(f'https://{BUNNY_HOST}', bunny_path)
         log.info('Uploaded {} to {}', filename, bunny_url)
         return Ok(bunny_url)
     except httpx.RequestError as e:
@@ -329,7 +339,9 @@ async def update_single_post(gel_client: gel.AsyncIOClient, post_id: UUID, imgur
         return False
 
 
-async def upload_all_images(bunny_client: httpx.AsyncClient, input_path: Path, extractions: Iterable[PostReport]) -> tuple[tuple[PostReport, ...], list[str]]:
+async def upload_all_images(
+    bunny_client: httpx.AsyncClient, input_path: Path, extractions: Iterable[PostReport]
+) -> tuple[tuple[PostReport, ...], list[str]]:
     """Upload all images to Bunny.net.
 
     Args:
@@ -394,28 +406,26 @@ async def update_all_posts(gel_client: gel.AsyncIOClient, complements: Iterable[
             continue
 
         # Create mapping of Imgur to Bunny URLs for this post
-        imgur_to_bunny_map = {
-            image.imgur: image.bunny for image in images if image.imgur and image.bunny
-        }
+        imgur_to_bunny_map = {image.imgur: image.bunny for image in images if image.imgur and image.bunny}
 
         log.info('To update post {}', post_id)
         success = await update_single_post(gel_client, post_id, imgur_to_bunny_map)
         if not success:
             failed_update_posts.append(str(post_id))
-    
+
     return failed_update_posts
 
 
 async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None:
     """Process the replacement of Imgur images with Bunny.net CDN URLs.
-    
+
     This function:
     1. Loads extraction data from YAML file
     2. Uploads all images to Bunny.net CDN
     3. Updates the YAML file with Bunny.net URLs
     4. Updates blog posts in the database with new URLs
     5. Provides a summary of successes and failures
-    
+
     Args:
         input_folder: Path to folder containing YAML data and images
         bunny_key: Bunny.net API key for authentication
@@ -437,9 +447,7 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
     # HTTP client for Bunny.net API
     async with httpx.AsyncClient(headers=bunny_headers, timeout=30.0) as bunny_client:
         # Upload all images
-        post_complements, failed_upload_files = await upload_all_images(
-            bunny_client, input_path, extractions
-        )
+        post_complements, failed_upload_files = await upload_all_images(bunny_client, input_path, extractions)
 
     # Save updated YAML
     updated_yaml_data: bytes = msgspec.yaml.encode(post_complements)
@@ -456,7 +464,7 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
     # Calculate successful counts
     total_images = sum(len(post_info.images) for post_info in post_complements)
     successful_uploads = total_images - len(failed_upload_files)
-    
+
     # Count posts that had images to update
     posts_with_images = [post_info for post_info in post_complements if any(image.bunny for image in post_info.images)]
     successful_updates = len(posts_with_images) - len(failed_update_posts)
@@ -468,7 +476,7 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
         click.secho('Failed upload files:', fg='red')
         for file in failed_upload_files:
             click.secho(f'  - {file}', fg='red')
-    
+
     click.secho(f'Update summary: {successful_updates} successful, {len(failed_update_posts)} failed', fg='blue')
     if failed_update_posts:
         click.secho('Failed update posts:', fg='red')
@@ -478,6 +486,8 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
 
 if __name__ == '__main__':
     # Configure colorized logging
-    handler = ColorizedStderrHandler(format_string='{record.time:%Y-%m-%d %H:%M:%S} [{record.level_name}] {record.message}')
+    handler = ColorizedStderrHandler(
+        format_string='{record.time:%Y-%m-%d %H:%M:%S} [{record.level_name}] {record.message}'
+    )
     with handler:
         cli()
