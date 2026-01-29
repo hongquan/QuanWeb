@@ -371,7 +371,7 @@ async def upload_all_images(
 
             # Check if local image file exists
             image_path = input_path / 'imgur' / filename
-            match upload_image_to_bunny(bunny_client, image_path, imgur_url):
+            match (await upload_image_to_bunny(bunny_client, image_path, imgur_url)):
                 case Ok(bunny_url):
                     fillup.append(ImageEntry(imgur_url, bunny_url))
                 case _:
