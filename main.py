@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import asyncio
+import mimetypes
 import re
 import tempfile
 from collections.abc import Iterable
@@ -241,8 +242,8 @@ def replace_imgur_bunny(bunny_key: str, input_folder: str) -> None:
 
 
 async def upload_image_to_bunny(
-    bunny_client: httpx.AsyncClient, image_path: Path, imgur_url: str
-) -> Result[str, FileNotFoundError | httpx.RequestError]:
+    bunny_client: httpx.AsyncClient, image_file_path: Path
+) -> Result[str, OSError | httpx.RequestError]:
     """Upload a single image to Bunny.net and return the CDN URL.
 
     Args:
@@ -254,31 +255,32 @@ async def upload_image_to_bunny(
         The Bunny.net CDN URL if successful, None otherwise
     """
     try:
-        image_data = image_path.read_bytes()
-    except FileNotFoundError as e:
+        image_data = image_file_path.read_bytes()
+    except OSError as e:
+        log.warning('Failed to read file. {}', e)
         return Err(e)
+    mime_type, _enc = mimetypes.guess_file_type(image_file_path)
 
     # Generate Bunny.net path with year folder (in UTC)
     current_year = datetime.now(UTC).year
-    # Extract filename from Imgur URL
-    parsed_url = urlparse(imgur_url)
-    filename = Path(parsed_url.path).name
+    filename = image_file_path.name
     bunny_path = f'blogs/imgur/{current_year}/{filename}'
 
     # Bunny.net API setup
     upload_url = urljoin(f'https://{BUNNY_STORAGE_DOMAIN}', f'{BUNNY_STORAGE_ZONE}/{bunny_path}')
+    headers = {'Content-Type': mime_type} if mime_type else None
 
     try:
         response = await bunny_client.put(upload_url, content=image_data)
         response.raise_for_status()
-
-        # Return Bunny.net URL
-        bunny_url = urljoin(f'https://{BUNNY_HOST}', bunny_path)
-        log.info('Uploaded {} to {}', filename, bunny_url)
-        return Ok(bunny_url)
     except httpx.RequestError as e:
-        log.error('Failed to upload {}: {}', filename, e)
+        log.warning('Failed to upload to Bunny. {}', e)
         return Err(e)
+
+    # Return Bunny.net URL
+    bunny_url = urljoin(f'https://{BUNNY_HOST}', bunny_path)
+    log.info('Uploaded {} to {}', filename, bunny_url)
+    return Ok(bunny_url)
 
 
 async def update_single_post(gel_client: gel.AsyncIOClient, post_id: UUID, imgur_to_bunny_map: dict[str, str]) -> bool:
@@ -299,9 +301,12 @@ async def update_single_post(gel_client: gel.AsyncIOClient, post_id: UUID, imgur
     except gel.errors.EdgeDBError as e:
         log.error('Database error querying post {}: {}', post_id, e)
         return False
+    if not post:
+        log.warning('Post {} does not exist.', post_id)
+        return False
 
-    if not post or not post.body:
-        log.warning('No body found for post {}', post_id)
+    if post.body:
+        log.info('Post {} ({}) has empty body', post_id, post.title)
         return False
 
     # Replace Imgur URLs with Bunny URLs in the body
@@ -369,9 +374,8 @@ async def upload_all_images(
             parsed_url = urlparse(imgur_url)
             filename = Path(parsed_url.path).name
 
-            # Check if local image file exists
             image_path = input_path / 'imgur' / filename
-            match (await upload_image_to_bunny(bunny_client, image_path, imgur_url)):
+            match (await upload_image_to_bunny(bunny_client, image_path)):
                 case Ok(bunny_url):
                     fillup.append(ImageEntry(imgur_url, bunny_url))
                 case _:
