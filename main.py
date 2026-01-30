@@ -274,7 +274,7 @@ async def upload_image_to_bunny(
         response = await bunny_client.put(upload_url, content=image_data)
         response.raise_for_status()
     except httpx.RequestError as e:
-        log.warning('Failed to upload to Bunny. {}', e)
+        log.warning('Failed to upload {} to Bunny. {}', filename, e)
         return Err(e)
 
     # Return Bunny.net URL
@@ -452,7 +452,8 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
     bunny_headers = {'AccessKey': bunny_key, 'Content-Type': 'application/octet-stream'}
 
     # HTTP client for Bunny.net API
-    async with httpx.AsyncClient(headers=bunny_headers, timeout=30.0, http2=True) as bunny_client:
+    # Not using HTTP/2 for now because of "Invalid input ConnectionInputs.RECV_WINDOW_UPDATE in state ConnectionState.CLOSED"
+    async with httpx.AsyncClient(headers=bunny_headers, timeout=30.0) as bunny_client:
         # Upload all images
         post_complements, failed_upload_files = await upload_all_images(bunny_client, input_path, extractions)
 
