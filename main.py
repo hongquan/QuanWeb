@@ -305,7 +305,7 @@ async def update_single_post(gel_client: gel.AsyncIOClient, post_id: UUID, imgur
         log.warning('Post {} does not exist.', post_id)
         return False
 
-    if post.body:
+    if not post.body:
         log.info('Post {} ({}) has empty body', post_id, post.title)
         return False
 
@@ -368,6 +368,11 @@ async def upload_all_images(
         fillup: list[ImageEntry] = []
         for image_entry in images:
             if not (imgur_url := image_entry.imgur):
+                continue
+            # If bunny_url already exists in the `image_entry`, no need to upload.
+            if image_entry.bunny:
+                log.info('{} has been uploaded to {}.', imgur_url, image_entry.bunny)
+                fillup.append(image_entry)
                 continue
 
             # Extract filename from Imgur URL
@@ -447,7 +452,7 @@ async def process_replace_imgur_bunny(input_folder: str, bunny_key: str) -> None
     bunny_headers = {'AccessKey': bunny_key, 'Content-Type': 'application/octet-stream'}
 
     # HTTP client for Bunny.net API
-    async with httpx.AsyncClient(headers=bunny_headers, timeout=30.0) as bunny_client:
+    async with httpx.AsyncClient(headers=bunny_headers, timeout=30.0, http2=True) as bunny_client:
         # Upload all images
         post_complements, failed_upload_files = await upload_all_images(bunny_client, input_path, extractions)
 
