@@ -3,13 +3,11 @@ on: [push, workflow_dispatch]
 name: CI
 
 jobs:
-  build-backend:
-    name: quanweb
+  classify-changes:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        BUILD_TARGET: [release]
-      fail-fast: false
+    outputs:
+      backend: ${{ steps.changed-backend.outputs.any_changed }}
+      ladmin: ${{ steps.changed-ladmin-app.outputs.any_changed }}
     steps:
       - uses: actions/checkout@v4
       - name: Get backend changes
@@ -24,29 +22,6 @@ jobs:
           files_ignore: |
             admin
             ladmin
-
-      # Our backend binary needs to embed the frontend built files.
-      - uses: oven-sh/setup-bun@v2
-        if: steps.changed-backend.outputs.any_changed == 'true'
-
-      - name: Build binary
-        if: steps.changed-backend.outputs.any_changed == 'true'
-        run: cargo build --profile ${{ matrix.BUILD_TARGET }} --all-features
-
-      - name: Archive built files
-        if: steps.changed-backend.outputs.any_changed == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Built binaries
-          path: target/${{ matrix.BUILD_TARGET }}/quanweb
-
-  build-ladmin-app:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ladmin
-    steps:
-      - uses: actions/checkout@v4
       - name: Get ladmin app changes
         id: changed-ladmin-app
         uses: tj-actions/changed-files@v47.0.0
@@ -54,29 +29,74 @@ jobs:
           files: |
             ladmin/**
             **.yml
+
+  build-backend:
+    name: quanweb
+    needs: classify-changes
+    if: needs.classify-changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        BUILD_TARGET: [release]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      # Our backend binary needs to embed the frontend built files.
       - uses: oven-sh/setup-bun@v2
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
+        with:
+          bun-version: latest
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Build binary
+        run: cargo build --profile ${{ matrix.BUILD_TARGET }} --all-features
+
+      - name: Archive built files
+        uses: actions/upload-artifact@v4
+        with:
+          name: Built binaries
+          path: target/${{ matrix.BUILD_TARGET }}/quanweb
+
+  build-ladmin-app:
+    needs: classify-changes
+    if: needs.classify-changes.outputs.ladmin == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ladmin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('ladmin/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - uses: erlef/setup-beam@v1
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         with:
           otp-version: latest
           gleam-version: latest
           rebar3-version: latest
           # elixir-version: "1"
       - name: Add WASM target for Rust
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: rustup target add wasm32-unknown-unknown
       - name: Download Gleam dependencies
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: gleam deps download
       - name: Install JS dependencies
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: bun i
       - name: Build ladmin app
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         run: bun run --bun build
       - name: Upload Build Artifact
-        if: ${{ steps.changed-ladmin-app.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
           name: ladmin-built
