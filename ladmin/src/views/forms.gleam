@@ -385,6 +385,42 @@ pub fn render_category_form(
         ]),
       ]),
     ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Header color")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("header_color"),
+          a.type_("color"),
+          a.value(formlib.field_value(form, "header_color")),
+          a.class(
+            "py-2 px-1 h-10 w-20 border rounded-md focus:outline-none focus:ring text-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 focus:ring-opacity-40"
+          ),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Summary (English)")]),
+      h.div([a.class(class_input_col)], [
+        h.textarea([
+          a.name("summary_en"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+          a.rows(3),
+        ], formlib.field_value(form, "summary_en")),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Summary (Vietnamese)")]),
+      h.div([a.class(class_input_col)], [
+        h.textarea([
+          a.name("summary_vi"),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+          a.rows(3),
+        ], formlib.field_value(form, "summary_vi")),
+      ]),
+    ]),
     h.hr([a.class("p-4 border-b border-t-0")]),
     render_category_form_buttons(loading_status),
   ]

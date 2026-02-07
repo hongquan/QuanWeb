@@ -479,7 +479,7 @@ fn render_category_row(
   category: Category,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
-  let Category(id:, title:, slug:, title_vi:) = category
+  let Category(id:, title:, slug:, title_vi:, header_color:, summary_en:, summary_vi:) = category
   let url = routes.as_url_string(CategoryEditPage(id))
   let cells = [
     h.td([a.class(class_cell)], [

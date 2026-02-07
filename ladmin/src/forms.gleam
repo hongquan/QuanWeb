@@ -99,7 +99,26 @@ pub fn make_category_form(
         "title_vi",
         form.parse_optional(form.parse_string),
       )
-      form.success(CategoryEditablePart(title:, slug:, title_vi:))
+      use header_color <- form.field(
+        "header_color",
+        form.parse_optional(form.parse_string),
+      )
+      use summary_en <- form.field(
+        "summary_en",
+        form.parse_optional(form.parse_string),
+      )
+      use summary_vi <- form.field(
+        "summary_vi",
+        form.parse_optional(form.parse_string),
+      )
+      form.success(CategoryEditablePart(
+        title:,
+        slug:,
+        title_vi:,
+        header_color:,
+        summary_en:,
+        summary_vi:,
+      ))
     })
   case category {
     Some(c) -> {
@@ -107,6 +126,9 @@ pub fn make_category_form(
         #("title", c.title),
         #("slug", c.slug),
         #("title_vi", c.title_vi |> option.unwrap("")),
+        #("header_color", c.header_color |> option.unwrap("")),
+        #("summary_en", c.summary_en |> option.unwrap("")),
+        #("summary_vi", c.summary_vi |> option.unwrap("")),
       ]
       form.add_values(form, initial)
     }

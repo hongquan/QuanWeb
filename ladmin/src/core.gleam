@@ -6,7 +6,15 @@ import plinth/browser/element.{type Element}
 import rsvp
 
 pub type Category {
-  Category(id: String, title: String, title_vi: Option(String), slug: String)
+  Category(
+    id: String,
+    title: String,
+    title_vi: Option(String),
+    slug: String,
+    header_color: Option(String),
+    summary_en: Option(String),
+    summary_vi: Option(String),
+  )
 }
 
 // Post with a subset of fields, just enough
@@ -121,7 +129,14 @@ pub type PostEditablePart {
 }
 
 pub type CategoryEditablePart {
-  CategoryEditablePart(title: String, slug: String, title_vi: Option(String))
+  CategoryEditablePart(
+    title: String,
+    slug: String,
+    title_vi: Option(String),
+    header_color: Option(String),
+    summary_en: Option(String),
+    summary_vi: Option(String),
+  )
 }
 
 pub type Color {

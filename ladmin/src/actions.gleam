@@ -168,11 +168,14 @@ pub fn load_users() -> Effect(Msg(a)) {
 }
 
 fn dump_category_to_json(category: CategoryEditablePart) -> json.Json {
-  let CategoryEditablePart(title:, slug:, title_vi:) = category
+  let CategoryEditablePart(title:, slug:, title_vi:, header_color:, summary_en:, summary_vi:) = category
   json.object([
     #("title", json.string(title)),
     #("slug", json.string(slug)),
     #("title_vi", json.nullable(title_vi, json.string)),
+    #("header_color", json.nullable(header_color, json.string)),
+    #("summary_en", json.nullable(summary_en, json.string)),
+    #("summary_vi", json.nullable(summary_vi, json.string)),
   ])
 }
 

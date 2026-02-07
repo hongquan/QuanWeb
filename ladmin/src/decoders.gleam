@@ -105,7 +105,13 @@ pub fn make_category_decoder() -> Decoder(Category) {
   use title <- decode.field("title", decode.string)
   use slug <- decode.field("slug", decode.string)
   use title_vi <- decode.field("title_vi", decode.optional(decode.string))
-  decode.success(Category(id:, title:, slug:, title_vi:))
+  use header_color <- decode.field(
+    "header_color",
+    decode.optional(decode.string),
+  )
+  use summary_en <- decode.field("summary_en", decode.optional(decode.string))
+  use summary_vi <- decode.field("summary_vi", decode.optional(decode.string))
+  decode.success(Category(id:, title:, slug:, title_vi:, header_color:, summary_en:, summary_vi:))
 }
 
 pub fn make_listing_api_decoder(
