@@ -43,6 +43,25 @@ module default {
             constraint exclusive;
             constraint max_len_value(50);
         }
+        # CSS color in hex format, e.g., #RGB, #RGBA, #RRGGBB, #RRGGBBAA
+        # Empty string is allowed for no color specification
+        header_color: str {
+            constraint max_len_value(20);
+            constraint regexp(r'^(#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})|)?$');
+            default := '';
+        }
+        featured_order: int16 {
+            default := 0;
+            constraint min_value(0);
+        }
+        summary_en: str {
+            constraint max_len_value(500);
+            default := '';
+        }
+        summary_vi: str {
+            constraint max_len_value(500);
+            default := '';
+        }
         old_id: int16 {
             readonly := true;
             constraint exclusive;
@@ -87,6 +106,10 @@ module default {
         }
         og_image: str {
             constraint max_len_value(200);
+        }
+        highlighted_order: int16 {
+            default := 0;
+            constraint min_value(0);
         }
         created_at: datetime {
             default := datetime_current();
@@ -154,3 +177,4 @@ module default {
         }
     }
 }
+# Migration ready for fields: header_color, featured_order, summary_en, summary_vi, highlighted_order
