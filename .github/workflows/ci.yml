@@ -107,7 +107,52 @@ jobs:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
         if: steps.download_step.outcome == 'success'
       - name: Run Ansible playbook
-        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }}
+        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }} -e "ladmin_dist_local=ladmin-built"
         if: steps.download_step.outcome == 'success'
 
-
+  # Manual full deployment (backend + frontend)
+  deploy-full:
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-ladmin-app]
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: False
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Download backend binary
+        uses: actions/download-artifact@v5
+        with:
+          name: Built binaries
+          path: backend-binary
+        id: download_backend
+        continue-on-error: true
+        
+      - name: Download Lustre dist
+        uses: actions/download-artifact@v5
+        with:
+          name: ladmin-built
+          path: ladmin-built
+        id: download_ladmin
+        continue-on-error: true
+        
+      - name: Install Cowsay
+        run: sudo apt-get install cowsay
+        if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'
+        
+      - name: Install SSH priv key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+        if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'
+        
+      - name: Run Ansible playbook (full deploy)
+        run: |
+          ansible-playbook \
+            -i Deployment/Ansible/inventory.yml \
+            Deployment/Ansible/playbook.yml \
+            --limit prod \
+            -u ${{ vars.SERVER_USERNAME }} \
+            -e "rust_binary_local=rust-binary/quanweb" \
+            -e "ladmin_dist_local=ladmin-built"
+        if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'

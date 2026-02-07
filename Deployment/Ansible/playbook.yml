@@ -6,10 +6,12 @@
   gather_subset:
     - "!all"
   vars:
-    base_folder: /home/{{ ansible_user }}/QuanWeb/quanweb/
+    base_folder: '{{ ansible_user_dir }}/QuanWeb/quanweb/'
     ladmin_folder: "{{ base_folder }}ladmin"
-    source_folder: '{{ playbook_dir | dirname | dirname }}'
-    ladmin_built_source: '{{ source_folder }}/ladmin-built/'
+    backend_binary_dest: "{{ ansible_user_dir }}/.local/bin/quanweb"
+    # The following vars are passed from outside (GitHub Actions):
+    # - backend_binary_local: Path to the built backend binary (uploaded from GitHub CI artifact)
+    # - ladmin_dist_local: Path to the built ladmin dist folder (uploaded from GitHub CI artifact)
 
   tasks:
     - name: Clean source  # noqa command-instead-of-module
@@ -26,12 +28,32 @@
         version: "main"
       register: git_out
 
+    - name: Upload backend binary
+      ansible.builtin.copy:
+        src: "{{ backend_binary_local }}"
+        dest: "{{ backend_binary_dest }}"
+        mode: '0755'
+      when: backend_binary_local is defined
+
     - name: Sync built ladmin app
       ansible.posix.synchronize:
-        src: '{{ ladmin_built_source }}'
-        dest: '{{ ladmin_folder }}/dist'
+        src: '{{ ladmin_dist_local }}/'
+        dest: '{{ ladmin_folder }}/dist/'
         delete: true
-      when: ladmin_built_source is exists
+      when: ladmin_dist_local is defined
+
+    - name: Run Gel migrations
+      ansible.builtin.command:
+        cmd: "gel migrate"
+        chdir: "{{ base_folder }}"
+      register: gel_migrate
+      changed_when: "'already up to date' not in gel_migrate.stdout|lower"
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        name: quanweb-rs
+        state: restarted
+      become: true
 
     - name: Debug git_out
       ansible.builtin.debug:
@@ -39,4 +61,4 @@
 
   environment:
     # Modify PATH so that bun can be found.
-    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.local/bin:{{ ansible_env.HOME }}/.bun/bin"
+    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_user_dir }}/.local/bin:{{ ansible_user_dir }}/.bun/bin"
