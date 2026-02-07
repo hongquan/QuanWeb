@@ -1,7 +1,7 @@
 import formal/form.{type Form} as formlib
 import gleam/dynamic/decode
 import gleam/list
-import gleam/option.{type Option, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/result
 import lucide_lustre as lc_icons
 import lustre/attribute as a
@@ -14,10 +14,10 @@ import plinth/browser/element as br_element
 import core.{
   type BookAuthor, type BookEditablePart, type Category, type CategoryEditablePart,
   type LoadingStatus, type MiniUser, type Msg, type PostEditablePart,
-  type PresentationEditablePart, BookFormSubmitted, CategoryFormSubmitted,
-  FormCancelClicked, IsSubmitting, PresentationFormSubmitted,
-  SlugGeneratorClicked, SubmitStayButtonClicked, UserClickMarkdownPreview,
-  UserMovedCategoryBetweenPane,
+  type PresentationEditablePart, BookFormSubmitted, CategoryEditablePart,
+  CategoryFormSubmitted, FormCancelClicked, IsSubmitting,
+  PresentationFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
+  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
 }
 import ffi
 import updates
@@ -29,7 +29,7 @@ const class_label = "block font-medium leading-6 dark:text-white sm:pt-2"
 
 const class_input_col = "mt-2 sm:col-span-3 sm:mt-0"
 
-const class_input_common = "py-2 w-full border rounded-md focus:outline-none focus:ring text-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 focus:ring-opacity-40"
+const class_input_common = "py-2 border rounded-md focus:outline-none focus:ring text-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 focus:ring-opacity-40"
 
 const class_input_normal = "border-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300"
 
@@ -55,7 +55,7 @@ pub fn render_post_form(
           a.type_("text"),
           a.required(True),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -73,7 +73,7 @@ pub fn render_post_form(
           a.name("og_image"),
           a.type_("url"),
           a.value(formlib.field_value(form, "og_image")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -137,7 +137,7 @@ fn render_slug_field(form: Form(o)) {
         a.type_("text"),
         a.required(True),
         a.value(formlib.field_value(form, name)),
-        a.class(class_input_common <> " ps-4 pe-10"),
+        a.class(class_input_common <> " ps-4 pe-10 w-full"),
         case err_message {
           Ok(_m) -> a.class(class_input_errorneous)
           _ -> a.class(class_input_normal)
@@ -369,7 +369,7 @@ pub fn render_category_form(
           a.name("title"),
           a.type_("text"),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -382,7 +382,7 @@ pub fn render_category_form(
           a.name("title_vi"),
           a.type_("text"),
           a.value(formlib.field_value(form, "title_vi")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -394,9 +394,7 @@ pub fn render_category_form(
           a.name("header_color"),
           a.type_("color"),
           a.value(formlib.field_value(form, "header_color")),
-          a.class(
-            "py-2 px-1 h-10 w-20 border rounded-md focus:outline-none focus:ring text-gray-700 bg-white dark:bg-gray-900 dark:text-gray-300 focus:ring-opacity-40"
-          ),
+          a.class(class_input_common <> " px-1 h-10 w-20"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -406,7 +404,7 @@ pub fn render_category_form(
       h.div([a.class(class_input_col)], [
         h.textarea([
           a.name("summary_en"),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
           a.rows(3),
         ], formlib.field_value(form, "summary_en")),
@@ -417,7 +415,7 @@ pub fn render_category_form(
       h.div([a.class(class_input_col)], [
         h.textarea([
           a.name("summary_vi"),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
           a.rows(3),
         ], formlib.field_value(form, "summary_vi")),
@@ -425,7 +423,7 @@ pub fn render_category_form(
     ]),
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Featured order")]),
-      h.div([a.class(class_input_col)], [
+      h.div([a.class(class_input_col), a.class("flex items-center space-x-2")], [
         h.input([
           a.name("featured_order"),
           a.type_("number"),
@@ -434,6 +432,28 @@ pub fn render_category_form(
           a.class(class_input_common <> " px-4 w-24"),
           a.class(class_input_normal),
         ]),
+        h.button(
+          [
+            a.type_("button"),
+            a.class(
+              "px-3 py-2 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border border-gray-400 dark:border-gray-700 cursor-pointer",
+            ),
+            ev.on_click(
+              CategoryFormSubmitted(
+                Ok(CategoryEditablePart(
+                  title: formlib.field_value(form, "title"),
+                  slug: formlib.field_value(form, "slug"),
+                  title_vi: Some(formlib.field_value(form, "title_vi")),
+                  header_color: Some(formlib.field_value(form, "header_color")),
+                  featured_order: None,
+                  summary_en: Some(formlib.field_value(form, "summary_en")),
+                  summary_vi: Some(formlib.field_value(form, "summary_vi")),
+                )),
+              ),
+            ),
+          ],
+          [h.text("Clear")],
+        ),
       ]),
     ]),
     h.hr([a.class("p-4 border-b border-t-0")]),
@@ -486,7 +506,7 @@ pub fn render_presentation_form(
           a.type_("text"),
           a.required(True),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -499,7 +519,7 @@ pub fn render_presentation_form(
           a.type_("url"),
           a.required(True),
           a.value(formlib.field_value(form, "url")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -511,7 +531,7 @@ pub fn render_presentation_form(
           a.name("event"),
           a.type_("text"),
           a.value(formlib.field_value(form, "event")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -552,7 +572,7 @@ pub fn render_book_form(
           a.type_("text"),
           a.required(True),
           a.value(formlib.field_value(form, "title")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),
@@ -575,7 +595,7 @@ pub fn render_book_form(
           a.name("download_url"),
           a.type_("url"),
           a.value(formlib.field_value(form, "download_url")),
-          a.class(class_input_common <> " px-4"),
+          a.class(class_input_common <> " px-4 w-full"),
           a.class(class_input_normal),
         ]),
       ]),

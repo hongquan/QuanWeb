@@ -323,5 +323,5 @@ fn view(model: Model) -> Element(AppMsg) {
 }
 
 pub fn dummy_view() {
-  h.div([], [h.h1([], [h.text("Hello")])])
+  h.div([], [h.h1([], [h.text("Hey there!")])])
 }

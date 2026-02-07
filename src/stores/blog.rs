@@ -238,7 +238,11 @@ pub async fn get_blog_categories(
     client: &Client,
 ) -> Result<Vec<BlogCategory>, Error> {
     let order_by = if sort_by_featured {
-        "ORDER BY .featured_order ASC THEN .title ASC"
+        // Sort by featured_order with special handling:
+        // - Items with featured_order (0, 1, 2, 3...) come first in ASC order
+        // - Items with NULL featured_order come last (not featured)
+        // - Within same featured_order, sort by title ASC
+        "ORDER BY .featured_order ASC EMPTY LAST THEN .title ASC"
     } else {
         "ORDER BY .title ASC"
     };

@@ -59,7 +59,7 @@ pub fn render_single_select(
   h.select(
     [
       a.name(field_name),
-      a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4"),
+      a.class("border dark:border-gray-600 rounded-md py-2 ps-2 pe-4 w-full"),
     ],
     options,
   )
