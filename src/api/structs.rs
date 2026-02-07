@@ -214,6 +214,10 @@ pub struct BlogCategoryPatchData {
     pub title: Option<String>,
     pub slug: Option<String>,
     pub title_vi: Option<String>,
+    pub header_color: Option<String>,
+    pub featured_order: Option<i16>,
+    pub summary_en: Option<String>,
+    pub summary_vi: Option<String>,
 }
 
 impl BlogCategoryPatchData {
@@ -222,6 +226,10 @@ impl BlogCategoryPatchData {
         append_set_statement!("title", "optional str", lines, submitted_fields);
         append_set_statement!("slug", "optional str", lines, submitted_fields);
         append_set_statement!("title_vi", "optional str", lines, submitted_fields);
+        append_set_statement!("header_color", "optional str", lines, submitted_fields);
+        append_set_statement!("featured_order", "optional int16", lines, submitted_fields);
+        append_set_statement!("summary_en", "optional str", lines, submitted_fields);
+        append_set_statement!("summary_vi", "optional str", lines, submitted_fields);
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
     }
@@ -242,6 +250,18 @@ impl BlogCategoryPatchData {
         if submitted_fields.contains("title_vi") {
             hm.insert("title_vi", self.title_vi.clone().into());
         }
+        if submitted_fields.contains("header_color") {
+            hm.insert("header_color", self.header_color.clone().into());
+        }
+        if submitted_fields.contains("featured_order") {
+            hm.insert("featured_order", self.featured_order.into());
+        }
+        if submitted_fields.contains("summary_en") {
+            hm.insert("summary_en", self.summary_en.clone().into());
+        }
+        if submitted_fields.contains("summary_vi") {
+            hm.insert("summary_vi", self.summary_vi.clone().into());
+        }
         hm
     }
 }
@@ -254,6 +274,10 @@ pub struct BlogCategoryCreateData {
     pub slug: String,
     #[validate(length(min = 2))]
     pub title_vi: String,
+    pub header_color: Option<String>,
+    pub featured_order: Option<i16>,
+    pub summary_en: Option<String>,
+    pub summary_vi: Option<String>,
 }
 
 impl BlogCategoryCreateData {
@@ -261,7 +285,11 @@ impl BlogCategoryCreateData {
         let lines = [
             "title := <str>$title",
             "slug := <str>$slug",
-            "title_vi :=<str>$title_vi",
+            "title_vi := <str>$title_vi",
+            "header_color := <optional str>$header_color",
+            "featured_order := <optional int16>$featured_order",
+            "summary_en := <optional str>$summary_en",
+            "summary_vi := <optional str>$summary_vi",
         ];
         let sep = format!(",\n{}", " ".repeat(12));
         lines.join(&sep)
@@ -270,7 +298,11 @@ impl BlogCategoryCreateData {
         let hm = named_args! {
             "title" => self.title.clone(),
             "slug" => self.slug.clone(),
-            "title_vi" => self.title_vi.clone()
+            "title_vi" => self.title_vi.clone(),
+            "header_color" => self.header_color.clone(),
+            "featured_order" => self.featured_order,
+            "summary_en" => self.summary_en.clone(),
+            "summary_vi" => self.summary_vi.clone(),
         };
         hm
     }

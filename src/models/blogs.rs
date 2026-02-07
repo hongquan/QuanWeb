@@ -204,6 +204,10 @@ pub struct BlogCategory {
     pub title: String,
     pub title_vi: Option<String>,
     pub slug: String,
+    pub header_color: Option<String>,
+    pub featured_order: Option<i16>,
+    pub summary_en: Option<String>,
+    pub summary_vi: Option<String>,
 }
 
 impl EdgeSelectable for BlogCategory {
