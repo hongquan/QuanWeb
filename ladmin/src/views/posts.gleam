@@ -1,10 +1,12 @@
 import consts
 import gleam/dynamic/decode
+import gleam/int
 import gleam/javascript/array
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/string
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
@@ -24,7 +26,10 @@ import ffi
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model, Model}
-import routes.{CategoryEditPage, PostEditPage, PostListPage}
+import routes.{
+  type CategorySort, CategoryEditPage, PostEditPage, PostListPage, SortByFeatured,
+  SortByTitle,
+}
 import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
@@ -360,7 +365,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
   }
 }
 
-pub fn render_category_table_page(page: Int, model: Model) {
+pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: Model) {
   let Model(route:, ..) = model
   case model.loading_status {
     IsLoading ->
@@ -383,8 +388,12 @@ pub fn render_category_table_page(page: Int, model: Model) {
         PageOwnedCategories(objects) -> objects
         _ -> []
       }
+      // Categories are already sorted by the server based on sort mode
       let total_pages = model.page_owned_object_paging.total_pages
-      let query_list = []
+      let query_list = case sort {
+        Some(SortByFeatured) -> [#("sort", "featured")]
+        _ -> []
+      }
       let paginator = render_paginator(page, total_pages, query_list)
       let deletion_handler = fn(id) {
         ContentItemDeletionClicked(CategoryId(id))
@@ -434,13 +443,44 @@ pub fn render_category_table_page(page: Int, model: Model) {
           [h.text("New category")],
         )
 
+      // Sort mode toggle buttons - navigate to URL with sort parameter
+      let sort_by_title_active = sort == None
+      let sort_by_featured_active = sort == Some(SortByFeatured)
+      let title_sort_url = routes.as_url_string(routes.CategoryListPage(Some(page), None))
+      let featured_sort_url = routes.as_url_string(routes.CategoryListPage(Some(page), Some(SortByFeatured)))
+      let sort_toggle =
+        h.div([a.class("flex items-center space-x-2 text-sm")], [
+          h.span([a.class("text-gray-500 dark:text-gray-400")], [h.text("Sort by:")]),
+          h.a(
+            [
+              a.href(title_sort_url),
+              a.class(case sort_by_title_active {
+                True -> "px-3 py-1 rounded-md bg-blue-600 text-white"
+                False -> "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }),
+            ],
+            [h.text("Title")],
+          ),
+          h.a(
+            [
+              a.href(featured_sort_url),
+              a.class(case sort_by_featured_active {
+                True -> "px-3 py-1 rounded-md bg-blue-600 text-white"
+                False -> "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }),
+            ],
+            [h.text("Featured")],
+          ),
+        ])
+
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route),
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
-            h.div([a.class("text-end")], [
+            h.div([a.class("flex justify-between items-center")], [
+              sort_toggle,
               link_create_category,
             ]),
             body,
@@ -454,7 +494,7 @@ pub fn render_category_table_page(page: Int, model: Model) {
 }
 
 fn render_category_table_header() {
-  let columns = ["Title", "Slug", "Title (Vi)"]
+  let columns = ["Order", "Title", "Slug", "Title (Vi)"]
   let cells =
     columns
     |> list.map(fn(label) {
@@ -479,9 +519,16 @@ fn render_category_row(
   category: Category,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
-  let Category(id:, title:, slug:, title_vi:, header_color:, summary_en:, summary_vi:) = category
+  let Category(id:, title:, slug:, title_vi:, header_color:, featured_order:, summary_en:, summary_vi:) = category
   let url = routes.as_url_string(CategoryEditPage(id))
+  let order_text = case featured_order {
+    Some(order) -> int.to_string(order)
+    None -> "-"
+  }
   let cells = [
+    h.td([a.class(class_cell), a.class("text-sm text-center w-16")], [
+      h.text(order_text),
+    ]),
     h.td([a.class(class_cell)], [
       h.a([a.href(url), a.class("hover:underline")], [
         h.text(title),

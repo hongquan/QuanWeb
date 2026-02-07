@@ -56,7 +56,7 @@ pub fn handle_router_init_done(model: Model) {
     PostListPage(p, q, cat_id), LoggedIn(_u) -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1)
+        [], _o -> actions.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
@@ -67,7 +67,7 @@ pub fn handle_router_init_done(model: Model) {
         s -> #(actions.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1)
+        [], _o -> actions.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(
@@ -80,11 +80,12 @@ pub fn handle_router_init_done(model: Model) {
       )
     }
     // In CategoryListPagei page, call API to load categories
-    CategoryListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(CategoryListPage(None)), core.Idle)
+    CategoryListPage(Some(p), sort), _ if p < 1 -> {
+      #(routes.goto(CategoryListPage(None, sort)), core.Idle)
     }
-    CategoryListPage(p), _ -> {
-      #(actions.load_categories(option.unwrap(p, 1)), IsLoading)
+    CategoryListPage(p, sort), _ -> {
+      let sort_by_featured = sort == Some(routes.SortByFeatured)
+      #(actions.load_categories(option.unwrap(p, 1), sort_by_featured), IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
       #(actions.load_single_category(id), IsLoading)
@@ -271,7 +272,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     PostListPage(p, q, cat_id), _ -> {
       let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1)
+        [], _o -> actions.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
@@ -282,7 +283,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         s -> #(actions.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1)
+        [], _o -> actions.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(
@@ -294,8 +295,9 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         loading_status,
       )
     }
-    CategoryListPage(p), _ -> {
-      let load_categories_action = actions.load_categories(option.unwrap(p, 1))
+    CategoryListPage(p, sort), _ -> {
+      let sort_by_featured = sort == Some(routes.SortByFeatured)
+      let load_categories_action = actions.load_categories(option.unwrap(p, 1), sort_by_featured)
       #(load_categories_action, IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
@@ -371,7 +373,7 @@ pub fn handle_api_list_category_result(
           }
           #(model, whatsnext)
         }
-        CategoryListPage(_p) -> {
+        CategoryListPage(_p, _sort) -> {
           let model =
             Model(
               ..model,
@@ -673,7 +675,7 @@ pub fn handle_api_update_category_result(
         Model(..model, flash_messages:),
         effect.batch([
           models.schedule_cleaning_flash_messages(),
-          routes.goto(CategoryListPage(None)),
+          routes.goto(CategoryListPage(None, None)),
         ]),
       )
     }

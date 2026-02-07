@@ -59,11 +59,16 @@ pub fn initiate_logout() -> Effect(Msg(a)) {
   rsvp.post("/_api/logout", json.bool(True), handler)
 }
 
-pub fn load_categories(page: Int) -> Effect(Msg(a)) {
+pub fn load_categories(page: Int, sort_by_featured: Bool) -> Effect(Msg(a)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.make_category_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
-  let query = uri.query_to_string([#("page", int.to_string(page))]) |> Some
+  let query_params = [#("page", int.to_string(page))]
+  let query_params = case sort_by_featured {
+    True -> [#("sort", "featured"), ..query_params]
+    False -> query_params
+  }
+  let query = uri.query_to_string(query_params) |> Some
   let url = uri.Uri(..uri.empty, path: consts.api_categories, query:)
   rsvp.get(uri.to_string(url), handler)
 }
@@ -168,12 +173,13 @@ pub fn load_users() -> Effect(Msg(a)) {
 }
 
 fn dump_category_to_json(category: CategoryEditablePart) -> json.Json {
-  let CategoryEditablePart(title:, slug:, title_vi:, header_color:, summary_en:, summary_vi:) = category
+  let CategoryEditablePart(title:, slug:, title_vi:, header_color:, featured_order:, summary_en:, summary_vi:) = category
   json.object([
     #("title", json.string(title)),
     #("slug", json.string(slug)),
     #("title_vi", json.nullable(title_vi, json.string)),
     #("header_color", json.nullable(header_color, json.string)),
+    #("featured_order", json.nullable(featured_order, json.int)),
     #("summary_en", json.nullable(summary_en, json.string)),
     #("summary_vi", json.nullable(summary_vi, json.string)),
   ])

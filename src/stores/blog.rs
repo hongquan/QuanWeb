@@ -234,11 +234,18 @@ pub async fn count_published_uncategorized_posts(client: &Client) -> Result<usiz
 pub async fn get_blog_categories(
     offset: Option<i64>,
     limit: Option<i64>,
+    sort_by_featured: bool,
     client: &Client,
 ) -> Result<Vec<BlogCategory>, Error> {
+    let order_by = if sort_by_featured {
+        "ORDER BY .featured_order ASC THEN .title ASC"
+    } else {
+        "ORDER BY .title ASC"
+    };
     let q = format!(
-        "SELECT BlogCategory {} ORDER BY .title OFFSET <optional int64>$0 LIMIT <optional int64>$1",
-        BlogCategory::fields_as_shape()
+        "SELECT BlogCategory {} {} OFFSET <optional int64>$0 LIMIT <optional int64>$1",
+        BlogCategory::fields_as_shape(),
+        order_by
     );
     let categories: Vec<BlogCategory> = client.query(&q, &(offset, limit)).await?;
     Ok(categories)

@@ -20,6 +20,21 @@ pub struct NPaging {
     pub per_page: Option<u8>,
 }
 
+#[derive(Debug, Deserialize, Default)]
+pub struct CategoryListQuery {
+    pub page: Option<NonZeroU16>,
+    pub per_page: Option<u8>,
+    pub sort: Option<CategorySort>,
+}
+
+#[derive(Debug, Deserialize)]
+pub enum CategorySort {
+    #[serde(rename = "title")]
+    Title,
+    #[serde(rename = "featured")]
+    FeaturedOrder,
+}
+
 #[derive(Debug, Deserialize, Validify)]
 pub struct OtherQuery {
     #[modify(trim)]

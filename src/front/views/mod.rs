@@ -52,7 +52,7 @@ pub async fn home(
     let posts = stores::blog::get_published_posts(Some(offset), Some(page_size as i64), &db)
         .await
         .map_err(PageError::GelQueryError)?;
-    let categories = stores::blog::get_blog_categories(None, None, &db)
+    let categories = stores::blog::get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let no_tracking = auth_session.user.is_some();

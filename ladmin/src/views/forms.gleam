@@ -421,6 +421,19 @@ pub fn render_category_form(
         ], formlib.field_value(form, "summary_vi")),
       ]),
     ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Featured order")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("featured_order"),
+          a.type_("number"),
+          a.min("0"),
+          a.value(formlib.field_value(form, "featured_order")),
+          a.class(class_input_common <> " px-4 w-24"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
     h.hr([a.class("p-4 border-b border-t-0")]),
     render_category_form_buttons(loading_status),
   ]

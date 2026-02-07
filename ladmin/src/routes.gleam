@@ -11,13 +11,18 @@ import gleam/uri.{type Uri, Uri}
 import lustre/effect.{type Effect}
 import modem
 
+pub type CategorySort {
+  SortByTitle
+  SortByFeatured
+}
+
 pub type Route {
   HomePage
   // The payload is the previous attempt URL
   LoginPage(Uri)
   PostListPage(page: Option(Int), q: Option(String), cat_id: Option(String))
   PostEditPage(id: String)
-  CategoryListPage(page: Option(Int))
+  CategoryListPage(page: Option(Int), sort: Option(CategorySort))
   CategoryEditPage(id: String)
   External(Uri)
   NotFound
@@ -74,7 +79,11 @@ pub fn parse_to_route(
           }
         })
         |> option.from_result
-      CategoryListPage(page)
+      let sort = case query_dict |> dict.get("sort") {
+        Ok("featured") -> Some(SortByFeatured)
+        _ -> None
+      }
+      CategoryListPage(page, sort)
     }
     "/categories/new", _ -> CategoryEditPage("")
     "/categories/" <> id, _ -> CategoryEditPage(id)
@@ -121,7 +130,21 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     }
     PostEditPage("") -> #("/posts/new", None)
     PostEditPage(id) -> #("/posts/" <> id, None)
-    CategoryListPage(page) -> #("/categories", to_page_query(page))
+    CategoryListPage(page, sort) -> {
+      let query_params = case page {
+        Some(p) -> [#("page", int.to_string(p))]
+        None -> []
+      }
+      let query_params = case sort {
+        Some(SortByFeatured) -> [#("sort", "featured"), ..query_params]
+        _ -> query_params
+      }
+      let query = case query_params {
+        [] -> None
+        _ -> uri.query_to_string(query_params) |> Some
+      }
+      #("/categories", query)
+    }
     CategoryEditPage("") -> #("/categories/new", None)
     CategoryEditPage(id) -> #("/categories/" <> id, None)
     _ -> #("/not-found", None)

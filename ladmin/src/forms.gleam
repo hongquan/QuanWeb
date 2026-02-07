@@ -1,4 +1,5 @@
 import formal/form.{type Form}
+import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 
@@ -111,11 +112,16 @@ pub fn make_category_form(
         "summary_vi",
         form.parse_optional(form.parse_string),
       )
+      use featured_order <- form.field(
+        "featured_order",
+        form.parse_optional(form.parse_int),
+      )
       form.success(CategoryEditablePart(
         title:,
         slug:,
         title_vi:,
         header_color:,
+        featured_order:,
         summary_en:,
         summary_vi:,
       ))
@@ -129,6 +135,7 @@ pub fn make_category_form(
         #("header_color", c.header_color |> option.unwrap("")),
         #("summary_en", c.summary_en |> option.unwrap("")),
         #("summary_vi", c.summary_vi |> option.unwrap("")),
+        #("featured_order", c.featured_order |> option.map(int.to_string) |> option.unwrap("")),
       ]
       form.add_values(form, initial)
     }

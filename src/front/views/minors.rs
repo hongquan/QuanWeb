@@ -27,7 +27,7 @@ pub async fn list_talks(
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
     let no_tracking = auth_session.user.is_some();
-    let categories = get_blog_categories(None, None, &db)
+    let categories = get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let ctx = context!(presentations, lang, categories, no_tracking,);
@@ -49,7 +49,7 @@ pub async fn list_books(
         .flatten()
         .unwrap_or(DEFAULT_LANG.into());
     let no_tracking = auth_session.user.is_some();
-    let categories = get_blog_categories(None, None, &db)
+    let categories = get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let ctx = context!(books, lang, categories, no_tracking,);

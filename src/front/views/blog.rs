@@ -47,7 +47,7 @@ pub async fn show_post(
     let next_post = get_next_post(post.created_at, cat_slug, &db)
         .await
         .map_err(PageError::GelQueryError)?;
-    let categories = stores::blog::get_blog_categories(None, None, &db)
+    let categories = stores::blog::get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let lang = session
@@ -108,7 +108,7 @@ pub async fn list_posts(
     let pagelink_items = paginator.generate_items();
     let next_page_url = paginator.next_url(&current_url);
     let prev_page_url = paginator.previous_url(&current_url);
-    let categories = stores::blog::get_blog_categories(None, None, &db)
+    let categories = stores::blog::get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let lang = session
@@ -209,7 +209,7 @@ pub async fn list_uncategorized_posts(
     )
     .await
     .map_err(PageError::GelQueryError)?;
-    let categories = stores::blog::get_blog_categories(None, None, &db)
+    let categories = stores::blog::get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
     let lang = session

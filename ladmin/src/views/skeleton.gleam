@@ -63,7 +63,7 @@ pub fn render_tab_navbar(current_route: Route) {
     " border-transparent  dark:text-white cursor-base hover:border-gray-400"
   let entries = [
     #(PostListPage(None, None, None), "Posts"),
-    #(CategoryListPage(None), "Categories"),
+    #(CategoryListPage(None, None), "Categories"),
   ]
   let entries =
     entries

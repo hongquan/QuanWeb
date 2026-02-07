@@ -12,6 +12,7 @@ pub type Category {
     title_vi: Option(String),
     slug: String,
     header_color: Option(String),
+    featured_order: Option(Int),
     summary_en: Option(String),
     summary_vi: Option(String),
   )
@@ -134,6 +135,7 @@ pub type CategoryEditablePart {
     slug: String,
     title_vi: Option(String),
     header_color: Option(String),
+    featured_order: Option(Int),
     summary_en: Option(String),
     summary_vi: Option(String),
   )
@@ -144,6 +146,8 @@ pub type Color {
   Sky
   Purple
 }
+
+
 
 pub type ContentItemId {
   PostId(String)

@@ -203,7 +203,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     FormCancelClicked -> {
       let whatsnext = case route {
-        CategoryEditPage(..) -> routes.goto(CategoryListPage(None))
+        CategoryEditPage(..) -> routes.goto(CategoryListPage(None, None))
         PostEditPage(..) -> {
           routes.goto(PostListPage(None, None, None))
         }
@@ -255,8 +255,8 @@ fn view(model: Model) -> Element(AppMsg) {
       posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
     PostEditPage(id), LoggedIn(_u) -> posts.render_post_edit_page(id, model)
-    CategoryListPage(page), _ -> {
-      posts.render_category_table_page(option.unwrap(page, 1), model)
+    CategoryListPage(page, sort), _ -> {
+      posts.render_category_table_page(option.unwrap(page, 1), sort, model)
     }
     CategoryEditPage(id), LoggedIn(_u) ->
       posts.render_category_edit_page(id, model)
