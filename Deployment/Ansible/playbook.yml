@@ -6,9 +6,10 @@
   gather_subset:
     - "!all"
   vars:
-    base_folder: '{{ ansible_user_dir }}/QuanWeb/quanweb/'
+    # Cannot use `ansible_user_dir` because facts are not gathered yet.
+    base_folder: "~/QuanWeb/quanweb/"
     ladmin_folder: "{{ base_folder }}ladmin"
-    backend_binary_dest: "{{ ansible_user_dir }}/.local/bin/quanweb"
+    backend_binary_dest: "~/.local/bin/quanweb"
     # The following vars are passed from outside (GitHub Actions):
     # - backend_binary_local: Path to the built backend binary (uploaded from GitHub CI artifact)
     # - ladmin_dist_local: Path to the built ladmin dist folder (uploaded from GitHub CI artifact)
