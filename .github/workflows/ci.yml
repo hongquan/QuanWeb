@@ -127,7 +127,7 @@ jobs:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
         if: steps.download_step.outcome == 'success'
       - name: Run Ansible playbook
-        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }} -e "ladmin_dist_local=ladmin-built"
+        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }}
         if: steps.download_step.outcome == 'success'
 
   # Manual full deployment (backend + frontend)
@@ -172,7 +172,5 @@ jobs:
             -i Deployment/Ansible/inventory.yml \
             Deployment/Ansible/playbook.yml \
             --limit prod \
-            -u ${{ vars.SERVER_USERNAME }} \
-            -e "rust_binary_local=rust-binary/quanweb" \
-            -e "ladmin_dist_local=ladmin-built"
+            -u ${{ vars.SERVER_USERNAME }}
         if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'

@@ -10,9 +10,7 @@
     base_folder: "~/QuanWeb/quanweb/"
     ladmin_folder: "{{ base_folder }}ladmin"
     backend_binary_dest: "~/.local/bin/quanweb"
-    # The following vars are passed from outside (GitHub Actions):
-    # - backend_binary_local: Path to the built backend binary (uploaded from GitHub CI artifact)
-    # - ladmin_dist_local: Path to the built ladmin dist folder (uploaded from GitHub CI artifact)
+    ladmin_dist_local: "{{ playbook_dir }}/ladmin-built"
 
   tasks:
     - name: Clean source  # noqa command-instead-of-module
@@ -29,19 +27,29 @@
         version: "main"
       register: git_out
 
+    - name: Check if backend binary exists locally
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/backend-binary/quanweb"
+      register: backend_binary_stat
+
     - name: Upload backend binary
       ansible.builtin.copy:
-        src: "{{ backend_binary_local }}"
+        src: "{{ playbook_dir }}/backend-binary/quanweb"
         dest: "{{ backend_binary_dest }}"
         mode: '0755'
-      when: backend_binary_local is defined
+      when: backend_binary_stat.stat.exists
+
+    - name: Check if ladmin dist exists locally
+      ansible.builtin.stat:
+        path: "{{ ladmin_dist_local }}"
+      register: ladmin_dist_stat
 
     - name: Sync built ladmin app
       ansible.posix.synchronize:
         src: '{{ ladmin_dist_local }}/'
         dest: '{{ ladmin_folder }}/dist/'
         delete: true
-      when: ladmin_dist_local is defined
+      when: ladmin_dist_stat.stat.exists
 
     - name: Run Gel migrations
       ansible.builtin.command:
