@@ -102,36 +102,8 @@ jobs:
           name: ladmin-built
           path: ladmin/dist
 
-  deploy-ladmin-app:
-    runs-on: ubuntu-latest
-    needs: [build-ladmin-app]
-    if: github.ref == 'refs/heads/main'
-    env:
-      ANSIBLE_HOST_KEY_CHECKING: False
-    steps:
-      - uses: actions/checkout@v5
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v5
-        with:
-          name: ladmin-built
-          path: ladmin-built
-        id: download_step
-        continue-on-error: true
-      - name: Install Cowsay
-        # Ansible is already installed by GitHub
-        run: sudo apt-get install cowsay
-        if: steps.download_step.outcome == 'success'
-      - name: Install SSH priv key
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
-        if: steps.download_step.outcome == 'success'
-      - name: Run Ansible playbook
-        run: ansible-playbook -i Deployment/Ansible/inventory.yml Deployment/Ansible/playbook.yml --limit prod -u ${{ vars.SERVER_USERNAME }}
-        if: steps.download_step.outcome == 'success'
-
   # Manual full deployment (backend + frontend)
-  deploy-full:
+  deploy-backend-ladmin:
     runs-on: ubuntu-latest
     needs: [build-backend, build-ladmin-app]
     if: github.event_name == 'workflow_dispatch'

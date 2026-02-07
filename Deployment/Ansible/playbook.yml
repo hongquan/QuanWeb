@@ -10,7 +10,6 @@
     base_folder: "~/QuanWeb/quanweb/"
     ladmin_folder: "{{ base_folder }}ladmin"
     backend_binary_dest: "~/.local/bin/quanweb"
-    ladmin_dist_local: "{{ playbook_dir }}/ladmin-built"
 
   tasks:
     - name: Clean source  # noqa command-instead-of-module
@@ -41,15 +40,17 @@
 
     - name: Check if ladmin dist exists locally
       ansible.builtin.stat:
-        path: "{{ ladmin_dist_local }}"
+        path: "{{ playbook_dir }}/ladmin-built"
       register: ladmin_dist_stat
 
     - name: Sync built ladmin app
       ansible.posix.synchronize:
-        src: '{{ ladmin_dist_local }}/'
+        src: '{{ playbook_dir }}/ladmin-built/'
         dest: '{{ ladmin_folder }}/dist/'
         delete: true
-      when: ladmin_dist_stat.stat.exists
+      when: 
+        - ladmin_dist_stat.stat.exists
+        - ladmin_dist_stat.stat.isdir
 
     - name: Run Gel migrations
       ansible.builtin.command:
