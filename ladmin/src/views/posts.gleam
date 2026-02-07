@@ -6,7 +6,7 @@ import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import gleam/string
+
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
@@ -18,9 +18,11 @@ import tempo.{DateFormat}
 import tempo/datetime
 
 import core.{
-  type Category, type MiniPost, Category, CategoryId, ContentItemDeletionClicked,
-  IsLoading, LogOutClicked, MiniPost, PageOwnedCategories, PageOwnedPosts,
-  PostFilterSubmitted, PostId,
+  type Book, type Category, type MiniPost, type Presentation, Book, BookId,
+  Category, CategoryId, ContentItemDeletionClicked, IsLoading, LogOutClicked,
+  MiniPost, PageOwnedBooks, PageOwnedCategories, PageOwnedPosts,
+  PageOwnedPresentations, PostFilterSubmitted, PostId, Presentation,
+  PresentationId,
 }
 import ffi
 import icons/heroicons.{globe_asia_australia}
@@ -28,7 +30,6 @@ import lucide_lustre as lucide_icon
 import models.{type Model, Model}
 import routes.{
   type CategorySort, CategoryEditPage, PostEditPage, PostListPage, SortByFeatured,
-  SortByTitle,
 }
 import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
@@ -519,7 +520,7 @@ fn render_category_row(
   category: Category,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
-  let Category(id:, title:, slug:, title_vi:, header_color:, featured_order:, summary_en:, summary_vi:) = category
+  let Category(id:, title:, slug:, title_vi:, featured_order:, ..) = category
   let url = routes.as_url_string(CategoryEditPage(id))
   let order_text = case featured_order {
     Some(order) -> int.to_string(order)
@@ -597,4 +598,271 @@ pub fn render_category_edit_page(id: String, model: Model) {
       ])
     }
   }
+}
+
+// Presentation list page
+pub fn render_presentation_table_page(page: Int, model: Model) {
+  let Model(route:, loading_status:, ..) = model
+  case loading_status {
+    IsLoading ->
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+
+    _ -> {
+      let presentations = case model.page_owned_objects {
+        PageOwnedPresentations(objects) -> objects
+        _ -> []
+      }
+      let total_pages = model.page_owned_object_paging.total_pages
+      let paginator = render_paginator(page, total_pages, [])
+      let deletion_handler = fn(id) {
+        ContentItemDeletionClicked(PresentationId(id))
+      }
+
+      let rows =
+        presentations
+        |> list.map(render_presentation_row(_, deletion_handler))
+
+      let table_body =
+        keyed.tbody(
+          [
+            a.class(
+              "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+            ),
+          ],
+          rows,
+        )
+
+      let body =
+        h.div(
+          [
+            a.class(
+              "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
+            ),
+          ],
+          [
+            h.table(
+              [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
+              [
+                render_presentation_table_header(),
+                table_body,
+              ],
+            ),
+          ],
+        )
+
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            render_flash_messages(model.flash_messages),
+            body,
+            paginator,
+          ],
+          "space-y-8",
+        ),
+      ])
+    }
+  }
+}
+
+fn render_presentation_table_header() {
+  let columns = ["Title", "URL", "Event"]
+  let cells =
+    columns
+    |> list.map(fn(label) {
+      h.th(
+        [
+          a.class(
+            "py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400",
+          ),
+          a.scope("col"),
+        ],
+        [h.text(label)],
+      )
+    })
+  let action_column = h.th([a.class("sr-only")], [h.text("Action")])
+
+  h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
+    h.tr([], cells |> list.append([action_column])),
+  ])
+}
+
+fn render_presentation_row(
+  presentation: Presentation,
+  deletion_click_handler: fn(String) -> msg,
+) -> #(String, Element(msg)) {
+  let Presentation(id:, title:, url:, event:) = presentation
+  let event_text = case event {
+    Some(e) -> e
+    None -> "-"
+  }
+  let cells = [
+    h.td([a.class(class_cell)], [h.text(title)]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.a([a.href(url), a.target("_blank"), a.class("hover:underline")], [
+        h.text(url),
+      ]),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(event_text)]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.button(
+        [
+          a.class("hover:text-red-600 cursor-pointer"),
+          ev.on_click(deletion_click_handler(id)),
+        ],
+        [
+          lucide_icon.eraser([a.class("w-5 h-auto")]),
+        ],
+      ),
+    ]),
+  ]
+
+  #(id, h.tr([], cells))
+}
+
+// Book list page
+pub fn render_book_table_page(page: Int, model: Model) {
+  let Model(route:, loading_status:, ..) = model
+  case loading_status {
+    IsLoading ->
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+
+    _ -> {
+      let books = case model.page_owned_objects {
+        PageOwnedBooks(objects) -> objects
+        _ -> []
+      }
+      let total_pages = model.page_owned_object_paging.total_pages
+      let paginator = render_paginator(page, total_pages, [])
+      let deletion_handler = fn(id) { ContentItemDeletionClicked(BookId(id)) }
+
+      let rows =
+        books
+        |> list.map(render_book_row(_, deletion_handler))
+
+      let table_body =
+        keyed.tbody(
+          [
+            a.class(
+              "bg-white divide-y divide-y-reverse divide-gray-200 dark:divide-gray-700 dark:bg-gray-900",
+            ),
+          ],
+          rows,
+        )
+
+      let body =
+        h.div(
+          [
+            a.class(
+              "overflow-x-auto border border-gray-200 dark:border-gray-700 md:rounded-lg",
+            ),
+          ],
+          [
+            h.table(
+              [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
+              [
+                render_book_table_header(),
+                table_body,
+              ],
+            ),
+          ],
+        )
+
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            render_flash_messages(model.flash_messages),
+            body,
+            paginator,
+          ],
+          "space-y-8",
+        ),
+      ])
+    }
+  }
+}
+
+fn render_book_table_header() {
+  let columns = ["Title", "Author", "Download URL"]
+  let cells =
+    columns
+    |> list.map(fn(label) {
+      h.th(
+        [
+          a.class(
+            "py-3.5 px-4 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400",
+          ),
+          a.scope("col"),
+        ],
+        [h.text(label)],
+      )
+    })
+  let action_column = h.th([a.class("sr-only")], [h.text("Action")])
+
+  h.thead([a.class("bg-gray-50 dark:bg-gray-800")], [
+    h.tr([], cells |> list.append([action_column])),
+  ])
+}
+
+fn render_book_row(
+  book: Book,
+  deletion_click_handler: fn(String) -> msg,
+) -> #(String, Element(msg)) {
+  let Book(id:, title:, download_url:, author:) = book
+  let author_text = case author {
+    Some(a) -> a.name
+    None -> "-"
+  }
+  let download_cell = case download_url {
+    Some(url) ->
+      h.a([a.href(url), a.target("_blank"), a.class("hover:underline")], [
+        h.text(url),
+      ])
+    None -> h.text("-")
+  }
+  let cells = [
+    h.td([a.class(class_cell)], [h.text(title)]),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(author_text)]),
+    h.td([a.class(class_cell), a.class("text-sm")], [download_cell]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.button(
+        [
+          a.class("hover:text-red-600 cursor-pointer"),
+          ev.on_click(deletion_click_handler(id)),
+        ],
+        [
+          lucide_icon.eraser([a.class("w-5 h-auto")]),
+        ],
+      ),
+    ]),
+  ]
+
+  #(id, h.tr([], cells))
 }

@@ -16,7 +16,8 @@ import core.{
   ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
   ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedSingleCategory,
   ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory,
-  ApiUpdatedPost, CategoryEditablePart, CategoryId, LoginData, PostId,
+  ApiUpdatedPost, BookId, CategoryEditablePart, CategoryId, LoginData, PostId,
+  PresentationId,
 }
 import decoders.{user_decoder}
 
@@ -221,6 +222,8 @@ pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Msg(a)) {
   let url = case id {
     PostId(id) -> consts.api_posts <> id
     CategoryId(id) -> consts.api_categories <> id
+    PresentationId(id) -> consts.api_presentations <> id
+    BookId(id) -> consts.api_books <> id
   }
   let handler =
     rsvp.expect_ok_response(fn(r) {
@@ -240,4 +243,24 @@ pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Msg(a)) {
     Ok(x) -> x
     Error(x) -> x
   }
+}
+
+pub fn load_presentations(page: Int) -> Effect(Msg(a)) {
+  let response_decoder =
+    decoders.make_listing_api_decoder(decoders.presentation_decoder())
+  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedPresentations)
+  let query_list = [#("page", int.to_string(page))]
+  let query = uri.query_to_string(query_list) |> Some
+  let url = uri.Uri(..uri.empty, path: consts.api_presentations, query:)
+  rsvp.get(uri.to_string(url), handler)
+}
+
+pub fn load_books(page: Int) -> Effect(Msg(a)) {
+  let response_decoder =
+    decoders.make_listing_api_decoder(decoders.book_decoder())
+  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedBooks)
+  let query_list = [#("page", int.to_string(page))]
+  let query = uri.query_to_string(query_list) |> Some
+  let url = uri.Uri(..uri.empty, path: consts.api_books, query:)
+  rsvp.get(uri.to_string(url), handler)
 }

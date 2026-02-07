@@ -24,6 +24,8 @@ pub type Route {
   PostEditPage(id: String)
   CategoryListPage(page: Option(Int), sort: Option(CategorySort))
   CategoryEditPage(id: String)
+  PresentationListPage(page: Option(Int))
+  BookListPage(page: Option(Int))
   External(Uri)
   NotFound
 }
@@ -87,6 +89,36 @@ pub fn parse_to_route(
     }
     "/categories/new", _ -> CategoryEditPage("")
     "/categories/" <> id, _ -> CategoryEditPage(id)
+    "/presentations", queries -> {
+      let query_dict = dict.from_list(queries)
+      let page =
+        query_dict
+        |> dict.get("page")
+        |> result.try(int.parse)
+        |> result.map(fn(p) {
+          case p {
+            n if n < 1 -> 1
+            n -> n
+          }
+        })
+        |> option.from_result
+      PresentationListPage(page)
+    }
+    "/books", queries -> {
+      let query_dict = dict.from_list(queries)
+      let page =
+        query_dict
+        |> dict.get("page")
+        |> result.try(int.parse)
+        |> result.map(fn(p) {
+          case p {
+            n if n < 1 -> 1
+            n -> n
+          }
+        })
+        |> option.from_result
+      BookListPage(page)
+    }
     _, _ -> {
       io.println("Unknown " <> path)
       NotFound
@@ -147,24 +179,22 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
     }
     CategoryEditPage("") -> #("/categories/new", None)
     CategoryEditPage(id) -> #("/categories/" <> id, None)
+    PresentationListPage(page) -> {
+      let query = case page {
+        Some(p) -> uri.query_to_string([#("page", int.to_string(p))]) |> Some
+        None -> None
+      }
+      #("/presentations", query)
+    }
+    BookListPage(page) -> {
+      let query = case page {
+        Some(p) -> uri.query_to_string([#("page", int.to_string(p))]) |> Some
+        None -> None
+      }
+      #("/books", query)
+    }
     _ -> #("/not-found", None)
   }
-}
-
-fn to_page_query(page: Option(Int)) {
-  page |> option.map(int.to_string) |> option.map(pair.new("page", _))
-  case page {
-    Some(p) ->
-      int.to_string(p)
-      |> pair.new("page", _)
-      |> list.wrap
-      |> uri.query_to_string
-      |> Some
-    None -> None
-  }
-  page
-  |> option.map(fn(p) { [#("page", int.to_string(p))] })
-  |> option.map(uri.query_to_string)
 }
 
 pub fn prefix(uri_parts: #(String, a)) -> #(String, a) {
@@ -206,6 +236,8 @@ pub fn are_routes_matched(current: Route, link: Route) {
     PostEditPage(..), PostListPage(..) -> True
     CategoryListPage(..), CategoryListPage(..) -> True
     CategoryEditPage(..), CategoryListPage(..) -> True
+    PresentationListPage(..), PresentationListPage(..) -> True
+    BookListPage(..), BookListPage(..) -> True
     _, _ -> False
   }
 }

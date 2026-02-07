@@ -5,7 +5,10 @@ import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
 
-import routes.{type Route, CategoryListPage, PostListPage, are_routes_matched}
+import routes.{
+  type Route, BookListPage, CategoryListPage, PostListPage, PresentationListPage,
+  are_routes_matched,
+}
 
 pub fn render_main_block(
   children: List(Element(msg)),
@@ -64,6 +67,8 @@ pub fn render_tab_navbar(current_route: Route) {
   let entries = [
     #(PostListPage(None, None, None), "Posts"),
     #(CategoryListPage(None, None), "Categories"),
+    #(PresentationListPage(None), "Presentations"),
+    #(BookListPage(None), "Books"),
   ]
   let entries =
     entries

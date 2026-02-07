@@ -134,3 +134,31 @@ pub fn mini_user_decoder() -> Decoder(MiniUser) {
   use email <- decode.field("email", decode.string)
   decode.success(MiniUser(id:, email:))
 }
+
+pub fn presentation_decoder() -> Decoder(core.Presentation) {
+  use id <- decode.field("id", decode.string)
+  use title <- decode.field("title", decode.string)
+  use url <- decode.field("url", decode.string)
+  use event <- decode.field("event", decode.optional(decode.string))
+  decode.success(core.Presentation(id:, title:, url:, event:))
+}
+
+pub fn book_author_decoder() -> Decoder(core.BookAuthor) {
+  use id <- decode.field("id", decode.string)
+  use name <- decode.field("name", decode.string)
+  decode.success(core.BookAuthor(id:, name:))
+}
+
+pub fn book_decoder() -> Decoder(core.Book) {
+  use id <- decode.field("id", decode.string)
+  use title <- decode.field("title", decode.string)
+  use download_url <- decode.field(
+    "download_url",
+    decode.optional(decode.string),
+  )
+  use author <- decode.field(
+    "author",
+    decode.optional(book_author_decoder()),
+  )
+  decode.success(core.Book(id:, title:, download_url:, author:))
+}

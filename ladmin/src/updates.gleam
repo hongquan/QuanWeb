@@ -19,17 +19,18 @@ import store
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Category, type CategoryEditablePart,
+  type ApiListingResponse, type Book, type Category, type CategoryEditablePart,
   type ContentItemId, type LoginData, type MiniPost, type Msg, type Post,
-  type PostEditablePart, type User, ApiListingResponse, IsLoading, IsSubmitting,
-  LoggedIn, NonLogin, PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
-  PostFormSubmitted, PostId, TryingLogin,
+  type PostEditablePart, type Presentation, type User, ApiListingResponse,
+  BookId, IsLoading, IsSubmitting, LoggedIn, NonLogin, PageOwnedBooks,
+  PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
+  PageOwnedPresentations, PostFormSubmitted, PostId, PresentationId, TryingLogin,
 }
 import ffi
 import models.{type AppMsg, type Model, Model}
 import routes.{
-  type Route, CategoryEditPage, CategoryListPage, HomePage, LoginPage,
-  PostEditPage, PostListPage,
+  type Route, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
+  LoginPage, PostEditPage, PostListPage, PresentationListPage,
 }
 
 pub type LoginValidationDetail {
@@ -89,6 +90,18 @@ pub fn handle_router_init_done(model: Model) {
     }
     CategoryEditPage(id), _ if id != "" -> {
       #(actions.load_single_category(id), IsLoading)
+    }
+    PresentationListPage(Some(p)), _ if p < 1 -> {
+      #(routes.goto(routes.PresentationListPage(None)), core.Idle)
+    }
+    PresentationListPage(p), _ -> {
+      #(actions.load_presentations(option.unwrap(p, 1)), IsLoading)
+    }
+    BookListPage(Some(p)), _ if p < 1 -> {
+      #(routes.goto(routes.BookListPage(None)), core.Idle)
+    }
+    BookListPage(p), _ -> {
+      #(actions.load_books(option.unwrap(p, 1)), IsLoading)
     }
     // Already logged in, just serve, no redirect
     _, LoggedIn(_u) -> #(effect.none(), core.Idle)
@@ -302,6 +315,18 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     CategoryEditPage(id), _ if id != "" -> {
       #(actions.load_single_category(id), IsLoading)
+    }
+    PresentationListPage(Some(p)), _ if p < 1 -> {
+      #(routes.goto(routes.PresentationListPage(None)), core.Idle)
+    }
+    PresentationListPage(p), _ -> {
+      #(actions.load_presentations(option.unwrap(p, 1)), IsLoading)
+    }
+    BookListPage(Some(p)), _ if p < 1 -> {
+      #(routes.goto(routes.BookListPage(None)), core.Idle)
+    }
+    BookListPage(p), _ -> {
+      #(actions.load_books(option.unwrap(p, 1)), IsLoading)
     }
     _, _ -> #(effect.none(), core.Idle)
   }
@@ -761,6 +786,40 @@ pub fn handle_api_delete_content_item_result(
             |> PageOwnedCategories
           #(message, remaining)
         }
+        PresentationId(id), PageOwnedPresentations(presentations) -> {
+          let message =
+            presentations
+            |> list.find_map(fn(p) {
+              case p.id == id {
+                True -> Ok("Presentation " <> p.title <> " has been deleted.")
+                _ -> Error(Nil)
+              }
+            })
+            |> option.from_result
+          // Remove from the list of objects
+          let remaining =
+            presentations
+            |> list.filter(fn(p) { p.id != id })
+            |> PageOwnedPresentations
+          #(message, remaining)
+        }
+        BookId(id), PageOwnedBooks(books) -> {
+          let message =
+            books
+            |> list.find_map(fn(b) {
+              case b.id == id {
+                True -> Ok("Book " <> b.title <> " has been deleted.")
+                _ -> Error(Nil)
+              }
+            })
+            |> option.from_result
+          // Remove from the list of objects
+          let remaining =
+            books
+            |> list.filter(fn(b) { b.id != id })
+            |> PageOwnedBooks
+          #(message, remaining)
+        }
         _, _ -> {
           #(None, model.page_owned_objects)
         }
@@ -783,6 +842,78 @@ pub fn handle_api_delete_content_item_result(
         Model(..model, flash_messages:),
         models.schedule_cleaning_flash_messages(),
       )
+    }
+  }
+}
+
+pub fn handle_api_list_presentations_result(
+  res: Result(ApiListingResponse(Presentation), rsvp.Error),
+  model: Model,
+) -> #(Model, Effect(Msg(a))) {
+  case res {
+    Ok(info) -> {
+      let ApiListingResponse(count:, total_pages:, links:, ..) = info
+      let model =
+        Model(
+          ..model,
+          page_owned_objects: PageOwnedPresentations(info.objects),
+          page_owned_object_paging: PageOwnedObjectPaging(
+            count:,
+            total_pages:,
+            links:,
+          ),
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+    Error(e) -> {
+      io.println_error("Presentations API failed")
+      echo e
+      let message = models.create_danger_message("Failed to load presentations")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_api_list_books_result(
+  res: Result(ApiListingResponse(Book), rsvp.Error),
+  model: Model,
+) -> #(Model, Effect(Msg(a))) {
+  case res {
+    Ok(info) -> {
+      let ApiListingResponse(count:, total_pages:, links:, ..) = info
+      let model =
+        Model(
+          ..model,
+          page_owned_objects: PageOwnedBooks(info.objects),
+          page_owned_object_paging: PageOwnedObjectPaging(
+            count:,
+            total_pages:,
+            links:,
+          ),
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+    Error(e) -> {
+      io.println_error("Books API failed")
+      echo e
+      let message = models.create_danger_message("Failed to load books")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
     }
   }
 }

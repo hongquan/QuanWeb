@@ -22,22 +22,22 @@ import actions
 import consts.{mounted_path}
 import core.{
   ApiCreatedCategory, ApiCreatedPost, ApiDeletedContentItem, ApiLoginReturned,
-  ApiRenderedMarkdown, ApiReturnedCategories, ApiReturnedLogOutDone,
-  ApiReturnedPosts, ApiReturnedSingleCategory, ApiReturnedSinglePost,
-  ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost,
-  CategoryFormSubmitted, ContentItemDeletionClicked, FlashMessageTimeUp,
-  FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn, NonLogin,
-  OnRouteChange, PostFilterSubmitted, PostFormSubmitted, RouterInitDone,
-  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
-  UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
-  UserSubmittedLoginForm,
+  ApiRenderedMarkdown, ApiReturnedBooks, ApiReturnedCategories,
+  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedPresentations,
+  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
+  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryFormSubmitted,
+  ContentItemDeletionClicked, FlashMessageTimeUp, FormCancelClicked,
+  IsSubmitting, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
+  PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
+  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
+  UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import ffi
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
 import routes.{
-  CategoryEditPage, CategoryListPage, HomePage, LoginPage, PostEditPage,
-  PostListPage, on_url_change, parse_to_route,
+  BookListPage, CategoryEditPage, CategoryListPage, HomePage, LoginPage,
+  PostEditPage, PostListPage, PresentationListPage, on_url_change, parse_to_route,
 }
 import updates
 import views/posts
@@ -117,6 +117,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     ApiReturnedCategories(res) ->
       updates.handle_api_list_category_result(res, model)
+    ApiReturnedPresentations(res) -> {
+      updates.handle_api_list_presentations_result(res, model)
+    }
+    ApiReturnedBooks(res) -> {
+      updates.handle_api_list_books_result(res, model)
+    }
     LogOutClicked -> {
       #(model, actions.initiate_logout())
     }
@@ -260,6 +266,12 @@ fn view(model: Model) -> Element(AppMsg) {
     }
     CategoryEditPage(id), LoggedIn(_u) ->
       posts.render_category_edit_page(id, model)
+    PresentationListPage(page), _ -> {
+      posts.render_presentation_table_page(option.unwrap(page, 1), model)
+    }
+    BookListPage(page), _ -> {
+      posts.render_book_table_page(option.unwrap(page, 1), model)
+    }
     _, _ -> {
       echo route
       echo login_state

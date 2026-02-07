@@ -17,4 +17,8 @@ pub const api_slug_generator = "/_api/generate-slug"
 
 pub const api_render_markdown = "/_api/markdown-to-html-document/"
 
+pub const api_presentations = "/_api/presentations/"
+
+pub const api_books = "/_api/books/"
+
 pub const selector_post_body_preview_dialog = "post-body-preview"

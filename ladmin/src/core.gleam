@@ -94,6 +94,8 @@ pub type ApiListingResponse(o) {
 pub type PageOwnedObjects {
   PageOwnedPosts(List(MiniPost))
   PageOwnedCategories(List(Category))
+  PageOwnedPresentations(List(Presentation))
+  PageOwnedBooks(List(Book))
 }
 
 pub type PageOwnedObjectPaging {
@@ -141,6 +143,34 @@ pub type CategoryEditablePart {
   )
 }
 
+// Presentation model
+pub type Presentation {
+  Presentation(
+    id: String,
+    title: String,
+    url: String,
+    event: Option(String),
+  )
+}
+
+// BookAuthor model
+pub type BookAuthor {
+  BookAuthor(
+    id: String,
+    name: String,
+  )
+}
+
+// Book model
+pub type Book {
+  Book(
+    id: String,
+    title: String,
+    download_url: Option(String),
+    author: Option(BookAuthor),
+  )
+}
+
 pub type Color {
   Blue
   Sky
@@ -152,6 +182,8 @@ pub type Color {
 pub type ContentItemId {
   PostId(String)
   CategoryId(String)
+  PresentationId(String)
+  BookId(String)
 }
 
 pub type Msg(r) {
@@ -189,4 +221,8 @@ pub type Msg(r) {
   ContentItemDeletionClicked(ContentItemId)
   UserConfirmedDeletion(ContentItemId)
   ApiDeletedContentItem(Result(ContentItemId, rsvp.Error))
+  // Presentation messages
+  ApiReturnedPresentations(Result(ApiListingResponse(Presentation), rsvp.Error))
+  // Book messages
+  ApiReturnedBooks(Result(ApiListingResponse(Book), rsvp.Error))
 }
