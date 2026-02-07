@@ -1,0 +1,29 @@
+snippet "detect_search_bot" {
+    // Condition to define the search bot user agent pattern constant
+    condition "set_search_bot_pattern_constant" {
+        set_constant "SEARCH_BOT_PATTERN" "(Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|Exabot|facebot|ia_archiver)"
+    }
+
+    // Condition to extract the User-Agent header into a constant
+    condition "set_user_agent_constant" {
+        set_constant "USER_AGENT" "{header:User-Agent}"
+    }
+
+    // Master condition to detect if the user agent matches a search bot pattern.
+    // This condition uses the previously defined conditions to ensure constants are set
+    // before performing the regex check.
+    condition "is_search_bot" {
+        use "set_search_bot_pattern_constant" // Ensure SEARCH_BOT_PATTERN is available
+        use "set_user_agent_constant"      // Ensure USER_AGENT is available
+        is_regex "{constants:USER_AGENT}" "{constants:SEARCH_BOT_PATTERN}" case_insensitive=#true
+    }
+}
+
+snippet "log_bot_traffic" log_file_path {
+    use "detect_search_bot"
+
+    // Now, use the 'is_search_bot' condition defined in 'detect_search_bot' in the 'if' block.
+    if "is_search_bot" {
+        log log_file_path
+    }
+}
