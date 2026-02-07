@@ -1,7 +1,7 @@
 CREATE MIGRATION m1irqlfhdhhh6kplrjlcsdu2vh5iv5vyvzwvrk3wxphrwvpptu52tq
     ONTO initial
 {
-  CREATE FUTURE nonrecursive_access_policies;
+                      CREATE FUTURE nonrecursive_access_policies;
   CREATE TYPE default::BlogCategory {
       CREATE REQUIRED PROPERTY slug: std::str {
           CREATE CONSTRAINT std::exclusive;
