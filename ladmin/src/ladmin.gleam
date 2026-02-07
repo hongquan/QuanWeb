@@ -21,14 +21,17 @@ import store
 import actions
 import consts.{mounted_path}
 import core.{
-  ApiCreatedCategory, ApiCreatedPost, ApiDeletedContentItem, ApiLoginReturned,
-  ApiRenderedMarkdown, ApiReturnedBooks, ApiReturnedCategories,
+  ApiCreatedBook, ApiCreatedCategory, ApiCreatedPost, ApiCreatedPresentation,
+  ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
+  ApiReturnedBookAuthors, ApiReturnedBooks, ApiReturnedCategories,
   ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedPresentations,
-  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
-  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, CategoryFormSubmitted,
-  ContentItemDeletionClicked, FlashMessageTimeUp, FormCancelClicked,
-  IsSubmitting, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
-  PostFilterSubmitted, PostFormSubmitted, RouterInitDone, SlugGeneratorClicked,
+  ApiReturnedSingleBook, ApiReturnedSingleCategory, ApiReturnedSinglePost,
+  ApiReturnedSinglePresentation, ApiReturnedSlug, ApiReturnedUsers,
+  ApiUpdatedBook, ApiUpdatedCategory, ApiUpdatedPost, ApiUpdatedPresentation,
+  BookFormSubmitted, CategoryFormSubmitted, ContentItemDeletionClicked,
+  FlashMessageTimeUp, FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn,
+  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
+  PresentationFormSubmitted, RouterInitDone, SlugGeneratorClicked,
   SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
   UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
@@ -36,8 +39,9 @@ import ffi
 import forms.{create_login_form}
 import models.{type AppMsg, type Model, Model, default_model}
 import routes.{
-  BookListPage, CategoryEditPage, CategoryListPage, HomePage, LoginPage,
-  PostEditPage, PostListPage, PresentationListPage, on_url_change, parse_to_route,
+  BookEditPage, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
+  LoginPage, PostEditPage, PostListPage, PresentationEditPage,
+  PresentationListPage, on_url_change, parse_to_route,
 }
 import updates
 import views/posts
@@ -213,6 +217,12 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
         PostEditPage(..) -> {
           routes.goto(PostListPage(None, None, None))
         }
+        PresentationEditPage(..) -> {
+          routes.goto(PresentationListPage(None))
+        }
+        BookEditPage(..) -> {
+          routes.goto(BookListPage(None))
+        }
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -245,6 +255,35 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     ApiDeletedContentItem(res) -> {
       updates.handle_api_delete_content_item_result(res, model)
     }
+    // Presentation handlers
+    ApiReturnedSinglePresentation(res) -> {
+      updates.handle_api_retrieve_presentation_result(res, model)
+    }
+    PresentationFormSubmitted(res) -> {
+      updates.handle_presentation_form_submission(res, model)
+    }
+    ApiCreatedPresentation(res) -> {
+      updates.handle_api_create_presentation_result(res, model)
+    }
+    ApiUpdatedPresentation(res) -> {
+      updates.handle_api_update_presentation_result(res, model)
+    }
+    // Book handlers
+    ApiReturnedSingleBook(res) -> {
+      updates.handle_api_retrieve_book_result(res, model)
+    }
+    BookFormSubmitted(res) -> {
+      updates.handle_book_form_submission(res, model)
+    }
+    ApiCreatedBook(res) -> {
+      updates.handle_api_create_book_result(res, model)
+    }
+    ApiUpdatedBook(res) -> {
+      updates.handle_api_update_book_result(res, model)
+    }
+    ApiReturnedBookAuthors(res) -> {
+      updates.handle_api_book_authors_result(res, model)
+    }
     _ -> #(model, effect.none())
   }
 }
@@ -269,9 +308,12 @@ fn view(model: Model) -> Element(AppMsg) {
     PresentationListPage(page), _ -> {
       posts.render_presentation_table_page(option.unwrap(page, 1), model)
     }
+    PresentationEditPage(id), LoggedIn(_u) ->
+      posts.render_presentation_edit_page(id, model)
     BookListPage(page), _ -> {
       posts.render_book_table_page(option.unwrap(page, 1), model)
     }
+    BookEditPage(id), LoggedIn(_u) -> posts.render_book_edit_page(id, model)
     _, _ -> {
       echo route
       echo login_state

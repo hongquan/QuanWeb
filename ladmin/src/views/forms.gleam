@@ -12,10 +12,12 @@ import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
-  type Category, type CategoryEditablePart, type LoadingStatus, type MiniUser,
-  type Msg, type PostEditablePart, CategoryFormSubmitted, FormCancelClicked,
-  IsSubmitting, SlugGeneratorClicked, SubmitStayButtonClicked,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  type BookAuthor, type BookEditablePart, type Category, type CategoryEditablePart,
+  type LoadingStatus, type MiniUser, type Msg, type PostEditablePart,
+  type PresentationEditablePart, BookFormSubmitted, CategoryFormSubmitted,
+  FormCancelClicked, IsSubmitting, PresentationFormSubmitted,
+  SlugGeneratorClicked, SubmitStayButtonClicked, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane,
 }
 import ffi
 import updates
@@ -455,6 +457,155 @@ pub fn render_category_form(
 }
 
 fn render_category_form_buttons(loading_status: LoadingStatus) {
+  h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
+    widgets.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
+    h.button(
+      [
+        a.type_("reset"),
+        a.class(
+          "px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 transition-colors duration-200 sm:text-base dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 border border-gray-400 dark:border-gray-700 cursor-pointer",
+        ),
+        ev.on_click(FormCancelClicked),
+      ],
+      [h.text("Cancel")],
+    ),
+  ])
+}
+
+pub fn render_presentation_form(
+  _id: Option(String),
+  form: Form(PresentationEditablePart),
+  loading_status: LoadingStatus,
+) {
+  let children = [
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Title")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("title"),
+          a.type_("text"),
+          a.required(True),
+          a.value(formlib.field_value(form, "title")),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("URL")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("url"),
+          a.type_("url"),
+          a.required(True),
+          a.value(formlib.field_value(form, "url")),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Event")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("event"),
+          a.type_("text"),
+          a.value(formlib.field_value(form, "event")),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.hr([a.class("p-4 border-b border-t-0")]),
+    render_simple_form_buttons(loading_status, PresentationFormSubmitted),
+  ]
+
+  let handle_submit = fn(submitted_values) {
+    form
+    |> formlib.set_values(submitted_values)
+    |> formlib.run
+    |> PresentationFormSubmitted
+  }
+  h.form(
+    [
+      a.method("post"),
+      a.class("space-y-4 sm:space-y-0"),
+      ev.on_submit(handle_submit),
+    ],
+    children,
+  )
+}
+
+pub fn render_book_form(
+  _id: Option(String),
+  form: Form(BookEditablePart),
+  authors: List(BookAuthor),
+  loading_status: LoadingStatus,
+) {
+  let author_choices = authors |> list.map(fn(a) { #(a.id, a.name) })
+  let children = [
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Title")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("title"),
+          a.type_("text"),
+          a.required(True),
+          a.value(formlib.field_value(form, "title")),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Author")]),
+      h.div([a.class(class_input_col)], [
+        widgets.render_single_select(
+          "author_id",
+          author_choices,
+          Some(formlib.field_value(form, "author_id")),
+          Some("Choose author..."),
+        ),
+      ]),
+    ]),
+    h.div([a.class(class_row)], [
+      h.label([a.class(class_label)], [h.text("Download URL")]),
+      h.div([a.class(class_input_col)], [
+        h.input([
+          a.name("download_url"),
+          a.type_("url"),
+          a.value(formlib.field_value(form, "download_url")),
+          a.class(class_input_common <> " px-4"),
+          a.class(class_input_normal),
+        ]),
+      ]),
+    ]),
+    h.hr([a.class("p-4 border-b border-t-0")]),
+    render_simple_form_buttons(loading_status, BookFormSubmitted),
+  ]
+
+  let handle_submit = fn(submitted_values) {
+    form
+    |> formlib.set_values(submitted_values)
+    |> formlib.run
+    |> BookFormSubmitted
+  }
+  h.form(
+    [
+      a.method("post"),
+      a.class("space-y-4 sm:space-y-0"),
+      ev.on_submit(handle_submit),
+    ],
+    children,
+  )
+}
+
+fn render_simple_form_buttons(
+  loading_status: LoadingStatus,
+  _msg_constructor: fn(
+    Result(a, Form(a)),
+  ) -> Msg(b),
+) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
     widgets.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
     h.button(

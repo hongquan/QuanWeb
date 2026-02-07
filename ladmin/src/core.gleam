@@ -171,6 +171,23 @@ pub type Book {
   )
 }
 
+// Editable parts for forms
+pub type PresentationEditablePart {
+  PresentationEditablePart(
+    title: String,
+    url: String,
+    event: Option(String),
+  )
+}
+
+pub type BookEditablePart {
+  BookEditablePart(
+    title: String,
+    download_url: Option(String),
+    author_id: Option(String),
+  )
+}
+
 pub type Color {
   Blue
   Sky
@@ -223,6 +240,17 @@ pub type Msg(r) {
   ApiDeletedContentItem(Result(ContentItemId, rsvp.Error))
   // Presentation messages
   ApiReturnedPresentations(Result(ApiListingResponse(Presentation), rsvp.Error))
+  ApiReturnedSinglePresentation(Result(Presentation, rsvp.Error))
+  PresentationFormSubmitted(
+    result: Result(PresentationEditablePart, Form(PresentationEditablePart)),
+  )
+  ApiCreatedPresentation(Result(Presentation, rsvp.Error))
+  ApiUpdatedPresentation(Result(Presentation, rsvp.Error))
   // Book messages
   ApiReturnedBooks(Result(ApiListingResponse(Book), rsvp.Error))
+  ApiReturnedSingleBook(Result(Book, rsvp.Error))
+  BookFormSubmitted(result: Result(BookEditablePart, Form(BookEditablePart)))
+  ApiCreatedBook(Result(Book, rsvp.Error))
+  ApiUpdatedBook(Result(Book, rsvp.Error))
+  ApiReturnedBookAuthors(Result(ApiListingResponse(BookAuthor), rsvp.Error))
 }

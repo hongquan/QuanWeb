@@ -21,4 +21,6 @@ pub const api_presentations = "/_api/presentations/"
 
 pub const api_books = "/_api/books/"
 
+pub const api_book_authors = "/_api/book-authors/"
+
 pub const selector_post_body_preview_dialog = "post-body-preview"

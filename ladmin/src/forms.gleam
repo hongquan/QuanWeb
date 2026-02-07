@@ -4,8 +4,10 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 
 import core.{
-  type Category, type CategoryEditablePart, type LoginData, type Post,
-  type PostEditablePart, CategoryEditablePart, LoginData, PostEditablePart,
+  type Book, type BookEditablePart, type Category, type CategoryEditablePart,
+  type LoginData, type Post, type PostEditablePart, type Presentation,
+  type PresentationEditablePart, BookEditablePart, CategoryEditablePart,
+  LoginData, PostEditablePart, PresentationEditablePart,
 }
 
 pub fn create_login_form() -> Form(LoginData) {
@@ -136,6 +138,65 @@ pub fn make_category_form(
         #("summary_en", c.summary_en |> option.unwrap("")),
         #("summary_vi", c.summary_vi |> option.unwrap("")),
         #("featured_order", c.featured_order |> option.map(int.to_string) |> option.unwrap("")),
+      ]
+      form.add_values(form, initial)
+    }
+    _ -> form
+  }
+}
+
+pub fn make_presentation_form(
+  presentation: Option(Presentation),
+) -> Form(PresentationEditablePart) {
+  let form =
+    form.new({
+      use title <- form.field(
+        "title",
+        form.parse_string |> form.check_not_empty,
+      )
+      use url <- form.field("url", form.parse_string |> form.check_not_empty)
+      use event <- form.field("event", form.parse_optional(form.parse_string))
+      form.success(PresentationEditablePart(title:, url:, event:))
+    })
+  case presentation {
+    Some(p) -> {
+      let initial = [
+        #("title", p.title),
+        #("url", p.url),
+        #("event", p.event |> option.unwrap("")),
+      ]
+      form.add_values(form, initial)
+    }
+    _ -> form
+  }
+}
+
+pub fn make_book_form(book: Option(Book)) -> Form(BookEditablePart) {
+  let form =
+    form.new({
+      use title <- form.field(
+        "title",
+        form.parse_string |> form.check_not_empty,
+      )
+      use download_url <- form.field(
+        "download_url",
+        form.parse_optional(form.parse_string),
+      )
+      use author_id <- form.field(
+        "author_id",
+        form.parse_optional(form.parse_string),
+      )
+      form.success(BookEditablePart(title:, download_url:, author_id:))
+    })
+  case book {
+    Some(b) -> {
+      let initial = [
+        #("title", b.title),
+        #("download_url", b.download_url |> option.unwrap("")),
+        #(
+          "author_id",
+          b.author |> option.map(fn(a) { a.id }) |> option.unwrap(""),
+        ),
       ]
       form.add_values(form, initial)
     }

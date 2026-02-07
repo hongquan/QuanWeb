@@ -5,10 +5,10 @@ import lustre/effect
 import plinth/javascript/global
 
 import core.{
-  type Category, type CategoryEditablePart, type FlashMessage,
-  type LoadingStatus, type LoginState, type MiniUser, type Msg,
+  type BookAuthor, type BookEditablePart, type Category, type CategoryEditablePart,
+  type FlashMessage, type LoadingStatus, type LoginState, type MiniUser, type Msg,
   type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
-  FlashMessage, FlashMessageTimeUp,
+  type PresentationEditablePart, FlashMessage, FlashMessageTimeUp,
 }
 import routes.{type Route}
 
@@ -26,6 +26,9 @@ pub type Model {
     post_form: Option(Form(PostEditablePart)),
     post_body_preview: Option(String),
     category_form: Option(Form(CategoryEditablePart)),
+    presentation_form: Option(Form(PresentationEditablePart)),
+    book_form: Option(Form(BookEditablePart)),
+    book_authors: List(BookAuthor),
   )
 }
 
@@ -50,6 +53,9 @@ pub const default_model = Model(
   post_form: None,
   post_body_preview: None,
   category_form: None,
+  presentation_form: None,
+  book_form: None,
+  book_authors: [],
 )
 
 pub fn create_success_message(content: String) {

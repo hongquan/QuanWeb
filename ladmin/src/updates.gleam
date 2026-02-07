@@ -19,18 +19,20 @@ import store
 import actions
 import consts
 import core.{
-  type ApiListingResponse, type Book, type Category, type CategoryEditablePart,
-  type ContentItemId, type LoginData, type MiniPost, type Msg, type Post,
-  type PostEditablePart, type Presentation, type User, ApiListingResponse,
-  BookId, IsLoading, IsSubmitting, LoggedIn, NonLogin, PageOwnedBooks,
+  type ApiListingResponse, type Book, type BookAuthor, type BookEditablePart,
+  type Category, type CategoryEditablePart, type ContentItemId, type LoginData,
+  type MiniPost, type Msg, type Post, type PostEditablePart, type Presentation,
+  type PresentationEditablePart, type User, ApiListingResponse, BookId,
+  IsLoading, IsSubmitting, LoggedIn, NonLogin, PageOwnedBooks,
   PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
   PageOwnedPresentations, PostFormSubmitted, PostId, PresentationId, TryingLogin,
 }
 import ffi
 import models.{type AppMsg, type Model, Model}
 import routes.{
-  type Route, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
-  LoginPage, PostEditPage, PostListPage, PresentationListPage,
+  type Route, BookEditPage, BookListPage, CategoryEditPage, CategoryListPage,
+  HomePage, LoginPage, PostEditPage, PostListPage, PresentationEditPage,
+  PresentationListPage,
 }
 
 pub type LoginValidationDetail {
@@ -119,7 +121,15 @@ pub fn handle_router_init_done(model: Model) {
     CategoryEditPage("") -> Some(forms.make_category_form(None))
     _ -> model.category_form
   }
-  let model = Model(..model, loading_status:, post_form:, category_form:)
+  let presentation_form = case route {
+    PresentationEditPage("") -> Some(forms.make_presentation_form(None))
+    _ -> model.presentation_form
+  }
+  let book_form = case route {
+    BookEditPage("") -> Some(forms.make_book_form(None))
+    _ -> model.book_form
+  }
+  let model = Model(..model, loading_status:, post_form:, category_form:, presentation_form:, book_form:)
   #(model, whatsnext)
 }
 
@@ -322,11 +332,25 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     PresentationListPage(p), _ -> {
       #(actions.load_presentations(option.unwrap(p, 1)), IsLoading)
     }
+    PresentationEditPage(id), _ -> {
+      let #(load_action, loading_status) = case id {
+        "" -> #(effect.none(), core.Idle)
+        s -> #(actions.load_single_presentation(s), IsLoading)
+      }
+      #(load_action, loading_status)
+    }
     BookListPage(Some(p)), _ if p < 1 -> {
       #(routes.goto(routes.BookListPage(None)), core.Idle)
     }
     BookListPage(p), _ -> {
       #(actions.load_books(option.unwrap(p, 1)), IsLoading)
+    }
+    BookEditPage(id), _ -> {
+      let #(load_action, loading_status) = case id {
+        "" -> #(actions.load_book_authors(), IsLoading)
+        s -> #(effect.batch([actions.load_single_book(s), actions.load_book_authors()]), IsLoading)
+      }
+      #(load_action, loading_status)
     }
     _, _ -> #(effect.none(), core.Idle)
   }
@@ -338,8 +362,18 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     CategoryEditPage("") -> Some(forms.make_category_form(None))
     _ -> model.category_form
   }
+  let presentation_form = case new_route {
+    PresentationEditPage("") -> Some(forms.make_presentation_form(None))
+    _ -> model.presentation_form
+  }
+  let book_form = case new_route {
+    BookEditPage("") -> Some(forms.make_book_form(None))
+    _ -> model.book_form
+  }
   let page_owned_objects = case new_route {
     PostEditPage(..) | CategoryEditPage(..) -> PageOwnedPosts([])
+    PresentationEditPage(..) -> PageOwnedPresentations([])
+    BookEditPage(..) -> PageOwnedBooks([])
     _ -> model.page_owned_objects
   }
   let model =
@@ -350,6 +384,8 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       loading_status:,
       post_form:,
       category_form:,
+      presentation_form:,
+      book_form:,
       page_owned_objects:,
     )
   #(model, go_next)
@@ -912,6 +948,235 @@ pub fn handle_api_list_books_result(
           ..model,
           flash_messages: [message, ..flash_messages],
           loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+  }
+}
+
+// Presentation edit handlers
+pub fn handle_api_retrieve_presentation_result(
+  res: Result(Presentation, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(p) -> {
+      let form = forms.make_presentation_form(Some(p))
+      let model =
+        Model(..model, presentation_form: Some(form), loading_status: core.Idle)
+      #(model, effect.none())
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load presentation")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_presentation_form_submission(
+  res: Result(PresentationEditablePart, Form(PresentationEditablePart)),
+  model: Model,
+) {
+  case res {
+    Ok(data) -> {
+      let whatsnext = case model.route {
+        PresentationEditPage("") -> actions.create_presentation_via_api(data)
+        PresentationEditPage(id) -> actions.update_presentation_via_api(id, data)
+        _ -> effect.none()
+      }
+      #(model, whatsnext)
+    }
+    Error(form) -> {
+      let presentation_form = model.presentation_form |> option.map(fn(_f) { form })
+      #(Model(..model, presentation_form:), effect.none())
+    }
+  }
+}
+
+pub fn handle_api_update_presentation_result(
+  res: Result(Presentation, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(p) -> {
+      let message =
+        models.create_success_message(
+          "Presentation " <> p.title <> " has been updated.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(PresentationListPage(None)),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save presentation.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+pub fn handle_api_create_presentation_result(
+  res: Result(Presentation, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(p) -> {
+      let message =
+        models.create_success_message(
+          "Presentation " <> p.title <> " has been created.",
+        )
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(PresentationEditPage(p.id)),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save presentation.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+// Book edit handlers
+pub fn handle_api_retrieve_book_result(
+  res: Result(Book, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(b) -> {
+      let form = forms.make_book_form(Some(b))
+      let model = Model(..model, book_form: Some(form), loading_status: core.Idle)
+      #(model, effect.none())
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load book")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
+          loading_status: core.Idle,
+        )
+      #(model, effect.none())
+    }
+  }
+}
+
+pub fn handle_book_form_submission(
+  res: Result(BookEditablePart, Form(BookEditablePart)),
+  model: Model,
+) {
+  case res {
+    Ok(data) -> {
+      let whatsnext = case model.route {
+        BookEditPage("") -> actions.create_book_via_api(data)
+        BookEditPage(id) -> actions.update_book_via_api(id, data)
+        _ -> effect.none()
+      }
+      #(model, whatsnext)
+    }
+    Error(form) -> {
+      let book_form = model.book_form |> option.map(fn(_f) { form })
+      #(Model(..model, book_form:), effect.none())
+    }
+  }
+}
+
+pub fn handle_api_update_book_result(
+  res: Result(Book, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(b) -> {
+      let message =
+        models.create_success_message("Book " <> b.title <> " has been updated.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(BookListPage(None)),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save book.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+pub fn handle_api_create_book_result(
+  res: Result(Book, rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(b) -> {
+      let message =
+        models.create_success_message("Book " <> b.title <> " has been created.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        effect.batch([
+          models.schedule_cleaning_flash_messages(),
+          routes.goto(BookEditPage(b.id)),
+        ]),
+      )
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to save book.")
+      let flash_messages = [message, ..model.flash_messages]
+      #(
+        Model(..model, flash_messages:),
+        models.schedule_cleaning_flash_messages(),
+      )
+    }
+  }
+}
+
+pub fn handle_api_book_authors_result(
+  res: Result(ApiListingResponse(BookAuthor), rsvp.Error),
+  model: Model,
+) {
+  case res {
+    Ok(response) -> {
+      let model = Model(..model, book_authors: response.objects)
+      #(model, effect.none())
+    }
+    Error(_e) -> {
+      let message = models.create_danger_message("Failed to load book authors")
+      let Model(flash_messages:, ..) = model
+      let model =
+        Model(
+          ..model,
+          flash_messages: [message, ..flash_messages],
         )
       #(model, effect.none())
     }

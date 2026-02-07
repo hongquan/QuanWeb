@@ -29,7 +29,8 @@ import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model, Model}
 import routes.{
-  type CategorySort, CategoryEditPage, PostEditPage, PostListPage, SortByFeatured,
+  type CategorySort, BookEditPage, CategoryEditPage, PostEditPage, PostListPage,
+  PresentationEditPage, SortByFeatured,
 }
 import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
@@ -495,7 +496,7 @@ pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: 
 }
 
 fn render_category_table_header() {
-  let columns = ["Order", "Title", "Slug", "Title (Vi)"]
+  let columns = ["Title", "Slug", "Title (Vi)", "Order"]
   let cells =
     columns
     |> list.map(fn(label) {
@@ -527,9 +528,6 @@ fn render_category_row(
     None -> "-"
   }
   let cells = [
-    h.td([a.class(class_cell), a.class("text-sm text-center w-16")], [
-      h.text(order_text),
-    ]),
     h.td([a.class(class_cell)], [
       h.a([a.href(url), a.class("hover:underline")], [
         h.text(title),
@@ -538,6 +536,9 @@ fn render_category_row(
     h.td([a.class(class_cell), a.class("text-sm")], [h.text(slug)]),
     h.td([a.class(class_cell), a.class("text-sm")], [
       h.text(title_vi |> option.unwrap("")),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm text-center w-16")], [
+      h.text(order_text),
     ]),
     h.td([a.class(class_cell), a.class("text-sm")], [
       h.button(
@@ -709,8 +710,11 @@ fn render_presentation_row(
     Some(e) -> e
     None -> "-"
   }
+  let edit_url = routes.as_url_string(PresentationEditPage(id))
   let cells = [
-    h.td([a.class(class_cell)], [h.text(title)]),
+    h.td([a.class(class_cell)], [
+      h.a([a.href(edit_url), a.class("hover:underline")], [h.text(title)]),
+    ]),
     h.td([a.class(class_cell), a.class("text-sm")], [
       h.a([a.href(url), a.target("_blank"), a.class("hover:underline")], [
         h.text(url),
@@ -731,6 +735,49 @@ fn render_presentation_row(
   ]
 
   #(id, h.tr([], cells))
+}
+
+pub fn render_presentation_edit_page(id: String, model: Model) {
+  let Model(route:, loading_status:, ..) = model
+  case loading_status {
+    IsLoading ->
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+
+    _ -> {
+      let form = case model.presentation_form, id {
+        Some(form), "" ->
+          forms.render_presentation_form(None, form, loading_status)
+        Some(form), pid ->
+          forms.render_presentation_form(Some(pid), form, loading_status)
+        _, _ -> element.none()
+      }
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("space-y-8")], [
+              render_flash_messages(model.flash_messages),
+              form,
+            ]),
+          ],
+          "",
+        ),
+      ])
+    }
+  }
 }
 
 // Book list page
@@ -847,8 +894,11 @@ fn render_book_row(
       ])
     None -> h.text("-")
   }
+  let edit_url = routes.as_url_string(BookEditPage(id))
   let cells = [
-    h.td([a.class(class_cell)], [h.text(title)]),
+    h.td([a.class(class_cell)], [
+      h.a([a.href(edit_url), a.class("hover:underline")], [h.text(title)]),
+    ]),
     h.td([a.class(class_cell), a.class("text-sm")], [h.text(author_text)]),
     h.td([a.class(class_cell), a.class("text-sm")], [download_cell]),
     h.td([a.class(class_cell), a.class("text-sm")], [
@@ -865,4 +915,47 @@ fn render_book_row(
   ]
 
   #(id, h.tr([], cells))
+}
+
+pub fn render_book_edit_page(id: String, model: Model) {
+  let Model(route:, loading_status:, ..) = model
+  case loading_status {
+    IsLoading ->
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("mt-12 space-y-12")], [
+              render_flash_messages(model.flash_messages),
+              render_three_bar_pulse(),
+            ]),
+          ],
+          "",
+        ),
+      ])
+
+    _ -> {
+      let form = case model.book_form, id {
+        Some(form), "" ->
+          forms.render_book_form(None, form, model.book_authors, loading_status)
+        Some(form), bid ->
+          forms.render_book_form(Some(bid), form, model.book_authors, loading_status)
+        _, _ -> element.none()
+      }
+      element.fragment([
+        skeleton.render_header_bar(LogOutClicked),
+        skeleton.render_tab_navbar(route),
+        skeleton.render_main_block(
+          [
+            h.div([a.class("space-y-8")], [
+              render_flash_messages(model.flash_messages),
+              form,
+            ]),
+          ],
+          "",
+        ),
+      ])
+    }
+  }
 }

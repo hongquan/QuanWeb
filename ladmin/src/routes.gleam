@@ -25,7 +25,9 @@ pub type Route {
   CategoryListPage(page: Option(Int), sort: Option(CategorySort))
   CategoryEditPage(id: String)
   PresentationListPage(page: Option(Int))
+  PresentationEditPage(id: String)
   BookListPage(page: Option(Int))
+  BookEditPage(id: String)
   External(Uri)
   NotFound
 }
@@ -89,6 +91,8 @@ pub fn parse_to_route(
     }
     "/categories/new", _ -> CategoryEditPage("")
     "/categories/" <> id, _ -> CategoryEditPage(id)
+    "/presentations/new", _ -> PresentationEditPage("")
+    "/presentations/" <> pid, _ -> PresentationEditPage(pid)
     "/presentations", queries -> {
       let query_dict = dict.from_list(queries)
       let page =
@@ -104,6 +108,8 @@ pub fn parse_to_route(
         |> option.from_result
       PresentationListPage(page)
     }
+    "/books/new", _ -> BookEditPage("")
+    "/books/" <> bid, _ -> BookEditPage(bid)
     "/books", queries -> {
       let query_dict = dict.from_list(queries)
       let page =
@@ -186,6 +192,8 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
       }
       #("/presentations", query)
     }
+    PresentationEditPage("") -> #("/presentations/new", None)
+    PresentationEditPage(id) -> #("/presentations/" <> id, None)
     BookListPage(page) -> {
       let query = case page {
         Some(p) -> uri.query_to_string([#("page", int.to_string(p))]) |> Some
@@ -193,6 +201,8 @@ pub fn to_uri_parts(route: Route) -> #(String, Option(String)) {
       }
       #("/books", query)
     }
+    BookEditPage("") -> #("/books/new", None)
+    BookEditPage(id) -> #("/books/" <> id, None)
     _ -> #("/not-found", None)
   }
 }
@@ -237,7 +247,9 @@ pub fn are_routes_matched(current: Route, link: Route) {
     CategoryListPage(..), CategoryListPage(..) -> True
     CategoryEditPage(..), CategoryListPage(..) -> True
     PresentationListPage(..), PresentationListPage(..) -> True
+    PresentationEditPage(..), PresentationListPage(..) -> True
     BookListPage(..), BookListPage(..) -> True
+    BookEditPage(..), BookListPage(..) -> True
     _, _ -> False
   }
 }

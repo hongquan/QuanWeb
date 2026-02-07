@@ -11,13 +11,13 @@ import rsvp
 
 import consts
 import core.{
-  type CategoryEditablePart, type ContentItemId, type LoginData, type Msg,
-  type PostEditablePart, ApiCreatedCategory, ApiCreatedPost,
+  type CategoryEditablePart, type ContentItemId, type LoginData,
+  type Msg, type PostEditablePart, ApiCreatedCategory, ApiCreatedPost,
   ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
-  ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedSingleCategory,
-  ApiReturnedSinglePost, ApiReturnedSlug, ApiReturnedUsers, ApiUpdatedCategory,
-  ApiUpdatedPost, BookId, CategoryEditablePart, CategoryId, LoginData, PostId,
-  PresentationId,
+  ApiReturnedCategories, ApiReturnedLogOutDone,
+  ApiReturnedSingleCategory, ApiReturnedSinglePost, ApiReturnedSlug,
+  ApiReturnedUsers, ApiUpdatedCategory, ApiUpdatedPost, BookId,
+  CategoryEditablePart, CategoryId, LoginData, PostId, PresentationId,
 }
 import decoders.{user_decoder}
 
@@ -255,6 +255,59 @@ pub fn load_presentations(page: Int) -> Effect(Msg(a)) {
   rsvp.get(uri.to_string(url), handler)
 }
 
+pub fn load_single_presentation(id: String) -> Effect(Msg(a)) {
+  let handler =
+    rsvp.expect_json(
+      decoders.presentation_decoder(),
+      core.ApiReturnedSinglePresentation,
+    )
+  rsvp.get(consts.api_presentations <> id, handler)
+}
+
+pub fn create_presentation_via_api(
+  data: core.PresentationEditablePart,
+) -> Effect(Msg(a)) {
+  let body = dump_presentation_to_json(data)
+  let decoder = decoders.presentation_decoder()
+  let handler = rsvp.expect_json(decoder, core.ApiCreatedPresentation)
+  rsvp.post(consts.api_presentations, body, handler)
+}
+
+pub fn update_presentation_via_api(
+  id: String,
+  data: core.PresentationEditablePart,
+) -> Effect(Msg(a)) {
+  let body = dump_presentation_to_json(data) |> json.to_string
+  let decoder = decoders.presentation_decoder()
+  let handler = rsvp.expect_json(decoder, core.ApiUpdatedPresentation)
+  let url = consts.api_presentations <> id
+  case
+    rsvp.parse_relative_uri(url)
+    |> result.try(request.from_uri)
+    |> result.map(request.set_header(_, "content-type", "application/json"))
+    |> result.map(request.set_method(_, http.Patch))
+    |> result.map(request.set_body(_, body))
+    |> result.map(rsvp.send(_, handler))
+    |> result.map_error(fn(_e) {
+      use dispatch <- effect.from
+      dispatch(core.ApiUpdatedPresentation(Error(rsvp.BadUrl(url))))
+    })
+  {
+    Ok(x) -> x
+    Error(x) -> x
+  }
+}
+
+fn dump_presentation_to_json(
+  presentation: core.PresentationEditablePart,
+) -> json.Json {
+  json.object([
+    #("title", json.string(presentation.title)),
+    #("url", json.string(presentation.url)),
+    #("event", json.nullable(presentation.event, json.string)),
+  ])
+}
+
 pub fn load_books(page: Int) -> Effect(Msg(a)) {
   let response_decoder =
     decoders.make_listing_api_decoder(decoders.book_decoder())
@@ -263,4 +316,58 @@ pub fn load_books(page: Int) -> Effect(Msg(a)) {
   let query = uri.query_to_string(query_list) |> Some
   let url = uri.Uri(..uri.empty, path: consts.api_books, query:)
   rsvp.get(uri.to_string(url), handler)
+}
+
+pub fn load_single_book(id: String) -> Effect(Msg(a)) {
+  let handler =
+    rsvp.expect_json(decoders.book_decoder(), core.ApiReturnedSingleBook)
+  rsvp.get(consts.api_books <> id, handler)
+}
+
+pub fn create_book_via_api(data: core.BookEditablePart) -> Effect(Msg(a)) {
+  let body = dump_book_to_json(data)
+  let decoder = decoders.book_decoder()
+  let handler = rsvp.expect_json(decoder, core.ApiCreatedBook)
+  rsvp.post(consts.api_books, body, handler)
+}
+
+pub fn update_book_via_api(
+  id: String,
+  data: core.BookEditablePart,
+) -> Effect(Msg(a)) {
+  let body = dump_book_to_json(data) |> json.to_string
+  let decoder = decoders.book_decoder()
+  let handler = rsvp.expect_json(decoder, core.ApiUpdatedBook)
+  let url = consts.api_books <> id
+  case
+    rsvp.parse_relative_uri(url)
+    |> result.try(request.from_uri)
+    |> result.map(request.set_header(_, "content-type", "application/json"))
+    |> result.map(request.set_method(_, http.Patch))
+    |> result.map(request.set_body(_, body))
+    |> result.map(rsvp.send(_, handler))
+    |> result.map_error(fn(_e) {
+      use dispatch <- effect.from
+      dispatch(core.ApiUpdatedBook(Error(rsvp.BadUrl(url))))
+    })
+  {
+    Ok(x) -> x
+    Error(x) -> x
+  }
+}
+
+fn dump_book_to_json(book: core.BookEditablePart) -> json.Json {
+  json.object([
+    #("title", json.string(book.title)),
+    #("download_url", json.nullable(book.download_url, json.string)),
+    #("author", json.nullable(book.author_id, json.string)),
+  ])
+}
+
+pub fn load_book_authors() -> Effect(Msg(a)) {
+  // The API returns a paginated response, but we only need the objects list
+  let response_decoder =
+    decoders.make_listing_api_decoder(decoders.book_author_decoder())
+  let handler = rsvp.expect_json(response_decoder, core.ApiReturnedBookAuthors)
+  rsvp.get(consts.api_book_authors, handler)
 }
