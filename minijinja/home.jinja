@@ -1,18 +1,101 @@
 {% extends 'base.jinja' %}
-{% from 'mmacros.jinja' import render_pagination %}
 
-{% block title %}Quan web{% endblock %}
+{% block title %}Quân web{% endblock %}
 
 {% block inner_content %}
-  {% with front=true %}
-    {% for p in posts %}
-      {% include 'blog/block_post_content.jinja' %}
-      {% if not loop.last %}
-        <hr class='mt-8 border-gray-200'>
-      {% endif %}
+  {# Featured Categories Blocks #}
+  <div class="space-y-6" x-data="{ hoveredBlock: null }">
+    {% for block in featured_categories %}
+      {% set cat = block.category %}
+      {% set header_color = cat.header_color|default('') %}
+      {% set summary = cat.summary_en|default('') %}
+      
+      <section class="featured-category-block rounded-xl overflow-hidden shadow-lg transition-all hover:shadow-xl border border-hover bg-card"
+               :class="{ 'active': hoveredBlock === {{ loop.index }} }"
+               @mouseenter="hoveredBlock = {{ loop.index }}"
+               @mouseleave="hoveredBlock = null">
+        {# Block Header with accent color or default accent #}
+        {% if header_color %}
+        <div class="category-header px-6 py-4 border-b transition-colors border-theme" 
+             style="background: linear-gradient(135deg, {{ header_color }}20 0%, {{ header_color }}10 100%); 
+                    border-left: 4px solid {{ header_color }};">
+          <h2 class="text-xl md:text-2xl font-semibold text-primary">
+            <a href="/category/{{ cat.slug }}/" class="hover:opacity-80 transition-opacity">
+              {{ cat.title_vi if lang == 'vi' and cat.title_vi else cat.title }}
+            </a>
+          </h2>
+        </div>
+        {% else %}
+        <div class="category-header px-6 py-4 border-b transition-colors border-theme" 
+             style="background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.03) 100%); 
+                    border-left: 4px solid var(--accent);">
+          <h2 class="text-xl md:text-2xl font-semibold text-primary">
+            <a href="/category/{{ cat.slug }}/" class="hover:opacity-80 transition-opacity">
+              {{ cat.title_vi if lang == 'vi' and cat.title_vi else cat.title }}
+            </a>
+          </h2>
+        </div>
+        {% endif %}
+        
+        {# Block Content #}
+        <div class="category-content p-6">
+          {# Summary text #}
+          {% if summary %}
+            <p class="category-summary mb-5 leading-relaxed text-sm md:text-base text-secondary">
+              {{ summary }}
+            </p>
+          {% endif %}
+          
+          {# Latest Posts Links #}
+          {% if block.latest_posts %}
+            <div class="latest-posts">
+              <h3 class="text-xs font-medium uppercase tracking-wider mb-3 text-muted">
+                {{ _f('latest-posts')|default('Latest Posts') }}
+              </h3>
+              <ul class="space-y-3">
+                {% for post in block.latest_posts %}
+                  {% set post_url = post|post_detail_url %}
+                  <li class="flex items-start group" x-data="{ hovered: false }">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                         class="h-5 w-5 mt-0.5 mr-3 flex-shrink-0 link-hover-accent" 
+                         :class="{ 'active': hovered }"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <a href="{{ post_url }}" 
+                       class="font-medium link-hover"
+                       @mouseenter="hovered = true"
+                       @mouseleave="hovered = false">
+                      {{ post.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          
+          {# View All Link #}
+          <div class="mt-5 pt-4 border-t transition-colors border-theme">
+            <a href="/category/{{ cat.slug }}/" 
+               class="inline-flex items-center text-sm font-medium transition-colors group link-hover-accent">
+              {{ _f('view-all-posts')|default('View all posts') }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
     {% endfor %}
-  {% endwith %}
-  <div class='text-center mt-4'>
-    {{ render_pagination(pagelink_items) }}
+  </div>
+
+  {# Link to All Posts #}
+  <div class="mt-12 pt-8 border-t text-center transition-colors border-theme">
+    <a href="/posts/" class="inline-flex items-center text-lg font-medium transition-colors group link-hover-accent">
+      {{ _f('view-all-posts')|default('View all posts') }}
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+      </svg>
+    </a>
   </div>
 {% endblock inner_content %}

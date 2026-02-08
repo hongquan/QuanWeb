@@ -1,0 +1,21 @@
+{% extends 'base.jinja' %}
+{% from 'mmacros.jinja' import render_pagination %}
+
+{% block title %}Recent Posts - Quân web{% endblock %}
+
+{% block inner_content %}
+  <h1 class="text-3xl font-semibold mb-8 text-primary">Recent Posts</h1>
+  
+  {% with front=true %}
+    {% for p in posts %}
+      {% include 'blog/block_post_content.jinja' %}
+      {% if not loop.last %}
+        <hr class='mt-8 transition-colors border-theme'>
+      {% endif %}
+    {% endfor %}
+  {% endwith %}
+  
+  <div class='text-center mt-8'>
+    {{ render_pagination(pagelink_items) }}
+  </div>
+{% endblock inner_content %}

@@ -1,23 +1,26 @@
-{% set extra_class='mt-8 md:mt-12' if front else 'mt-8 pb-8 border-b-2 border-red-400' %}
+{% set extra_class='mt-8 md:mt-12' if front else 'mt-8 pb-8 border-b transition-colors' %}
 {% set lang_attr=gen_element_attr('lang', p.locale) %}
 {% set post_url=p|post_detail_url %}
+{% if not front %}{% set extra_class = extra_class ~ ' border-b border-theme' %}{% endif %}
 <article class='post {{ extra_class }}' {{ lang_attr }}>
   <header class='entry-header mb-4 space-y-4'>
-    {% with h1_class='text-2xl md:text-4xl' if front else 'text-3xl md:text-5xl' %}
-    <h1 class='entry-title {{ h1_class }}' >
+    {% with h1_class='text-2xl md:text-4xl font-semibold' if front else 'text-3xl md:text-5xl font-semibold' %}
+    <h1 class='entry-title {{ h1_class }} text-primary'>
       {%- if not front -%}
         {{ p.title }}
       {%- else -%}
         {% set url_under_category=add_url_param(post_url, 'cat', cat.slug) if cat else post_url %}
-        <a rel='bookmark' href='{{ url_under_category }}' class='hover:text-yellow-700 dark:hover:text-yellow-300'>{{ p.title }}</a>
+        <a rel='bookmark' href='{{ url_under_category }}' class='transition-colors hover:opacity-80 link-hover-muted text-primary'>{{ p.title }}</a>
       {%- endif -%}
     </h1>
-    <div class='entry-meta text-sm text-yellow-700 flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0' x-data="post_meta('{{ p.created_at }}')">
+    <div class='entry-meta text-sm flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0 text-muted'
+         x-data="post_meta('{{ p.created_at }}')">
       <div class='flex flex-row space-x-4'>
-        <a rel='bookmark' href='{{ post_url }}' title="{{ _f('permalink-to-post', post=p.title)|escape }}" class='hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500'>
+        <a rel='bookmark' href='{{ post_url }}' title="{{ _f('permalink-to-post', post=p.title)|escape }}" 
+           class='transition-colors hover:opacity-80 link-hover-muted text-muted'>
           <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' width='32' height='32' viewBox='0 0 48 48'><path fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='4' d='M24.707 9.565L9.858 24.415a9 9 0 0 0 0 12.727v0a9 9 0 0 0 12.728 0l17.678-17.677a6 6 0 0 0 0-8.486v0a6 6 0 0 0-8.486 0L14.101 28.657a3 3 0 0 0 0 4.243v0a3 3 0 0 0 4.242 0l14.85-14.85'/></svg>
         </a>
-        <div class='flex items-center space-x-2 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500 cursor-pointer'>
+        <div class='flex items-center space-x-2 transition-colors cursor-pointer hover:opacity-80 link-hover-muted text-muted'>
           <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
           </svg>
@@ -28,20 +31,20 @@
       </div>
       <span class='categories-links'>
         {% for cat in p.categories %}
-          <a rel='category' href='{{ cat.slug|category_url }}' class='hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-500'>
+          <a rel='category' href='{{ cat.slug|category_url }}' class='transition-colors hover:opacity-80 link-hover-muted text-muted'>
             <svg xmlns='http://www.w3.org/2000/svg' class='h-6 w-6 inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
               <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z' />
             </svg>
             <span>{{ cat.title_vi if lang == 'vi' and cat.title_vi else cat.title }}</span>
           </a>
         {% else %}
-          <a rel='category' href='{{ UNCATEGORIZED_URL }}'>Uncategorized</a>
+          <a rel='category' href='{{ UNCATEGORIZED_URL }}' class='transition-colors hover:opacity-80 link-hover-muted text-muted'>Uncategorized</a>
         {% endfor %}
       </span>
     </div>
     {% endwith %}
   </header>
-  <div class="entry-content prose dark:prose-invert {{ 'front' if front }}">
+  <div class="entry-content prose max-w-none {{ 'front' if front }} text-secondary">
     {% if not front %}
       {% if p.html %}
         {{ p.html|safe }}
@@ -51,13 +54,13 @@
     {% endif %}
   </div>
   {% if not front %}
-    <footer class='mt-4 pt-4 border-t-2 border-red-400 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4'>
+    <footer class='mt-4 pt-4 border-t flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 transition-colors border-theme text-secondary'>
       <div>{{ _f('feel-useful-tip-me') }}</div>
       <ul class='flex flex-row items-center space-x-4'>
-        <li><a href="https://www.buymeacoffee.com/hongquan" target="_blank"><img src="/static/img/bmc-logo.svg" alt="Buy Me A Coffee" class='h-8 w-auto p-1 rounded dark:bg-gray-200'></a></li>
+        <li><a href="https://www.buymeacoffee.com/hongquan" target="_blank"><img src="/static/img/bmc-logo.svg" alt="Buy Me A Coffee" class='h-8 w-auto p-1 rounded text-primary' style="background-color: currentColor;"></a></li>
         <li><a href='https://ko-fi.com/hongquanvn' target='blank'><img src='https://storage.ko-fi.com/cdn/brandasset/v2/kofi_logo.png' height=16 class='w-16'></a></li>
-        <li><a class="text-pink-600" href="https://nhantien.momo.vn/0939030338" target="_blank">Momo</a></li>
-        <li><a class="text-blue-600" href="https://provinces.open-api.vn/img/Quan-ZaloPay.jpg" target="_blank">Zalo Pay</a></li>
+        <li><a class="transition-colors" style="color: #ec4899;" href="https://nhantien.momo.vn/0939030338" target="_blank">Momo</a></li>
+        <li><a class="transition-colors hover:opacity-80" style="color: var(--accent);" href="https://provinces.open-api.vn/img/Quan-ZaloPay.jpg" target="_blank">Zalo Pay</a></li>
       </ul>
     </footer>
   {% endif %}

@@ -5,3 +5,6 @@ see-my-work-at = See my works at
 presentations = presentations
 books-that-i-collected = Books which I collected
 feel-useful-tip-me = Feel it useful? Tip me:
+latest-posts = Latest Posts
+view-all-posts = View all posts
+recent-posts = Recent Posts

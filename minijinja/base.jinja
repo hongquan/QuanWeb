@@ -22,13 +22,7 @@
       <link rel='stylesheet' href='/static/css/custom.css?v={{ GIT_REVISION }}'>
       <link rel='stylesheet' href='/static/css/pygments-css/material.css?v={{ GIT_REVISION }}'>
       <link rel='stylesheet' href='/static/css/syntect.css?v={{ GIT_REVISION }}'>
-      <link rel='alternate' href='/feeds.atom' type='application/atom+xml' title='QuanWeb Atom feeds'>
-      <link rel='alternate' href='/feeds.json' type='application/feed+json' title='QuanWeb JSONs feeds'>
-      <style>
-        [x-cloak] {
-          display: none;
-        }
-      </style>
+      <link rel='stylesheet' href='/static/css/custom-theme.css?v={{ GIT_REVISION }}'>
     {%- endblock css %}
 
     {% block headjs -%}
@@ -37,10 +31,10 @@
   {%- endblock head %}
   </head>
 
-  <body class='flex flex-col min-h-full dark:bg-slate-900 dark:text-white'>
+  <body class="flex flex-col min-h-full antialiased bg-primary text-primary">
     {% include 'navbar.jinja' %}
 
-    <header class='container mx-auto w-full max-w-6xl mb-8 px-2'>
+    <header class='container mx-auto w-full max-w-6xl mb-8 px-4'>
       {% block banner -%}
         {% include 'banner_intro.jinja' %}
       {%- endblock banner %}
@@ -48,7 +42,7 @@
 
     <main class='flex-auto'>
       {% block content -%}
-        <div class='container mx-auto w-full max-w-4xl px-2'>
+        <div class='container mx-auto w-full max-w-4xl px-4'>
           {% block inner_content -%}
           {%- endblock inner_content %}
         </div>

@@ -1,7 +1,9 @@
 {% set CHOICES = [('en', 'English'), ('vi', 'Tiếng Việt')] %}
 
-<select name='lang' class='bg-transparent text-sm py-1 pl-1 pr-8 border-yellow-800' hx-post='/api/set-lang'>
+<select name='lang' 
+        class='text-sm py-1.5 pl-3 pr-8 rounded-md cursor-pointer transition-colors focus:outline-none border-hover bg-card border border-theme text-primary'
+        hx-post='/api/set-lang'>
   {% for (code, name) in CHOICES %}
-    <option value='{{ code }}' {% if code == lang %}selected{% endif %}>{{ name }}</option>
+    <option value='{{ code }}' {% if code == lang %}selected{% endif %} class='bg-card'>{{ name }}</option>
   {% endfor %}
 </select>

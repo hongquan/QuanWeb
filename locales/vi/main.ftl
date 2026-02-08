@@ -5,3 +5,6 @@ see-my-work-at = Xem công việc của tôi tại
 presentations = các bài thuyết trình
 books-that-i-collected = Sách mà tôi sưu tầm được
 feel-useful-tip-me = Bài viết có ích phải không? Tặng thưởng:
+latest-posts = Bài viết mới nhất
+view-all-posts = Xem tất cả bài viết
+recent-posts = Bài viết gần đây

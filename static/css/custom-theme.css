@@ -1,0 +1,199 @@
+/* CSS Variables for theming */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-card: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --border: #e5e7eb;
+  --border-hover: #d1d5db;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #1a1a1a;
+    --bg-card: #2a2a2a;
+    --text-primary: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-muted: #737373;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --border: #404040;
+    --border-hover: #525252;
+  }
+}
+
+/* Utility classes for colors */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-accent { color: var(--accent); }
+
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-card { background-color: var(--bg-card); }
+
+.border-theme { border-color: var(--border); }
+
+/* Floral pattern for navbar */
+.floral-bg {
+  position: relative;
+}
+
+.floral-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/static/img/headers/vecteezy_seamless-floral-pattern-cute-vintage-blossom_2023776.svg');
+  background-size: 300px 300px;
+  background-repeat: repeat;
+  z-index: -1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .floral-bg::before {
+    filter: brightness(0.7) saturate(0.8);
+  }
+}
+
+.nav-overlay {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-overlay {
+    background-color: rgba(26, 26, 26, 0.85);
+  }
+}
+
+/* Link hover styles */
+.link-hover {
+  color: var(--text-primary);
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.link-hover:hover,
+.link-hover.active {
+  color: var(--accent);
+}
+
+.link-hover-accent {
+  color: var(--accent);
+  transition: color 0.2s;
+}
+
+.link-hover-accent:hover,
+.link-hover-accent.active {
+  color: var(--accent-hover);
+}
+
+.link-hover-muted {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.link-hover-muted:hover,
+.link-hover-muted.active {
+  color: var(--text-primary);
+}
+
+.link-hover-secondary {
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.link-hover-secondary:hover,
+.link-hover-secondary.active {
+  color: var(--accent);
+}
+
+/* Background hover styles */
+.bg-hover-card {
+  background-color: transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.bg-hover-card:hover,
+.bg-hover-card.active {
+  background-color: var(--bg-card);
+  color: var(--accent);
+}
+
+.bg-hover-secondary {
+  background-color: transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.bg-hover-secondary:hover,
+.bg-hover-secondary.active {
+  background-color: var(--bg-secondary);
+  color: var(--accent);
+}
+
+/* Border hover styles */
+.border-hover {
+  border-color: var(--border);
+  transition: border-color 0.2s;
+}
+
+.border-hover:hover,
+.border-hover.active {
+  border-color: var(--border-hover);
+}
+
+/* Navbar link styles */
+.nav-link {
+  color: var(--text-primary);
+  background-color: transparent;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--accent);
+  background-color: var(--bg-card);
+}
+
+.nav-link-logo {
+  color: var(--accent);
+  transition: color 0.2s;
+}
+
+.nav-link-logo:hover,
+.nav-link-logo.active {
+  color: var(--accent-hover);
+}
+
+.nav-link-muted {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.nav-link-muted:hover,
+.nav-link-muted.active {
+  color: var(--text-primary);
+}
+
+.nav-dropdown-link {
+  color: var(--text-primary);
+  background-color: transparent;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.nav-dropdown-link:hover,
+.nav-dropdown-link.active {
+  color: var(--accent);
+  background-color: var(--bg-secondary);
+}
+
+/* AlpineJS cloak */
+[x-cloak] {
+  display: none;
+}

@@ -27,6 +27,47 @@ pub async fn fallback_view() -> (StatusCode, &'static str) {
 
 pub async fn home(
     auth_session: AuthSession,
+    _session: Session,
+    State(state): State<AppState>,
+) -> AxumResult<Html<String>> {
+    let AppState { db, jinja } = state;
+    let categories = stores::blog::get_blog_categories(None, None, false, &db)
+        .await
+        .map_err(PageError::GelQueryError)?;
+    // Get featured categories with their latest posts for the new home page design
+    let featured_categories = stores::blog::get_featured_categories_with_posts(&db)
+        .await
+        .map_err(PageError::GelQueryError)?;
+    let no_tracking = auth_session.user.is_some();
+    let lang = _session
+        .get::<String>(KEY_LANG)
+        .await
+        .ok()
+        .flatten()
+        .unwrap_or(DEFAULT_LANG.into());
+    let context = context!(
+        lang => lang,
+        categories => categories,
+        featured_categories => featured_categories,
+        no_tracking => no_tracking);
+    let content = render_with("home.jinja", context, jinja)?;
+    Ok(Html(content))
+}
+
+pub async fn static_handler(uri: Uri) -> impl IntoResponse {
+    // URI is like "/static/css/style.css", we need to strip to "css/style.css"
+    let path = uri
+        .path()
+        .trim_start_matches(&format!("{STATIC_URL}/"))
+        .to_string();
+    StaticFile(path)
+}
+
+type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
+
+/// List recent posts - the old home page style without featured category blocks
+pub async fn list_recent_posts(
+    auth_session: AuthSession,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
     session: Session,
@@ -70,20 +111,9 @@ pub async fn home(
         next_page_url => next_page_url,
         prev_page_url => prev_page_url,
         no_tracking => no_tracking);
-    let content = render_with("home.jinja", context, jinja)?;
+    let content = render_with("posts_list.jinja", context, jinja)?;
     Ok(Html(content))
 }
-
-pub async fn static_handler(uri: Uri) -> impl IntoResponse {
-    // URI is like "/static/css/style.css", we need to strip to "css/style.css"
-    let path = uri
-        .path()
-        .trim_start_matches(&format!("{STATIC_URL}/"))
-        .to_string();
-    StaticFile(path)
-}
-
-type HTMXResponse = ([(HeaderName, &'static str); 1], Html<String>);
 
 pub async fn set_lang(
     session: Session,

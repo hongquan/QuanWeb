@@ -10,6 +10,7 @@ use crate::types::AppState;
 pub fn get_router() -> Router<AppState> {
     Router::new()
         .route("/", get(views::home))
+        .route("/posts/", get(views::list_recent_posts))
         .route(
             &format!("{STATIC_URL}/{{*file}}"),
             get(views::static_handler),

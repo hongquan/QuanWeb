@@ -11,7 +11,7 @@ use str_macro::str;
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use crate::models::{BlogCategory, DetailedBlogPost, MediumBlogPost, MiniBlogPost};
+use crate::models::{BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, MediumBlogPost, MiniBlogPost};
 use crate::types::EdgeSelectable;
 
 pub async fn count_search_result_posts(
@@ -365,4 +365,39 @@ pub async fn get_all_published_mini_posts(client: &Client) -> Result<Vec<MiniBlo
         "SELECT BlogPost {field_names} FILTER .is_published = true ORDER BY .updated_at DESC"
     );
     client.query(&q, &()).await
+}
+
+/// Get featured categories with their 2 latest posts for home page display
+/// Categories are ordered by featured_order (NULLs last)
+pub async fn get_featured_categories_with_posts(
+    client: &Client,
+) -> Result<Vec<FeaturedCategoryBlock>, Error> {
+    // First, get all categories that have a featured_order (exists)
+    let cat_fields = BlogCategory::fields_as_shape();
+    let q = format!(
+        "SELECT BlogCategory {cat_fields}
+         FILTER EXISTS .featured_order
+         ORDER BY .featured_order ASC"
+    );
+    let categories: Vec<BlogCategory> = client.query(&q, &()).await?;
+
+    // For each category, get its 2 latest posts
+    let mut result = Vec::with_capacity(categories.len());
+    let post_fields = MiniBlogPost::fields_as_shape();
+
+    for category in categories {
+        let q = format!(
+            "SELECT BlogPost {post_fields}
+             FILTER .is_published = true AND any(.categories.id = <uuid>$0)
+             ORDER BY .created_at DESC
+             LIMIT 2"
+        );
+        let posts: Vec<MiniBlogPost> = client.query(&q, &(category.id,)).await?;
+        result.push(FeaturedCategoryBlock {
+            category,
+            latest_posts: posts,
+        });
+    }
+
+    Ok(result)
 }

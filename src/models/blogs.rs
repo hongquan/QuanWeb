@@ -233,6 +233,13 @@ impl FromIterator<BlogCategory> for Vec<AtomCategory> {
     }
 }
 
+/// Featured category with its 2 latest posts for home page display
+#[derive(Debug, Clone, Serialize)]
+pub struct FeaturedCategoryBlock {
+    pub category: BlogCategory,
+    pub latest_posts: Vec<MiniBlogPost>,
+}
+
 // Struct to represent a BlogPost in the database, with all fields to display in a detail page.
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
