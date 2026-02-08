@@ -31,6 +31,8 @@
     - name: Check if backend binary exists locally
       ansible.builtin.stat:
         path: "{{ source_folder }}/backend-binary/quanweb"
+      delegate_to: localhost
+      become: false
       register: backend_binary_stat
 
     - name: Upload backend binary
