@@ -16,6 +16,7 @@ jobs:
         with:
           files: |
             **.rs
+            **.jinja
             **.yml
             **.toml
             Cargo.lock

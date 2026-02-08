@@ -4,12 +4,11 @@
          x-data="{ mobileMenuShown: false }">
     <div class='flex flex-row items-center'>
       <a href='/' 
-         class='title-font font-medium items-center text-4xl nav-link-logo'
-         :class="{ 'active': $el.matches(':hover') }">Quân</a>
+         class='title-font font-medium items-center text-4xl nav-link-logo'>Quân</a>
       <div class='grow'></div>
       <div class='relative' x-data='{formShown: false}' x-cloak>
         <button class='text-right md:hidden flex me-3 nav-link-muted' 
-                :class="{ 'active': formShown || $el.matches(':hover') }"
+                :class="{ 'active': formShown }"
                 @click.stop='formShown = true'>
           <svg width='24' height='24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='flex-none' aria-hidden='true'><path d='m19 19-3.5-3.5'></path><circle cx='11' cy='11' r='6'></circle></svg>
         </button>
@@ -28,7 +27,7 @@
         {% include 'feeds_menu.jinja' %}
       {% endwith %}
       <button class='md:hidden rounded-lg focus:outline-none focus:shadow-outline nav-link-muted' 
-              :class="{ 'active': mobileMenuShown || $el.matches(':hover') }"
+              :class="{ 'active': mobileMenuShown }"
               @click='mobileMenuShown = !mobileMenuShown'>
         <svg fill='currentColor' viewBox='0 0 20 20' class='w-6 h-6'>
           <path x-show='!mobileMenuShown' fill-rule='evenodd' d='M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z' clip-rule='evenodd'></path>
@@ -40,7 +39,7 @@
         :class="{hidden: !mobileMenuShown}">
       <li class='md:inline relative' x-data='{open: false}'>
         <a class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link' 
-           :class="{ 'active': open || $el.matches(':hover') }"
+           :class="{ 'active': open }"
            href='/blog/' @click.prevent='open = !open'>
           <span class='flex-grow'>Blog</span>
           <svg class='inline fill-current h-4 w-4 -mr-2 transform group-hover:-rotate-180 transition duration-150 ease-in-out' :class="{'rotate-180': open, 'rotate-0': !open}" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
@@ -54,34 +53,35 @@
             <li>
               <a href='/category/{{ cat.slug }}/' 
                  class='block px-4 py-2 mt-2 rounded-lg md:mt-0 nav-dropdown-link'
-                 :class="{ 'active': $el.matches(':hover') }">{{ cat.title_vi if lang == 'vi' and cat.title_vi else cat.title }}</a>
+                 :class="{ 'active': hovered }"
+                 @mouseenter="hovered = true"
+                 @mouseleave="hovered = false">{{ cat.title_vi if lang == 'vi' and cat.title_vi else cat.title }}</a>
             </li>
           {% endfor %}
           <li class='divider'></li>
           <li>
             <a href="/category/_uncategorized/"
                 class='block px-4 py-2 mt-2 rounded-lg md:mt-0 nav-dropdown-link'
-                :class="{ 'active': $el.matches(':hover') }">Uncategorized</a>
+                :class="{ 'active': hovered }"
+                @mouseenter="hovered = true"
+                @mouseleave="hovered = false">Uncategorized</a>
           </li>
         </ul>
       </li>
 
       <li class='md:inline'>
         <a href='/book/' 
-           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'
-           :class="{ 'active': $el.matches(':hover') }">{{ _f('books') }}</a>
+           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'>{{ _f('books') }}</a>
       </li>
 
       <li class='md:inline'>
         <a href='/talk/' 
-           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'
-           :class="{ 'active': $el.matches(':hover') }">{{ _f('talks') }}</a>
+           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'>{{ _f('talks') }}</a>
       </li>
 
       <li class='md:inline'>
         <a href='/Downloads/CV-Quan.pdf' 
-           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'
-           :class="{ 'active': $el.matches(':hover') }">CV</a>
+           class='flex flex-row md:inline px-4 py-2 mt-2 rounded-lg md:mt-0 nav-link'>CV</a>
       </li>
     </ul>
 
