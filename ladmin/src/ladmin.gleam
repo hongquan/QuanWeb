@@ -44,7 +44,10 @@ import routes.{
   PresentationListPage, on_url_change, parse_to_route,
 }
 import updates
-import views/posts
+import views/blog_posts
+import views/blog_categories
+import views/presentations
+import views/books
 import views/simple.{make_login_page}
 
 pub fn main(base_path: String) -> Nil {
@@ -297,23 +300,23 @@ fn view(model: Model) -> Element(AppMsg) {
     LoginPage(_u), TryingLogin(form) ->
       make_login_page(model.loading_status, form, model.flash_messages)
     PostListPage(p, q, cat_id), _ -> {
-      posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
+      blog_posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
-    PostEditPage(id), LoggedIn(_u) -> posts.render_post_edit_page(id, model)
+    PostEditPage(id), LoggedIn(_u) -> blog_posts.render_post_edit_page(id, model)
     CategoryListPage(page, sort), _ -> {
-      posts.render_category_table_page(option.unwrap(page, 1), sort, model)
+      blog_categories.render_category_table_page(option.unwrap(page, 1), sort, model)
     }
     CategoryEditPage(id), LoggedIn(_u) ->
-      posts.render_category_edit_page(id, model)
+      blog_categories.render_category_edit_page(id, model)
     PresentationListPage(page), _ -> {
-      posts.render_presentation_table_page(option.unwrap(page, 1), model)
+      presentations.render_presentation_table_page(option.unwrap(page, 1), model)
     }
     PresentationEditPage(id), LoggedIn(_u) ->
-      posts.render_presentation_edit_page(id, model)
+      presentations.render_presentation_edit_page(id, model)
     BookListPage(page), _ -> {
-      posts.render_book_table_page(option.unwrap(page, 1), model)
+      books.render_book_table_page(option.unwrap(page, 1), model)
     }
-    BookEditPage(id), LoggedIn(_u) -> posts.render_book_edit_page(id, model)
+    BookEditPage(id), LoggedIn(_u) -> books.render_book_edit_page(id, model)
     _, _ -> {
       echo route
       echo login_state

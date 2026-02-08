@@ -29,7 +29,6 @@ DB
 .idea
 .helix
 .zed
-mise.toml
 .aider.*
 .goosehints
 .python-version
