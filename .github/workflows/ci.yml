@@ -116,7 +116,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: Built binaries
-          path: backend-binary
+          path: Deployment/backend-binary
         id: download_backend
         continue-on-error: true
         
@@ -124,7 +124,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: ladmin-built
-          path: ladmin-built
+          path: Deployment/ladmin-built
         id: download_ladmin
         continue-on-error: true
         

@@ -28,24 +28,24 @@
 
     - name: Check if backend binary exists locally
       ansible.builtin.stat:
-        path: "{{ playbook_dir }}/backend-binary/quanweb"
+        path: "{{ playbook_dir | dirname }}/backend-binary/quanweb"
       register: backend_binary_stat
 
     - name: Upload backend binary
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/backend-binary/quanweb"
+        src: "{{ playbook_dir | dirname }}/backend-binary/quanweb"
         dest: "{{ backend_binary_dest }}"
         mode: '0755'
       when: backend_binary_stat.stat.exists
 
     - name: Check if ladmin dist exists locally
       ansible.builtin.stat:
-        path: "{{ playbook_dir }}/ladmin-built"
+        path: "{{ playbook_dir | dirname }}/ladmin-built"
       register: ladmin_dist_stat
 
     - name: Sync built ladmin app
       ansible.posix.synchronize:
-        src: '{{ playbook_dir }}/ladmin-built/'
+        src: '{{ playbook_dir | dirname }}/ladmin-built/'
         dest: '{{ ladmin_folder }}/dist/'
         delete: true
       when: 
@@ -71,4 +71,4 @@
 
   environment:
     # Modify PATH so that bun can be found.
-    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_user_dir }}/.local/bin:{{ ansible_user_dir }}/.bun/bin"
+    PATH: "{{ base_folder }}/venv/bin:{{ ansible_facts['env']['PATH'] }}:{{ ansible_facts['user_dir'] }}/.local/bin:{{ ansible_facts['user_dir'] }}/.bun/bin"
