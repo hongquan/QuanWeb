@@ -10,6 +10,8 @@
     base_folder: "~/QuanWeb/quanweb/"
     ladmin_folder: "{{ base_folder }}ladmin"
     backend_binary_dest: "~/.local/bin/quanweb"
+    source_folder: '{{ playbook_dir | dirname }}'
+    ladmin_built_source: '{{ source_folder }}/ladmin-built'
 
   tasks:
     - name: Clean source  # noqa command-instead-of-module
@@ -28,29 +30,22 @@
 
     - name: Check if backend binary exists locally
       ansible.builtin.stat:
-        path: "{{ playbook_dir | dirname }}/backend-binary/quanweb"
+        path: "{{ source_folder }}/backend-binary/quanweb"
       register: backend_binary_stat
 
     - name: Upload backend binary
       ansible.builtin.copy:
-        src: "{{ playbook_dir | dirname }}/backend-binary/quanweb"
+        src: "{{ source_folder }}/backend-binary/quanweb"
         dest: "{{ backend_binary_dest }}"
         mode: '0755'
-      when: backend_binary_stat.stat.exists
-
-    - name: Check if ladmin dist exists locally
-      ansible.builtin.stat:
-        path: "{{ playbook_dir | dirname }}/ladmin-built"
-      register: ladmin_dist_stat
+      when: backend_binary_stat.stat.exists | default(false)
 
     - name: Sync built ladmin app
       ansible.posix.synchronize:
-        src: '{{ playbook_dir | dirname }}/ladmin-built/'
+        src: '{{ ladmin_built_source }}/'
         dest: '{{ ladmin_folder }}/dist/'
         delete: true
-      when: 
-        - ladmin_dist_stat.stat.exists
-        - ladmin_dist_stat.stat.isdir
+      when: ladmin_built_source is exists
 
     - name: Run Gel migrations
       ansible.builtin.command:
