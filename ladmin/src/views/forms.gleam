@@ -427,8 +427,8 @@ pub fn render_category_form(
         h.input([
           a.name("featured_order"),
           a.type_("number"),
-          a.min("0"),
-          a.value(formlib.field_value(form, "featured_order")),
+          a.min("1"),
+          a.default_value(formlib.field_value(form, "featured_order")),
           a.class(class_input_common <> " px-4 w-24"),
           a.class(class_input_normal),
         ]),
