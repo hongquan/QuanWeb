@@ -28,6 +28,20 @@
         version: "main"
       register: git_out
 
+    - name: Install Bun dependencies
+      ansible.builtin.command:
+        cmd: "bun install"
+        chdir: "{{ base_folder }}"
+      register: bun_install
+      changed_when: "'done' in bun_install.stdout"
+
+    - name: Build Tailwind CSS
+      ansible.builtin.command:
+        cmd: "bun run build-tailwind"
+        chdir: "{{ base_folder }}"
+      register: tailwind_build
+      changed_when: tailwind_build.rc == 0
+
     - name: Check if backend binary exists locally
       ansible.builtin.stat:
         path: "{{ source_folder }}/backend-binary/quanweb"

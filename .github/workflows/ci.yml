@@ -54,6 +54,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
+      - name: Install Bun dependencies
+        run: bun install
+
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:

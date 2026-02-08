@@ -140,7 +140,7 @@
 /* Border hover styles */
 .border-hover {
   border-color: var(--border);
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .border-hover:hover,
