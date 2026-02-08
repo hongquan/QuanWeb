@@ -71,4 +71,4 @@
 
   environment:
     # Modify PATH so that bun can be found.
-    PATH: "{{ base_folder }}/venv/bin:{{ ansible_facts['env']['PATH'] }}:{{ ansible_facts['user_dir'] }}/.local/bin:{{ ansible_facts['user_dir'] }}/.bun/bin"
+    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_facts['user_dir'] }}/.local/bin:{{ ansible_facts['user_dir'] }}/.bun/bin"
