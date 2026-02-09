@@ -50,7 +50,7 @@
             aria-labelledby='themes'
             x-show='open' @click.away='open = false' x-cloak>
           {% for cat in categories %}
-            <li>
+            <li x-data="{ hovered: false }">
               <a href='/category/{{ cat.slug }}/' 
                  class='block px-4 py-2 mt-2 rounded-lg md:mt-0 nav-dropdown-link'
                  :class="{ 'active': hovered }"
@@ -59,7 +59,7 @@
             </li>
           {% endfor %}
           <li class='divider'></li>
-          <li>
+          <li x-data="{ hovered: false }">
             <a href="/category/_uncategorized/"
                 class='block px-4 py-2 mt-2 rounded-lg md:mt-0 nav-dropdown-link'
                 :class="{ 'active': hovered }"
