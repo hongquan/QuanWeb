@@ -8,7 +8,7 @@
     {% for block in featured_categories %}
       {% set cat = block.category %}
       {% set header_color = cat.header_color|default('') %}
-      {% set summary = cat.summary_en|default('') %}
+      {% set summary = cat.summary_vi if lang == 'vi' and cat.summary_vi else cat.summary_en|default('') %}
       
       <section class="featured-category-block rounded-xl overflow-hidden shadow-lg transition-all hover:shadow-xl border border-hover bg-card"
                :class="{ 'active': hoveredBlock === {{ loop.index }} }"
