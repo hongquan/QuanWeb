@@ -1,8 +1,8 @@
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
-use axum::http::{StatusCode, header};
-use axum::response::{Html, IntoResponse, Response, Result as AxumResult};
+use axum::http::StatusCode;
+use axum::response::{Html, Result as AxumResult};
 use http::header::LOCATION;
 use indexmap::indexmap;
 use minijinja::{context, value::Value as MJValue};
@@ -71,10 +71,10 @@ pub async fn show_post(
     Ok(Html(content))
 }
 
-pub async fn show_post_markdown(
+pub async fn show_post_in_markdown(
     Path((_y, _m, slug)): Path<(u16, u16, String)>,
     State(state): State<AppState>,
-) -> AxumResult<Response> {
+) -> AxumResult<String> {
     let AppState { db, .. } = state;
     let post = get_detailed_post_by_slug(slug, &db)
         .await
@@ -84,12 +84,7 @@ pub async fn show_post_markdown(
     // Get the markdown body or return empty string if not available.
     let markdown_body = post.body.unwrap_or_default();
     
-    // Return the markdown as plain text with appropriate content type.
-    Ok((
-        [(header::CONTENT_TYPE, "text/markdown; charset=utf-8")],
-        markdown_body,
-    )
-        .into_response())
+    Ok(markdown_body)
 }
 
 pub async fn list_posts(
