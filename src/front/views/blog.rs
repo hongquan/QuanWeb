@@ -81,10 +81,10 @@ pub async fn show_post_markdown(
         .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     
-    // Get the markdown body or return empty string if not available
+    // Get the markdown body or return empty string if not available.
     let markdown_body = post.body.unwrap_or_default();
     
-    // Return the markdown as plain text with appropriate content type
+    // Return the markdown as plain text with appropriate content type.
     Ok((
         [(header::CONTENT_TYPE, "text/markdown; charset=utf-8")],
         markdown_body,
