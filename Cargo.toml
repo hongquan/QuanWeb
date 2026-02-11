@@ -13,7 +13,7 @@ strip = "debuginfo"
 [dependencies]
 ammonia = "4.1.0"
 atom_syndication = { version = "0.12.7", features = ["serde"] }
-axum = { version = "0.8.6", features = ["macros"] }
+axum = { version = "0.8.8", features = ["macros"] }
 axum-extra = { version = "0.12.0", features = ["with-rejection"] }
 axum-login = "0.18.0"
 chrono = { version = "0.4.42", features = [
