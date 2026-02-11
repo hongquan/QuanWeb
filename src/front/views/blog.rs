@@ -71,6 +71,22 @@ pub async fn show_post(
     Ok(Html(content))
 }
 
+pub async fn show_post_in_markdown(
+    Path((_y, _m, slug)): Path<(u16, u16, String)>,
+    State(state): State<AppState>,
+) -> AxumResult<String> {
+    let AppState { db, .. } = state;
+    let post = get_detailed_post_by_slug(slug, &db)
+        .await
+        .map_err(PageError::GelQueryError)?
+        .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
+    
+    // Get the markdown body or return empty string if not available.
+    let markdown_body = post.body.unwrap_or_default();
+    
+    Ok(markdown_body)
+}
+
 pub async fn list_posts(
     auth_session: AuthSession,
     Path(cat_slug): Path<String>,

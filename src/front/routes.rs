@@ -15,6 +15,7 @@ pub fn get_router() -> Router<AppState> {
             &format!("{STATIC_URL}/{{*file}}"),
             get(views::static_handler),
         )
+        .route("/post/{year}/{month}/{slug}.md", get(views::blog::show_post_in_markdown))
         .route("/post/{year}/{month}/{slug}", get(views::blog::show_post))
         .route(
             "/category/_uncategorized/",
