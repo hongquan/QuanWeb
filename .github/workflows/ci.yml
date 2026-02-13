@@ -162,4 +162,6 @@ jobs:
             Deployment/Ansible/playbook.yml \
             --limit prod \
             -u ${{ vars.SERVER_USERNAME }}
+        env:
+          ANSIBLE_CALLBACKS_ENABLED: profile_tasks
         if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'
