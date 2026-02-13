@@ -15,11 +15,11 @@ pub fn get_router() -> Router<AppState> {
             &format!("{STATIC_URL}/{{*file}}"),
             get(views::static_handler),
         )
-        .route("/post/{year}/{month}/{slug}", get(views::blog::show_post))
-        // Markdown response for AI Agent. Have to add extra segment because of Axum requires to do that.
+        // The slug_ext may end with `.md`, to return a Markdown document (for AI agents).
+        // We cannot use 2 routes because of Axum limitation.
         .route(
-            "/post/{year}/{month}/{slug}/simple.md",
-            get(views::blog::show_post_in_markdown),
+            "/post/{year}/{month}/{slug_ext}",
+            get(views::blog::show_post),
         )
         .route(
             "/category/_uncategorized/",

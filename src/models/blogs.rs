@@ -270,6 +270,20 @@ impl DetailedBlogPost {
         let created_at = DateTime::<Utc>::from(self.created_at);
         format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
     }
+
+    pub fn to_markdown_doc(&self) -> String {
+        // Add frontmatter
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        let lines = [
+            format!("title: {}", self.title),
+            format!("date: {}", created_at),
+        ];
+        format!(
+            "---\n{}\n---\n{}\n",
+            lines.join("\n"),
+            self.body.as_ref().map_or("", |s| s.as_str())
+        )
+    }
 }
 
 impl Default for DetailedBlogPost {

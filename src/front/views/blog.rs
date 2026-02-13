@@ -16,21 +16,30 @@ use crate::consts::{DEFAULT_LANG, DEFAULT_PAGE_SIZE, KEY_LANG};
 use crate::errors::PageError;
 use crate::stores;
 use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous_post};
-use crate::types::{AppState, Paginator};
+use crate::types::{AppState, HtmlOrMd, Paginator};
 use crate::utils::html::render_with;
 
 pub async fn show_post(
     auth_session: AuthSession,
-    Path((_y, _m, slug)): Path<(u16, u16, String)>,
+    Path((_y, _m, slug_ext)): Path<(u16, u16, String)>,
     Query(params): Query<PostPageParams>,
     session: Session,
     State(state): State<AppState>,
-) -> AxumResult<Html<String>> {
+) -> AxumResult<HtmlOrMd> {
     let AppState { db, jinja } = state;
+    let (slug, is_md) = match slug_ext.split_at_checked(slug_ext.len() - 3) {
+        Some((slug, ".md")) => (slug, true),
+        _ => (slug_ext.as_str(), false),
+    };
     let post = get_detailed_post_by_slug(slug, &db)
         .await
         .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
+    if is_md {
+        // Get the markdown body or return empty string if not available.
+        let markdown_body = post.to_markdown_doc();
+        return Ok(HtmlOrMd::Md(markdown_body));
+    }
     let user = auth_session.user;
     let no_tracking = !post.is_published.unwrap_or(false) || user.is_some();
     let cat = match params.cat {
@@ -68,23 +77,7 @@ pub async fn show_post(
         vcontext.insert("cat", MJValue::from_serialize(&cat));
     }
     let content = render_with("blog/post.jinja", vcontext, jinja)?;
-    Ok(Html(content))
-}
-
-pub async fn show_post_in_markdown(
-    Path((_y, _m, slug)): Path<(u16, u16, String)>,
-    State(state): State<AppState>,
-) -> AxumResult<String> {
-    let AppState { db, .. } = state;
-    let post = get_detailed_post_by_slug(slug, &db)
-        .await
-        .map_err(PageError::GelQueryError)?
-        .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
-    
-    // Get the markdown body or return empty string if not available.
-    let markdown_body = post.body.unwrap_or_default();
-    
-    Ok(markdown_body)
+    Ok(HtmlOrMd::Hm(content))
 }
 
 pub async fn list_posts(

@@ -11,7 +11,9 @@ use str_macro::str;
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use crate::models::{BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, MediumBlogPost, MiniBlogPost};
+use crate::models::{
+    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, MediumBlogPost, MiniBlogPost,
+};
 use crate::types::EdgeSelectable;
 
 pub async fn count_search_result_posts(
@@ -67,7 +69,7 @@ pub async fn get_post(post_id: Uuid, client: &Client) -> Result<Option<DetailedB
 }
 
 pub async fn get_detailed_post_by_slug(
-    slug: String,
+    slug: &str,
     client: &Client,
 ) -> Result<Option<DetailedBlogPost>, Error> {
     // Note: For now, we cannot use Gel splats syntax because the returned field order

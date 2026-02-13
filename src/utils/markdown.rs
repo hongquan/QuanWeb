@@ -24,7 +24,7 @@ impl SyntaxHighlighterAdapter for JsHighlightAdapter {
         _lang: Option<&str>,
         code: &str,
     ) -> fmt::Result {
-        html::escape(output, &code)
+        html::escape(output, code)
     }
 
     fn write_pre_tag(

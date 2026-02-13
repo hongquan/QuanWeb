@@ -10,9 +10,9 @@ use std::path::Path;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use axum::extract::FromRef;
-use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
+use axum::response::{Html, IntoResponse, Response};
 use chrono::{DateTime, Utc};
 use gel_tokio::Client;
 use http::Uri;
@@ -247,4 +247,18 @@ pub struct CodeFenceOptions {
     pub lines: bool,
     #[default = 1]
     pub start_line: u8,
+}
+
+pub enum HtmlOrMd {
+    Hm(String),
+    Md(String),
+}
+
+impl IntoResponse for HtmlOrMd {
+    fn into_response(self) -> Response {
+        match self {
+            Self::Hm(content) => Html::from(content).into_response(),
+            Self::Md(content) => content.into_response(),
+        }
+    }
 }
