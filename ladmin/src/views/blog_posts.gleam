@@ -1,8 +1,11 @@
 import gleam/dynamic/decode
+import gleam/int
 import gleam/javascript/array
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/time/calendar.{local_offset, month_to_int}
+import gleam/time/timestamp
 
 import lustre/attribute as a
 import lustre/element.{type Element}
@@ -12,10 +15,13 @@ import lustre/event as ev
 import lustre/portal
 import plinth/browser/element as br_element
 
+import consts
 import core.{
-  type MiniPost, IsLoading, LogOutClicked, PageOwnedPosts,
-  ContentItemDeletionClicked, PostId,
+  type MiniPost, ContentItemDeletionClicked, IsLoading, LogOutClicked,
+  PageOwnedPosts, PostId,
 }
+import ffi
+import gleam/json
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import models.{type Model, Model}
@@ -24,9 +30,6 @@ import views/forms.{render_post_form}
 import views/load_indicators.{render_three_bar_pulse}
 import views/skeleton
 import views/ui_components.{render_flash_messages, render_paginator}
-import ffi
-import consts
-import gleam/json
 
 const class_cell = "px-4 py-4"
 
@@ -110,7 +113,12 @@ pub fn render_post_table_page(
         skeleton.render_main_block(
           [
             render_flash_messages(model.flash_messages),
-            render_filter_form(initial_q, initial_cat_id, model.categories, url_new_post),
+            render_filter_form(
+              initial_q,
+              initial_cat_id,
+              model.categories,
+              url_new_post,
+            ),
             body,
             paginator,
           ],
@@ -158,8 +166,15 @@ fn render_post_row(
     })
     |> list.intersperse(h.text(", "))
   let url = routes.as_url_string(PostEditPage(post.id))
-  // TODO: Format the date properly for URL
-  let pub_url = "/post/" <> post.slug
+  let #(creation_date, _t) =
+    timestamp.to_calendar(post.created_at, local_offset())
+  let pub_url =
+    "/post/"
+    <> int.to_string(creation_date.year)
+    <> "/"
+    <> int.to_string(month_to_int(creation_date.month))
+    <> "/"
+    <> post.slug
   let preview_url = "/preview/" <> post.id
 
   let cells = [
