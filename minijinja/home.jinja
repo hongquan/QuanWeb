@@ -55,19 +55,22 @@
               <ul class="space-y-3">
                 {% for post in block.latest_posts %}
                   {% set post_url = post|post_detail_url %}
-                  <li class="flex items-start group" x-data="{ hovered: false }">
+                  <li class="flex items-start group" x-data="featured_post_item" data-created-at="{{ post.created_at }}">
                     <svg xmlns="http://www.w3.org/2000/svg" 
                          class="h-5 w-5 mt-0.5 mr-3 flex-shrink-0 link-hover-accent" 
                          :class="{ 'active': hovered }"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <a href="{{ post_url }}" 
-                       class="font-medium link-hover"
-                       @mouseenter="hovered = true"
-                       @mouseleave="hovered = false">
-                      {{ post.title }}
-                    </a>
+                    <div class="flex flex-col">
+                      <a href="{{ post_url }}" 
+                         class="font-medium link-hover"
+                         @mouseenter="hovered = true"
+                         @mouseleave="hovered = false">
+                        {{ post.title }}
+                      </a>
+                      <time class="text-xs text-muted" x-text="createdAtDisplay"></time>
+                    </div>
                   </li>
                 {% endfor %}
               </ul>
