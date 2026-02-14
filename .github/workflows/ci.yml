@@ -49,7 +49,7 @@ jobs:
           wget -q -O encre-css.tar.gz "https://gitlab.com/api/v4/projects/35540843/packages/generic/encre-css/0.21.1/encre-css-x86_64-unknown-linux-gnu.tar.gz"
           tar -xzf encre-css.tar.gz
           mkdir -p ~/.local/bin
-          mv encrecss ~/.local/bin/
+          mv encre-css-x86_64-unknown-linux-gnu ~/.local/bin/encrecss
 
       - name: Build CSS
         run: encrecss build -c encre.toml -o static/css/built-tailwind.css
