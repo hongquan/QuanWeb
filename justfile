@@ -6,11 +6,11 @@ default:
 
 # Build CSS with EncreCSS
 build-css:
-    encrecss build -c encre.toml -o static/css/built-tailwind.css
+    encrecss build -o static/css/built-tailwind.css
 
 # Watch and rebuild CSS on changes
 watch-css:
-    encrecss build -c encre.toml -o static/css/built-tailwind.css -w
+    encrecss build -o static/css/built-tailwind.css -w
 
 # Build the Rust backend
 build-backend:
