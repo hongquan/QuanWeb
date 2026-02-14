@@ -1,10 +1,15 @@
 ---
 - name: Deploy Quan personal website
   hosts: all
-  # This is needed to make ansible_env work
+  # Gather only minimal facts needed for this playbook
+  # - env: for ansible_env.PATH
+  # - user_dir: for ansible_facts['user_dir']
   gather_facts: true
   gather_subset:
     - "!all"
+    - "!min"
+    - env
+    - user_dir
   vars:
     # Cannot use `ansible_user_dir` because facts are not gathered yet.
     base_folder: "~/QuanWeb/quanweb/"
