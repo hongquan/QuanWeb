@@ -1,0 +1,12 @@
+- name: Download EncreCSS
+  ansible.builtin.get_url:
+    url: "https://gitlab.com/api/v4/projects/35540843/packages/generic/encre-css/0.21.1/encre-css-x86_64-unknown-linux-gnu.tar.gz"
+    dest: "/tmp/encre-css.tar.gz"
+    mode: '0644'
+
+- name: Extract EncreCSS
+  ansible.builtin.unarchive:
+    src: "/tmp/encre-css.tar.gz"
+    dest: "{{ ansible_facts['user_dir'] }}/.local/bin"
+    mode: '0755'
+    remote_src: true

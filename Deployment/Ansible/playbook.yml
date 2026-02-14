@@ -33,19 +33,21 @@
         version: "main"
       register: git_out
 
-    - name: Install Bun dependencies
-      ansible.builtin.command:
-        cmd: "bun install"
-        chdir: "{{ base_folder }}"
-      register: bun_install
-      changed_when: "'done' in bun_install.stdout"
+    - name: Check if EncreCSS is installed
+      ansible.builtin.stat:
+        path: "{{ ansible_facts['user_dir'] }}/.local/bin/encrecss"
+      register: encrecss_stat
 
-    - name: Build Tailwind CSS
+    - name: Install EncreCSS
+      ansible.builtin.include_tasks: roles/install_encrecss.yml
+      when: not encrecss_stat.stat.exists
+
+    - name: Build CSS with EncreCSS
       ansible.builtin.command:
-        cmd: "bun run build-tailwind"
+        cmd: "encrecss build -o static/css/built-tailwind.css"
         chdir: "{{ base_folder }}"
-      register: tailwind_build
-      changed_when: tailwind_build.rc == 0
+      register: css_build
+      changed_when: css_build.rc == 0
 
     - name: Check if backend binary exists locally
       ansible.builtin.stat:
@@ -73,7 +75,7 @@
         cmd: "gel migrate"
         chdir: "{{ base_folder }}"
       register: gel_migrate
-      changed_when: "'already up to date' not in gel_migrate.stdout|lower"
+      changed_when: "'already up to date' not in gel_migrate.stdout | lower"
 
     - name: Restart service
       ansible.builtin.systemd:

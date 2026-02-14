@@ -1,0 +1,46 @@
+# EncreCSS configuration
+# Converted from static/css/tailwind-input.css
+# Based on Tailwind v3 configuration style
+
+# Input paths for scanning (equivalent to @source in Tailwind v4)
+input = [
+    "minijinja/**/*.jinja",
+    "src/**/*.rs",
+    "static/js/*.js",
+]
+
+# Safelist - add classes that should always be generated
+safelist = []
+
+# Maximum shortcut depth
+max_shortcut_depth = 5
+
+[theme]
+# Dark mode configuration - use "media" for prefers-color-scheme
+# or { class = "body.dark" } for class-based dark mode
+dark_mode = "media"
+
+# Custom screen breakpoints (in addition to Tailwind defaults)
+# Original Tailwind v4 config: --breakpoint-xxs: 358px; --breakpoint-xs: 475px
+[theme.screens]
+xxs = "358px"
+xs = "475px"
+
+# Custom container breakpoints
+[theme.containers]
+
+# Custom colors
+[theme.colors]
+
+# Custom ARIA states
+[theme.aria]
+
+# Preflight configuration (CSS reset)
+[preflight]
+full = {}
+
+# Shortcuts - define custom utility shortcuts
+[shortcuts]
+
+# Extra configuration for additional CSS
+[extra]

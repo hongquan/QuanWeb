@@ -44,19 +44,15 @@ jobs:
       - uses: actions/checkout@v4
 
       # Our backend binary needs to embed the frontend built files.
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Cache Bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+      - name: Download and install EncreCSS
+        run: |
+          wget -q -O encre-css.tar.gz "https://gitlab.com/api/v4/projects/35540843/packages/generic/encre-css/0.21.1/encre-css-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xzf encre-css.tar.gz
+          mkdir -p ~/.local/bin
+          mv encrecss ~/.local/bin/
 
-      - name: Install Bun dependencies
-        run: bun install
+      - name: Build CSS
+        run: encrecss build -c encre.toml -o static/css/built-tailwind.css
 
       - name: Cache Rust dependencies
         uses: actions/cache@v4
