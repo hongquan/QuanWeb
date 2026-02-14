@@ -16,4 +16,17 @@ document.addEventListener('alpine:init', () => {
       return this.createdAt ? shortFormatter.format(this.createdAt) : '';
     },
   }));
+
+  Alpine.data('latest_post_card', () => ({
+    createdAt: null,
+    init() {
+      const createdAtStr = this.$el.dataset.createdAt;
+      if (createdAtStr) {
+        this.createdAt = minitz.fromTZISO(createdAtStr);
+      }
+    },
+    get createdAtDisplay() {
+      return this.createdAt ? shortFormatter.format(this.createdAt) : '';
+    },
+  }));
 });

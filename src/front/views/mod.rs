@@ -38,6 +38,10 @@ pub async fn home(
     let featured_categories = stores::blog::get_featured_categories_with_posts(&db)
         .await
         .map_err(PageError::GelQueryError)?;
+    // Get 6 latest posts for the latest posts section
+    let latest_posts = stores::blog::get_latest_posts_for_home(&db)
+        .await
+        .map_err(PageError::GelQueryError)?;
     let no_tracking = auth_session.user.is_some();
     let lang = _session
         .get::<String>(KEY_LANG)
@@ -49,6 +53,7 @@ pub async fn home(
         lang => lang,
         categories => categories,
         featured_categories => featured_categories,
+        latest_posts => latest_posts,
         no_tracking => no_tracking);
     let content = render_with("home.jinja", context, jinja)?;
     Ok(Html(content))

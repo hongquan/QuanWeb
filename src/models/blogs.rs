@@ -76,10 +76,15 @@ pub struct MediumBlogPost {
     pub author: Option<MiniUser>,
 }
 
+/// Helper function to build post view URL from created_at and slug
+pub fn build_post_view_url(created_at: DateTime<Utc>, slug: &str) -> String {
+    format!("/post/{}/{}", created_at.format("%Y/%m"), slug)
+}
+
 impl MediumBlogPost {
     pub fn get_view_url(&self) -> String {
         let created_at: DateTime<Utc> = self.created_at.into();
-        format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
+        build_post_view_url(created_at, &self.slug)
     }
 }
 
@@ -364,6 +369,37 @@ impl MiniBlogPost {
 }
 
 impl EdgeSelectable for MiniBlogPost {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
+}
+
+// Struct to represent a BlogPost for the latest posts section on home page.
+// Includes cover image (og_image), excerpt, and creation date.
+#[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
+pub struct HomePagePost {
+    pub id: Uuid,
+    pub title: String,
+    pub slug: String,
+    pub excerpt: Option<String>,
+    pub og_image: Option<String>,
+    #[serde(serialize_with = "serialize_edge_datetime")]
+    pub created_at: EDatetime,
+}
+
+impl HomePagePost {
+    /// This method is kept for API consistency and potential future use in Rust code.
+    /// Currently, posts are rendered via Jinja templates using the `post_detail_url` filter,
+    /// which internally uses `build_post_view_url` - the same helper function this method uses.
+    #[allow(dead_code)]
+    pub fn get_view_url(&self) -> String {
+        let created_at: DateTime<Utc> = self.created_at.into();
+        build_post_view_url(created_at, &self.slug)
+    }
+}
+
+impl EdgeSelectable for HomePagePost {
     fn fields_as_shape() -> String {
         let fields = Self::FIELDS.join(", ");
         format!("{{ {fields} }}")

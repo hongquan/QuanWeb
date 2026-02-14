@@ -10,6 +10,7 @@ use regex::Regex;
 use unic_langid::LanguageIdentifier;
 
 use crate::consts::{DEFAULT_LANG, KEY_LANG};
+use crate::models::blogs::build_post_view_url;
 use crate::thingsup::LOCALES;
 use crate::types::BundledTemplates;
 use crate::types::conversions::jinja_kwargs_to_fluent_args;
@@ -44,7 +45,8 @@ pub fn post_detail_url(post: MJValue) -> Result<String, Error> {
         .as_str()
         .ok_or(Error::new(ErrorKind::NonPrimitive, "slug is not a string"))?
         .into();
-    Ok(format!("/post/{}/{}", created_at.format("%Y/%m"), slug))
+    let created_at: chrono::DateTime<chrono::Utc> = created_at.into();
+    Ok(build_post_view_url(created_at, &slug))
 }
 
 pub fn category_url(slug: String) -> String {

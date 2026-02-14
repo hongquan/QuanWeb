@@ -12,7 +12,7 @@ use tracing::{debug, info};
 use uuid::Uuid;
 
 use crate::models::{
-    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, MediumBlogPost, MiniBlogPost,
+    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost,
 };
 use crate::types::EdgeSelectable;
 
@@ -402,4 +402,18 @@ pub async fn get_featured_categories_with_posts(
     }
 
     Ok(result)
+}
+
+/// Get the 6 latest published posts for home page display
+pub async fn get_latest_posts_for_home(
+    client: &Client,
+) -> Result<Vec<HomePagePost>, Error> {
+    let post_fields = HomePagePost::fields_as_shape();
+    let q = format!(
+        "SELECT BlogPost {post_fields}
+         FILTER .is_published = true
+         ORDER BY .created_at DESC
+         LIMIT 6"
+    );
+    client.query(&q, &()).await
 }
