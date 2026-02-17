@@ -87,6 +87,3 @@
       ansible.builtin.debug:
         var: git_out
 
-  environment:
-    # Modify PATH so that bun can be found.
-    PATH: "{{ base_folder }}/venv/bin:{{ ansible_env.PATH }}:{{ ansible_facts['user_dir'] }}/.local/bin:{{ ansible_facts['user_dir'] }}/.bun/bin"

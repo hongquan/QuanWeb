@@ -55,7 +55,7 @@ jobs:
         run: encrecss build -c encre.toml -o static/css/built-tailwind.css
 
       - name: Cache Rust dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/bin/
@@ -71,7 +71,7 @@ jobs:
         run: cargo build --profile ${{ matrix.BUILD_TARGET }} --all-features
 
       - name: Archive built files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Built binaries
           path: target/${{ matrix.BUILD_TARGET }}/quanweb
@@ -110,7 +110,7 @@ jobs:
       - name: Build ladmin app
         run: bun run --bun build
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ladmin-built
           path: ladmin/dist
@@ -126,15 +126,15 @@ jobs:
       - uses: actions/checkout@v5
       
       - name: Download backend binary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: Built binaries
           path: Deployment/backend-binary
         id: download_backend
         continue-on-error: true
         
-      - name: Download Lustre dist
-        uses: actions/download-artifact@v5
+      - name: Download LAdmin built artifact
+        uses: actions/download-artifact@v7
         with:
           name: ladmin-built
           path: Deployment/ladmin-built
@@ -151,7 +151,7 @@ jobs:
           ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
         if: steps.download_backend.outcome == 'success' || steps.download_ladmin.outcome == 'success'
         
-      - name: Run Ansible playbook (full deploy)
+      - name: Run Ansible playbook
         run: |
           ansible-playbook \
             -i Deployment/Ansible/inventory.yml \
