@@ -204,7 +204,8 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
 
 /* Inline code styles - lighter than normal text */
 /* Only apply to inline code, not code blocks (pre > code) */
-:not(pre) > code {
+:not(pre) > code,
+:not(pre) > code[class*="language-"] {
   color: var(--text-muted);
   background-color: var(--bg-secondary);
   padding: 0.125rem 0.25rem;
@@ -213,7 +214,8 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
 }
 
 @media (prefers-color-scheme: dark) {
-  :not(pre) > code {
+  :not(pre) > code,
+  :not(pre) > code[class*="language-"] {
     color: #d4d4d4;
   }
 }
