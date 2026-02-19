@@ -146,6 +146,7 @@ pub async fn gen_sitemaps(
     let posts = stores::blog::get_all_published_mini_posts(&db)
         .await
         .map_err(PageError::GelQueryError)?;
+    
     let entries: Vec<_> = posts
         .iter()
         .map(|p| p.to_sitemap_entry(DEFAULT_SITE_URL))
