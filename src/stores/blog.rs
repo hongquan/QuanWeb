@@ -417,3 +417,22 @@ pub async fn get_latest_posts_for_home(
     );
     client.query(&q, &()).await
 }
+
+/// Get all blog posts for HTML regeneration
+pub async fn get_all_posts_for_regeneration(
+    client: &Client,
+) -> Result<Vec<(Uuid, Option<String>)>, Error> {
+    let q = "SELECT BlogPost { id, body }";
+    client.query(&q, &()).await
+}
+
+/// Update the HTML field of a blog post
+pub async fn update_post_html(
+    client: &Client,
+    post_id: Uuid,
+    html: &str,
+) -> Result<(), Error> {
+    let q = "UPDATE BlogPost FILTER .id = <uuid>$0 SET { html := <str>$1 }";
+    client.execute(&q, &(post_id, html)).await?;
+    Ok(())
+}

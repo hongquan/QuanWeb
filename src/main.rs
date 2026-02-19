@@ -26,15 +26,23 @@ use tower_http::trace::TraceLayer;
 use tower_sessions::SessionManagerLayer;
 use tracing::info;
 
-use thingsup::{AppOptions, config_jinja, config_logging, get_binding_addr};
+use thingsup::{AppOptions, Commands, config_jinja, config_logging, get_binding_addr};
 use types::{AppState, BindingAddr};
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
     let app_opts = AppOptions::parse();
     config_logging(&app_opts);
+    
+    match &app_opts.command {
+        Commands::Serve { bind } => serve_command(bind.clone()).await,
+        Commands::RegenerateHtml => regenerate_html_command().await,
+    }
+}
+
+async fn serve_command(bind: Option<String>) -> miette::Result<()> {
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
-    let addr = get_binding_addr(app_opts.bind.as_deref());
+    let addr = get_binding_addr(bind.as_deref());
     let redis_store = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
@@ -86,6 +94,37 @@ async fn main() -> miette::Result<()> {
         }
     }
     .into_diagnostic()?;
+    Ok(())
+}
+
+async fn regenerate_html_command() -> miette::Result<()> {
+    use crate::utils::markdown::markdown_to_html;
+    
+    tracing::info!("Regenerating HTML for blog posts...");
+    
+    let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
+    let client = db::get_gel_client(&config).await.map_err(|e| {
+        info!("{e:?}");
+        miette!("Failed to create Gel client")
+    })?;
+    
+    // Get all posts with their body
+    let posts = stores::blog::get_all_posts_for_regeneration(&client)
+        .await
+        .map_err(|e| miette!("Failed to fetch posts: {e}"))?;
+    
+    tracing::info!("Found {} posts to regenerate", posts.len());
+    
+    for (post_id, body) in posts {
+        let body = body.unwrap_or_default();
+        let html = markdown_to_html(&body);
+        stores::blog::update_post_html(&client, post_id, &html)
+            .await
+            .map_err(|e| miette!("Failed to update post {}: {}", post_id, e))?;
+        tracing::info!("Regenerated HTML for post {}", post_id);
+    }
+    
+    tracing::info!("HTML regeneration complete!");
     Ok(())
 }
 

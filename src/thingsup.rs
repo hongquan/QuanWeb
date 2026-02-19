@@ -18,14 +18,25 @@ use crate::{consts::UNCATEGORIZED_URL, types::BindingAddr};
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
-    #[arg(
-        short,
-        long,
-        help = "Network address to bind, can be <port>, <ip:port> or Unix socket in form of <unix:/path/to/file>"
-    )]
-    pub bind: Option<String>,
     #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
     pub verbose: u8,
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Debug, Clone, Parser)]
+pub enum Commands {
+    /// Run the web server
+    Serve {
+        #[arg(
+            short,
+            long,
+            help = "Network address to bind, can be <port>, <ip:port> or Unix socket in form of <unix:/path/to/file>"
+        )]
+        bind: Option<String>,
+    },
+    /// Regenerate HTML body for blog posts (client-side highlighting)
+    RegenerateHtml,
 }
 
 /// Test if current process is connected with journald
