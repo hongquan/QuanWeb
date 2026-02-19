@@ -193,6 +193,30 @@
   background-color: var(--bg-secondary);
 }
 
+/* Base link styles - only for links without explicit color classes */
+a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo):not(.nav-link-muted):not(.nav-dropdown-link) {
+  color: var(--accent);
+}
+
+a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo):not(.nav-link-muted):not(.nav-dropdown-link):hover {
+  color: var(--accent-hover);
+}
+
+/* Inline code styles - lighter than normal text */
+code {
+  color: var(--text-muted);
+  background-color: var(--bg-secondary);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+@media (prefers-color-scheme: dark) {
+  code {
+    color: #d4d4d4;
+  }
+}
+
 /* AlpineJS cloak */
 [x-cloak] {
   display: none;
