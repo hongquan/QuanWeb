@@ -19,7 +19,7 @@ jobs:
             **.jinja
             **.yml
             **.toml
-            **.css
+            static/css/*.css
             Cargo.lock
           files_ignore: |
             admin
