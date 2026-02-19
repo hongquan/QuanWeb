@@ -203,7 +203,8 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
 }
 
 /* Inline code styles - lighter than normal text */
-code {
+/* Only apply to inline code, not code blocks (pre > code) */
+:not(pre) > code {
   color: var(--text-muted);
   background-color: var(--bg-secondary);
   padding: 0.125rem 0.25rem;
@@ -212,7 +213,7 @@ code {
 }
 
 @media (prefers-color-scheme: dark) {
-  code {
+  :not(pre) > code {
     color: #d4d4d4;
   }
 }
