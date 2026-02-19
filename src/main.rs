@@ -20,6 +20,7 @@ use axum::routing::Router;
 use axum_login::AuthManagerLayerBuilder;
 use clap::Parser;
 use miette::{IntoDiagnostic, miette};
+use owo_colors::OwoColorize;
 use tokio::net::{TcpListener, UnixListener};
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -111,23 +112,23 @@ async fn regenerate_html_all_posts() -> miette::Result<()> {
         miette!("Failed to create Gel client")
     })?;
 
-    // Get all posts with their body
+    // Get all posts with their title and body
     let posts = stores::blog::get_all_posts_for_regeneration(&client)
         .await
         .map_err(|e| miette!("Failed to fetch posts: {e}"))?;
 
     tracing::info!("Found {} posts to regenerate", posts.len());
 
-    for (post_id, body) in posts {
-        let body = body.unwrap_or_default();
+    for post in posts {
+        let body = post.body.unwrap_or_default();
         let html = markdown_to_html(&body);
-        stores::blog::update_post_html(&client, post_id, &html)
+        stores::blog::update_post_html(&client, post.id, &html)
             .await
-            .map_err(|e| miette!("Failed to update post {}: {}", post_id, e))?;
-        tracing::info!("Regenerated HTML for post {}", post_id);
+            .map_err(|e| miette!("Failed to update post {}: {}", post.id, e))?;
+        println!("Regenerated HTML for post '{}' ({})", post.title.blue(), post.id);
     }
 
-    tracing::info!("HTML regeneration complete!");
+    println!("{}", "HTML regeneration complete!".green());
     Ok(())
 }
 

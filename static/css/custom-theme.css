@@ -28,16 +28,37 @@
 }
 
 /* Utility classes for colors */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-muted { color: var(--text-muted); }
-.text-accent { color: var(--accent); }
+.text-primary {
+  color: var(--text-primary);
+}
 
-.bg-primary { background-color: var(--bg-primary); }
-.bg-secondary { background-color: var(--bg-secondary); }
-.bg-card { background-color: var(--bg-card); }
+.text-secondary {
+  color: var(--text-secondary);
+}
 
-.border-theme { border-color: var(--border); }
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-card {
+  background-color: var(--bg-card);
+}
+
+.border-theme {
+  border-color: var(--border);
+}
 
 /* Floral pattern for navbar */
 .floral-bg {
@@ -204,8 +225,10 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
 
 /* Inline code styles - lighter than normal text */
 /* Only apply to inline code, not code blocks (pre > code) */
-:not(pre) > code,
-:not(pre) > code[class*="language-"] {
+.entry-content :not(pre)>code,
+.entry-content :not(pre)>code[class*="language-"],
+:not(pre)>code,
+:not(pre)>code[class*="language-"] {
   color: var(--text-muted);
   background-color: var(--bg-secondary);
   padding: 0.125rem 0.25rem;
@@ -214,10 +237,102 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
 }
 
 @media (prefers-color-scheme: dark) {
-  :not(pre) > code,
-  :not(pre) > code[class*="language-"] {
+
+  .entry-content :not(pre)>code,
+  .entry-content :not(pre)>code[class*="language-"],
+  :not(pre)>code,
+  :not(pre)>code[class*="language-"] {
     color: #d4d4d4;
   }
+}
+
+/* Code block styles - using q-need-highlight class */
+.entry-content .q-need-highlight {
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  display: block;
+}
+
+/* Headings in markdown content should not have background color */
+.entry-content h1,
+.entry-content h2,
+.entry-content h3,
+.entry-content h4,
+.entry-content h5,
+.entry-content h6 {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* Make headings bigger */
+.entry-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.entry-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.entry-content h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.entry-content h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.625rem;
+}
+
+.entry-content h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.entry-content h6 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Ensure lists maintain their default styling */
+.entry-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.entry-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.entry-content li {
+  margin-bottom: 0.25rem;
+}
+
+.entry-content li>p {
+  margin: 0;
 }
 
 /* AlpineJS cloak */

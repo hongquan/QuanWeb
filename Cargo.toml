@@ -45,6 +45,7 @@ libpassgen = "1.0.3"
 miette = { version = "7.6.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.5"
 minijinja = { version = "2.12.0", features = ["loader", "internal_debug"] }
+owo-colors = "4.0.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.11", features = ["serde"] }
 regex = "1.11.3"
@@ -89,4 +90,3 @@ notzero = "1.1.0"
 
 [build-dependencies]
 crate-git-revision = "0.0.6"
-

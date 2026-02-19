@@ -3,7 +3,7 @@ pub mod feeds;
 pub mod minors;
 pub mod users;
 
-pub use blogs::{BlogCategory, DetailedBlogPost, DocFormat, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost};
+pub use blogs::{BlogCategory, DetailedBlogPost, DocFormat, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost, MinBodyBlogPost};
 pub use minors::Presentation;
 pub use users::User;
 

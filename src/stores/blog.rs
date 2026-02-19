@@ -12,7 +12,7 @@ use tracing::{debug, info};
 use uuid::Uuid;
 
 use crate::models::{
-    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost,
+    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost, MinBodyBlogPost,
 };
 use crate::types::EdgeSelectable;
 
@@ -418,11 +418,12 @@ pub async fn get_latest_posts_for_home(
     client.query(&q, &()).await
 }
 
-/// Get all blog posts for HTML regeneration
+/// Get all blog posts for HTML regeneration (including title for reporting)
 pub async fn get_all_posts_for_regeneration(
     client: &Client,
-) -> Result<Vec<(Uuid, Option<String>)>, Error> {
-    let q = "SELECT BlogPost { id, body }";
+) -> Result<Vec<MinBodyBlogPost>, Error> {
+    let fields = "{id, title, body}";
+    let q = format!("SELECT BlogPost {fields}");
     client.query(&q, &()).await
 }
 

@@ -405,3 +405,18 @@ impl EdgeSelectable for HomePagePost {
         format!("{{ {fields} }}")
     }
 }
+
+// Struct to represent a BlogPost with minimal fields plus body, for HTML regeneration
+#[derive(Debug, Clone, Queryable, FieldNames)]
+pub struct MinBodyBlogPost {
+    pub id: Uuid,
+    pub title: String,
+    pub body: Option<String>,
+}
+
+impl EdgeSelectable for MinBodyBlogPost {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
+}

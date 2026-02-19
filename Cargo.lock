@@ -2836,6 +2836,7 @@ dependencies = [
  "mime_guess",
  "minijinja",
  "notzero",
+ "owo-colors",
  "querystring_tiny",
  "redact",
  "regex",
