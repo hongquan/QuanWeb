@@ -223,6 +223,12 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
   color: var(--accent-hover);
 }
 
+/* Strong text styles - make them more distinguishable */
+.entry-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 /* Inline code styles - lighter than normal text */
 /* Only apply to inline code, not code blocks (pre > code) */
 .entry-content :not(pre)>code,
