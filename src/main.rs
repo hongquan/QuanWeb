@@ -33,16 +33,19 @@ use types::{AppState, BindingAddr};
 async fn main() -> miette::Result<()> {
     let app_opts = AppOptions::parse();
     config_logging(&app_opts);
-    
+
     match &app_opts.command {
-        Commands::Serve { bind } => serve_command(bind.clone()).await,
-        Commands::RegenerateHtml => regenerate_html_command().await,
+        Commands::Serve { bind } => serve_web(bind.as_deref()).await,
+        Commands::RegenerateHtml => regenerate_html_all_posts().await,
     }
 }
 
-async fn serve_command(bind: Option<String>) -> miette::Result<()> {
+async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
-    let addr = get_binding_addr(bind.as_deref());
+    // The bind option accepts:
+    // - TCP addresses like "127.0.0.1:3000" or ":3000"
+    // - Unix socket paths like "unix:/tmp/thingsup.sock"
+    let addr = get_binding_addr(bind);
     let redis_store = db::get_redis_store()
         .await
         .map_err(|_e| miette!("Error connecting to Redis"))?;
@@ -97,24 +100,24 @@ async fn serve_command(bind: Option<String>) -> miette::Result<()> {
     Ok(())
 }
 
-async fn regenerate_html_command() -> miette::Result<()> {
+async fn regenerate_html_all_posts() -> miette::Result<()> {
     use crate::utils::markdown::markdown_to_html;
-    
+
     tracing::info!("Regenerating HTML for blog posts...");
-    
+
     let config = conf::get_config().map_err(|e| miette!("Error loading config: {e}"))?;
     let client = db::get_gel_client(&config).await.map_err(|e| {
         info!("{e:?}");
         miette!("Failed to create Gel client")
     })?;
-    
+
     // Get all posts with their body
     let posts = stores::blog::get_all_posts_for_regeneration(&client)
         .await
         .map_err(|e| miette!("Failed to fetch posts: {e}"))?;
-    
+
     tracing::info!("Found {} posts to regenerate", posts.len());
-    
+
     for (post_id, body) in posts {
         let body = body.unwrap_or_default();
         let html = markdown_to_html(&body);
@@ -123,7 +126,7 @@ async fn regenerate_html_command() -> miette::Result<()> {
             .map_err(|e| miette!("Failed to update post {}: {}", post_id, e))?;
         tracing::info!("Regenerated HTML for post {}", post_id);
     }
-    
+
     tracing::info!("HTML regeneration complete!");
     Ok(())
 }

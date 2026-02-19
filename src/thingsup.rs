@@ -15,6 +15,9 @@ use crate::conf::DEFAULT_PORT;
 use crate::utils::jinja_extra;
 use crate::{consts::UNCATEGORIZED_URL, types::BindingAddr};
 
+// Constant for unix socket prefix
+const UNIX_SOCKET_PREFIX: &str = "unix:";
+
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
@@ -31,7 +34,7 @@ pub enum Commands {
         #[arg(
             short,
             long,
-            help = "Network address to bind, can be <port>, <ip:port> or Unix socket in form of <unix:/path/to/file>"
+            help = "Network address to bind, can be <port>, <ip:port>, or Unix socket with 'unix:' prefix like 'unix:/path/to/file'"
         )]
         bind: Option<String>,
     },
@@ -105,7 +108,7 @@ pub fn get_listening_addr() -> Ipv4Addr {
 
 pub fn get_binding_addr(bind_opt: Option<&str>) -> BindingAddr<'_> {
     let addr = if let Some(s) = bind_opt {
-        if let Some(sk_path) = s.strip_prefix("unix:") {
+        if let Some(sk_path) = s.strip_prefix(UNIX_SOCKET_PREFIX) {
             Some(BindingAddr::Unix(Path::new(sk_path)))
         } else if s.contains(':') {
             SocketAddr::from_str(s).ok().map(BindingAddr::Tcp)
