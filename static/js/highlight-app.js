@@ -72,6 +72,7 @@ const taskShiki = createHighlighter({
 	langAlias: {
 		edgeql: 'EdgeQL',
 		blp: 'Blueprint',
+		'shell-session': 'shellsession',
 	},
 	themes: ['one-dark-pro'],
 })
@@ -119,7 +120,12 @@ document.addEventListener('alpine:init', () => {
 			const className = classes.find((c) => c.startsWith('language-'))
 			if (className) {
 				// From 'language-vue-html' take 'vue-html'
-				this.lang = className.slice(9)
+				let lang = className.slice(9)
+				// Map language aliases
+				if (lang === 'shell-session') {
+					lang = 'shellsession'
+				}
+				this.lang = lang
 			}
 			this.origClasses = classes
 			if (codeElm.dataset.startLine) {
