@@ -41,7 +41,7 @@ pub async fn show_post(
         return Ok(HtmlOrMd::Md(markdown_body));
     }
     let user = auth_session.user;
-    let no_tracking = !post.is_published.unwrap_or(false) || user.is_some();
+    let no_tracking = !post.is_published || user.is_some();
     let cat = match params.cat {
         Some(slug) => stores::blog::get_category_by_slug(&slug, &db)
             .await
@@ -157,7 +157,7 @@ pub async fn preview_post(
         .map_err(PageError::GelQueryError)?
         .ok_or((StatusCode::NOT_FOUND, "No post at this URL"))?;
     if user.is_none() {
-        if !post.is_published.unwrap_or(false) {
+        if !post.is_published {
             Err(PageError::PermissionDenied(str!("Post is not published.")))?;
         } else {
             let url = post.get_canonical_url();

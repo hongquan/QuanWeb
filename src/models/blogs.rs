@@ -117,7 +117,7 @@ pub struct DetailedBlogPost {
     pub id: Uuid,
     pub title: String,
     pub slug: String,
-    pub is_published: Option<bool>,
+    pub is_published: bool,
     pub published_at: Option<EDatetime>,
     pub created_at: EDatetime,
     pub updated_at: Option<EDatetime>,
@@ -160,7 +160,7 @@ impl Default for DetailedBlogPost {
             id: Uuid::default(),
             title: String::default(),
             slug: String::default(),
-            is_published: Some(false),
+            is_published: false,
             published_at: None,
             created_at,
             updated_at: None,
@@ -197,6 +197,10 @@ impl EdgeSelectable for DetailedBlogPost {
     }
 }
 
+#[serde_with::apply(
+    EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
+    Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
+)]
 #[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
 pub struct MediumBlogPost {
     pub id: Uuid,
@@ -204,7 +208,7 @@ pub struct MediumBlogPost {
     pub slug: String,
     pub locale: Option<String>,
     pub excerpt: Option<String>,
-    pub is_published: Option<bool>,
+    pub is_published: bool,
     pub published_at: Option<EDatetime>,
     pub created_at: EDatetime,
     pub updated_at: Option<EDatetime>,
@@ -233,7 +237,7 @@ impl Default for MediumBlogPost {
             slug: String::default(),
             locale: None,
             excerpt: None,
-            is_published: Some(false),
+            is_published: false,
             published_at: None,
             created_at,
             updated_at: None,
