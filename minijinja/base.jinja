@@ -9,7 +9,9 @@
     {% endif %}
     <meta property='fb:app_id' content='396441990404313'>
     {% block meta_seo %}{% endblock meta_seo %}
-    {% block meta_og %}{% endblock meta_og %}
+    {% block meta_og -%}
+      <meta property="og:description" content="Dive into practical guides on IoT, Rust, Linux, Python, and open-source software. Explore embedded systems, systems programming, and modern tools for building reliable applications. My playground for tech insights and hands-on development.">
+    {%- endblock meta_og %}
     <meta name='flattr:id' content='e350d5'>
 
     {% block css -%}
@@ -20,8 +22,6 @@
       <link href='https://fonts.googleapis.com/css2?family=Niramit' rel='stylesheet'>
       <link href='//fonts.googleapis.com/css?family=Convergence' rel='stylesheet'>
       <link rel='stylesheet' href='/static/css/custom.css?v={{ GIT_REVISION }}'>
-      <link rel='stylesheet' href='/static/css/pygments-css/material.css?v={{ GIT_REVISION }}'>
-      <link rel='stylesheet' href='/static/css/syntect.css?v={{ GIT_REVISION }}'>
       <link rel='stylesheet' href='/static/css/custom-theme.css?v={{ GIT_REVISION }}'>
     {%- endblock css %}
 
