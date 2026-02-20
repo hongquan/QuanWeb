@@ -56,11 +56,147 @@ impl From<DocFormat> for EValue {
     }
 }
 
-// Struct to represent a BlogPost in the database, but with just enough fields to display in a list.
+// Struct to represent a BlogPost in the database, but with just a few fields enough to build links.
+#[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
+pub struct MiniBlogPost {
+    pub id: Uuid,
+    pub title: String,
+    pub slug: String,
+    #[serde(serialize_with = "serialize_edge_datetime")]
+    pub created_at: EDatetime,
+    #[serde(serialize_with = "serialize_optional_edge_datetime")]
+    pub updated_at: Option<EDatetime>,
+}
+
+impl MiniBlogPost {
+    pub fn to_sitemap_entry(&self, base_url: &str) -> SitemapUrl {
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        let loc = format!(
+            "{}/post/{}/{}",
+            base_url,
+            created_at.format("%Y/%m"),
+            self.slug
+        );
+        let lastmod = self
+            .updated_at
+            .map(DateTime::<Utc>::from)
+            .map(|d| format!("{}", d.format("%Y-%m-%d")));
+        SitemapUrl {
+            loc,
+            lastmod,
+            ..Default::default()
+        }
+    }
+
+    /// Generate the URL for this blog post with .md extension
+    pub fn get_markdown_url(&self, base_url: &str) -> String {
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        format!(
+            "{}/post/{}/{}.md",
+            base_url,
+            created_at.format("%Y/%m"),
+            self.slug
+        )
+    }
+}
+
+impl EdgeSelectable for MiniBlogPost {
+    fn fields_as_shape() -> String {
+        let fields = Self::FIELDS.join(", ");
+        format!("{{ {fields} }}")
+    }
+}
+
+// Struct to represent a BlogPost in the database, with all fields to display in a detail page.
 #[serde_with::apply(
     EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
     Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
 )]
+#[derive(Debug, Serialize, Queryable, FieldNames)]
+pub struct DetailedBlogPost {
+    pub id: Uuid,
+    pub title: String,
+    pub slug: String,
+    pub is_published: Option<bool>,
+    pub published_at: Option<EDatetime>,
+    pub created_at: EDatetime,
+    pub updated_at: Option<EDatetime>,
+    pub categories: Vec<BlogCategory>,
+    pub body: Option<String>,
+    pub format: DocFormat,
+    pub locale: Option<String>,
+    pub excerpt: Option<String>,
+    pub html: Option<String>,
+    pub author: Option<MiniUser>,
+    pub seo_description: Option<String>,
+    pub og_image: Option<String>,
+}
+
+impl DetailedBlogPost {
+    pub fn get_canonical_url(&self) -> String {
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
+    }
+
+    pub fn to_markdown_doc(&self) -> String {
+        // Add frontmatter
+        let created_at = DateTime::<Utc>::from(self.created_at);
+        let lines = [
+            format!("title: {}", self.title),
+            format!("date: {}", created_at),
+        ];
+        format!(
+            "---\n{}\n---\n{}\n",
+            lines.join("\n"),
+            self.body.as_ref().map_or("", |s| s.as_str())
+        )
+    }
+}
+
+impl Default for DetailedBlogPost {
+    fn default() -> Self {
+        let created_at = Utc::now().try_into().unwrap_or(EDatetime::MIN);
+        Self {
+            id: Uuid::default(),
+            title: String::default(),
+            slug: String::default(),
+            is_published: Some(false),
+            published_at: None,
+            created_at,
+            updated_at: None,
+            categories: Vec::default(),
+            body: None,
+            format: DocFormat::Md,
+            locale: None,
+            excerpt: None,
+            html: None,
+            author: None,
+            seo_description: None,
+            og_image: None,
+        }
+    }
+}
+
+impl EdgeSelectable for DetailedBlogPost {
+    fn fields_as_shape() -> String {
+        let fields: Vec<String> = Self::FIELDS
+            .into_iter()
+            .map(|s| match s {
+                "categories" => {
+                    let cat_shape = BlogCategory::fields_as_shape();
+                    format!("categories: {cat_shape}")
+                }
+                "author" => {
+                    let user_shape = MiniUser::fields_as_shape();
+                    format!("author: {user_shape}")
+                }
+                _ => s.to_string(),
+            })
+            .collect();
+        format!("{{ {} }}", fields.join(", "))
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
 pub struct MediumBlogPost {
     pub id: Uuid,
@@ -243,136 +379,6 @@ impl FromIterator<BlogCategory> for Vec<AtomCategory> {
 pub struct FeaturedCategoryBlock {
     pub category: BlogCategory,
     pub latest_posts: Vec<MiniBlogPost>,
-}
-
-// Struct to represent a BlogPost in the database, with all fields to display in a detail page.
-#[serde_with::apply(
-    EDatetime => #[serde(serialize_with = "serialize_edge_datetime")],
-    Option<EDatetime> => #[serde(serialize_with = "serialize_optional_edge_datetime")],
-)]
-#[derive(Debug, Serialize, Queryable, FieldNames)]
-pub struct DetailedBlogPost {
-    pub id: Uuid,
-    pub title: String,
-    pub slug: String,
-    pub is_published: Option<bool>,
-    pub published_at: Option<EDatetime>,
-    pub created_at: EDatetime,
-    pub updated_at: Option<EDatetime>,
-    pub categories: Vec<BlogCategory>,
-    pub body: Option<String>,
-    pub format: DocFormat,
-    pub locale: Option<String>,
-    pub excerpt: Option<String>,
-    pub html: Option<String>,
-    pub author: Option<MiniUser>,
-    pub seo_description: Option<String>,
-    pub og_image: Option<String>,
-}
-
-impl DetailedBlogPost {
-    pub fn get_canonical_url(&self) -> String {
-        let created_at = DateTime::<Utc>::from(self.created_at);
-        format!("/post/{}/{}", created_at.format("%Y/%m"), self.slug)
-    }
-
-    pub fn to_markdown_doc(&self) -> String {
-        // Add frontmatter
-        let created_at = DateTime::<Utc>::from(self.created_at);
-        let lines = [
-            format!("title: {}", self.title),
-            format!("date: {}", created_at),
-        ];
-        format!(
-            "---\n{}\n---\n{}\n",
-            lines.join("\n"),
-            self.body.as_ref().map_or("", |s| s.as_str())
-        )
-    }
-}
-
-impl Default for DetailedBlogPost {
-    fn default() -> Self {
-        let created_at = Utc::now().try_into().unwrap_or(EDatetime::MIN);
-        Self {
-            id: Uuid::default(),
-            title: String::default(),
-            slug: String::default(),
-            is_published: Some(false),
-            published_at: None,
-            created_at,
-            updated_at: None,
-            categories: Vec::default(),
-            body: None,
-            format: DocFormat::Md,
-            locale: None,
-            excerpt: None,
-            html: None,
-            author: None,
-            seo_description: None,
-            og_image: None,
-        }
-    }
-}
-
-impl EdgeSelectable for DetailedBlogPost {
-    fn fields_as_shape() -> String {
-        let fields: Vec<String> = Self::FIELDS
-            .into_iter()
-            .map(|s| match s {
-                "categories" => {
-                    let cat_shape = BlogCategory::fields_as_shape();
-                    format!("categories: {cat_shape}")
-                }
-                "author" => {
-                    let user_shape = MiniUser::fields_as_shape();
-                    format!("author: {user_shape}")
-                }
-                _ => s.to_string(),
-            })
-            .collect();
-        format!("{{ {} }}", fields.join(", "))
-    }
-}
-
-// Struct to represent a BlogPost in the database, with just a few fields enough to build links.
-#[derive(Debug, Clone, Serialize, Queryable, FieldNames)]
-pub struct MiniBlogPost {
-    pub id: Uuid,
-    pub title: String,
-    pub slug: String,
-    #[serde(serialize_with = "serialize_edge_datetime")]
-    pub created_at: EDatetime,
-    #[serde(serialize_with = "serialize_optional_edge_datetime")]
-    pub updated_at: Option<EDatetime>,
-}
-
-impl MiniBlogPost {
-    pub fn to_sitemap_entry(&self, base_url: &str) -> SitemapUrl {
-        let created_at = DateTime::<Utc>::from(self.created_at);
-        let loc = format!(
-            "{}/post/{}/{}",
-            base_url,
-            created_at.format("%Y/%m"),
-            self.slug
-        );
-        let lastmod = self
-            .updated_at
-            .map(DateTime::<Utc>::from)
-            .map(|d| format!("{}", d.format("%Y-%m-%d")));
-        SitemapUrl {
-            loc,
-            lastmod,
-            ..Default::default()
-        }
-    }
-}
-
-impl EdgeSelectable for MiniBlogPost {
-    fn fields_as_shape() -> String {
-        let fields = Self::FIELDS.join(", ");
-        format!("{{ {fields} }}")
-    }
 }
 
 // Struct to represent a BlogPost for the latest posts section on home page.

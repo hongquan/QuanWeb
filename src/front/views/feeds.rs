@@ -146,7 +146,7 @@ pub async fn gen_sitemaps(
     let posts = stores::blog::get_all_published_mini_posts(&db)
         .await
         .map_err(PageError::GelQueryError)?;
-    
+
     let entries: Vec<_> = posts
         .iter()
         .map(|p| p.to_sitemap_entry(DEFAULT_SITE_URL))
@@ -154,4 +154,31 @@ pub async fn gen_sitemaps(
     let headers = [(header::CONTENT_TYPE, "application/xml")];
     let xml = SitemapWriter::build(entries);
     Ok((StatusCode::OK, headers, xml))
+}
+
+pub async fn gen_llms_txt(
+    State(db): State<EdgeClient>,
+) -> AxumResult<(StatusCode, [(HeaderName, &'static str); 1], String)> {
+    let posts = stores::blog::get_all_published_mini_posts(&db)
+        .await
+        .map_err(PageError::GelQueryError)?;
+
+    let content_lines = vec![
+        "# QuanWeb Blog Posts".to_string(),
+        "".to_string(),
+        "This is a list of all blog posts on QuanWeb for AI agents to discover:".to_string(),
+        "".to_string(),
+    ];
+
+    let post_lines: Vec<String> = posts
+        .into_iter()
+        .map(|post| {
+            let post_url = post.get_markdown_url("");
+            format!("- [{}]({})", post.title, post_url)
+        })
+        .collect();
+
+    let content = [content_lines, post_lines].concat().join("\n");
+    let headers = [(header::CONTENT_TYPE, "text/markdown; charset=utf-8")];
+    Ok((StatusCode::OK, headers, content))
 }

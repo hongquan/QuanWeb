@@ -36,5 +36,6 @@ pub fn get_router() -> Router<AppState> {
         .route("/feeds.atom", get(views::feeds::gen_atom_feeds))
         .route("/feeds.json", get(views::feeds::gen_json_feeds))
         .route("/sitemap.xml", get(views::feeds::gen_sitemaps))
+        .route("/llms.txt", get(views::feeds::gen_llms_txt))
         .route("/api/set-lang", post(views::set_lang))
 }
