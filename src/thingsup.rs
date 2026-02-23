@@ -21,7 +21,7 @@ const UNIX_SOCKET_PREFIX: &str = "unix:";
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about)]
 pub struct AppOptions {
-    #[arg(short, action = clap::ArgAction::Count, help = "Verbosity")]
+    #[arg(short, action = clap::ArgAction::Count, help = "Verbosity", global = true)]
     pub verbose: u8,
     #[command(subcommand)]
     pub command: Commands,

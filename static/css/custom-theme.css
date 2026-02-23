@@ -242,6 +242,12 @@ a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo)
   font-size: 0.875em;
 }
 
+/* Code inside links should inherit link color to make links distinguishable */
+.entry-content a:not([class*="text-"]):not([class*="link-"])>code,
+a:not([class*="text-"]):not([class*="link-"])>code {
+  color: inherit;
+}
+
 @media (prefers-color-scheme: dark) {
 
   .entry-content :not(pre)>code,
