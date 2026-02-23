@@ -1,0 +1,13 @@
+[tools]
+gleam = "latest"
+
+[tasks.build-admin]
+description = "Build the ladmin frontend"
+run = "node_modules/.bin/vite build"
+dir = "ladmin"
+sources = ["ladmin/src/**/*", "ladmin/package.json", "ladmin/vite.config.ts"]
+
+[tasks.dev-admin]
+description = "Run dev server for the ladmin frontend"
+run = "node_modules/.bin/vite"
+dir = "ladmin"
