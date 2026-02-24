@@ -49,6 +49,7 @@ owo-colors = "4.0.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.11", features = ["serde"] }
 regex = "1.11.3"
+reqwest = { version = "0.12.9", features = ["json"] }
 rust-embed = { version = "8.7.2", features = [
     "axum",
     "mime-guess",
@@ -84,6 +85,8 @@ two-face = { version = "0.4.3", default-features = false, features = [
 unic-langid = { version = "0.9.5", features = ["serde"] }
 uuid = { version = "1.11.0", features = ["v1", "serde"] }
 validify = "2.0.0"
+nanoid = "0.4.0"
+apalis = { version = "0.7.4", features = ["limit", "tracing"] }
 
 [dev-dependencies]
 notzero = "1.1.0"

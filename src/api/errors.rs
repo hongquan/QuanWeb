@@ -32,6 +32,8 @@ pub enum ApiError {
     NotEnoughData,
     #[error(transparent)]
     ValidationErrors(#[from] validify::ValidationErrors),
+    #[error("Bunny API error: {0}")]
+    Bunny(#[from] reqwest::Error),
     #[error("Other error: {0}")]
     Other(String),
 }
@@ -72,6 +74,10 @@ impl IntoResponse for ApiError {
                 let resp: ApiErrorShape = flatten_validation_errors(e).into();
                 return (StatusCode::UNPROCESSABLE_ENTITY, Json(resp)).into_response();
             }
+            Self::Bunny(e) => {
+                tracing::error!("Bunny API error: {}", e);
+                (StatusCode::BAD_REQUEST, format!("Bunny API error: {}", e))
+            },
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message),
         };
         let payload = ApiErrorShape::from(message);

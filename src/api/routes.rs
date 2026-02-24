@@ -1,6 +1,7 @@
 use axum::routing::{Router, get, post};
 
 use super::auth;
+use super::files;
 use super::views;
 use crate::types::AppState;
 
@@ -55,4 +56,5 @@ pub fn get_router() -> Router<AppState> {
             post(views::convert_to_html_document),
         )
         .route("/generate-slug", post(views::generate_slug))
+        .nest("/files", files::routes::get_router())
 }

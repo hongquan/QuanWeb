@@ -26,7 +26,7 @@ pub async fn show_post(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<HtmlOrMd> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let (slug, is_md) = match slug_ext.split_at_checked(slug_ext.len() - 3) {
         Some((slug, ".md")) => (slug, true),
         _ => (slug_ext.as_str(), false),
@@ -88,7 +88,7 @@ pub async fn list_posts(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let current_page = paging.get_page_as_number();
     let page_size = DEFAULT_PAGE_SIZE;
     let offset = ((current_page.get() - 1) * page_size as u16) as i64;
@@ -151,7 +151,7 @@ pub async fn preview_post(
     // - For logged-in user, render as normal.
     // - For guests, redirect to canonical URL if the post is in "published" state, otherwise throwing PermissionDenied.
     let user = auth_session.user;
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let post = stores::blog::get_post(id, &db)
         .await
         .map_err(PageError::GelQueryError)?
@@ -192,7 +192,7 @@ pub async fn list_uncategorized_posts(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let current_page = paging
         .page
         .and_then(|p| NonZeroU16::new(p.parse().ok()?))

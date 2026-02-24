@@ -38,6 +38,7 @@ async fn main() -> miette::Result<()> {
     match &app_opts.command {
         Commands::Serve { bind } => serve_web(bind.as_deref()).await,
         Commands::RegenerateHtml => regenerate_html_all_posts().await,
+        Commands::Worker => run_worker().await,
     }
 }
 
@@ -56,9 +57,16 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
         miette!("Failed to create Gel client")
     })?;
     let jinja = config_jinja().into_diagnostic()?;
+    
+    // Get Bunny API key from config
+    let bunny_api_key = conf::get_bunny_api_key(&config)
+        .map_err(|e| miette!("Error getting Bunny API key: {e}"))?
+        .clone();
+    
     let app_state = AppState {
         db: client.clone(),
         jinja,
+        bunny_api_key,
     };
     let session_layer = SessionManagerLayer::new(redis_store);
 
@@ -132,6 +140,16 @@ async fn regenerate_html_all_posts() -> miette::Result<()> {
     Ok(())
 }
 
+async fn run_worker() -> miette::Result<()> {
+    tracing::info!("Starting background worker...");
+    
+    // TODO: Implement worker using apalis_redis
+    // This requires proper Redis client configuration compatible with apalis
+    tracing::info!("Worker not yet implemented");
+    
+    Ok(())
+}
+
 async fn on_shutdown_signal(sk: Option<PathBuf>) {
     let ctrl_c = async {
         signal::ctrl_c()
@@ -155,3 +173,5 @@ async fn on_shutdown_signal(sk: Option<PathBuf>) {
     }
     tracing::info!("👾 Bye!");
 }
+
+

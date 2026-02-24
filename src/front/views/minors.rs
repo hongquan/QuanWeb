@@ -18,7 +18,7 @@ pub async fn list_talks(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let presentations = get_all_talks(&db).await.map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)
@@ -40,7 +40,7 @@ pub async fn list_books(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let books = get_all_books(&db).await.map_err(PageError::GelQueryError)?;
     let lang = session
         .get::<String>(KEY_LANG)

@@ -14,6 +14,7 @@ use axum::http::StatusCode;
 use axum::http::header::{CONTENT_TYPE, LAST_MODIFIED};
 use axum::response::{Html, IntoResponse, Response};
 use chrono::{DateTime, Utc};
+
 use gel_tokio::Client;
 use http::Uri;
 use indexmap::IndexMap;
@@ -63,6 +64,7 @@ impl From<IndexMap<&str, String>> for ApiErrorShape {
 pub struct AppState {
     pub db: Client,
     pub jinja: Environment<'static>,
+    pub bunny_api_key: String,
 }
 
 #[derive(Debug)]

@@ -61,7 +61,7 @@ pub async fn list_categories(
     tracing::debug!("Total pages: {}", total_pages);
     // Create a paging struct for link generation
     let paging = super::structs::NPaging { page: Some(page), per_page: Some(per_page) };
-    let links = gen_pagination_links(&paging, count, original_uri);
+    let links = gen_pagination_links(&paging, count as usize, original_uri);
     tracing::debug!("Links: {:?}", links);
     let resp = ObjectListResponse {
         objects: categories,

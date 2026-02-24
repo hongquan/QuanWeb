@@ -8,6 +8,7 @@ pub mod errors;
 pub mod macros;
 pub mod minors;
 pub mod users;
+pub mod files;
 
 #[cfg(test)]
 pub mod tests;

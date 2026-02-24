@@ -5,6 +5,7 @@ use config::{Config, ConfigError, File};
 
 pub const KEY_SECRET: &str = "secret_key";
 pub const KEY_EDGEDB_INSTANCE: &str = "edgedb_instance";
+pub const KEY_BUNNY_API_KEY: &str = "bunny_api_key";
 pub const DEFAULT_PORT: u16 = 3721;
 pub const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -18,6 +19,7 @@ pub fn get_config() -> Result<Config, ConfigError> {
     let fallback_secret = gen_fallback_secret();
     Config::builder()
         .set_default(KEY_SECRET, fallback_secret)?
+        .set_default(KEY_BUNNY_API_KEY, "")?
         .add_source(File::with_name("base_settings.toml").required(true))
         .add_source(File::with_name("custom_settings.toml").required(false))
         .add_source(File::with_name(".secrets.toml").required(false))
@@ -31,4 +33,8 @@ pub fn get_secret_bytes(config: &Config) -> Result<Vec<u8>, Report> {
         .map_err(|e| miette!("Failed to get secret key: {e}"))?;
     tracing::debug!("Secret key: {}", secret_str);
     Ok(secret_str.as_bytes().into())
+}
+
+pub fn get_bunny_api_key(config: &Config) -> Result<String, ConfigError> {
+    config.get_string(KEY_BUNNY_API_KEY)
 }

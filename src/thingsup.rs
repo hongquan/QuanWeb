@@ -40,6 +40,8 @@ pub enum Commands {
     },
     /// Regenerate HTML body for blog posts (client-side highlighting)
     RegenerateHtml,
+    /// Run the background worker
+    Worker,
 }
 
 /// Test if current process is connected with journald

@@ -30,7 +30,7 @@ pub async fn home(
     _session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let categories = stores::blog::get_blog_categories(None, None, false, &db)
         .await
         .map_err(PageError::GelQueryError)?;
@@ -78,7 +78,7 @@ pub async fn list_recent_posts(
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<Html<String>> {
-    let AppState { db, jinja } = state;
+    let AppState { db, jinja, .. } = state;
     let current_page = paging.get_page_as_number();
     let total = stores::blog::count_all_published_posts(&db)
         .await
