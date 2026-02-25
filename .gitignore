@@ -47,6 +47,7 @@ dist-ssr
 vite-built
 built-tailwind.css
 *.local
+*.env.nu
 generated-encre.css
 
 # Added by cargo

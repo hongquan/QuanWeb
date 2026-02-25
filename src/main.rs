@@ -58,15 +58,19 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     })?;
     let jinja = config_jinja().into_diagnostic()?;
     
-    // Get Bunny API key from config
+    // Get Bunny API key and CDN host from config
     let bunny_api_key = conf::get_bunny_api_key(&config)
         .map_err(|e| miette!("Error getting Bunny API key: {e}"))?
+        .clone();
+    let bunny_cdn_host = conf::get_bunny_cdn_host(&config)
+        .map_err(|e| miette!("Error getting Bunny CDN host: {e}"))?
         .clone();
     
     let app_state = AppState {
         db: client.clone(),
         jinja,
         bunny_api_key,
+        bunny_cdn_host,
     };
     let session_layer = SessionManagerLayer::new(redis_store);
 

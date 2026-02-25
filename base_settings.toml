@@ -1,2 +1,3 @@
 edgedb_instance = 'QuanWeb'
 port = 3721
+bunny_cdn_host = 'quan-images.b-cdn.net'

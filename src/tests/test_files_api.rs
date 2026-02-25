@@ -5,6 +5,35 @@
 use crate::api::files::views::{BunnyApiResponse, FileResponse};
 use chrono::{DateTime, Utc};
 
+/// Test deserializing Bunny API response from actual JSON sample file
+#[test]
+fn test_bunny_api_response_from_json_file() {
+    let json_data = include_str!("data/bunny-browse-sample.json");
+    let responses: Vec<BunnyApiResponse> = serde_json::from_str(json_data)
+        .expect("Should deserialize Bunny API response from sample file");
+
+    assert_eq!(responses.len(), 2);
+
+    // Check first item (directory)
+    let dir = &responses[0];
+    assert_eq!(dir.guid, "c1039bf9-175a-4539-83f1-9f995d099685");
+    assert_eq!(dir.storage_zone_name, "quan-images");
+    assert_eq!(dir.path, "/quan-images/blogs/");
+    assert_eq!(dir.object_name, "2026");
+    assert_eq!(dir.length, 0);
+    assert_eq!(dir.last_changed, "2026-02-22T06:46:45.179");
+    assert_eq!(dir.is_directory, true);
+    assert_eq!(dir.server_id, 0);
+    assert_eq!(dir.user_id, "e2bf15ba-704c-4dc6-92f7-a6e80a39fbd6");
+    assert_eq!(dir.date_created, "2026-02-22T06:46:45.179");
+    assert_eq!(dir.storage_zone_id, 1320205);
+
+    // Check second item (directory)
+    let dir2 = &responses[1];
+    assert_eq!(dir2.object_name, "imgur");
+    assert_eq!(dir2.is_directory, true);
+}
+
 /// Sample Bunny API response data for mocking
 fn get_sample_bunny_api_response() -> Vec<BunnyApiResponse> {
     vec![
@@ -43,7 +72,8 @@ fn test_bunny_api_response_serialization() {
 
     for original in responses {
         let json = serde_json::to_string(&original).expect("Should serialize");
-        let deserialized: BunnyApiResponse = serde_json::from_str(&json).expect("Should deserialize");
+        let deserialized: BunnyApiResponse =
+            serde_json::from_str(&json).expect("Should deserialize");
 
         assert_eq!(original.guid, deserialized.guid);
         assert_eq!(original.object_name, deserialized.object_name);
@@ -58,8 +88,16 @@ fn test_file_response_structure() {
         name: "test.svg".to_string(),
         path: "/images/".to_string(),
         size: 2048,
-        created_at: Some(DateTime::parse_from_rfc3339("2024-01-10T08:00:00Z").unwrap().with_timezone(&Utc)),
-        modified_at: Some(DateTime::parse_from_rfc3339("2024-01-15T10:30:00Z").unwrap().with_timezone(&Utc)),
+        created_at: Some(
+            DateTime::parse_from_rfc3339("2024-01-10T08:00:00Z")
+                .unwrap()
+                .with_timezone(&Utc),
+        ),
+        modified_at: Some(
+            DateTime::parse_from_rfc3339("2024-01-15T10:30:00Z")
+                .unwrap()
+                .with_timezone(&Utc),
+        ),
         is_directory: false,
         direct_url: Some("https://quan-images.b-cdn.net/images/test.svg".to_string()),
     };
@@ -70,9 +108,18 @@ fn test_file_response_structure() {
     assert_eq!(json["path"], "/images/");
     assert_eq!(json["size"], 2048);
     assert_eq!(json["is_directory"], false);
-    assert_eq!(json["direct_url"], "https://quan-images.b-cdn.net/images/test.svg");
-    assert!(json["created_at"].is_number(), "created_at should be a timestamp");
-    assert!(json["modified_at"].is_number(), "modified_at should be a timestamp");
+    assert_eq!(
+        json["direct_url"],
+        "https://quan-images.b-cdn.net/images/test.svg"
+    );
+    assert!(
+        json["created_at"].is_string(),
+        "created_at should be an RFC3339 string"
+    );
+    assert!(
+        json["modified_at"].is_string(),
+        "modified_at should be an RFC3339 string"
+    );
 }
 
 #[test]

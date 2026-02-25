@@ -1,0 +1,36 @@
+[
+  {
+    "Guid": "c1039bf9-175a-4539-83f1-9f995d099685",
+    "StorageZoneName": "quan-images",
+    "Path": "/quan-images/blogs/",
+    "ObjectName": "2026",
+    "Length": 0,
+    "Checksum": null,
+    "ReplicatedZones": null,
+    "LastChanged": "2026-02-22T06:46:45.179",
+    "ServerId": 0,
+    "ArrayNumber": 0,
+    "IsDirectory": true,
+    "UserId": "e2bf15ba-704c-4dc6-92f7-a6e80a39fbd6",
+    "ContentType": "",
+    "DateCreated": "2026-02-22T06:46:45.179",
+    "StorageZoneId": 1320205
+  },
+  {
+    "Guid": "bf96ec64-0680-4101-98a0-893f46953544",
+    "StorageZoneName": "quan-images",
+    "Path": "/quan-images/blogs/",
+    "ObjectName": "imgur",
+    "Length": 0,
+    "Checksum": null,
+    "ReplicatedZones": null,
+    "LastChanged": "2026-01-30T04:29:01.444",
+    "ServerId": 0,
+    "ArrayNumber": 0,
+    "IsDirectory": true,
+    "UserId": "e2bf15ba-704c-4dc6-92f7-a6e80a39fbd6",
+    "ContentType": "",
+    "DateCreated": "2026-01-30T04:29:01.444",
+    "StorageZoneId": 1320205
+  }
+]

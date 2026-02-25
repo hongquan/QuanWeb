@@ -1,11 +1,12 @@
-use libpassgen::{generate_password, Pool};
-use miette::{miette, Report};
+use libpassgen::{Pool, generate_password};
+use miette::{Report, miette};
 
 use config::{Config, ConfigError, File};
 
 pub const KEY_SECRET: &str = "secret_key";
 pub const KEY_EDGEDB_INSTANCE: &str = "edgedb_instance";
 pub const KEY_BUNNY_API_KEY: &str = "bunny_api_key";
+pub const KEY_BUNNY_CDN_HOST: &str = "bunny_cdn_host";
 pub const DEFAULT_PORT: u16 = 3721;
 pub const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -37,4 +38,10 @@ pub fn get_secret_bytes(config: &Config) -> Result<Vec<u8>, Report> {
 
 pub fn get_bunny_api_key(config: &Config) -> Result<String, ConfigError> {
     config.get_string(KEY_BUNNY_API_KEY)
+}
+
+pub fn get_bunny_cdn_host(config: &Config) -> Result<String, ConfigError> {
+    config
+        .get_string(KEY_BUNNY_CDN_HOST)
+        .map(|s| s.trim_end_matches('/').into())
 }

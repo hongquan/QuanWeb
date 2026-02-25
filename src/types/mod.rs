@@ -60,11 +60,24 @@ impl From<IndexMap<&str, String>> for ApiErrorShape {
     }
 }
 
-#[derive(Debug, Clone, FromRef)]
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub db: Client,
     pub jinja: Environment<'static>,
     pub bunny_api_key: String,
+    pub bunny_cdn_host: String,
+}
+
+impl FromRef<AppState> for Client {
+    fn from_ref(state: &AppState) -> Self {
+        state.db.clone()
+    }
+}
+
+impl FromRef<AppState> for Environment<'static> {
+    fn from_ref(state: &AppState) -> Self {
+        state.jinja.clone()
+    }
 }
 
 #[derive(Debug)]
