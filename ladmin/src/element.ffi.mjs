@@ -1,4 +1,4 @@
-import { Ok, Error } from "./gleam.mjs"
+import { Result$Ok, Result$Error } from "./gleam.mjs"
 
 /**
  * Go up from the passed element to the form
@@ -18,18 +18,18 @@ export function getUpFormData(select) {
  * Get the value of a form field by name
  * @param {HTMLElement} elm - The element to start searching from
  * @param {string} name - The name of the form field
- * @returns {Error<undefined> | Ok<string>} Result containing the field value or error
+ * @returns {Result$Error<undefined> | Result$Ok<string>} Result containing the field value or error
  */
 export function getFormFieldValue(elm, name) {
   const form = elm.closest("form")
   if (!form) {
-    return new Error(undefined)
+    return new Result$Error(undefined)
   }
   const field = form.elements[name]
   if (!field) {
-    return new Error(undefined)
+    return new Result$Error(undefined)
   }
-  return new Ok(field.value)
+  return new Result$Ok(field.value)
 }
 
 /**
