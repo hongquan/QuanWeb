@@ -14,10 +14,10 @@ import core.{
 import lucide_lustre as lucide_icon
 import model.{type Model, Model}
 import routing.{PresentationEditPage}
-import view/load_indicators.{render_three_bar_pulse}
+import view/load_indicator.{render_three_bar_pulse}
 import view/skeleton
-import view/ui_components.{render_flash_messages, render_paginator}
-import view/forms.{render_presentation_form}
+import view/ui_component.{render_flash_messages, render_paginator}
+import view/form.{render_presentation_form}
 
 const class_cell = "px-4 py-4"
 

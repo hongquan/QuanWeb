@@ -26,10 +26,10 @@ import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
 import model.{type Model, Model}
 import routing.{PostEditPage, PostListPage}
-import view/forms.{render_post_form}
-import view/load_indicators.{render_three_bar_pulse}
+import view/form.{render_post_form}
+import view/load_indicator.{render_three_bar_pulse}
 import view/skeleton
-import view/ui_components.{render_flash_messages, render_paginator}
+import view/ui_component.{render_flash_messages, render_paginator}
 
 const class_cell = "px-4 py-4"
 
@@ -271,7 +271,7 @@ fn render_filter_form(
       ev.on_submit(core.PostFilterSubmitted),
     ],
     [
-      ui_components.render_search_box(initial_q),
+      ui_component.render_search_box(initial_q),
       category_select,
       h.div([a.class("sm:grow mb-0")], []),
       h.a(

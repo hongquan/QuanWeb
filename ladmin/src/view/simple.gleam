@@ -2,8 +2,8 @@ import formal/form.{type Form} as formlib
 import lustre/attribute as a
 import lustre/element/html as h
 import lustre/event as ev
-import view/ui_components.{render_flash_messages}
-import view/widgets
+import view/ui_component.{render_flash_messages}
+import view/widget
 
 import core.{
   type FlashMessage, type LoadingStatus, type LoginData, IsSubmitting,
@@ -37,10 +37,10 @@ pub fn make_login_page(
         ),
         h.form([a.method("post"), ev.on_submit(handle_submit)], [
           h.div([a.class("w-full mt-4")], [
-            widgets.create_email_field("email", "Email Address", True),
+            widget.create_email_field("email", "Email Address", True),
           ]),
           h.div([a.class("w-full mt-4")], [
-            widgets.create_password_field("password", "Password"),
+            widget.create_password_field("password", "Password"),
           ]),
           h.div([a.class("flex items-center justify-between mt-4")], [
             h.a(
@@ -52,7 +52,7 @@ pub fn make_login_page(
               ],
               [h.text("Forget Password?")],
             ),
-            widgets.auto_submit_button(
+            widget.auto_submit_button(
               core.Blue,
               "Login",
               loading_status == IsSubmitting,

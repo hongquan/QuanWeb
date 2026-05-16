@@ -314,9 +314,9 @@ fn view(model: Model) -> Element(AppMsg) {
     PresentationEditPage(id), LoggedIn(_u) ->
       presentation.render_presentation_edit_page(id, model)
     BookListPage(page), _ -> {
-      books.render_book_table_page(option.unwrap(page, 1), model)
+      book.render_book_table_page(option.unwrap(page, 1), model)
     }
-    BookEditPage(id), LoggedIn(_u) -> books.render_book_edit_page(id, model)
+    BookEditPage(id), LoggedIn(_u) -> book.render_book_edit_page(id, model)
     _, _ -> {
       echo route
       echo login_state

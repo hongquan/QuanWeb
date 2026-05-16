@@ -21,7 +21,7 @@ import core.{
 }
 import ffi
 import updates
-import view/widgets
+import view/widget
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
 
@@ -273,7 +273,7 @@ fn render_locale_field(form: Form(PostEditablePart)) {
   h.div([a.class(class_row)], [
     h.label([a.class(class_label)], [h.text("Locale")]),
     h.div([], [
-      widgets.render_single_select(
+      widget.render_single_select(
         "locale",
         choices,
         Some(formlib.field_value(form, "locale")),
@@ -289,7 +289,7 @@ fn render_author_field(form: Form(PostEditablePart), users: List(MiniUser)) {
   h.div([a.class(class_row)], [
     h.label([a.class(class_label)], [h.text("Author")]),
     h.div([], [
-      widgets.render_single_select(
+      widget.render_single_select(
         "author",
         choices,
         Some(formlib.field_value(form, "author")),
@@ -332,12 +332,12 @@ fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Msg(a)) {
     })
 
   h.div([a.class("flex flex-row space-x-4")], [
-    widgets.auto_submit_button(
+    widget.auto_submit_button(
       core.Sky,
       "Save and finish",
       loading_status == IsSubmitting,
     ),
-    widgets.manual_submit_button(
+    widget.manual_submit_button(
       core.Purple,
       "Save and stay",
       submit_stay_click_handler,
@@ -478,7 +478,7 @@ pub fn render_category_form(
 
 fn render_category_form_buttons(loading_status: LoadingStatus) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
-    widgets.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
+    widget.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
     h.button(
       [
         a.type_("reset"),
@@ -580,7 +580,7 @@ pub fn render_book_form(
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Author")]),
       h.div([a.class(class_input_col)], [
-        widgets.render_single_select(
+        widget.render_single_select(
           "author_id",
           author_choices,
           Some(formlib.field_value(form, "author_id")),
@@ -627,7 +627,7 @@ fn render_simple_form_buttons(
   ) -> Msg(b),
 ) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
-    widgets.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
+    widget.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),
     h.button(
       [
         a.type_("reset"),
