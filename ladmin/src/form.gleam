@@ -1,4 +1,4 @@
-import formal/form.{type Form}
+import formal/form.{type Form} as formlib
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -11,38 +11,38 @@ import core.{
 }
 
 pub fn create_login_form() -> Form(LoginData) {
-  form.new({
-    use email <- form.field("email", form.parse_string |> form.check_not_empty)
-    use password <- form.field(
+  formlib.new({
+    use email <- formlib.field("email", formlib.parse_string |> formlib.check_not_empty)
+    use password <- formlib.field(
       "password",
-      form.parse_string |> form.check_not_empty,
+      formlib.parse_string |> formlib.check_not_empty,
     )
-    form.success(LoginData(email:, password:))
+    formlib.success(LoginData(email:, password:))
   })
 }
 
 pub fn make_post_form(post: Option(Post)) -> Form(PostEditablePart) {
   let form =
-    form.new({
-      use title <- form.field(
+    formlib.new({
+      use title <- formlib.field(
         "title",
-        form.parse_string |> form.check_not_empty,
+        formlib.parse_string |> formlib.check_not_empty,
       )
-      use slug <- form.field("slug", form.parse_string |> form.check_not_empty)
-      use categories <- form.field(
+      use slug <- formlib.field("slug", formlib.parse_string |> formlib.check_not_empty)
+      use categories <- formlib.field(
         "categories",
-        form.parse_list(form.parse_string),
+        formlib.parse_list(formlib.parse_string),
       )
-      use body <- form.field("body", form.parse_optional(form.parse_string))
-      use locale <- form.field("locale", form.parse_optional(form.parse_string))
-      use author <- form.field("author", form.parse_string)
+      use body <- formlib.field("body", formlib.parse_optional(formlib.parse_string))
+      use locale <- formlib.field("locale", formlib.parse_optional(formlib.parse_string))
+      use author <- formlib.field("author", formlib.parse_string)
       // This field is rendered as checkbox, which has special behaviour
-      use is_published <- form.field("is_published", form.parse_checkbox)
-      use og_image <- form.field(
+      use is_published <- formlib.field("is_published", formlib.parse_checkbox)
+      use og_image <- formlib.field(
         "og_image",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      form.success(PostEditablePart(
+      formlib.success(PostEditablePart(
         title:,
         slug:,
         categories:,
@@ -80,7 +80,7 @@ pub fn make_post_form(post: Option(Post)) -> Form(PostEditablePart) {
         initial
         |> list.append(extra)
         |> list.append(serialized_categories)
-      form.add_values(form, initial)
+      formlib.add_values(form, initial)
     }
     _ -> {
       form
@@ -92,33 +92,33 @@ pub fn make_category_form(
   category: Option(Category),
 ) -> Form(CategoryEditablePart) {
   let form =
-    form.new({
-      use title <- form.field(
+    formlib.new({
+      use title <- formlib.field(
         "title",
-        form.parse_string |> form.check_not_empty,
+        formlib.parse_string |> formlib.check_not_empty,
       )
-      use slug <- form.field("slug", form.parse_string |> form.check_not_empty)
-      use title_vi <- form.field(
+      use slug <- formlib.field("slug", formlib.parse_string |> formlib.check_not_empty)
+      use title_vi <- formlib.field(
         "title_vi",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      use header_color <- form.field(
+      use header_color <- formlib.field(
         "header_color",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      use summary_en <- form.field(
+      use summary_en <- formlib.field(
         "summary_en",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      use summary_vi <- form.field(
+      use summary_vi <- formlib.field(
         "summary_vi",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      use featured_order <- form.field(
+      use featured_order <- formlib.field(
         "featured_order",
-        form.parse_optional(form.parse_int),
+        formlib.parse_optional(formlib.parse_int),
       )
-      form.success(CategoryEditablePart(
+      formlib.success(CategoryEditablePart(
         title:,
         slug:,
         title_vi:,
@@ -139,7 +139,7 @@ pub fn make_category_form(
         #("summary_vi", c.summary_vi |> option.unwrap("")),
         #("featured_order", c.featured_order |> option.map(int.to_string) |> option.unwrap("")),
       ]
-      form.add_values(form, initial)
+      formlib.add_values(form, initial)
     }
     _ -> form
   }
@@ -149,14 +149,14 @@ pub fn make_presentation_form(
   presentation: Option(Presentation),
 ) -> Form(PresentationEditablePart) {
   let form =
-    form.new({
-      use title <- form.field(
+    formlib.new({
+      use title <- formlib.field(
         "title",
-        form.parse_string |> form.check_not_empty,
+        formlib.parse_string |> formlib.check_not_empty,
       )
-      use url <- form.field("url", form.parse_string |> form.check_not_empty)
-      use event <- form.field("event", form.parse_optional(form.parse_string))
-      form.success(PresentationEditablePart(title:, url:, event:))
+      use url <- formlib.field("url", formlib.parse_string |> formlib.check_not_empty)
+      use event <- formlib.field("event", formlib.parse_optional(formlib.parse_string))
+      formlib.success(PresentationEditablePart(title:, url:, event:))
     })
   case presentation {
     Some(p) -> {
@@ -165,7 +165,7 @@ pub fn make_presentation_form(
         #("url", p.url),
         #("event", p.event |> option.unwrap("")),
       ]
-      form.add_values(form, initial)
+      formlib.add_values(form, initial)
     }
     _ -> form
   }
@@ -173,20 +173,20 @@ pub fn make_presentation_form(
 
 pub fn make_book_form(book: Option(Book)) -> Form(BookEditablePart) {
   let form =
-    form.new({
-      use title <- form.field(
+    formlib.new({
+      use title <- formlib.field(
         "title",
-        form.parse_string |> form.check_not_empty,
+        formlib.parse_string |> formlib.check_not_empty,
       )
-      use download_url <- form.field(
+      use download_url <- formlib.field(
         "download_url",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      use author_id <- form.field(
+      use author_id <- formlib.field(
         "author_id",
-        form.parse_optional(form.parse_string),
+        formlib.parse_optional(formlib.parse_string),
       )
-      form.success(BookEditablePart(title:, download_url:, author_id:))
+      formlib.success(BookEditablePart(title:, download_url:, author_id:))
     })
   case book {
     Some(b) -> {
@@ -198,7 +198,7 @@ pub fn make_book_form(book: Option(Book)) -> Form(BookEditablePart) {
           b.author |> option.map(fn(a) { a.id }) |> option.unwrap(""),
         ),
       ]
-      form.add_values(form, initial)
+      formlib.add_values(form, initial)
     }
     _ -> form
   }

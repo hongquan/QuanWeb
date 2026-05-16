@@ -18,8 +18,8 @@ import modem
 import rsvp.{HttpError}
 import store
 
-import actions
-import consts.{mounted_path}
+import action
+import constants.{mounted_path}
 import core.{
   ApiCreatedBook, ApiCreatedCategory, ApiCreatedPost, ApiCreatedPresentation,
   ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
@@ -36,19 +36,19 @@ import core.{
   UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import ffi
-import forms.{create_login_form}
-import models.{type AppMsg, type Model, Model, default_model}
-import routes.{
+import form.{create_login_form}
+import model.{type AppMsg, type Model, Model, default_model}
+import routing.{
   BookEditPage, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
   LoginPage, PostEditPage, PostListPage, PresentationEditPage,
   PresentationListPage, on_url_change, parse_to_route,
 }
 import updates
-import views/blog_posts
-import views/blog_categories
-import views/presentations
-import views/books
-import views/simple.{make_login_page}
+import view/blog_post
+import view/blog_category
+import view/presentation
+import view/book
+import view/simple.{make_login_page}
 
 pub fn main(base_path: String) -> Nil {
   let app = lustre.application(init, update, view)
@@ -105,7 +105,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     RouterInitDone -> updates.handle_router_init_done(model)
     OnRouteChange(new_route) -> {
       case new_route {
-        routes.External(url) -> {
+        routing.External(url) -> {
           io.println("To go to external: " <> uri.to_string(url))
           #(model, modem.load(url))
         }
@@ -131,7 +131,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       updates.handle_api_list_books_result(res, model)
     }
     LogOutClicked -> {
-      #(model, actions.initiate_logout())
+      #(model, action.initiate_logout())
     }
     ApiReturnedLogOutDone(Ok(_s)) -> {
       updates.handle_successful_logout(model)
@@ -147,14 +147,14 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
           }
         })
       let query = uri.query_to_string(cleaned_data)
-      let #(path, _q) = routes.to_uri_parts(route) |> routes.prefix
+      let #(path, _q) = routing.to_uri_parts(route) |> routing.prefix
       #(model, modem.push(path, Some(query), None))
     }
     ApiReturnedSinglePost(res) ->
       updates.handle_api_retrieve_post_result(res, model)
     SlugGeneratorClicked(title) -> #(
       model,
-      actions.initiate_generate_slug(title),
+      action.initiate_generate_slug(title),
     )
     ApiReturnedSlug(res) -> {
       #(updates.handle_api_slug_generation(res, model), effect.none())
@@ -169,15 +169,15 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     | ApiCreatedCategory(Error(HttpError(Response(401, ..))))
     | ApiUpdatedCategory(Error(HttpError(Response(401, ..))))
     | ApiDeletedContentItem(Error(HttpError(Response(401, ..)))) -> {
-      let attempt = routes.as_uri(model.route)
+      let attempt = routing.as_uri(model.route)
       let flash_messages = [
-        models.create_info_message("Please login..."),
+        model.create_info_message("Please login..."),
         ..model.flash_messages
       ]
       let model = Model(..model, login_state: NonLogin, flash_messages:)
       io.println("Redirecting to Login page...")
       echo LoginPage(attempt)
-      #(model, routes.goto(LoginPage(attempt)))
+      #(model, routing.goto(LoginPage(attempt)))
     }
     ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
@@ -198,7 +198,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       effect.none(),
     )
     UserClickMarkdownPreview(s) -> {
-      #(model, actions.try_render_markdown_via_api(s))
+      #(model, action.try_render_markdown_via_api(s))
     }
     ApiRenderedMarkdown(Ok(html)) -> {
       updates.handle_rendered_markdown_received(html, model)
@@ -216,15 +216,15 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     FormCancelClicked -> {
       let whatsnext = case route {
-        CategoryEditPage(..) -> routes.goto(CategoryListPage(None, None))
+        CategoryEditPage(..) -> routing.goto(CategoryListPage(None, None))
         PostEditPage(..) -> {
-          routes.goto(PostListPage(None, None, None))
+          routing.goto(PostListPage(None, None, None))
         }
         PresentationEditPage(..) -> {
-          routes.goto(PresentationListPage(None))
+          routing.goto(PresentationListPage(None))
         }
         BookEditPage(..) -> {
-          routes.goto(BookListPage(None))
+          routing.goto(BookListPage(None))
         }
         _ -> effect.none()
       }
@@ -252,7 +252,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
     UserConfirmedDeletion(id) -> {
       let model = Model(..model, loading_status: IsSubmitting)
-      let whatnext = actions.delete_content_item_via_api(id)
+      let whatnext = action.delete_content_item_via_api(id)
       #(model, whatnext)
     }
     ApiDeletedContentItem(res) -> {
@@ -300,19 +300,19 @@ fn view(model: Model) -> Element(AppMsg) {
     LoginPage(_u), TryingLogin(form) ->
       make_login_page(model.loading_status, form, model.flash_messages)
     PostListPage(p, q, cat_id), _ -> {
-      blog_posts.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
+      blog_post.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
-    PostEditPage(id), LoggedIn(_u) -> blog_posts.render_post_edit_page(id, model)
+    PostEditPage(id), LoggedIn(_u) -> blog_post.render_post_edit_page(id, model)
     CategoryListPage(page, sort), _ -> {
-      blog_categories.render_category_table_page(option.unwrap(page, 1), sort, model)
+      blog_category.render_category_table_page(option.unwrap(page, 1), sort, model)
     }
     CategoryEditPage(id), LoggedIn(_u) ->
-      blog_categories.render_category_edit_page(id, model)
+      blog_category.render_category_edit_page(id, model)
     PresentationListPage(page), _ -> {
-      presentations.render_presentation_table_page(option.unwrap(page, 1), model)
+      presentation.render_presentation_table_page(option.unwrap(page, 1), model)
     }
     PresentationEditPage(id), LoggedIn(_u) ->
-      presentations.render_presentation_edit_page(id, model)
+      presentation.render_presentation_edit_page(id, model)
     BookListPage(page), _ -> {
       books.render_book_table_page(option.unwrap(page, 1), model)
     }

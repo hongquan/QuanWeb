@@ -15,7 +15,7 @@ import lustre/event as ev
 import lustre/portal
 import plinth/browser/element as br_element
 
-import consts
+import constants
 import core.{
   type MiniPost, ContentItemDeletionClicked, IsLoading, LogOutClicked,
   PageOwnedPosts, PostId,
@@ -24,12 +24,12 @@ import ffi
 import gleam/json
 import icons/heroicons.{globe_asia_australia}
 import lucide_lustre as lucide_icon
-import models.{type Model, Model}
-import routes.{PostEditPage, PostListPage}
-import views/forms.{render_post_form}
-import views/load_indicators.{render_three_bar_pulse}
-import views/skeleton
-import views/ui_components.{render_flash_messages, render_paginator}
+import model.{type Model, Model}
+import routing.{PostEditPage, PostListPage}
+import view/forms.{render_post_form}
+import view/load_indicators.{render_three_bar_pulse}
+import view/skeleton
+import view/ui_components.{render_flash_messages, render_paginator}
 
 const class_cell = "px-4 py-4"
 
@@ -105,7 +105,7 @@ pub fn render_post_table_page(
 
       let initial_q = q |> option.unwrap("")
       let initial_cat_id = cat_id |> option.unwrap("")
-      let url_new_post = routes.as_url_string(PostEditPage(""))
+      let url_new_post = routing.as_url_string(PostEditPage(""))
 
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
@@ -161,11 +161,11 @@ fn render_post_row(
   let category_links =
     post.categories
     |> list.map(fn(c) {
-      let url = routes.as_url_string(PostListPage(None, None, Some(c.id)))
+      let url = routing.as_url_string(PostListPage(None, None, Some(c.id)))
       h.a([a.href(url), a.class("hover:underline")], [h.text(c.title)])
     })
     |> list.intersperse(h.text(", "))
-  let url = routes.as_url_string(PostEditPage(post.id))
+  let url = routing.as_url_string(PostEditPage(post.id))
   let #(creation_date, _t) =
     timestamp.to_calendar(post.created_at, local_offset())
   let pub_url =
@@ -319,7 +319,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
         |> option.map(fn(content) {
           h.dialog(
             [
-              a.class(consts.selector_post_body_preview_dialog),
+              a.class(constants.selector_post_body_preview_dialog),
               a.class(
                 "p-4 w-screen sm:start-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2 sm:w-120 md:w-220 h-120 rounded-lg",
               ),

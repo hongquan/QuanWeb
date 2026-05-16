@@ -9,7 +9,7 @@ import lustre/element/keyed
 
 import core.{type FlashMessage, Danger, Info, Success, Warning}
 import lucide_lustre as icons
-import routes
+import routing
 
 const class_active = "text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-white dark:hover:bg-blue-500 dark:hover:text-gray-200"
 
@@ -41,7 +41,7 @@ pub fn render_paginator(
     })
   let prev_page = int.clamp(current_page - 1, 1, total)
   let prev_query_string =
-    url_query |> routes.replace_page(prev_page) |> uri.query_to_string
+    url_query |> routing.replace_page(prev_page) |> uri.query_to_string
   let prev_link = #(
     "prev",
     h.a(
@@ -66,7 +66,7 @@ pub fn render_paginator(
   )
   let next_page = int.clamp(current_page + 1, 1, total)
   let next_query_string =
-    url_query |> routes.replace_page(next_page) |> uri.query_to_string
+    url_query |> routing.replace_page(next_page) |> uri.query_to_string
   let next_link = #(
     "next",
     h.a(
@@ -192,7 +192,7 @@ fn make_html_from_link(
         _ -> a.none()
       }
       let new_query =
-        url_query |> routes.replace_page(lk.page) |> uri.query_to_string
+        url_query |> routing.replace_page(lk.page) |> uri.query_to_string
       h.a(
         [
           a.class("px-3 py-2 leading-tight min-w-8"),

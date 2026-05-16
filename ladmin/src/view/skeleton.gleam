@@ -5,7 +5,7 @@ import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
 
-import routes.{
+import routing.{
   type Route, BookListPage, CategoryListPage, PostListPage, PresentationListPage,
   are_routes_matched,
 }
@@ -77,7 +77,7 @@ pub fn render_tab_navbar(current_route: Route) {
       h.li([], [
         h.a(
           [
-            a.href(routes.as_url_string(link_route)),
+            a.href(routing.as_url_string(link_route)),
             a.class(class_link_common),
             case are_routes_matched(current_route, link_route) {
               True -> a.class(class_link_active)

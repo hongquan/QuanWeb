@@ -1,4 +1,4 @@
-import consts
+import constants
 import decoders
 import gleam/dynamic/decode.{type Decoder}
 import gleam/io
@@ -45,7 +45,7 @@ pub fn load_store() -> Result(Store, Nil) {
     |> result.map_error(fn(_e) {
       io.println_error("Failed to acquire localStorage!")
     })
-    |> result.try(storage.get_item(_, consts.key_store))
+    |> result.try(storage.get_item(_, constants.key_store))
   case raw {
     Ok(s) ->
       json.parse(s, store_decoder())
@@ -70,7 +70,7 @@ pub fn save_user(user: User) {
   |> result.map_error(fn(_e) {
     io.println_error("Failed to acquire localStorage!")
   })
-  |> result.try(storage.set_item(_, consts.key_store, raw))
+  |> result.try(storage.set_item(_, constants.key_store, raw))
 }
 
 pub fn destroy() {
@@ -78,6 +78,6 @@ pub fn destroy() {
   |> result.map_error(fn(_e) {
     io.println_error("Failed to acquire localStorage!")
   })
-  |> result.map(storage.remove_item(_, consts.key_store))
+  |> result.map(storage.remove_item(_, constants.key_store))
   |> result.unwrap(Nil)
 }

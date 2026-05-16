@@ -1,5 +1,5 @@
 import formal/form.{type Form} as formlib
-import forms
+import form
 import gleam/dynamic/decode
 import gleam/http/response.{Response}
 import gleam/io
@@ -16,8 +16,8 @@ import plinth/browser/element.{type Element}
 import rsvp
 import store
 
-import actions
-import consts
+import action
+import constants
 import core.{
   type ApiListingResponse, type Book, type BookAuthor, type BookEditablePart,
   type Category, type CategoryEditablePart, type ContentItemId, type LoginData,
@@ -28,8 +28,8 @@ import core.{
   PageOwnedPresentations, PostFormSubmitted, PostId, PresentationId, TryingLogin,
 }
 import ffi
-import models.{type AppMsg, type Model, Model}
-import routes.{
+import model.{type AppMsg, type Model, Model}
+import routing.{
   type Route, BookEditPage, BookListPage, CategoryEditPage, CategoryListPage,
   HomePage, LoginPage, PostEditPage, PostListPage, PresentationEditPage,
   PresentationListPage,
@@ -49,17 +49,17 @@ pub fn handle_router_init_done(model: Model) {
     LoginPage(_u), _ -> #(effect.none(), core.Idle)
     // If user has already logged-in, and visiting HomePage, redirect to PostList
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None)), core.Idle)
+      #(routing.goto(PostListPage(None, None, None)), core.Idle)
     }
     // In PostList page, call API to load posts
     PostListPage(Some(p), _q, _c), _ if p < 1 -> #(
-      routes.goto(PostListPage(None, None, None)),
+      routing.goto(PostListPage(None, None, None)),
       core.Idle,
     )
     PostListPage(p, q, cat_id), LoggedIn(_u) -> {
-      let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
+      let load_posts_action = action.load_posts(option.unwrap(p, 1), q, cat_id)
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1, False)
+        [], _o -> action.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
@@ -67,66 +67,66 @@ pub fn handle_router_init_done(model: Model) {
     PostEditPage(id), _ -> {
       let #(load_post_action, loading_status) = case id {
         "" -> #(effect.none(), core.Idle)
-        s -> #(actions.load_single_post(s), IsLoading)
+        s -> #(action.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1, False)
+        [], _o -> action.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(
         effect.batch([
           load_post_action,
           load_categories_action,
-          actions.load_users(),
+          action.load_users(),
         ]),
         loading_status,
       )
     }
     // In CategoryListPagei page, call API to load categories
     CategoryListPage(Some(p), sort), _ if p < 1 -> {
-      #(routes.goto(CategoryListPage(None, sort)), core.Idle)
+      #(routing.goto(CategoryListPage(None, sort)), core.Idle)
     }
     CategoryListPage(p, sort), _ -> {
-      let sort_by_featured = sort == Some(routes.SortByFeatured)
-      #(actions.load_categories(option.unwrap(p, 1), sort_by_featured), IsLoading)
+      let sort_by_featured = sort == Some(routing.SortByFeatured)
+      #(action.load_categories(option.unwrap(p, 1), sort_by_featured), IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
-      #(actions.load_single_category(id), IsLoading)
+      #(action.load_single_category(id), IsLoading)
     }
     PresentationListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(routes.PresentationListPage(None)), core.Idle)
+      #(routing.goto(routing.PresentationListPage(None)), core.Idle)
     }
     PresentationListPage(p), _ -> {
-      #(actions.load_presentations(option.unwrap(p, 1)), IsLoading)
+      #(action.load_presentations(option.unwrap(p, 1)), IsLoading)
     }
     BookListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(routes.BookListPage(None)), core.Idle)
+      #(routing.goto(routing.BookListPage(None)), core.Idle)
     }
     BookListPage(p), _ -> {
-      #(actions.load_books(option.unwrap(p, 1)), IsLoading)
+      #(action.load_books(option.unwrap(p, 1)), IsLoading)
     }
     // Already logged in, just serve, no redirect
     _, LoggedIn(_u) -> #(effect.none(), core.Idle)
     r, _ -> {
-      let attempt = routes.as_uri(r)
-      #(routes.goto(LoginPage(attempt)), core.Idle)
+      let attempt = routing.as_uri(r)
+      #(routing.goto(LoginPage(attempt)), core.Idle)
     }
   }
   // If the initial page is the "create post" page, create a form
   let post_form = case route {
-    PostEditPage("") -> Some(forms.make_post_form(None))
+    PostEditPage("") -> Some(form.make_post_form(None))
     _ -> model.post_form
   }
   let category_form = case route {
-    CategoryEditPage("") -> Some(forms.make_category_form(None))
+    CategoryEditPage("") -> Some(form.make_category_form(None))
     _ -> model.category_form
   }
   let presentation_form = case route {
-    PresentationEditPage("") -> Some(forms.make_presentation_form(None))
+    PresentationEditPage("") -> Some(form.make_presentation_form(None))
     _ -> model.presentation_form
   }
   let book_form = case route {
-    BookEditPage("") -> Some(forms.make_book_form(None))
+    BookEditPage("") -> Some(form.make_book_form(None))
     _ -> model.book_form
   }
   let model = Model(..model, loading_status:, post_form:, category_form:, presentation_form:, book_form:)
@@ -141,7 +141,7 @@ pub fn handle_login_submission(
     Ok(login_data) -> {
       let model = Model(..model, loading_status: IsSubmitting)
       // Form is validated, call API
-      #(model, actions.login_via_api(login_data))
+      #(model, action.login_via_api(login_data))
     }
     Error(form) -> {
       echo formlib.all_errors(form)
@@ -159,7 +159,7 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
       let login_state = LoggedIn(user)
       // User has logged-in successfully. Redirect to the previous attempt page.
       // But don't redirect to LoginPage.
-      let login_uri = routes.as_uri(LoginPage(uri.empty))
+      let login_uri = routing.as_uri(LoginPage(uri.empty))
       echo model.route
       let go_next = case model.route {
         LoginPage(attempt_uri) -> {
@@ -167,7 +167,7 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
             "To redirect to attempt URI " <> uri.to_string(attempt_uri),
           )
           case attempt_uri.path == login_uri.path {
-            True -> routes.goto(HomePage)
+            True -> routing.goto(HomePage)
             False ->
               modem.push(
                 attempt_uri.path,
@@ -176,17 +176,17 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
               )
           }
         }
-        _ -> routes.goto(HomePage)
+        _ -> routing.goto(HomePage)
       }
       let model = Model(..model, login_state:)
       // Save to localstorage
       store.save_user(user) |> result.unwrap(Nil)
       let flash_messages = [
-        models.create_success_message("Login successfully!"),
+        model.create_success_message("Login successfully!"),
         ..model.flash_messages
       ]
       let model = Model(..model, flash_messages:)
-      let schedule = models.schedule_cleaning_flash_messages()
+      let schedule = model.schedule_cleaning_flash_messages()
       #(model, effect.batch([go_next, schedule]))
     }
     Error(err) -> {
@@ -247,7 +247,7 @@ pub fn handle_api_list_post_result(
     Error(e) -> {
       io.println_error("Posts API failed")
       echo e
-      let message = models.create_danger_message("Failed to load posts")
+      let message = model.create_danger_message("Failed to load posts")
       let Model(flash_messages:, ..) = model
       Model(
         ..model,
@@ -263,15 +263,15 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
   // Delete user from localStorage
   store.destroy()
   let flash_messages = [
-    models.create_info_message("Logged out successfully."),
+    model.create_info_message("Logged out successfully."),
     ..model.flash_messages
   ]
 
   let model = Model(..model, login_state:, flash_messages:)
   let gonext =
     effect.batch([
-      routes.goto(HomePage),
-      models.schedule_cleaning_flash_messages(),
+      routing.goto(HomePage),
+      model.schedule_cleaning_flash_messages(),
     ])
   #(model, gonext)
 }
@@ -279,23 +279,23 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
 pub fn handle_landing_on_page(new_route: Route, model: Model) {
   let Model(categories:, partial_load_categories:, ..) = model
   let login_state = case new_route, model.login_state {
-    LoginPage(_u), NonLogin -> TryingLogin(forms.create_login_form())
+    LoginPage(_u), NonLogin -> TryingLogin(form.create_login_form())
     _, state -> state
   }
   let #(go_next, loading_status) = case new_route, login_state {
     // If user has logged-in, redirect to "/posts" page
     HomePage, LoggedIn(_u) -> {
-      #(routes.goto(PostListPage(None, None, None)), core.Idle)
+      #(routing.goto(PostListPage(None, None, None)), core.Idle)
     }
     // If user has not logged-in, redirect to Login page
     r, NonLogin -> {
-      let attempt = routes.as_uri(r)
-      #(routes.goto(LoginPage(attempt)), core.Idle)
+      let attempt = routing.as_uri(r)
+      #(routing.goto(LoginPage(attempt)), core.Idle)
     }
     PostListPage(p, q, cat_id), _ -> {
-      let load_posts_action = actions.load_posts(option.unwrap(p, 1), q, cat_id)
+      let load_posts_action = action.load_posts(option.unwrap(p, 1), q, cat_id)
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1, False)
+        [], _o -> action.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(effect.batch([load_posts_action, load_categories_action]), IsLoading)
@@ -303,71 +303,71 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     PostEditPage(id), _ -> {
       let #(load_post_action, loading_status) = case id {
         "" -> #(effect.none(), core.Idle)
-        s -> #(actions.load_single_post(s), IsLoading)
+        s -> #(action.load_single_post(s), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
-        [], _o -> actions.load_categories(1, False)
+        [], _o -> action.load_categories(1, False)
         _, _ -> effect.none()
       }
       #(
         effect.batch([
           load_post_action,
           load_categories_action,
-          actions.load_users(),
+          action.load_users(),
         ]),
         loading_status,
       )
     }
     CategoryListPage(p, sort), _ -> {
-      let sort_by_featured = sort == Some(routes.SortByFeatured)
-      let load_categories_action = actions.load_categories(option.unwrap(p, 1), sort_by_featured)
+      let sort_by_featured = sort == Some(routing.SortByFeatured)
+      let load_categories_action = action.load_categories(option.unwrap(p, 1), sort_by_featured)
       #(load_categories_action, IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
-      #(actions.load_single_category(id), IsLoading)
+      #(action.load_single_category(id), IsLoading)
     }
     PresentationListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(routes.PresentationListPage(None)), core.Idle)
+      #(routing.goto(routing.PresentationListPage(None)), core.Idle)
     }
     PresentationListPage(p), _ -> {
-      #(actions.load_presentations(option.unwrap(p, 1)), IsLoading)
+      #(action.load_presentations(option.unwrap(p, 1)), IsLoading)
     }
     PresentationEditPage(id), _ -> {
       let #(load_action, loading_status) = case id {
         "" -> #(effect.none(), core.Idle)
-        s -> #(actions.load_single_presentation(s), IsLoading)
+        s -> #(action.load_single_presentation(s), IsLoading)
       }
       #(load_action, loading_status)
     }
     BookListPage(Some(p)), _ if p < 1 -> {
-      #(routes.goto(routes.BookListPage(None)), core.Idle)
+      #(routing.goto(routing.BookListPage(None)), core.Idle)
     }
     BookListPage(p), _ -> {
-      #(actions.load_books(option.unwrap(p, 1)), IsLoading)
+      #(action.load_books(option.unwrap(p, 1)), IsLoading)
     }
     BookEditPage(id), _ -> {
       let #(load_action, loading_status) = case id {
-        "" -> #(actions.load_book_authors(), IsLoading)
-        s -> #(effect.batch([actions.load_single_book(s), actions.load_book_authors()]), IsLoading)
+        "" -> #(action.load_book_authors(), IsLoading)
+        s -> #(effect.batch([action.load_single_book(s), action.load_book_authors()]), IsLoading)
       }
       #(load_action, loading_status)
     }
     _, _ -> #(effect.none(), core.Idle)
   }
   let post_form = case new_route {
-    PostEditPage("") -> Some(forms.make_post_form(None))
+    PostEditPage("") -> Some(form.make_post_form(None))
     _ -> model.post_form
   }
   let category_form = case new_route {
-    CategoryEditPage("") -> Some(forms.make_category_form(None))
+    CategoryEditPage("") -> Some(form.make_category_form(None))
     _ -> model.category_form
   }
   let presentation_form = case new_route {
-    PresentationEditPage("") -> Some(forms.make_presentation_form(None))
+    PresentationEditPage("") -> Some(form.make_presentation_form(None))
     _ -> model.presentation_form
   }
   let book_form = case new_route {
-    BookEditPage("") -> Some(forms.make_book_form(None))
+    BookEditPage("") -> Some(form.make_book_form(None))
     _ -> model.book_form
   }
   let page_owned_objects = case new_route {
@@ -400,7 +400,7 @@ pub fn handle_api_list_category_result(
     Error(e) -> {
       io.println_error("Categories API failed")
       echo e
-      let message = models.create_danger_message("Failed to load posts")
+      let message = model.create_danger_message("Failed to load posts")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -422,7 +422,7 @@ pub fn handle_api_list_category_result(
             Some(u) -> {
               #(
                 Model(..model, partial_load_categories: categories),
-                actions.load_categories_by_url(u),
+                action.load_categories_by_url(u),
               )
             }
             None -> {
@@ -462,13 +462,13 @@ pub fn handle_api_retrieve_post_result(
 ) {
   case res {
     Ok(p) -> {
-      let form = forms.make_post_form(Some(p))
+      let form = form.make_post_form(Some(p))
       let model =
         Model(..model, post_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load post")
+      let message = model.create_danger_message("Failed to load post")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -515,8 +515,8 @@ pub fn handle_post_form_submission(
   case res {
     Ok(data) -> {
       let whatsnext = case model.route {
-        PostEditPage("") -> actions.create_post_via_api(data)
-        PostEditPage(id) -> actions.update_post_via_api(id, data, stay)
+        PostEditPage("") -> action.create_post_via_api(data)
+        PostEditPage(id) -> action.update_post_via_api(id, data, stay)
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -537,27 +537,27 @@ pub fn handle_api_update_post_result(
 ) {
   case res {
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save post.")
+      let message = model.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
     Ok(post) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Post " <> post.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
       let gonext = case stay {
-        False -> routes.goto(PostListPage(None, None, None))
+        False -> routing.goto(PostListPage(None, None, None))
         True -> effect.none()
       }
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
+          model.schedule_cleaning_flash_messages(),
           gonext,
         ]),
       )
@@ -573,20 +573,20 @@ pub fn handle_api_create_post_result(
 ) {
   case res {
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save post.")
+      let message = model.create_danger_message("Failed to save post.")
       let flash_messages = [message, ..model.flash_messages]
       #(Model(..model, flash_messages:), effect.none())
     }
     Ok(post) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Post " <> post.title <> " has been created.",
         )
       let flash_messages = [message, ..model.flash_messages]
       let whatsnext =
         effect.batch([
-          routes.goto(PostEditPage(post.id)),
-          models.schedule_cleaning_flash_messages(),
+          routing.goto(PostEditPage(post.id)),
+          model.schedule_cleaning_flash_messages(),
         ])
       #(Model(..model, flash_messages:), whatsnext)
     }
@@ -623,7 +623,7 @@ pub fn handle_rendered_markdown_received(html: String, model: Model) {
   let model = Model(..model, post_body_preview: Some(html))
   let whatsnext = {
     use _dispatch, _root <- effect.after_paint
-    ffi.show_dialog("." <> consts.selector_post_body_preview_dialog)
+    ffi.show_dialog("." <> constants.selector_post_body_preview_dialog)
     Nil
   }
   #(model, whatsnext)
@@ -682,13 +682,13 @@ pub fn handle_api_retrieve_category_result(
 ) {
   case res {
     Ok(cat) -> {
-      let form = forms.make_category_form(Some(cat))
+      let form = form.make_category_form(Some(cat))
       let model =
         Model(..model, category_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load category")
+      let message = model.create_danger_message("Failed to load category")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -708,8 +708,8 @@ pub fn handle_category_form_submission(
   case res {
     Ok(data) -> {
       let whatsnext = case model.route {
-        CategoryEditPage("") -> actions.create_category_via_api(data)
-        CategoryEditPage(id) -> actions.update_category_via_api(id, data)
+        CategoryEditPage("") -> action.create_category_via_api(data)
+        CategoryEditPage(id) -> action.update_category_via_api(id, data)
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -728,24 +728,24 @@ pub fn handle_api_update_category_result(
   case res {
     Ok(cat) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Category " <> cat.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(CategoryListPage(None, None)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(CategoryListPage(None, None)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save category.")
+      let message = model.create_danger_message("Failed to save category.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -758,24 +758,24 @@ pub fn handle_api_create_category_result(
   case res {
     Ok(cat) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Category " <> cat.title <> " has been created.",
         )
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(CategoryEditPage(cat.id)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(CategoryEditPage(cat.id)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save category.")
+      let message = model.create_danger_message("Failed to save category.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -861,22 +861,22 @@ pub fn handle_api_delete_content_item_result(
         }
       }
       let flash_messages = case
-        message |> option.map(models.create_success_message)
+        message |> option.map(model.create_success_message)
       {
         Some(m) -> [m, ..model.flash_messages]
         None -> model.flash_messages
       }
       #(
         Model(..model, flash_messages:, page_owned_objects:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to delete.")
+      let message = model.create_danger_message("Failed to delete.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -905,7 +905,7 @@ pub fn handle_api_list_presentations_result(
     Error(e) -> {
       io.println_error("Presentations API failed")
       echo e
-      let message = models.create_danger_message("Failed to load presentations")
+      let message = model.create_danger_message("Failed to load presentations")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -941,7 +941,7 @@ pub fn handle_api_list_books_result(
     Error(e) -> {
       io.println_error("Books API failed")
       echo e
-      let message = models.create_danger_message("Failed to load books")
+      let message = model.create_danger_message("Failed to load books")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -961,13 +961,13 @@ pub fn handle_api_retrieve_presentation_result(
 ) {
   case res {
     Ok(p) -> {
-      let form = forms.make_presentation_form(Some(p))
+      let form = form.make_presentation_form(Some(p))
       let model =
         Model(..model, presentation_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load presentation")
+      let message = model.create_danger_message("Failed to load presentation")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -987,8 +987,8 @@ pub fn handle_presentation_form_submission(
   case res {
     Ok(data) -> {
       let whatsnext = case model.route {
-        PresentationEditPage("") -> actions.create_presentation_via_api(data)
-        PresentationEditPage(id) -> actions.update_presentation_via_api(id, data)
+        PresentationEditPage("") -> action.create_presentation_via_api(data)
+        PresentationEditPage(id) -> action.update_presentation_via_api(id, data)
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -1007,24 +1007,24 @@ pub fn handle_api_update_presentation_result(
   case res {
     Ok(p) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Presentation " <> p.title <> " has been updated.",
         )
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(PresentationListPage(None)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(PresentationListPage(None)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save presentation.")
+      let message = model.create_danger_message("Failed to save presentation.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -1037,24 +1037,24 @@ pub fn handle_api_create_presentation_result(
   case res {
     Ok(p) -> {
       let message =
-        models.create_success_message(
+        model.create_success_message(
           "Presentation " <> p.title <> " has been created.",
         )
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(PresentationEditPage(p.id)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(PresentationEditPage(p.id)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save presentation.")
+      let message = model.create_danger_message("Failed to save presentation.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -1067,12 +1067,12 @@ pub fn handle_api_retrieve_book_result(
 ) {
   case res {
     Ok(b) -> {
-      let form = forms.make_book_form(Some(b))
+      let form = form.make_book_form(Some(b))
       let model = Model(..model, book_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load book")
+      let message = model.create_danger_message("Failed to load book")
       let Model(flash_messages:, ..) = model
       let model =
         Model(
@@ -1092,8 +1092,8 @@ pub fn handle_book_form_submission(
   case res {
     Ok(data) -> {
       let whatsnext = case model.route {
-        BookEditPage("") -> actions.create_book_via_api(data)
-        BookEditPage(id) -> actions.update_book_via_api(id, data)
+        BookEditPage("") -> action.create_book_via_api(data)
+        BookEditPage(id) -> action.update_book_via_api(id, data)
         _ -> effect.none()
       }
       #(model, whatsnext)
@@ -1112,22 +1112,22 @@ pub fn handle_api_update_book_result(
   case res {
     Ok(b) -> {
       let message =
-        models.create_success_message("Book " <> b.title <> " has been updated.")
+        model.create_success_message("Book " <> b.title <> " has been updated.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(BookListPage(None)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(BookListPage(None)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save book.")
+      let message = model.create_danger_message("Failed to save book.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -1140,22 +1140,22 @@ pub fn handle_api_create_book_result(
   case res {
     Ok(b) -> {
       let message =
-        models.create_success_message("Book " <> b.title <> " has been created.")
+        model.create_success_message("Book " <> b.title <> " has been created.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
         effect.batch([
-          models.schedule_cleaning_flash_messages(),
-          routes.goto(BookEditPage(b.id)),
+          model.schedule_cleaning_flash_messages(),
+          routing.goto(BookEditPage(b.id)),
         ]),
       )
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to save book.")
+      let message = model.create_danger_message("Failed to save book.")
       let flash_messages = [message, ..model.flash_messages]
       #(
         Model(..model, flash_messages:),
-        models.schedule_cleaning_flash_messages(),
+        model.schedule_cleaning_flash_messages(),
       )
     }
   }
@@ -1171,7 +1171,7 @@ pub fn handle_api_book_authors_result(
       #(model, effect.none())
     }
     Error(_e) -> {
-      let message = models.create_danger_message("Failed to load book authors")
+      let message = model.create_danger_message("Failed to load book authors")
       let Model(flash_messages:, ..) = model
       let model =
         Model(

@@ -2,13 +2,13 @@ import formal/form.{type Form} as formlib
 import lustre/attribute as a
 import lustre/element/html as h
 import lustre/event as ev
-import views/ui_components.{render_flash_messages}
+import view/ui_components.{render_flash_messages}
+import view/widgets
 
 import core.{
   type FlashMessage, type LoadingStatus, type LoginData, IsSubmitting,
   UserSubmittedLoginForm,
 }
-import views/widgets
 
 pub fn make_login_page(
   loading_status: LoadingStatus,

@@ -3,7 +3,7 @@ import gleam/list
 import gleam/option.{type Option, Some}
 import lustre/attribute as a
 import lustre/element/html as h
-import views/load_indicators
+import view/load_indicators
 
 pub fn create_email_field(field_name: String, label: String, autofocus: Bool) {
   h.input([

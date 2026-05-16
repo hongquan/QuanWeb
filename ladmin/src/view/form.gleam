@@ -21,7 +21,7 @@ import core.{
 }
 import ffi
 import updates
-import views/widgets
+import view/widgets
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
 

@@ -13,12 +13,13 @@ import core.{
   ContentItemDeletionClicked, CategoryId,
 }
 import lucide_lustre as lucide_icon
-import models.{type Model, Model}
-import routes.{type CategorySort, CategoryEditPage, SortByFeatured}
-import views/forms
-import views/load_indicators.{render_three_bar_pulse}
-import views/skeleton
-import views/ui_components.{render_flash_messages, render_paginator}
+import model.{type Model, Model}
+import routing.{type CategorySort, CategoryEditPage, SortByFeatured}
+
+import view/load_indicators.{render_three_bar_pulse}
+import view/skeleton
+import view/ui_components.{render_flash_messages, render_paginator}
+import view/forms.{render_category_form}
 
 const class_cell = "px-4 py-4"
 
@@ -88,7 +89,7 @@ pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: 
           ],
         )
 
-      let url_new_category = routes.as_url_string(CategoryEditPage(""))
+      let url_new_category = routing.as_url_string(CategoryEditPage(""))
       let link_create_category =
         h.a(
           [
@@ -103,8 +104,8 @@ pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: 
       // Sort mode toggle buttons - navigate to URL with sort parameter
       let sort_by_title_active = sort == None
       let sort_by_featured_active = sort == Some(SortByFeatured)
-      let title_sort_url = routes.as_url_string(routes.CategoryListPage(Some(page), None))
-      let featured_sort_url = routes.as_url_string(routes.CategoryListPage(Some(page), Some(SortByFeatured)))
+      let title_sort_url = routing.as_url_string(routing.CategoryListPage(Some(page), None))
+      let featured_sort_url = routing.as_url_string(routing.CategoryListPage(Some(page), Some(SortByFeatured)))
       let sort_toggle =
         h.div([a.class("flex items-center space-x-2 text-sm")], [
           h.span([a.class("text-gray-500 dark:text-gray-400")], [h.text("Sort by:")]),
@@ -177,7 +178,7 @@ fn render_category_row(
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
   let Category(id:, title:, slug:, title_vi:, featured_order:, ..) = category
-  let url = routes.as_url_string(CategoryEditPage(id))
+  let url = routing.as_url_string(CategoryEditPage(id))
   let order_text = case featured_order {
     Some(order) -> int.to_string(order)
     None -> "-"
@@ -232,10 +233,10 @@ pub fn render_category_edit_page(id: String, model: Model) {
     _ -> {
       let form = case category_form, id {
         Some(form), "" -> {
-          forms.render_category_form(None, form, loading_status)
+          render_category_form(None, form, loading_status)
         }
         Some(form), cid -> {
-          forms.render_category_form(Some(cid), form, loading_status)
+          render_category_form(Some(cid), form, loading_status)
         }
         _, _ -> element.none()
       }

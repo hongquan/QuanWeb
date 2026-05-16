@@ -8,21 +8,21 @@ import lustre/element/keyed
 import lustre/event as ev
 
 import core.{
-  type Book, Book, BookId, ContentItemDeletionClicked, IsLoading, LogOutClicked,
-  PageOwnedBooks,
+  type Presentation, ContentItemDeletionClicked, IsLoading, LogOutClicked,
+  PageOwnedPresentations, Presentation, PresentationId,
 }
 import lucide_lustre as lucide_icon
-import models.{type Model, Model}
-import routes.{BookEditPage}
-import views/forms
-import views/load_indicators.{render_three_bar_pulse}
-import views/skeleton
-import views/ui_components.{render_flash_messages, render_paginator}
+import model.{type Model, Model}
+import routing.{PresentationEditPage}
+import view/load_indicators.{render_three_bar_pulse}
+import view/skeleton
+import view/ui_components.{render_flash_messages, render_paginator}
+import view/forms.{render_presentation_form}
 
 const class_cell = "px-4 py-4"
 
-// Book list page
-pub fn render_book_table_page(page: Int, model: Model) {
+// Presentation list page
+pub fn render_presentation_table_page(page: Int, model: Model) {
   let Model(route:, loading_status:, ..) = model
   case loading_status {
     IsLoading ->
@@ -41,17 +41,19 @@ pub fn render_book_table_page(page: Int, model: Model) {
       ])
 
     _ -> {
-      let books = case model.page_owned_objects {
-        PageOwnedBooks(objects) -> objects
+      let presentations = case model.page_owned_objects {
+        PageOwnedPresentations(objects) -> objects
         _ -> []
       }
       let total_pages = model.page_owned_object_paging.total_pages
       let paginator = render_paginator(page, total_pages, [])
-      let deletion_handler = fn(id) { ContentItemDeletionClicked(BookId(id)) }
+      let deletion_handler = fn(id) {
+        ContentItemDeletionClicked(PresentationId(id))
+      }
 
       let rows =
-        books
-        |> list.map(render_book_row(_, deletion_handler))
+        presentations
+        |> list.map(render_presentation_row(_, deletion_handler))
 
       let table_body =
         keyed.tbody(
@@ -74,7 +76,7 @@ pub fn render_book_table_page(page: Int, model: Model) {
             h.table(
               [a.class("w-full divide-y divide-gray-200 dark:divide-gray-700")],
               [
-                render_book_table_header(),
+                render_presentation_table_header(),
                 table_body,
               ],
             ),
@@ -97,8 +99,8 @@ pub fn render_book_table_page(page: Int, model: Model) {
   }
 }
 
-fn render_book_table_header() {
-  let columns = ["Title", "Author", "Download URL"]
+fn render_presentation_table_header() {
+  let columns = ["Title", "URL", "Event"]
   let cells =
     columns
     |> list.map(fn(label) {
@@ -119,29 +121,26 @@ fn render_book_table_header() {
   ])
 }
 
-fn render_book_row(
-  book: Book,
+fn render_presentation_row(
+  presentation: Presentation,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
-  let Book(id:, title:, download_url:, author:) = book
-  let author_text = case author {
-    Some(a) -> a.name
+  let Presentation(id:, title:, url:, event:) = presentation
+  let event_text = case event {
+    Some(e) -> e
     None -> "-"
   }
-  let download_cell = case download_url {
-    Some(url) ->
-      h.a([a.href(url), a.target("_blank"), a.class("hover:underline")], [
-        h.text(url),
-      ])
-    None -> h.text("-")
-  }
-  let edit_url = routes.as_url_string(BookEditPage(id))
+  let edit_url = routing.as_url_string(PresentationEditPage(id))
   let cells = [
     h.td([a.class(class_cell)], [
       h.a([a.href(edit_url), a.class("hover:underline")], [h.text(title)]),
     ]),
-    h.td([a.class(class_cell), a.class("text-sm")], [h.text(author_text)]),
-    h.td([a.class(class_cell), a.class("text-sm")], [download_cell]),
+    h.td([a.class(class_cell), a.class("text-sm")], [
+      h.a([a.href(url), a.target("_blank"), a.class("hover:underline")], [
+        h.text(url),
+      ]),
+    ]),
+    h.td([a.class(class_cell), a.class("text-sm")], [h.text(event_text)]),
     h.td([a.class(class_cell), a.class("text-sm")], [
       h.button(
         [
@@ -158,7 +157,7 @@ fn render_book_row(
   #(id, h.tr([], cells))
 }
 
-pub fn render_book_edit_page(id: String, model: Model) {
+pub fn render_presentation_edit_page(id: String, model: Model) {
   let Model(route:, loading_status:, ..) = model
   case loading_status {
     IsLoading ->
@@ -177,16 +176,11 @@ pub fn render_book_edit_page(id: String, model: Model) {
       ])
 
     _ -> {
-      let form = case model.book_form, id {
+      let form = case model.presentation_form, id {
         Some(form), "" ->
-          forms.render_book_form(None, form, model.book_authors, loading_status)
-        Some(form), bid ->
-          forms.render_book_form(
-            Some(bid),
-            form,
-            model.book_authors,
-            loading_status,
-          )
+          render_presentation_form(None, form, loading_status)
+        Some(form), pid ->
+          render_presentation_form(Some(pid), form, loading_status)
         _, _ -> element.none()
       }
       element.fragment([

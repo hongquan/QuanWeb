@@ -10,7 +10,7 @@ import core.{
   type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
   type PresentationEditablePart, FlashMessage, FlashMessageTimeUp,
 }
-import routes.{type Route}
+import routing.{type Route}
 
 pub type Model {
   Model(
@@ -37,7 +37,7 @@ pub type AppMsg =
   Msg(Route)
 
 pub const default_model = Model(
-  route: routes.HomePage,
+  route: routing.HomePage,
   login_state: core.NonLogin,
   page_owned_objects: core.PageOwnedPosts([]),
   page_owned_object_paging: core.PageOwnedObjectPaging(
