@@ -23,13 +23,13 @@ export function getUpFormData(select) {
 export function getFormFieldValue(elm, name) {
   const form = elm.closest("form")
   if (!form) {
-    return new Result$Error(undefined)
+    return Result$Error(undefined)
   }
   const field = form.elements[name]
   if (!field) {
-    return new Result$Error(undefined)
+    return Result$Error(undefined)
   }
-  return new Result$Ok(field.value)
+  return Result$Ok(field.value)
 }
 
 /**

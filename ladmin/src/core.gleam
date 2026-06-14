@@ -206,51 +206,51 @@ pub type ContentItemId {
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
-  ApiLoginReturned(Result(User, rsvp.Error))
-  ApiReturnedPosts(Result(ApiListingResponse(MiniPost), rsvp.Error))
-  ApiReturnedCategories(Result(ApiListingResponse(Category), rsvp.Error))
+  ApiLoginReturned(Result(User, rsvp.Error(String)))
+  ApiReturnedPosts(Result(ApiListingResponse(MiniPost), rsvp.Error(String)))
+  ApiReturnedCategories(Result(ApiListingResponse(Category), rsvp.Error(String)))
   OnRouteChange(r)
   LogOutClicked
-  ApiReturnedLogOutDone(Result(String, rsvp.Error))
+  ApiReturnedLogOutDone(Result(String, rsvp.Error(String)))
   PostFilterSubmitted(List(#(String, String)))
-  ApiReturnedSinglePost(Result(Post, rsvp.Error))
+  ApiReturnedSinglePost(Result(Post, rsvp.Error(String)))
   PostFormSubmitted(
     result: Result(PostEditablePart, Form(PostEditablePart)),
     stay: Bool,
   )
   SlugGeneratorClicked(String)
-  ApiReturnedSlug(Result(String, rsvp.Error))
-  ApiUpdatedPost(result: Result(Post, rsvp.Error), stay: Bool)
-  ApiCreatedPost(Result(Post, rsvp.Error))
+  ApiReturnedSlug(Result(String, rsvp.Error(String)))
+  ApiUpdatedPost(result: Result(Post, rsvp.Error(String)), stay: Bool)
+  ApiCreatedPost(Result(Post, rsvp.Error(String)))
   FlashMessageTimeUp
   UserMovedCategoryBetweenPane(id: String, selected: Bool)
   UserClickMarkdownPreview(text: String)
-  ApiRenderedMarkdown(Result(String, rsvp.Error))
-  ApiReturnedUsers(Result(List(MiniUser), rsvp.Error))
+  ApiRenderedMarkdown(Result(String, rsvp.Error(String)))
+  ApiReturnedUsers(Result(List(MiniUser), rsvp.Error(String)))
   SubmitStayButtonClicked(Element)
-  ApiReturnedSingleCategory(Result(Category, rsvp.Error))
+  ApiReturnedSingleCategory(Result(Category, rsvp.Error(String)))
   FormCancelClicked
   CategoryFormSubmitted(
     result: Result(CategoryEditablePart, Form(CategoryEditablePart)),
   )
-  ApiCreatedCategory(Result(Category, rsvp.Error))
-  ApiUpdatedCategory(Result(Category, rsvp.Error))
+  ApiCreatedCategory(Result(Category, rsvp.Error(String)))
+  ApiUpdatedCategory(Result(Category, rsvp.Error(String)))
   ContentItemDeletionClicked(ContentItemId)
   UserConfirmedDeletion(ContentItemId)
-  ApiDeletedContentItem(Result(ContentItemId, rsvp.Error))
+  ApiDeletedContentItem(Result(ContentItemId, rsvp.Error(String)))
   // Presentation messages
-  ApiReturnedPresentations(Result(ApiListingResponse(Presentation), rsvp.Error))
-  ApiReturnedSinglePresentation(Result(Presentation, rsvp.Error))
+  ApiReturnedPresentations(Result(ApiListingResponse(Presentation), rsvp.Error(String)))
+  ApiReturnedSinglePresentation(Result(Presentation, rsvp.Error(String)))
   PresentationFormSubmitted(
     result: Result(PresentationEditablePart, Form(PresentationEditablePart)),
   )
-  ApiCreatedPresentation(Result(Presentation, rsvp.Error))
-  ApiUpdatedPresentation(Result(Presentation, rsvp.Error))
+  ApiCreatedPresentation(Result(Presentation, rsvp.Error(String)))
+  ApiUpdatedPresentation(Result(Presentation, rsvp.Error(String)))
   // Book messages
-  ApiReturnedBooks(Result(ApiListingResponse(Book), rsvp.Error))
-  ApiReturnedSingleBook(Result(Book, rsvp.Error))
+  ApiReturnedBooks(Result(ApiListingResponse(Book), rsvp.Error(String)))
+  ApiReturnedSingleBook(Result(Book, rsvp.Error(String)))
   BookFormSubmitted(result: Result(BookEditablePart, Form(BookEditablePart)))
-  ApiCreatedBook(Result(Book, rsvp.Error))
-  ApiUpdatedBook(Result(Book, rsvp.Error))
-  ApiReturnedBookAuthors(Result(ApiListingResponse(BookAuthor), rsvp.Error))
+  ApiCreatedBook(Result(Book, rsvp.Error(String)))
+  ApiUpdatedBook(Result(Book, rsvp.Error(String)))
+  ApiReturnedBookAuthors(Result(ApiListingResponse(BookAuthor), rsvp.Error(String)))
 }

@@ -151,7 +151,7 @@ pub fn handle_login_submission(
   }
 }
 
-pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
+pub fn handle_login_api_result(res: Result(User, rsvp.Error(String)), model: Model) {
   // Reset loading status
   let model = Model(..model, loading_status: core.Idle)
   case res {
@@ -227,7 +227,7 @@ pub fn handle_login_api_result(res: Result(User, rsvp.Error), model: Model) {
 }
 
 pub fn handle_api_list_post_result(
-  res: Result(ApiListingResponse(MiniPost), rsvp.Error),
+  res: Result(ApiListingResponse(MiniPost), rsvp.Error(String)),
   model: Model,
 ) -> Model {
   case res {
@@ -392,7 +392,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
 }
 
 pub fn handle_api_list_category_result(
-  res: Result(ApiListingResponse(Category), rsvp.Error),
+  res: Result(ApiListingResponse(Category), rsvp.Error(String)),
   model: Model,
 ) {
   let Model(route:, ..) = model
@@ -457,7 +457,7 @@ pub fn handle_api_list_category_result(
 }
 
 pub fn handle_api_retrieve_post_result(
-  res: Result(Post, rsvp.Error),
+  res: Result(Post, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -482,7 +482,7 @@ pub fn handle_api_retrieve_post_result(
 }
 
 pub fn handle_api_slug_generation(
-  res: Result(String, rsvp.Error),
+  res: Result(String, rsvp.Error(String)),
   model: Model,
 ) -> Model {
   case res {
@@ -531,7 +531,7 @@ pub fn handle_post_form_submission(
 }
 
 pub fn handle_api_update_post_result(
-  res: Result(Post, rsvp.Error),
+  res: Result(Post, rsvp.Error(String)),
   stay: Bool,
   model: Model,
 ) {
@@ -568,7 +568,7 @@ pub fn handle_api_update_post_result(
 // Handle the case that a Post has just been created.
 // We will redirect user to the edit page.
 pub fn handle_api_create_post_result(
-  res: Result(Post, rsvp.Error),
+  res: Result(Post, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -677,7 +677,7 @@ pub fn process_post_form_data_to_produce_msg(
 }
 
 pub fn handle_api_retrieve_category_result(
-  res: Result(Category, rsvp.Error),
+  res: Result(Category, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -722,7 +722,7 @@ pub fn handle_category_form_submission(
 }
 
 pub fn handle_api_update_category_result(
-  res: Result(Category, rsvp.Error),
+  res: Result(Category, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -752,7 +752,7 @@ pub fn handle_api_update_category_result(
 }
 
 pub fn handle_api_create_category_result(
-  res: Result(Category, rsvp.Error),
+  res: Result(Category, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -782,7 +782,7 @@ pub fn handle_api_create_category_result(
 }
 
 pub fn handle_api_delete_content_item_result(
-  res: Result(ContentItemId, rsvp.Error),
+  res: Result(ContentItemId, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -883,7 +883,7 @@ pub fn handle_api_delete_content_item_result(
 }
 
 pub fn handle_api_list_presentations_result(
-  res: Result(ApiListingResponse(Presentation), rsvp.Error),
+  res: Result(ApiListingResponse(Presentation), rsvp.Error(String)),
   model: Model,
 ) -> #(Model, Effect(Msg(a))) {
   case res {
@@ -919,7 +919,7 @@ pub fn handle_api_list_presentations_result(
 }
 
 pub fn handle_api_list_books_result(
-  res: Result(ApiListingResponse(Book), rsvp.Error),
+  res: Result(ApiListingResponse(Book), rsvp.Error(String)),
   model: Model,
 ) -> #(Model, Effect(Msg(a))) {
   case res {
@@ -956,7 +956,7 @@ pub fn handle_api_list_books_result(
 
 // Presentation edit handlers
 pub fn handle_api_retrieve_presentation_result(
-  res: Result(Presentation, rsvp.Error),
+  res: Result(Presentation, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1001,7 +1001,7 @@ pub fn handle_presentation_form_submission(
 }
 
 pub fn handle_api_update_presentation_result(
-  res: Result(Presentation, rsvp.Error),
+  res: Result(Presentation, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1031,7 +1031,7 @@ pub fn handle_api_update_presentation_result(
 }
 
 pub fn handle_api_create_presentation_result(
-  res: Result(Presentation, rsvp.Error),
+  res: Result(Presentation, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1062,7 +1062,7 @@ pub fn handle_api_create_presentation_result(
 
 // Book edit handlers
 pub fn handle_api_retrieve_book_result(
-  res: Result(Book, rsvp.Error),
+  res: Result(Book, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1106,7 +1106,7 @@ pub fn handle_book_form_submission(
 }
 
 pub fn handle_api_update_book_result(
-  res: Result(Book, rsvp.Error),
+  res: Result(Book, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1134,7 +1134,7 @@ pub fn handle_api_update_book_result(
 }
 
 pub fn handle_api_create_book_result(
-  res: Result(Book, rsvp.Error),
+  res: Result(Book, rsvp.Error(String)),
   model: Model,
 ) {
   case res {
@@ -1162,7 +1162,7 @@ pub fn handle_api_create_book_result(
 }
 
 pub fn handle_api_book_authors_result(
-  res: Result(ApiListingResponse(BookAuthor), rsvp.Error),
+  res: Result(ApiListingResponse(BookAuthor), rsvp.Error(String)),
   model: Model,
 ) {
   case res {
