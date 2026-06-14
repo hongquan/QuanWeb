@@ -22,8 +22,8 @@ jobs:
             static/css/*.css
             Cargo.lock
           files_ignore: |
-            admin
-            ladmin
+            admin/**
+            ladmin/**
       - name: Get ladmin app changes
         id: changed-ladmin-app
         uses: tj-actions/changed-files@v47.0.0
