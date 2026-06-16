@@ -56,7 +56,6 @@ rust-embed = { version = "8.7.2", features = [
     "include-exclude",
 ] }
 serde = { version = "1.0.228", features = ["serde_derive"] }
-serde-value = "0.7.0"
 serde_json = "1.0.145"
 serde_json5 = "0.2.1"
 serde_with = "3.14.1"
@@ -72,21 +71,15 @@ syntect = { version = "5.2.0", default-features = false, features = [
 ] }
 thiserror = "2.0.16"
 tokio = { version = "1.45.0", features = ["full"] }
-tower = { version = "0.5.2", features = ["tokio", "tracing"] }
 tower-http = { version = "0.6.2", features = ["trace"] }
 tower-sessions = "0.14.0"
 tower-sessions-redis-store = "0.16.0"
 tracing = "0.1.41"
 tracing-journald = "0.3.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-two-face = { version = "0.4.3", default-features = false, features = [
-    "syntect-fancy",
-] }
 unic-langid = { version = "0.9.5", features = ["serde"] }
 uuid = { version = "1.11.0", features = ["v1", "serde"] }
 validify = "2.0.0"
-nanoid = "0.4.0"
-apalis = { version = "0.7.4", features = ["limit", "tracing"] }
 
 [dev-dependencies]
 notzero = "1.1.0"
