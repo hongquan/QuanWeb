@@ -1,5 +1,5 @@
-import formal/form.{type Form} as formlib
 import form
+import formal/form.{type Form} as formlib
 import gleam/dynamic/decode
 import gleam/http/response.{Response}
 import gleam/io
@@ -88,7 +88,10 @@ pub fn handle_router_init_done(model: Model) {
     }
     CategoryListPage(p, sort), _ -> {
       let sort_by_featured = sort == Some(routing.SortByFeatured)
-      #(action.load_categories(option.unwrap(p, 1), sort_by_featured), IsLoading)
+      #(
+        action.load_categories(option.unwrap(p, 1), sort_by_featured),
+        IsLoading,
+      )
     }
     CategoryEditPage(id), _ if id != "" -> {
       #(action.load_single_category(id), IsLoading)
@@ -129,7 +132,15 @@ pub fn handle_router_init_done(model: Model) {
     BookEditPage("") -> Some(form.make_book_form(None))
     _ -> model.book_form
   }
-  let model = Model(..model, loading_status:, post_form:, category_form:, presentation_form:, book_form:)
+  let model =
+    Model(
+      ..model,
+      loading_status:,
+      post_form:,
+      category_form:,
+      presentation_form:,
+      book_form:,
+    )
   #(model, whatsnext)
 }
 
@@ -151,7 +162,10 @@ pub fn handle_login_submission(
   }
 }
 
-pub fn handle_login_api_result(res: Result(User, rsvp.Error(String)), model: Model) {
+pub fn handle_login_api_result(
+  res: Result(User, rsvp.Error(String)),
+  model: Model,
+) {
   // Reset loading status
   let model = Model(..model, loading_status: core.Idle)
   case res {
@@ -320,7 +334,8 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     CategoryListPage(p, sort), _ -> {
       let sort_by_featured = sort == Some(routing.SortByFeatured)
-      let load_categories_action = action.load_categories(option.unwrap(p, 1), sort_by_featured)
+      let load_categories_action =
+        action.load_categories(option.unwrap(p, 1), sort_by_featured)
       #(load_categories_action, IsLoading)
     }
     CategoryEditPage(id), _ if id != "" -> {
@@ -348,7 +363,10 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     BookEditPage(id), _ -> {
       let #(load_action, loading_status) = case id {
         "" -> #(action.load_book_authors(), IsLoading)
-        s -> #(effect.batch([action.load_single_book(s), action.load_book_authors()]), IsLoading)
+        s -> #(
+          effect.batch([action.load_single_book(s), action.load_book_authors()]),
+          IsLoading,
+        )
       }
       #(load_action, loading_status)
     }
@@ -608,15 +626,19 @@ fn push_in_or_out_category_from_form(
   form: Form(PostEditablePart),
   value: String,
   to_move_in: Bool,
-) {
+) -> Form(PostEditablePart) {
   let values_in_form = formlib.field_values(form, "categories")
-  case to_move_in, list.contains(values_in_form, value) {
-    True, False -> [value, ..values_in_form]
-    False, True -> values_in_form |> list.filter(fn(v) { v != value })
-    _, _ -> values_in_form
-  }
-  |> list.map(fn(v) { #("categories", v) })
-  |> formlib.add_values(form, _)
+  let all_field_values = formlib.all_values(form)
+  let new_categories =
+    case to_move_in, list.contains(values_in_form, value) {
+      True, False -> [value, ..values_in_form]
+      False, True -> values_in_form |> list.filter(fn(v) { v != value })
+      _, _ -> values_in_form
+    }
+    |> list.map(fn(v) { #("categories", v) })
+  let other_field_values =
+    all_field_values |> list.filter(fn(pair) { pair.0 != "categories" })
+  formlib.set_values(form, list.append(other_field_values, new_categories))
 }
 
 pub fn handle_rendered_markdown_received(html: String, model: Model) {
@@ -994,7 +1016,8 @@ pub fn handle_presentation_form_submission(
       #(model, whatsnext)
     }
     Error(form) -> {
-      let presentation_form = model.presentation_form |> option.map(fn(_f) { form })
+      let presentation_form =
+        model.presentation_form |> option.map(fn(_f) { form })
       #(Model(..model, presentation_form:), effect.none())
     }
   }
@@ -1068,7 +1091,8 @@ pub fn handle_api_retrieve_book_result(
   case res {
     Ok(b) -> {
       let form = form.make_book_form(Some(b))
-      let model = Model(..model, book_form: Some(form), loading_status: core.Idle)
+      let model =
+        Model(..model, book_form: Some(form), loading_status: core.Idle)
       #(model, effect.none())
     }
     Error(_e) -> {
@@ -1173,11 +1197,7 @@ pub fn handle_api_book_authors_result(
     Error(_e) -> {
       let message = model.create_danger_message("Failed to load book authors")
       let Model(flash_messages:, ..) = model
-      let model =
-        Model(
-          ..model,
-          flash_messages: [message, ..flash_messages],
-        )
+      let model = Model(..model, flash_messages: [message, ..flash_messages])
       #(model, effect.none())
     }
   }
