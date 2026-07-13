@@ -3128,6 +3128,7 @@ dependencies = [
  "gel-errors",
  "gel-protocol",
  "gel-tokio",
+ "headers",
  "headers-accept",
  "http",
  "indexmap 2.14.0",

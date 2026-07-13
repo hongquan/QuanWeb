@@ -4,9 +4,10 @@ use atom_syndication::{Entry, FeedBuilder, LinkBuilder};
 use axum::extract::{OriginalUri, Query, State};
 use axum::http::header;
 use axum::response::{IntoResponseParts, Json, Result as AxumResult};
-use axum_extra::extract::Host;
+use axum_extra::extract::TypedHeader;
 use chrono::{TimeZone, Utc};
 use gel_tokio::Client as EdgeClient;
+use headers::Host;
 use http::{HeaderName, StatusCode};
 use http::{Uri, header::CONTENT_TYPE};
 use sitemap_writer::SitemapWriter;
@@ -22,7 +23,7 @@ use crate::types::{Paginator, ext::UriExt};
 const SITE_UUID: &str = "4543aea6-ab17-5c18-9279-19e73529594d";
 
 pub async fn gen_atom_feeds(
-    Host(host): Host,
+    TypedHeader(host): TypedHeader<Host>,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
     State(db): State<EdgeClient>,
@@ -102,7 +103,7 @@ pub async fn gen_atom_feeds(
 }
 
 pub async fn gen_json_feeds(
-    Host(host): Host,
+    TypedHeader(host): TypedHeader<Host>,
     OriginalUri(current_url): OriginalUri,
     Query(paging): Query<LaxPaging>,
     State(db): State<EdgeClient>,

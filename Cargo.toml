@@ -39,6 +39,7 @@ gel-derive = { git = "https://github.com/geldata/gel-rust" }
 gel-errors = { git = "https://github.com/geldata/gel-rust", features = ["miette"] }
 gel-protocol = { git = "https://github.com/geldata/gel-rust", features = ["all-types"] }
 gel-tokio = { git = "https://github.com/geldata/gel-rust", features = ["miette-errors"] }
+headers = "0.4.1"
 headers-accept = "0.3.0"
 http = "1.4.2"
 indexmap = { version = "2.14.0", features = ["serde"] }
