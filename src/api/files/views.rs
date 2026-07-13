@@ -153,7 +153,7 @@ pub async fn browse_files(
                 Some(url)
             };
 
-            let file_response = FileResponse {
+            FileResponse {
                 name: item.object_name,
                 dir_path: public_path,
                 size: item.length,
@@ -161,9 +161,7 @@ pub async fn browse_files(
                 modified_at,
                 is_directory: item.is_directory,
                 direct_url,
-            };
-
-            file_response
+            }
         })
         .collect();
 
