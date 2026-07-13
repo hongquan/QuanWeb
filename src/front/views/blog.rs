@@ -3,8 +3,12 @@ use std::num::NonZeroU16;
 use axum::extract::{OriginalUri, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
+use axum_extra::TypedHeader;
+use headers_accept::Accept;
 use http::header::LOCATION;
 use indexmap::indexmap;
+use mediatype::media_type;
+use mediatype::names::MARKDOWN;
 use minijinja::{context, value::Value as MJValue};
 use str_macro::str;
 use tower_sessions::Session;
@@ -19,10 +23,14 @@ use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous
 use crate::types::{AppState, HtmlOrMd, Paginator};
 use crate::utils::html::render_with;
 
+// If the client requests with `Accept: text/markdown` (indicating that it is an AI agent), we will redirect to the ".md" page,
+// which returns content in Markdown format. Otherwise, we serve HTML.
 pub async fn show_post(
     auth_session: AuthSession,
-    Path((_y, _m, slug_ext)): Path<(u16, u16, String)>,
+    Path((y, m, slug_ext)): Path<(u16, u16, String)>,
     Query(params): Query<PostPageParams>,
+    // Value of `Accept` header
+    TypedHeader(accept): TypedHeader<Accept>,
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<HtmlOrMd> {
@@ -30,6 +38,17 @@ pub async fn show_post(
     let (slug, is_md) = match slug_ext.split_at_checked(slug_ext.len() - 3) {
         Some((slug, ".md")) => (slug, true),
         _ => (slug_ext.as_str(), false),
+    };
+    if !is_md {
+        let available = vec![media_type!(TEXT / HTML), media_type!(TEXT / MARKDOWN)];
+        let preferred_type = accept.negotiate(&available);
+        if preferred_type.map(|t| t.subty) == Some(MARKDOWN) {
+            return Err((
+                StatusCode::TEMPORARY_REDIRECT,
+                format!("/post/{y}/{m}/{slug}.md"),
+            )
+                .into());
+        };
     };
     let post = get_detailed_post_by_slug(slug, &db)
         .await

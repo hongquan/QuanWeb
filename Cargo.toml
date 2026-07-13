@@ -14,7 +14,7 @@ strip = "debuginfo"
 ammonia = "4.1.3"
 atom_syndication = { version = "0.12.9", features = ["serde"] }
 axum = { version = "0.8.9", features = ["macros"] }
-axum-extra = { version = "0.12.6", features = ["with-rejection"] }
+axum-extra = { version = "0.12.6", features = ["with-rejection", "typed-header"] }
 axum-login = "0.18.0"
 chrono = { version = "0.4.45", features = [
     "serde",
@@ -39,9 +39,11 @@ gel-derive = { git = "https://github.com/geldata/gel-rust" }
 gel-errors = { git = "https://github.com/geldata/gel-rust", features = ["miette"] }
 gel-protocol = { git = "https://github.com/geldata/gel-rust", features = ["all-types"] }
 gel-tokio = { git = "https://github.com/geldata/gel-rust", features = ["miette-errors"] }
+headers-accept = "0.3.0"
 http = "1.4.2"
 indexmap = { version = "2.14.0", features = ["serde"] }
 libpassgen = "1.0.3"
+mediatype = "0.21.0"
 miette = { version = "7.6.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.5"
 minijinja = { version = "2.21.0", features = ["loader", "internal_debug"] }
