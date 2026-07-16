@@ -16,7 +16,7 @@ The website is programmed in Rust (used to be Python, but was rewritten as an ex
 - Frontend:
 
   + Server-side rendering: [MiniJinja](https://crates.io/crates/minijinja)
-  + SPA (for Admin): [VueJS](https://vuejs.org/), TypeScript, [TailwindCSS](https://tailwindcss.com/)
+  + SPA (for Admin): [Lustre](https://lustre.hexdocs.pm/), [Gleam](https://gleam.run/), [TailwindCSS](https://tailwindcss.com/)
 
 ## Backend Folder Structure
 
