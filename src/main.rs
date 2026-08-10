@@ -24,7 +24,8 @@ use owo_colors::OwoColorize;
 use tokio::net::{TcpListener, UnixListener};
 use tokio::signal;
 use tower_http::trace::TraceLayer;
-use tower_sessions::SessionManagerLayer;
+use tower_sessions::cookie::time::Duration;
+use tower_sessions::{Expiry, SessionManagerLayer};
 use tracing::info;
 
 use thingsup::{AppOptions, Commands, config_jinja, config_logging, get_binding_addr};
@@ -57,7 +58,7 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
         miette!("Failed to create Gel client")
     })?;
     let jinja = config_jinja().into_diagnostic()?;
-    
+
     // Get Bunny API key and CDN host from config
     let bunny_api_key = conf::get_bunny_api_key(&config)
         .map_err(|e| miette!("Error getting Bunny API key: {e}"))?
@@ -65,14 +66,15 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     let bunny_cdn_host = conf::get_bunny_cdn_host(&config)
         .map_err(|e| miette!("Error getting Bunny CDN host: {e}"))?
         .clone();
-    
+
     let app_state = AppState {
         db: client.clone(),
         jinja,
         bunny_api_key,
         bunny_cdn_host,
     };
-    let session_layer = SessionManagerLayer::new(redis_store);
+    let session_layer = SessionManagerLayer::new(redis_store)
+        .with_expiry(Expiry::OnInactivity(Duration::minutes(5)));
 
     // Auth service
     let backend = Backend { db: client };
@@ -137,7 +139,11 @@ async fn regenerate_html_all_posts() -> miette::Result<()> {
         stores::blog::update_post_html(&client, post.id, &html)
             .await
             .map_err(|e| miette!("Failed to update post {}: {}", post.id, e))?;
-        println!("Regenerated HTML for post '{}' ({})", post.title.blue(), post.id);
+        println!(
+            "Regenerated HTML for post '{}' ({})",
+            post.title.blue(),
+            post.id
+        );
     }
 
     println!("{}", "HTML regeneration complete!".green());
@@ -146,11 +152,11 @@ async fn regenerate_html_all_posts() -> miette::Result<()> {
 
 async fn run_worker() -> miette::Result<()> {
     tracing::info!("Starting background worker...");
-    
+
     // TODO: Implement worker using apalis_redis
     // This requires proper Redis client configuration compatible with apalis
     tracing::info!("Worker not yet implemented");
-    
+
     Ok(())
 }
 
@@ -177,5 +183,3 @@ async fn on_shutdown_signal(sk: Option<PathBuf>) {
     }
     tracing::info!("👾 Bye!");
 }
-
-
