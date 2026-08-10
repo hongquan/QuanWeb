@@ -1,5 +1,5 @@
-import constants
-import decoders
+import constant
+import decoder
 import gleam/dynamic/decode.{type Decoder}
 import gleam/io
 import gleam/json.{type Json}
@@ -15,7 +15,7 @@ pub type Store {
 }
 
 fn store_decoder() -> Decoder(Store) {
-  use user <- decode.field("user", decoders.user_decoder())
+  use user <- decode.field("user", decoder.user_decoder())
   use last_auth <- decode.optional_field(
     "last_auth",
     timestamp.from_calendar(
@@ -23,7 +23,7 @@ fn store_decoder() -> Decoder(Store) {
       calendar.TimeOfDay(0, 0, 0, 0),
       calendar.local_offset(),
     ),
-    decoders.timestamp_decoder(),
+    decoder.timestamp_decoder(),
   )
   decode.success(Store(user:, last_auth:))
 }
@@ -31,7 +31,7 @@ fn store_decoder() -> Decoder(Store) {
 fn store_to_json(store: Store) -> Json {
   let Store(user:, last_auth:) = store
   json.object([
-    #("user", decoders.encode_user(user)),
+    #("user", decoder.encode_user(user)),
     #(
       "last_auth",
       json.string(timestamp.to_rfc3339(last_auth, calendar.local_offset())),
@@ -45,7 +45,7 @@ pub fn load_store() -> Result(Store, Nil) {
     |> result.map_error(fn(_e) {
       io.println_error("Failed to acquire localStorage!")
     })
-    |> result.try(storage.get_item(_, constants.key_store))
+    |> result.try(storage.get_item(_, constant.key_store))
   case raw {
     Ok(s) ->
       json.parse(s, store_decoder())
@@ -70,7 +70,7 @@ pub fn save_user(user: User) {
   |> result.map_error(fn(_e) {
     io.println_error("Failed to acquire localStorage!")
   })
-  |> result.try(storage.set_item(_, constants.key_store, raw))
+  |> result.try(storage.set_item(_, constant.key_store, raw))
 }
 
 pub fn destroy() {
@@ -78,6 +78,6 @@ pub fn destroy() {
   |> result.map_error(fn(_e) {
     io.println_error("Failed to acquire localStorage!")
   })
-  |> result.map(storage.remove_item(_, constants.key_store))
+  |> result.map(storage.remove_item(_, constant.key_store))
   |> result.unwrap(Nil)
 }

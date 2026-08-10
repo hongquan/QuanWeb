@@ -17,7 +17,7 @@ import rsvp
 import store
 
 import action
-import constants
+import constant
 import core.{
   type ApiListingResponse, type Book, type BookAuthor, type BookEditablePart,
   type Category, type CategoryEditablePart, type ContentItemId, type LoginData,
@@ -645,7 +645,7 @@ pub fn handle_rendered_markdown_received(html: String, model: Model) {
   let model = Model(..model, post_body_preview: Some(html))
   let whatsnext = {
     use _dispatch, _root <- effect.after_paint
-    ffi.show_dialog("." <> constants.selector_post_body_preview_dialog)
+    ffi.show_dialog("." <> constant.selector_post_body_preview_dialog)
     Nil
   }
   #(model, whatsnext)

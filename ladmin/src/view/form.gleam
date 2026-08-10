@@ -12,15 +12,15 @@ import plinth/browser/document
 import plinth/browser/element as br_element
 
 import core.{
-  type BookAuthor, type BookEditablePart, type Category, type CategoryEditablePart,
-  type LoadingStatus, type MiniUser, type Msg, type PostEditablePart,
-  type PresentationEditablePart, BookFormSubmitted, CategoryEditablePart,
-  CategoryFormSubmitted, FormCancelClicked, IsSubmitting,
+  type BookAuthor, type BookEditablePart, type Category,
+  type CategoryEditablePart, type LoadingStatus, type MiniUser, type Msg,
+  type PostEditablePart, type PresentationEditablePart, BookFormSubmitted,
+  CategoryEditablePart, CategoryFormSubmitted, FormCancelClicked, IsSubmitting,
   PresentationFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
   UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
 }
 import ffi
-import updates
+import update
 import view/widget
 
 const class_row = "sm:grid sm:grid-cols-4 sm:items-start sm:gap-2 sm:py-2"
@@ -82,7 +82,7 @@ pub fn render_post_form(
     render_bottom_buttons(loading_status),
   ]
 
-  let handle_submit = updates.process_post_form_data_to_produce_msg(
+  let handle_submit = update.process_post_form_data_to_produce_msg(
     _,
     form,
     False,
@@ -402,23 +402,29 @@ pub fn render_category_form(
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Summary (English)")]),
       h.div([a.class(class_input_col)], [
-        h.textarea([
-          a.name("summary_en"),
-          a.class(class_input_common <> " px-4 w-full"),
-          a.class(class_input_normal),
-          a.rows(3),
-        ], formlib.field_value(form, "summary_en")),
+        h.textarea(
+          [
+            a.name("summary_en"),
+            a.class(class_input_common <> " px-4 w-full"),
+            a.class(class_input_normal),
+            a.rows(3),
+          ],
+          formlib.field_value(form, "summary_en"),
+        ),
       ]),
     ]),
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Summary (Vietnamese)")]),
       h.div([a.class(class_input_col)], [
-        h.textarea([
-          a.name("summary_vi"),
-          a.class(class_input_common <> " px-4 w-full"),
-          a.class(class_input_normal),
-          a.rows(3),
-        ], formlib.field_value(form, "summary_vi")),
+        h.textarea(
+          [
+            a.name("summary_vi"),
+            a.class(class_input_common <> " px-4 w-full"),
+            a.class(class_input_normal),
+            a.rows(3),
+          ],
+          formlib.field_value(form, "summary_vi"),
+        ),
       ]),
     ]),
     h.div([a.class(class_row)], [
@@ -622,9 +628,7 @@ pub fn render_book_form(
 
 fn render_simple_form_buttons(
   loading_status: LoadingStatus,
-  _msg_constructor: fn(
-    Result(a, Form(a)),
-  ) -> Msg(b),
+  _msg_constructor: fn(Result(a, Form(a))) -> Msg(b),
 ) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
     widget.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),

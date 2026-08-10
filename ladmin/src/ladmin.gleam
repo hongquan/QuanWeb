@@ -19,7 +19,7 @@ import rsvp.{HttpError}
 import store
 
 import action
-import constants.{mounted_path}
+import constant.{mounted_path}
 import core.{
   ApiCreatedBook, ApiCreatedCategory, ApiCreatedPost, ApiCreatedPresentation,
   ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
@@ -43,11 +43,11 @@ import routing.{
   LoginPage, PostEditPage, PostListPage, PresentationEditPage,
   PresentationListPage, on_url_change, parse_to_route,
 }
-import updates
-import view/blog_post
+import update
 import view/blog_category
-import view/presentation
+import view/blog_post
 import view/book
+import view/presentation
 import view/simple.{make_login_page}
 
 pub fn main(base_path: String) -> Nil {
@@ -102,39 +102,39 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
 fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   let Model(route:, ..) = model
   case msg {
-    RouterInitDone -> updates.handle_router_init_done(model)
+    RouterInitDone -> update.handle_router_init_done(model)
     OnRouteChange(new_route) -> {
       case new_route {
         routing.External(url) -> {
           io.println("To go to external: " <> uri.to_string(url))
           #(model, modem.load(url))
         }
-        _ -> updates.handle_landing_on_page(new_route, model)
+        _ -> update.handle_landing_on_page(new_route, model)
       }
     }
 
     UserSubmittedLoginForm(form) -> {
       io.println("UserSubmittedLoginForm")
-      updates.handle_login_submission(form, model)
+      update.handle_login_submission(form, model)
     }
-    ApiLoginReturned(res) -> updates.handle_login_api_result(res, model)
+    ApiLoginReturned(res) -> update.handle_login_api_result(res, model)
     ApiReturnedPosts(res) -> {
-      let model = updates.handle_api_list_post_result(res, model)
+      let model = update.handle_api_list_post_result(res, model)
       #(model, effect.none())
     }
     ApiReturnedCategories(res) ->
-      updates.handle_api_list_category_result(res, model)
+      update.handle_api_list_category_result(res, model)
     ApiReturnedPresentations(res) -> {
-      updates.handle_api_list_presentations_result(res, model)
+      update.handle_api_list_presentations_result(res, model)
     }
     ApiReturnedBooks(res) -> {
-      updates.handle_api_list_books_result(res, model)
+      update.handle_api_list_books_result(res, model)
     }
     LogOutClicked -> {
       #(model, action.initiate_logout())
     }
     ApiReturnedLogOutDone(Ok(_s)) -> {
-      updates.handle_successful_logout(model)
+      update.handle_successful_logout(model)
     }
     PostFilterSubmitted(values) -> {
       let cleaned_data =
@@ -151,17 +151,17 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, modem.push(path, Some(query), None))
     }
     ApiReturnedSinglePost(res) ->
-      updates.handle_api_retrieve_post_result(res, model)
+      update.handle_api_retrieve_post_result(res, model)
     SlugGeneratorClicked(title) -> #(
       model,
       action.initiate_generate_slug(title),
     )
     ApiReturnedSlug(res) -> {
-      #(updates.handle_api_slug_generation(res, model), effect.none())
+      #(update.handle_api_slug_generation(res, model), effect.none())
     }
 
     PostFormSubmitted(result:, stay:) -> {
-      updates.handle_post_form_submission(result, stay, model)
+      update.handle_post_form_submission(result, stay, model)
     }
 
     ApiCreatedPost(Error(HttpError(Response(401, ..))))
@@ -179,9 +179,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       echo LoginPage(attempt)
       #(model, routing.goto(LoginPage(attempt)))
     }
-    ApiCreatedPost(res) -> updates.handle_api_create_post_result(res, model)
+    ApiCreatedPost(res) -> update.handle_api_create_post_result(res, model)
     ApiUpdatedPost(res, stay) ->
-      updates.handle_api_update_post_result(res, stay, model)
+      update.handle_api_update_post_result(res, stay, model)
     FlashMessageTimeUp -> {
       let flash_messages =
         model.flash_messages
@@ -194,14 +194,14 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(Model(..model, flash_messages:), effect.none())
     }
     UserMovedCategoryBetweenPane(id, selected) -> #(
-      updates.handle_category_moved_between_panes(id, selected, model),
+      update.handle_category_moved_between_panes(id, selected, model),
       effect.none(),
     )
     UserClickMarkdownPreview(s) -> {
       #(model, action.try_render_markdown_via_api(s))
     }
     ApiRenderedMarkdown(Ok(html)) -> {
-      updates.handle_rendered_markdown_received(html, model)
+      update.handle_rendered_markdown_received(html, model)
     }
     ApiReturnedUsers(Ok(users)) -> {
       let model = Model(..model, users:)
@@ -209,10 +209,10 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     }
 
     SubmitStayButtonClicked(dom_element) -> {
-      updates.handle_submit_stay_button_clicked(dom_element, model)
+      update.handle_submit_stay_button_clicked(dom_element, model)
     }
     ApiReturnedSingleCategory(res) -> {
-      updates.handle_api_retrieve_category_result(res, model)
+      update.handle_api_retrieve_category_result(res, model)
     }
     FormCancelClicked -> {
       let whatsnext = case route {
@@ -231,13 +231,13 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, whatsnext)
     }
     CategoryFormSubmitted(res) -> {
-      updates.handle_category_form_submission(res, model)
+      update.handle_category_form_submission(res, model)
     }
     ApiUpdatedCategory(res) -> {
-      updates.handle_api_update_category_result(res, model)
+      update.handle_api_update_category_result(res, model)
     }
     ApiCreatedCategory(res) -> {
-      updates.handle_api_create_category_result(res, model)
+      update.handle_api_create_category_result(res, model)
     }
     ContentItemDeletionClicked(id) -> {
       // To show dialog for deletion confirmation
@@ -256,36 +256,36 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       #(model, whatnext)
     }
     ApiDeletedContentItem(res) -> {
-      updates.handle_api_delete_content_item_result(res, model)
+      update.handle_api_delete_content_item_result(res, model)
     }
     // Presentation handlers
     ApiReturnedSinglePresentation(res) -> {
-      updates.handle_api_retrieve_presentation_result(res, model)
+      update.handle_api_retrieve_presentation_result(res, model)
     }
     PresentationFormSubmitted(res) -> {
-      updates.handle_presentation_form_submission(res, model)
+      update.handle_presentation_form_submission(res, model)
     }
     ApiCreatedPresentation(res) -> {
-      updates.handle_api_create_presentation_result(res, model)
+      update.handle_api_create_presentation_result(res, model)
     }
     ApiUpdatedPresentation(res) -> {
-      updates.handle_api_update_presentation_result(res, model)
+      update.handle_api_update_presentation_result(res, model)
     }
     // Book handlers
     ApiReturnedSingleBook(res) -> {
-      updates.handle_api_retrieve_book_result(res, model)
+      update.handle_api_retrieve_book_result(res, model)
     }
     BookFormSubmitted(res) -> {
-      updates.handle_book_form_submission(res, model)
+      update.handle_book_form_submission(res, model)
     }
     ApiCreatedBook(res) -> {
-      updates.handle_api_create_book_result(res, model)
+      update.handle_api_create_book_result(res, model)
     }
     ApiUpdatedBook(res) -> {
-      updates.handle_api_update_book_result(res, model)
+      update.handle_api_update_book_result(res, model)
     }
     ApiReturnedBookAuthors(res) -> {
-      updates.handle_api_book_authors_result(res, model)
+      update.handle_api_book_authors_result(res, model)
     }
     _ -> #(model, effect.none())
   }
@@ -304,7 +304,11 @@ fn view(model: Model) -> Element(AppMsg) {
     }
     PostEditPage(id), LoggedIn(_u) -> blog_post.render_post_edit_page(id, model)
     CategoryListPage(page, sort), _ -> {
-      blog_category.render_category_table_page(option.unwrap(page, 1), sort, model)
+      blog_category.render_category_table_page(
+        option.unwrap(page, 1),
+        sort,
+        model,
+      )
     }
     CategoryEditPage(id), LoggedIn(_u) ->
       blog_category.render_category_edit_page(id, model)

@@ -32,7 +32,7 @@ pub type Route {
   NotFound
 }
 
-import constants.{mounted_path}
+import constant.{mounted_path}
 
 pub fn parse_to_route(
   full_path: String,
