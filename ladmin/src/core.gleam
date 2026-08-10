@@ -1,4 +1,6 @@
 import formal/form.{type Form}
+import gleam/dynamic/decode
+import gleam/json
 import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
@@ -145,20 +147,12 @@ pub type CategoryEditablePart {
 
 // Presentation model
 pub type Presentation {
-  Presentation(
-    id: String,
-    title: String,
-    url: String,
-    event: Option(String),
-  )
+  Presentation(id: String, title: String, url: String, event: Option(String))
 }
 
 // BookAuthor model
 pub type BookAuthor {
-  BookAuthor(
-    id: String,
-    name: String,
-  )
+  BookAuthor(id: String, name: String)
 }
 
 // Book model
@@ -173,11 +167,7 @@ pub type Book {
 
 // Editable parts for forms
 pub type PresentationEditablePart {
-  PresentationEditablePart(
-    title: String,
-    url: String,
-    event: Option(String),
-  )
+  PresentationEditablePart(title: String, url: String, event: Option(String))
 }
 
 pub type BookEditablePart {
@@ -194,8 +184,6 @@ pub type Color {
   Purple
 }
 
-
-
 pub type ContentItemId {
   PostId(String)
   CategoryId(String)
@@ -203,12 +191,33 @@ pub type ContentItemId {
   BookId(String)
 }
 
+pub type DraftPost {
+  // Empty `id` means draft of a new post
+  DraftPost(id: String, body: String)
+}
+
+pub fn draft_post_decoder() -> decode.Decoder(DraftPost) {
+  use id <- decode.field("id", decode.string)
+  use body <- decode.field("body", decode.string)
+  decode.success(DraftPost(id:, body:))
+}
+
+pub fn draft_post_to_json(draft_post: DraftPost) -> json.Json {
+  let DraftPost(id:, body:) = draft_post
+  json.object([
+    #("id", json.string(id)),
+    #("body", json.string(body)),
+  ])
+}
+
 pub type Msg(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error(String)))
   ApiReturnedPosts(Result(ApiListingResponse(MiniPost), rsvp.Error(String)))
-  ApiReturnedCategories(Result(ApiListingResponse(Category), rsvp.Error(String)))
+  ApiReturnedCategories(
+    Result(ApiListingResponse(Category), rsvp.Error(String)),
+  )
   OnRouteChange(r)
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error(String)))
@@ -218,6 +227,8 @@ pub type Msg(r) {
     result: Result(PostEditablePart, Form(PostEditablePart)),
     stay: Bool,
   )
+  // When the content of <textarea> for editing blog post changes
+  PostBodyContentChanged(String)
   SlugGeneratorClicked(String)
   ApiReturnedSlug(Result(String, rsvp.Error(String)))
   ApiUpdatedPost(result: Result(Post, rsvp.Error(String)), stay: Bool)
@@ -239,7 +250,9 @@ pub type Msg(r) {
   UserConfirmedDeletion(ContentItemId)
   ApiDeletedContentItem(Result(ContentItemId, rsvp.Error(String)))
   // Presentation messages
-  ApiReturnedPresentations(Result(ApiListingResponse(Presentation), rsvp.Error(String)))
+  ApiReturnedPresentations(
+    Result(ApiListingResponse(Presentation), rsvp.Error(String)),
+  )
   ApiReturnedSinglePresentation(Result(Presentation, rsvp.Error(String)))
   PresentationFormSubmitted(
     result: Result(PresentationEditablePart, Form(PresentationEditablePart)),
@@ -252,5 +265,7 @@ pub type Msg(r) {
   BookFormSubmitted(result: Result(BookEditablePart, Form(BookEditablePart)))
   ApiCreatedBook(Result(Book, rsvp.Error(String)))
   ApiUpdatedBook(Result(Book, rsvp.Error(String)))
-  ApiReturnedBookAuthors(Result(ApiListingResponse(BookAuthor), rsvp.Error(String)))
+  ApiReturnedBookAuthors(
+    Result(ApiListingResponse(BookAuthor), rsvp.Error(String)),
+  )
 }

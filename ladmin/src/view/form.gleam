@@ -16,8 +16,9 @@ import core.{
   type CategoryEditablePart, type LoadingStatus, type MiniUser, type Msg,
   type PostEditablePart, type PresentationEditablePart, BookFormSubmitted,
   CategoryEditablePart, CategoryFormSubmitted, FormCancelClicked, IsSubmitting,
-  PresentationFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
-  UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
+  PostBodyContentChanged, PresentationFormSubmitted, SlugGeneratorClicked,
+  SubmitStayButtonClicked, UserClickMarkdownPreview,
+  UserMovedCategoryBetweenPane,
 }
 import ffi
 import update
@@ -258,6 +259,7 @@ fn render_body_field(form: Form(PostEditablePart)) -> Element(Msg(a)) {
               a.name("body"),
               a.type_("text"),
               a.class("w-full h-full focus:outline-none"),
+              ev.debounce(ev.on_input(PostBodyContentChanged), 500),
             ],
             formlib.field_value(form, "body"),
           ),

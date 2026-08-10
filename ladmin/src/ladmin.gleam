@@ -30,10 +30,11 @@ import core.{
   ApiUpdatedBook, ApiUpdatedCategory, ApiUpdatedPost, ApiUpdatedPresentation,
   BookFormSubmitted, CategoryFormSubmitted, ContentItemDeletionClicked,
   FlashMessageTimeUp, FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn,
-  NonLogin, OnRouteChange, PostFilterSubmitted, PostFormSubmitted,
-  PresentationFormSubmitted, RouterInitDone, SlugGeneratorClicked,
-  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
-  UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  NonLogin, OnRouteChange, PostBodyContentChanged, PostFilterSubmitted,
+  PostFormSubmitted, PresentationFormSubmitted, RouterInitDone,
+  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
+  UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
+  UserSubmittedLoginForm,
 }
 import ffi
 import form.{create_login_form}
@@ -164,6 +165,16 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
       update.handle_post_form_submission(result, stay, model)
     }
 
+    PostBodyContentChanged(content) -> {
+      let post_id = case model.route {
+        routing.PostEditPage(id) -> id
+        _ -> ""
+      }
+      let _ =
+        store.save_draft_post(core.DraftPost(id: post_id, body: content))
+      #(model, effect.none())
+    }
+
     ApiCreatedPost(Error(HttpError(Response(401, ..))))
     | ApiUpdatedPost(Error(HttpError(Response(401, ..))), ..)
     | ApiCreatedCategory(Error(HttpError(Response(401, ..))))
@@ -287,7 +298,9 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
     ApiReturnedBookAuthors(res) -> {
       update.handle_api_book_authors_result(res, model)
     }
-    _ -> #(model, effect.none())
+    ApiReturnedLogOutDone(Error(_)) -> #(model, effect.none())
+    ApiRenderedMarkdown(Error(_)) -> #(model, effect.none())
+    ApiReturnedUsers(Error(_)) -> #(model, effect.none())
   }
 }
 

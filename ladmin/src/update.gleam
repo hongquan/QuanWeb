@@ -275,7 +275,13 @@ pub fn handle_api_list_post_result(
 pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
   let login_state = NonLogin
   // Delete user from localStorage
-  store.destroy()
+  store.delete_authentication()
+  |> result.map_error(fn(_e) {
+    io.println_error(
+      "Failed to remove authentication record from localStorage.",
+    )
+  })
+  |> result.unwrap(Nil)
   let flash_messages = [
     model.create_info_message("Logged out successfully."),
     ..model.flash_messages
@@ -373,7 +379,19 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     _, _ -> #(effect.none(), core.Idle)
   }
   let post_form = case new_route {
-    PostEditPage("") -> Some(form.make_post_form(None))
+    PostEditPage("") -> {
+      let empty_form = form.make_post_form(None)
+      // If there is a draft for a new post (draft.id == ""), pre-fill its body.
+      let hydrated_form = case store.load_store() {
+        Ok(s) ->
+          case s.draft_post.id == "" && s.draft_post.body != "" {
+            True -> formlib.add_string(empty_form, "body", s.draft_post.body)
+            False -> empty_form
+          }
+        Error(_) -> empty_form
+      }
+      Some(hydrated_form)
+    }
     _ -> model.post_form
   }
   let category_form = case new_route {
