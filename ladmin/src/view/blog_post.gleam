@@ -15,7 +15,7 @@ import lustre/event as ev
 import lustre/portal
 import plinth/browser/element as br_element
 
-import constants
+import constant
 import core.{
   type MiniPost, ContentItemDeletionClicked, IsLoading, LogOutClicked,
   PageOwnedPosts, PostId,
@@ -319,7 +319,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
         |> option.map(fn(content) {
           h.dialog(
             [
-              a.class(constants.selector_post_body_preview_dialog),
+              a.class(constant.selector_post_body_preview_dialog),
               a.class(
                 "p-4 w-screen sm:start-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2 sm:w-120 md:w-220 h-120 rounded-lg",
               ),

@@ -9,21 +9,25 @@ import lustre/element/keyed
 import lustre/event as ev
 
 import core.{
-  type Category, Category, IsLoading, LogOutClicked, PageOwnedCategories,
-  ContentItemDeletionClicked, CategoryId,
+  type Category, Category, CategoryId, ContentItemDeletionClicked, IsLoading,
+  LogOutClicked, PageOwnedCategories,
 }
 import lucide_lustre as lucide_icon
 import model.{type Model, Model}
 import routing.{type CategorySort, CategoryEditPage, SortByFeatured}
 
+import view/form.{render_category_form}
 import view/load_indicator.{render_three_bar_pulse}
 import view/skeleton
 import view/ui_component.{render_flash_messages, render_paginator}
-import view/form.{render_category_form}
 
 const class_cell = "px-4 py-4"
 
-pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: Model) {
+pub fn render_category_table_page(
+  page: Int,
+  sort: Option(CategorySort),
+  model: Model,
+) {
   let Model(route:, ..) = model
   case model.loading_status {
     IsLoading ->
@@ -104,17 +108,25 @@ pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: 
       // Sort mode toggle buttons - navigate to URL with sort parameter
       let sort_by_title_active = sort == None
       let sort_by_featured_active = sort == Some(SortByFeatured)
-      let title_sort_url = routing.as_url_string(routing.CategoryListPage(Some(page), None))
-      let featured_sort_url = routing.as_url_string(routing.CategoryListPage(Some(page), Some(SortByFeatured)))
+      let title_sort_url =
+        routing.as_url_string(routing.CategoryListPage(Some(page), None))
+      let featured_sort_url =
+        routing.as_url_string(routing.CategoryListPage(
+          Some(page),
+          Some(SortByFeatured),
+        ))
       let sort_toggle =
         h.div([a.class("flex items-center space-x-2 text-sm")], [
-          h.span([a.class("text-gray-500 dark:text-gray-400")], [h.text("Sort by:")]),
+          h.span([a.class("text-gray-500 dark:text-gray-400")], [
+            h.text("Sort by:"),
+          ]),
           h.a(
             [
               a.href(title_sort_url),
               a.class(case sort_by_title_active {
                 True -> "px-3 py-1 rounded-md bg-blue-600 text-white"
-                False -> "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                False ->
+                  "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }),
             ],
             [h.text("Title")],
@@ -124,7 +136,8 @@ pub fn render_category_table_page(page: Int, sort: Option(CategorySort), model: 
               a.href(featured_sort_url),
               a.class(case sort_by_featured_active {
                 True -> "px-3 py-1 rounded-md bg-blue-600 text-white"
-                False -> "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                False ->
+                  "px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
               }),
             ],
             [h.text("Featured")],
