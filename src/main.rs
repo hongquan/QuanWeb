@@ -24,7 +24,6 @@ use owo_colors::OwoColorize;
 use tokio::net::{TcpListener, UnixListener};
 use tokio::signal;
 use tower_http::trace::TraceLayer;
-use tower_sessions::cookie::time::Duration;
 use tower_sessions::{Expiry, SessionManagerLayer};
 use tracing::info;
 
@@ -73,8 +72,7 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
         bunny_api_key,
         bunny_cdn_host,
     };
-    let session_layer = SessionManagerLayer::new(redis_store)
-        .with_expiry(Expiry::OnInactivity(Duration::minutes(5)));
+    let session_layer = SessionManagerLayer::new(redis_store).with_expiry(Expiry::OnSessionEnd);
 
     // Auth service
     let backend = Backend { db: client };
