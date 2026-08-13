@@ -378,22 +378,6 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     _, _ -> #(effect.none(), core.Idle)
   }
-  let post_form = case new_route {
-    PostEditPage("") -> {
-      let empty_form = form.make_post_form(None)
-      // If there is a draft for a new post (draft.id == ""), pre-fill its body.
-      let hydrated_form = case store.load_store() {
-        Ok(s) ->
-          case s.draft_post.id == "" && s.draft_post.body != "" {
-            True -> formlib.add_string(empty_form, "body", s.draft_post.body)
-            False -> empty_form
-          }
-        Error(_) -> empty_form
-      }
-      Some(hydrated_form)
-    }
-    _ -> model.post_form
-  }
   let category_form = case new_route {
     CategoryEditPage("") -> Some(form.make_category_form(None))
     _ -> model.category_form
@@ -418,7 +402,6 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       route: new_route,
       login_state:,
       loading_status:,
-      post_form:,
       category_form:,
       presentation_form:,
       book_form:,
