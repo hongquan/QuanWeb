@@ -306,13 +306,27 @@ pub fn render_post_edit_page(id: String, model: Model) {
       ])
 
     _ -> {
-      let Model(users:, loading_status:, ..) = model
+      let Model(users:, loading_status:, draft_post:, ..) = model
       let form = case post_form, id {
         Some(form), "" ->
-          render_post_form(None, form, categories, users, loading_status)
+          render_post_form(
+            None,
+            form,
+            draft_post,
+            categories,
+            users,
+            loading_status,
+          )
         Some(form), pid ->
-          render_post_form(Some(pid), form, categories, users, loading_status)
-        _, _ -> element.none()
+          render_post_form(
+            Some(pid),
+            form,
+            draft_post,
+            categories,
+            users,
+            loading_status,
+          )
+        None, _ -> element.none()
       }
       let preview_dialog =
         model.post_body_preview

@@ -170,8 +170,10 @@ fn update(model: Model, msg: AppMessage) -> #(Model, Effect(AppMessage)) {
         routing.PostEditPage(id) -> id
         _ -> ""
       }
-      let _ =
-        store.save_draft_post(core.DraftPost(id: post_id, body: content))
+      echo content
+      let draft = DraftPost(post_id, content)
+      let model = Model(..model, draft_post: draft)
+      let _ = store.save_draft_post(draft)
       #(model, effect.none())
     }
 
@@ -315,7 +317,9 @@ fn view(model: Model) -> Element(AppMessage) {
     PostListPage(p, q, cat_id), _ -> {
       blog_post.render_post_table_page(option.unwrap(p, 1), q, cat_id, model)
     }
-    PostEditPage(id), LoggedIn(_u) -> blog_post.render_post_edit_page(id, model)
+    PostEditPage(id), LoggedIn(_user) -> {
+      blog_post.render_post_edit_page(id, model)
+    }
     CategoryListPage(page, sort), _ -> {
       blog_category.render_category_table_page(
         option.unwrap(page, 1),

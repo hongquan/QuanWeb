@@ -100,6 +100,12 @@ pub fn save_draft_post(draft: DraftPost) -> Result(Nil, Nil) {
   |> result.try(storage.set_item(_, constant.key_store, raw))
 }
 
+pub fn load_draft_post() -> Result(DraftPost, Nil) {
+  use store <- result.try(load_store())
+  let Store(draft_post:, ..) = store
+  Ok(draft_post)
+}
+
 // Remove everything, except `draft_post` from the store.
 pub fn delete_authentication() {
   use existing <- result.try(load_store())

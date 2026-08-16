@@ -116,10 +116,23 @@ pub fn handle_router_init_done(model: Model) {
       #(routing.goto(LoginPage(attempt)), core.Idle)
     }
   }
-  // If the initial page is the "create post" page, create a form
-  let post_form = case route {
-    PostEditPage("") -> Some(form.make_post_form(None))
-    _ -> model.post_form
+  // If the initial page is the "create post" page, create a empty form,
+  // and load DraftPost from localStorage.
+  let #(post_form, draft_post) = case route {
+    PostEditPage("") -> {
+      let form = Some(form.make_post_form(None))
+      let draft = case store.load_draft_post() {
+        Ok(DraftPost(id:, body:)) if id == "" -> {
+          DraftPost(..model.draft_post, body:)
+        }
+        Ok(_) | Error(_) -> {
+          model.draft_post
+        }
+      }
+      #(form, draft)
+    }
+
+    _ -> #(model.post_form, model.draft_post)
   }
   let category_form = case route {
     CategoryEditPage("") -> Some(form.make_category_form(None))
@@ -138,6 +151,7 @@ pub fn handle_router_init_done(model: Model) {
       ..model,
       loading_status:,
       post_form:,
+      draft_post:,
       category_form:,
       presentation_form:,
       book_form:,
@@ -379,6 +393,20 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     _, _ -> #(effect.none(), core.Idle)
   }
+  // If user is about to create new BlogPost, we load DraftPost from localStorage.
+  let draft_post = case new_route {
+    PostEditPage("") -> {
+      case store.load_draft_post() {
+        Ok(DraftPost(id:, body:)) if id == "" -> {
+          DraftPost(..model.draft_post, body:)
+        }
+        Ok(_) | Error(_) -> {
+          model.draft_post
+        }
+      }
+    }
+    _ -> model.draft_post
+  }
   let category_form = case new_route {
     CategoryEditPage("") -> Some(form.make_category_form(None))
     _ -> model.category_form
@@ -403,6 +431,7 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
       route: new_route,
       login_state:,
       loading_status:,
+      draft_post:,
       category_form:,
       presentation_form:,
       book_form:,

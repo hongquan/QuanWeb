@@ -43,10 +43,11 @@ const class_pane_header = "block px-2 py-1 rounded-t-md bg-gray-500 dark:bg-gray
 pub fn render_post_form(
   _post_id: Option(String),
   form: Form(PostEditablePart),
+  draft: DraftPost,
   categories: List(Category),
   users: List(MiniUser),
   loading_status: LoadingStatus,
-) {
+) -> Element(Message(a)) {
   let children = [
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Title")]),
@@ -63,7 +64,7 @@ pub fn render_post_form(
     ]),
     render_slug_field(form),
     render_category_dual_pane_field(form, categories),
-    render_body_field(form),
+    render_body_field(form, draft),
     render_locale_field(form),
     render_author_field(form, users),
     render_is_published_field(form),
@@ -262,8 +263,9 @@ fn render_body_field(
               a.name("body"),
               a.type_("text"),
               a.class("w-full h-full focus:outline-none"),
+              ev.on_change(PostBodyContentChanged),
             ],
-            formlib.field_value(form, "body"),
+            draft.body,
           ),
         ]),
       ],
