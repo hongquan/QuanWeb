@@ -29,16 +29,16 @@ import core.{
   ApiReturnedSinglePresentation, ApiReturnedSlug, ApiReturnedUsers,
   ApiUpdatedBook, ApiUpdatedCategory, ApiUpdatedPost, ApiUpdatedPresentation,
   BookFormSubmitted, CategoryFormSubmitted, ContentItemDeletionClicked,
-  FlashMessageTimeUp, FormCancelClicked, IsSubmitting, LogOutClicked, LoggedIn,
-  NonLogin, OnRouteChange, PostBodyContentChanged, PostFilterSubmitted,
-  PostFormSubmitted, PresentationFormSubmitted, RouterInitDone,
-  SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
+  DraftPost, FlashMessageTimeUp, FormCancelClicked, Idle, IsSubmitting,
+  LogOutClicked, LoggedIn, NonLogin, OnRouteChange, PostBodyContentChanged,
+  PostFilterSubmitted, PostFormSubmitted, PresentationFormSubmitted,
+  RouterInitDone, SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
   UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
   UserSubmittedLoginForm,
 }
 import ffi
 import form.{create_login_form}
-import model.{type AppMsg, type Model, Model, default_model}
+import model.{type AppMessage, type Model, Model, default_model}
 import routing.{
   BookEditPage, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
   LoginPage, PostEditPage, PostListPage, PresentationEditPage,
@@ -58,7 +58,7 @@ pub fn main(base_path: String) -> Nil {
   Nil
 }
 
-fn init(_args) -> #(Model, Effect(AppMsg)) {
+fn init(_args) -> #(Model, Effect(AppMessage)) {
   let #(path, query) =
     modem.initial_uri()
     |> result.map(fn(u) { #(u.path, u.query) })
@@ -100,7 +100,7 @@ fn init(_args) -> #(Model, Effect(AppMsg)) {
   #(model, whatsnext)
 }
 
-fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
+fn update(model: Model, msg: AppMessage) -> #(Model, Effect(AppMessage)) {
   let Model(route:, ..) = model
   case msg {
     RouterInitDone -> update.handle_router_init_done(model)
@@ -304,7 +304,7 @@ fn update(model: Model, msg: AppMsg) -> #(Model, Effect(AppMsg)) {
   }
 }
 
-fn view(model: Model) -> Element(AppMsg) {
+fn view(model: Model) -> Element(AppMessage) {
   let Model(route:, login_state:, ..) = model
   case route, login_state {
     HomePage, _ -> {

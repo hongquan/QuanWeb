@@ -11,7 +11,7 @@ import rsvp
 
 import constant
 import core.{
-  type CategoryEditablePart, type ContentItemId, type LoginData, type Msg,
+  type CategoryEditablePart, type ContentItemId, type LoginData, type Message,
   type PostEditablePart, ApiCreatedCategory, ApiCreatedPost,
   ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
   ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedSingleCategory,
@@ -21,7 +21,7 @@ import core.{
 }
 import decoder.{user_decoder}
 
-pub fn login_via_api(login_data: LoginData) -> Effect(Msg(a)) {
+pub fn login_via_api(login_data: LoginData) -> Effect(Message(a)) {
   let LoginData(email:, password:) = login_data
   let post_data =
     json.object([
@@ -37,7 +37,7 @@ pub fn load_posts(
   page: Int,
   q: Option(String),
   cat_id: Option(String),
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.mini_post_decoder())
   let handler = rsvp.expect_json(response_decoder, core.ApiReturnedPosts)
@@ -55,12 +55,15 @@ pub fn load_posts(
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn initiate_logout() -> Effect(Msg(a)) {
+pub fn initiate_logout() -> Effect(Message(a)) {
   let handler = rsvp.expect_text(ApiReturnedLogOutDone)
   rsvp.post("/_api/logout", json.bool(True), handler)
 }
 
-pub fn load_categories(page: Int, sort_by_featured: Bool) -> Effect(Msg(a)) {
+pub fn load_categories(
+  page: Int,
+  sort_by_featured: Bool,
+) -> Effect(Message(a)) {
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.make_category_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
@@ -74,14 +77,14 @@ pub fn load_categories(page: Int, sort_by_featured: Bool) -> Effect(Msg(a)) {
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_categories_by_url(url: Uri) -> Effect(Msg(a)) {
+pub fn load_categories_by_url(url: Uri) -> Effect(Message(a)) {
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.make_category_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedCategories)
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_single_post(id: String) -> Effect(Msg(a)) {
+pub fn load_single_post(id: String) -> Effect(Message(a)) {
   let handler =
     rsvp.expect_json(decoder.make_post_decoder(), ApiReturnedSinglePost)
   rsvp.get(constant.api_posts <> id, handler)
@@ -93,7 +96,7 @@ pub fn load_single_category(id: String) {
   rsvp.get(constant.api_categories <> id, handler)
 }
 
-pub fn initiate_generate_slug(title: String) -> Effect(Msg(a)) {
+pub fn initiate_generate_slug(title: String) -> Effect(Message(a)) {
   let handler = rsvp.expect_text(ApiReturnedSlug)
   rsvp.post(constant.api_slug_generator, json.string(title), handler)
 }
@@ -102,7 +105,7 @@ pub fn update_post_via_api(
   id: String,
   data: PostEditablePart,
   stay: Bool,
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let body = dump_post_to_json(data) |> json.to_string
   let decoder = decoder.make_post_decoder()
   let handler = rsvp.expect_json(decoder, ApiUpdatedPost(_, stay))
@@ -144,7 +147,7 @@ fn dump_post_to_json(post: PostEditablePart) -> json.Json {
   ])
 }
 
-pub fn try_render_markdown_via_api(text: String) -> Effect(Msg(a)) {
+pub fn try_render_markdown_via_api(text: String) -> Effect(Message(a)) {
   let handler = rsvp.expect_text(ApiRenderedMarkdown)
   let url = constant.api_render_markdown
   case
@@ -164,7 +167,7 @@ pub fn try_render_markdown_via_api(text: String) -> Effect(Msg(a)) {
   }
 }
 
-pub fn load_users() -> Effect(Msg(a)) {
+pub fn load_users() -> Effect(Message(a)) {
   let response_decoder = decode.list(decoder.mini_user_decoder())
   let handler = rsvp.expect_json(response_decoder, ApiReturnedUsers)
   rsvp.get(constant.api_users, handler)
@@ -201,7 +204,7 @@ pub fn create_category_via_api(data: CategoryEditablePart) {
 pub fn update_category_via_api(
   id: String,
   data: CategoryEditablePart,
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let body = dump_category_to_json(data) |> json.to_string
   let decoder = decoder.make_category_decoder()
   let handler = rsvp.expect_json(decoder, ApiUpdatedCategory)
@@ -223,7 +226,7 @@ pub fn update_category_via_api(
   }
 }
 
-pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Msg(a)) {
+pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Message(a)) {
   let url = case id {
     PostId(id) -> constant.api_posts <> id
     CategoryId(id) -> constant.api_categories <> id
@@ -250,7 +253,7 @@ pub fn delete_content_item_via_api(id: ContentItemId) -> Effect(Msg(a)) {
   }
 }
 
-pub fn load_presentations(page: Int) -> Effect(Msg(a)) {
+pub fn load_presentations(page: Int) -> Effect(Message(a)) {
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.presentation_decoder())
   let handler =
@@ -261,7 +264,7 @@ pub fn load_presentations(page: Int) -> Effect(Msg(a)) {
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_single_presentation(id: String) -> Effect(Msg(a)) {
+pub fn load_single_presentation(id: String) -> Effect(Message(a)) {
   let handler =
     rsvp.expect_json(
       decoder.presentation_decoder(),
@@ -272,7 +275,7 @@ pub fn load_single_presentation(id: String) -> Effect(Msg(a)) {
 
 pub fn create_presentation_via_api(
   data: core.PresentationEditablePart,
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let body = dump_presentation_to_json(data)
   let decoder = decoder.presentation_decoder()
   let handler = rsvp.expect_json(decoder, core.ApiCreatedPresentation)
@@ -282,7 +285,7 @@ pub fn create_presentation_via_api(
 pub fn update_presentation_via_api(
   id: String,
   data: core.PresentationEditablePart,
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let body = dump_presentation_to_json(data) |> json.to_string
   let decoder = decoder.presentation_decoder()
   let handler = rsvp.expect_json(decoder, core.ApiUpdatedPresentation)
@@ -314,7 +317,7 @@ fn dump_presentation_to_json(
   ])
 }
 
-pub fn load_books(page: Int) -> Effect(Msg(a)) {
+pub fn load_books(page: Int) -> Effect(Message(a)) {
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.book_decoder())
   let handler = rsvp.expect_json(response_decoder, core.ApiReturnedBooks)
@@ -324,13 +327,13 @@ pub fn load_books(page: Int) -> Effect(Msg(a)) {
   rsvp.get(uri.to_string(url), handler)
 }
 
-pub fn load_single_book(id: String) -> Effect(Msg(a)) {
+pub fn load_single_book(id: String) -> Effect(Message(a)) {
   let handler =
     rsvp.expect_json(decoder.book_decoder(), core.ApiReturnedSingleBook)
   rsvp.get(constant.api_books <> id, handler)
 }
 
-pub fn create_book_via_api(data: core.BookEditablePart) -> Effect(Msg(a)) {
+pub fn create_book_via_api(data: core.BookEditablePart) -> Effect(Message(a)) {
   let body = dump_book_to_json(data)
   let decoder = decoder.book_decoder()
   let handler = rsvp.expect_json(decoder, core.ApiCreatedBook)
@@ -340,7 +343,7 @@ pub fn create_book_via_api(data: core.BookEditablePart) -> Effect(Msg(a)) {
 pub fn update_book_via_api(
   id: String,
   data: core.BookEditablePart,
-) -> Effect(Msg(a)) {
+) -> Effect(Message(a)) {
   let body = dump_book_to_json(data) |> json.to_string
   let decoder = decoder.book_decoder()
   let handler = rsvp.expect_json(decoder, core.ApiUpdatedBook)
@@ -370,7 +373,7 @@ fn dump_book_to_json(book: core.BookEditablePart) -> json.Json {
   ])
 }
 
-pub fn load_book_authors() -> Effect(Msg(a)) {
+pub fn load_book_authors() -> Effect(Message(a)) {
   // The API returns a paginated response, but we only need the objects list
   let response_decoder =
     decoder.make_listing_api_decoder(decoder.book_author_decoder())

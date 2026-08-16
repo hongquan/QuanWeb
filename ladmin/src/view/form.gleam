@@ -13,9 +13,10 @@ import plinth/browser/element as br_element
 
 import core.{
   type BookAuthor, type BookEditablePart, type Category,
-  type CategoryEditablePart, type LoadingStatus, type MiniUser, type Msg,
-  type PostEditablePart, type PresentationEditablePart, BookFormSubmitted,
-  CategoryEditablePart, CategoryFormSubmitted, FormCancelClicked, IsSubmitting,
+  type CategoryEditablePart, type DraftPost, type LoadingStatus, type Message,
+  type MiniUser, type PostEditablePart, type PresentationEditablePart,
+  BookFormSubmitted, CategoryEditablePart, CategoryFormSubmitted,
+  FormCancelClicked, IsSubmitting, PostBodyContentChanged,
   PresentationFormSubmitted, SlugGeneratorClicked, SubmitStayButtonClicked,
   UserClickMarkdownPreview, UserMovedCategoryBetweenPane,
 }
@@ -216,7 +217,10 @@ fn category_as_choice(category: Category, selected: Bool) {
   ])
 }
 
-fn render_body_field(form: Form(PostEditablePart)) -> Element(Msg(a)) {
+fn render_body_field(
+  _form: Form(PostEditablePart),
+  draft: DraftPost,
+) -> Element(Message(a)) {
   let handler_preview_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_body = case br_element.cast(elm) {
@@ -317,7 +321,7 @@ fn render_is_published_field(form: Form(PostEditablePart)) {
   ])
 }
 
-fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Msg(a)) {
+fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Message(a)) {
   let submit_stay_click_handler =
     ev.on("click", {
       use elm <- decode.field("target", decode.dynamic)
@@ -628,7 +632,7 @@ pub fn render_book_form(
 
 fn render_simple_form_buttons(
   loading_status: LoadingStatus,
-  _msg_constructor: fn(Result(a, Form(a))) -> Msg(b),
+  _msg_constructor: fn(Result(a, Form(a))) -> Message(b),
 ) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
     widget.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),

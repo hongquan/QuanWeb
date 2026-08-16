@@ -21,14 +21,15 @@ import constant
 import core.{
   type ApiListingResponse, type Book, type BookAuthor, type BookEditablePart,
   type Category, type CategoryEditablePart, type ContentItemId, type LoginData,
-  type MiniPost, type Msg, type Post, type PostEditablePart, type Presentation,
-  type PresentationEditablePart, type User, ApiListingResponse, BookId,
-  IsLoading, IsSubmitting, LoggedIn, NonLogin, PageOwnedBooks,
-  PageOwnedCategories, PageOwnedObjectPaging, PageOwnedPosts,
-  PageOwnedPresentations, PostFormSubmitted, PostId, PresentationId, TryingLogin,
+  type Message, type MiniPost, type Post, type PostEditablePart,
+  type Presentation, type PresentationEditablePart, type User,
+  ApiListingResponse, BookId, DraftPost, IsLoading, IsSubmitting, LoggedIn,
+  NonLogin, PageOwnedBooks, PageOwnedCategories, PageOwnedObjectPaging,
+  PageOwnedPosts, PageOwnedPresentations, PostFormSubmitted, PostId,
+  PresentationId, TryingLogin,
 }
 import ffi
-import model.{type AppMsg, type Model, Model}
+import model.{type AppMessage, type Model, Model}
 import routing.{
   type Route, BookEditPage, BookListPage, CategoryEditPage, CategoryListPage,
   HomePage, LoginPage, PostEditPage, PostListPage, PresentationEditPage,
@@ -147,7 +148,7 @@ pub fn handle_router_init_done(model: Model) {
 pub fn handle_login_submission(
   form: Result(LoginData, Form(LoginData)),
   model: Model,
-) -> #(Model, Effect(AppMsg)) {
+) -> #(Model, Effect(AppMessage)) {
   case form {
     Ok(login_data) -> {
       let model = Model(..model, loading_status: IsSubmitting)
@@ -272,7 +273,7 @@ pub fn handle_api_list_post_result(
   }
 }
 
-pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Msg(a))) {
+pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Message(a))) {
   let login_state = NonLogin
   // Delete user from localStorage
   store.delete_authentication()
@@ -655,7 +656,7 @@ pub fn handle_rendered_markdown_received(html: String, model: Model) {
 pub fn handle_submit_stay_button_clicked(
   button: Element,
   model: Model,
-) -> #(Model, Effect(Msg(a))) {
+) -> #(Model, Effect(Message(a))) {
   let whatsnext = case model.post_form {
     Some(form) -> {
       let whatsnext = {
@@ -908,7 +909,7 @@ pub fn handle_api_delete_content_item_result(
 pub fn handle_api_list_presentations_result(
   res: Result(ApiListingResponse(Presentation), rsvp.Error(String)),
   model: Model,
-) -> #(Model, Effect(Msg(a))) {
+) -> #(Model, Effect(Message(a))) {
   case res {
     Ok(info) -> {
       let ApiListingResponse(count:, total_pages:, links:, ..) = info
@@ -944,7 +945,7 @@ pub fn handle_api_list_presentations_result(
 pub fn handle_api_list_books_result(
   res: Result(ApiListingResponse(Book), rsvp.Error(String)),
   model: Model,
-) -> #(Model, Effect(Msg(a))) {
+) -> #(Model, Effect(Message(a))) {
   case res {
     Ok(info) -> {
       let ApiListingResponse(count:, total_pages:, links:, ..) = info

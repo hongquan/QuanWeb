@@ -210,7 +210,7 @@ pub fn draft_post_to_json(draft_post: DraftPost) -> json.Json {
   ])
 }
 
-pub type Msg(r) {
+pub type Message(r) {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error(String)))

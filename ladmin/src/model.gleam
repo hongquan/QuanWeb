@@ -5,10 +5,11 @@ import lustre/effect
 import plinth/javascript/global
 
 import core.{
-  type BookAuthor, type BookEditablePart, type Category, type CategoryEditablePart,
-  type FlashMessage, type LoadingStatus, type LoginState, type MiniUser, type Msg,
+  type BookAuthor, type BookEditablePart, type Category,
+  type CategoryEditablePart, type DraftPost, type FlashMessage,
+  type LoadingStatus, type LoginState, type Message, type MiniUser,
   type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
-  type PresentationEditablePart, FlashMessage, FlashMessageTimeUp,
+  type PresentationEditablePart, DraftPost, FlashMessage, FlashMessageTimeUp,
 }
 import routing.{type Route}
 
@@ -33,8 +34,8 @@ pub type Model {
 }
 
 // `Msg` is generic with route type, we make concrete type here
-pub type AppMsg =
-  Msg(Route)
+pub type AppMessage =
+  Message(Route)
 
 pub const default_model = Model(
   route: routing.HomePage,
