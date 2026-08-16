@@ -337,8 +337,9 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
     }
     PostEditPage(id), _ -> {
       let #(load_post_action, loading_status) = case id {
-        "" -> #(effect.none(), core.Idle)
-        s -> #(action.load_single_post(s), IsLoading)
+        "" -> #(action.load_users(), IsLoading)
+        // The load_users() will be called after loading post.
+        pid -> #(action.load_single_post(pid), IsLoading)
       }
       let load_categories_action = case categories, partial_load_categories {
         [], _o -> action.load_categories(1, False)
@@ -348,7 +349,6 @@ pub fn handle_landing_on_page(new_route: Route, model: Model) {
         effect.batch([
           load_post_action,
           load_categories_action,
-          action.load_users(),
         ]),
         loading_status,
       )
@@ -514,7 +514,7 @@ pub fn handle_api_retrieve_post_result(
       let form = form.make_post_form(Some(p))
       let model =
         Model(..model, post_form: Some(form), loading_status: core.Idle)
-      #(model, effect.none())
+      #(model, action.load_users())
     }
     Error(_e) -> {
       let message = model.create_danger_message("Failed to load post")
@@ -629,7 +629,7 @@ pub fn handle_api_create_post_result(
     Ok(post) -> {
       let message =
         model.create_success_message(
-          "Post " <> post.title <> " has been created.",
+          "Post \"" <> post.title <> "\" has been created.",
         )
       let flash_messages = [message, ..model.flash_messages]
       let whatsnext =
@@ -694,7 +694,11 @@ pub fn handle_submit_stay_button_clicked(
           element.closest(button, "form")
           |> result.map(ffi.get_form_data)
           |> result.map(array.to_list)
-          |> result.map(process_post_form_data_to_produce_msg(_, form, True))
+          |> result.map(process_post_form_data_to_produce_muv_message(
+            _,
+            form,
+            True,
+          ))
         app_msg |> result.map(dispatch) |> result.unwrap(Nil)
       }
       whatsnext
@@ -704,7 +708,7 @@ pub fn handle_submit_stay_button_clicked(
   #(model, whatsnext)
 }
 
-pub fn process_post_form_data_to_produce_msg(
+pub fn process_post_form_data_to_produce_muv_message(
   submitted_values: List(#(String, String)),
   form: Form(PostEditablePart),
   stay: Bool,

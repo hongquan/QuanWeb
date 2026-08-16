@@ -217,7 +217,7 @@ fn update(model: Model, msg: AppMessage) -> #(Model, Effect(AppMessage)) {
       update.handle_rendered_markdown_received(html, model)
     }
     ApiReturnedUsers(Ok(users)) -> {
-      let model = Model(..model, users:)
+      let model = Model(..model, users:, loading_status: Idle)
       #(model, effect.none())
     }
 

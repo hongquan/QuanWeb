@@ -84,7 +84,7 @@ pub fn render_post_form(
     render_bottom_buttons(loading_status),
   ]
 
-  let handle_submit = update.process_post_form_data_to_produce_msg(
+  let handle_submit = update.process_post_form_data_to_produce_muv_message(
     _,
     form,
     False,

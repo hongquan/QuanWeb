@@ -362,7 +362,7 @@ pub fn render_post_edit_page(id: String, model: Model) {
       element.fragment([
         skeleton.render_header_bar(LogOutClicked),
         skeleton.render_tab_navbar(route),
-        skeleton.render_main_block(main_content, ""),
+        skeleton.render_main_block(main_content, "main"),
       ])
     }
   }
