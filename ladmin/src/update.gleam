@@ -512,8 +512,14 @@ pub fn handle_api_retrieve_post_result(
   case res {
     Ok(p) -> {
       let form = form.make_post_form(Some(p))
+      let draft_post = DraftPost(p.id, p.body |> option.unwrap(""))
       let model =
-        Model(..model, post_form: Some(form), loading_status: core.Idle)
+        Model(
+          ..model,
+          post_form: Some(form),
+          draft_post:,
+          loading_status: core.Idle,
+        )
       #(model, action.load_users())
     }
     Error(_e) -> {
