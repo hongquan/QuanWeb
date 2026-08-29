@@ -128,7 +128,7 @@ pub fn make_excerpt(markdown: &str) -> String {
 
 fn extract_reference_labels(line: &str) -> Vec<String> {
     let mut labels = Vec::new();
-    let mut chars = line.chars().enumerate().peekable();
+    let mut chars = line.char_indices().peekable();
     while let Some((idx, ch)) = chars.next() {
         if ch == '[' {
             let start = idx;
