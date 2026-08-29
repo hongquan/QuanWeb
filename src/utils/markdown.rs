@@ -202,7 +202,7 @@ mod tests {
         let markdown = "Hello world\n\nMore content here\nand even more.";
         let html = make_excerpt(markdown);
         assert!(html.contains("<p>Hello world</p>"));
-        assert!(html.ends_with("..."));
+        assert!(html.ends_with("…"));
     }
 
     #[test]
@@ -210,7 +210,7 @@ mod tests {
         let markdown = "Visit [pypi]\n\n[pypi]: https://pypi.org/\n";
         let html = make_excerpt(markdown);
         assert!(html.contains(r#"<a href="https://pypi.org/">pypi</a>"#));
-        assert!(html.ends_with("..."));
+        assert!(html.ends_with("…"));
         assert!(!html.contains("[pypi]:"));
     }
 
@@ -235,6 +235,6 @@ mod tests {
         let html = make_excerpt(markdown);
         assert!(html.contains("<pre"));
         assert!(html.contains("</pre>"));
-        assert!(html.ends_with("..."));
+        assert!(html.ends_with("…"));
     }
 }
