@@ -1,4 +1,4 @@
-use crate::models::{users::MiniUser, User};
+use crate::models::{User, users::MiniUser};
 use gel_tokio::{Client, Error};
 use tracing::debug;
 

@@ -2,7 +2,7 @@ use std::num::NonZeroU16;
 
 use axum::http::Uri;
 
-use super::structs::{PaginationLinks, NPaging};
+use super::structs::{NPaging, PaginationLinks};
 use crate::consts::DEFAULT_PAGE_SIZE;
 use crate::utils::urls::update_entry_in_query;
 
@@ -20,9 +20,19 @@ pub fn gen_pagination_links(paging: &NPaging, total: usize, original_uri: Uri) -
         None
     };
     let next_url = next_page.map(|p| update_entry_in_query("page", p, &original_uri));
-    let next_url = next_url.map(|u| paging.per_page.map(|size| update_entry_in_query("per_page", size, &u)).unwrap_or(u));
+    let next_url = next_url.map(|u| {
+        paging
+            .per_page
+            .map(|size| update_entry_in_query("per_page", size, &u))
+            .unwrap_or(u)
+    });
     let prev_url = prev_page.map(|p| update_entry_in_query("page", p, &original_uri));
-    let prev_url = prev_url.map(|u| paging.per_page.map(|size| update_entry_in_query("per_page", size, &u)).unwrap_or(u));
+    let prev_url = prev_url.map(|u| {
+        paging
+            .per_page
+            .map(|size| update_entry_in_query("per_page", size, &u))
+            .unwrap_or(u)
+    });
     PaginationLinks {
         prev: prev_url.map(|u| u.to_string()),
         next: next_url.map(|u| u.to_string()),

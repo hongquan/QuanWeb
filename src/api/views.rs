@@ -19,7 +19,9 @@ pub use super::minors::{
 };
 use super::paging::gen_pagination_links;
 pub use super::posts::{create_post, delete_post, get_post, list_posts, update_post_partial};
-use super::structs::{BlogCategoryCreateData, BlogCategoryPatchData, CategoryListQuery, ObjectListResponse};
+use super::structs::{
+    BlogCategoryCreateData, BlogCategoryPatchData, CategoryListQuery, ObjectListResponse,
+};
 pub use super::users::list_users;
 use crate::auth::AuthSession;
 use crate::consts::DEFAULT_PAGE_SIZE;
@@ -43,15 +45,20 @@ pub async fn list_categories(
     OriginalUri(original_uri): OriginalUri,
     State(db): State<EdgeClient>,
 ) -> AxumResult<Json<ObjectListResponse<BlogCategory>>> {
-    let CategoryListQuery { page, per_page, sort } = query;
+    let CategoryListQuery {
+        page,
+        per_page,
+        sort,
+    } = query;
     let page = page.unwrap_or(NonZeroU16::MIN);
     let per_page = per_page.unwrap_or(DEFAULT_PAGE_SIZE);
     let offset = ((page.get() - 1) * per_page as u16) as i64;
     let limit = per_page as i64;
     let sort_by_featured = matches!(sort, Some(super::structs::CategorySort::FeaturedOrder));
-    let categories = stores::blog::get_blog_categories(Some(offset), Some(limit), sort_by_featured, &db)
-        .await
-        .map_err(ApiError::GelQueryError)?;
+    let categories =
+        stores::blog::get_blog_categories(Some(offset), Some(limit), sort_by_featured, &db)
+            .await
+            .map_err(ApiError::GelQueryError)?;
     let count = stores::blog::get_all_categories_count(&db)
         .await
         .map_err(ApiError::GelQueryError)?;
@@ -60,7 +67,10 @@ pub async fn list_categories(
         NonZeroU16::new((count as f64 / per_page as f64).ceil() as u16).unwrap_or(NonZeroU16::MIN);
     tracing::debug!("Total pages: {}", total_pages);
     // Create a paging struct for link generation
-    let paging = super::structs::NPaging { page: Some(page), per_page: Some(per_page) };
+    let paging = super::structs::NPaging {
+        page: Some(page),
+        per_page: Some(per_page),
+    };
     let links = gen_pagination_links(&paging, count as usize, original_uri);
     tracing::debug!("Links: {:?}", links);
     let resp = ObjectListResponse {

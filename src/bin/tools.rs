@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use gel_protocol::named_args;
-use miette::{miette, IntoDiagnostic, Result};
+use miette::{IntoDiagnostic, Result, miette};
 use syntect::highlighting::ThemeSet;
 use syntect::html::css_for_theme_with_class_style;
 use tracing::debug;

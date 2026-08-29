@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! append_set_statement {
     ($name:literal, $etype:literal, $line_vec:ident, $name_list:ident) => {

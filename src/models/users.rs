@@ -1,6 +1,6 @@
 use atom_syndication::{Person, PersonBuilder};
-use gel_derive::Queryable;
 use field_names::FieldNames;
+use gel_derive::Queryable;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

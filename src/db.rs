@@ -30,5 +30,3 @@ pub async fn get_redis_store() -> Result<RedisStore<Pool>, FredError> {
     let store = RedisStore::new(pool);
     Ok(store)
 }
-
-

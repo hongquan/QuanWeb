@@ -1,8 +1,8 @@
 // Just copy from https://github.com/feed-rs/feed-rs/
 
+use atom_syndication::Entry;
 use http::Uri;
 use serde::Serialize;
-use atom_syndication::Entry;
 
 use crate::types::ext::UriExt;
 pub const DEFAULT_SITE_URL: &str = "https://quan.hoabinh.vn";

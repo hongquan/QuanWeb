@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
-use axum::{response::IntoResponse, Json};
+use axum::{Json, response::IntoResponse};
 use gel_errors::display::display_error_verbose;
 use gel_errors::kinds as EdErrKind;
 use indexmap::IndexMap;
@@ -77,7 +77,7 @@ impl IntoResponse for ApiError {
             Self::Bunny(e) => {
                 tracing::error!("Bunny API error: {}", e);
                 (StatusCode::BAD_REQUEST, format!("Bunny API error: {}", e))
-            },
+            }
             Self::Other(message) => (StatusCode::INTERNAL_SERVER_ERROR, message),
         };
         let payload = ApiErrorShape::from(message);

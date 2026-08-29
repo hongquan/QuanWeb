@@ -1,6 +1,6 @@
-use uuid::Uuid;
-use serde::Serialize;
 use gel_derive::Queryable;
+use serde::Serialize;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Queryable)]
 pub struct Presentation {

@@ -12,7 +12,8 @@ use tracing::{debug, info};
 use uuid::Uuid;
 
 use crate::models::{
-    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, HomePagePost, MediumBlogPost, MiniBlogPost, MinBodyBlogPost,
+    BlogCategory, DetailedBlogPost, FeaturedCategoryBlock, HomePagePost, MediumBlogPost,
+    MinBodyBlogPost, MiniBlogPost,
 };
 use crate::types::EdgeSelectable;
 
@@ -405,9 +406,7 @@ pub async fn get_featured_categories_with_posts(
 }
 
 /// Get the 6 latest published posts for home page display
-pub async fn get_latest_posts_for_home(
-    client: &Client,
-) -> Result<Vec<HomePagePost>, Error> {
+pub async fn get_latest_posts_for_home(client: &Client) -> Result<Vec<HomePagePost>, Error> {
     let post_fields = HomePagePost::fields_as_shape();
     let q = format!(
         "SELECT BlogPost {post_fields}
@@ -428,11 +427,7 @@ pub async fn get_all_posts_for_regeneration(
 }
 
 /// Update the HTML field of a blog post
-pub async fn update_post_html(
-    client: &Client,
-    post_id: Uuid,
-    html: &str,
-) -> Result<(), Error> {
+pub async fn update_post_html(client: &Client, post_id: Uuid, html: &str) -> Result<(), Error> {
     let q = "UPDATE BlogPost FILTER .id = <uuid>$0 SET { html := <str>$1 }";
     client.execute(&q, &(post_id, html)).await?;
     Ok(())

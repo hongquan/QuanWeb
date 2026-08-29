@@ -6,8 +6,8 @@ use chrono_tz::Asia::Ho_Chi_Minh;
 use fluent_bundle::FluentValue;
 use gel_protocol::model::Datetime as EDatetime;
 use minijinja::value::{Kwargs, Value as MJValue, ValueKind as MJValueKind};
-use serde::ser::Serializer;
 use serde::Serialize;
+use serde::ser::Serializer;
 
 /* Serde serializers to serialize Gel's Datetime type */
 pub fn serialize_edge_datetime<Se>(edt: &EDatetime, serializer: Se) -> Result<Se::Ok, Se::Error>

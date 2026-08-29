@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use http::uri::{Uri, PathAndQuery, Builder};
+use http::uri::{Builder, PathAndQuery, Uri};
 
 pub trait UriExt {
     fn join(&self, path: &str) -> Uri;
