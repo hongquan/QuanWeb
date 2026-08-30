@@ -41,6 +41,7 @@ packages = [
   { name = "houdini", version = "1.2.1", build_tools = ["gleam"], requirements = [], otp_app = "houdini", source = "hex", outer_checksum = "6F8AC2F12974567FB744BEA66AC93CEB76AAEA19AD28564623F76CDA9BC26A85" },
   { name = "hpack_erl", version = "0.3.0", build_tools = ["rebar3"], requirements = [], otp_app = "hpack", source = "hex", outer_checksum = "D6137D7079169D8C485C6962DFE261AF5B9EF60FBC557344511C1E65E3D95FB0" },
   { name = "html_lustre_converter", version = "1.6.0", build_tools = ["gleam"], requirements = ["glam", "gleam_stdlib", "javascript_dom_parser"], otp_app = "html_lustre_converter", source = "hex", outer_checksum = "FF9A8392FADAE00AB36D1BC6CB964BEAF5E6B1F52BC93B90E3937048F4C45D98" },
+  { name = "intldate", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "intldate", source = "hex", outer_checksum = "2FF7DED709F921C0C05B183AF6F4AE58635D10AE95D79C75E66A73F6E2A8F1FA" },
   { name = "iterators", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "iterators", source = "hex", outer_checksum = "1AE078C0DE76405ED476CA4C758A5D5CCAA565AE311EE219819A905AF54D3D1E" },
   { name = "iv", version = "1.4.4", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_yielder"], otp_app = "iv", source = "hex", outer_checksum = "938AEAA6FF30ECF1AA36CC766AC9EE5D4BD6F3C4EDECCE71D16F4FD14F36C41E" },
   { name = "javascript_dom_parser", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "javascript_dom_parser", source = "hex", outer_checksum = "0E140ED4E2E0CDE6B747327BA62AA625B275DBD5F5871592AB15F674F7945B0A" },
@@ -75,6 +76,7 @@ gleam_time = { version = ">= 1.8.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.11.0 and < 2.0.0" }
 gleroglero = { version = ">= 1.2.0 and < 2.0.0" }
 gtempo = { version = ">= 7.3.0 and < 8.0.0" }
+intldate = { version = ">= 2.0.0 and < 3.0.0" }
 iterators = { version = ">= 1.0.0 and < 2.0.0" }
 iv = { version = ">= 1.4.4 and < 2.0.0" }
 lucide_lustre = { version = ">= 2.0.3 and < 3.0.0" }

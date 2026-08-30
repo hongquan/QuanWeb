@@ -7,6 +7,7 @@ import gleam/result
 import gleam/time/calendar.{local_offset, month_to_int}
 import gleam/time/timestamp
 
+import intldate
 import lustre/attribute as a
 import lustre/element.{type Element}
 import lustre/element/html as h
@@ -156,8 +157,16 @@ fn render_post_row(
   post: MiniPost,
   deletion_click_handler: fn(String) -> msg,
 ) -> #(String, Element(msg)) {
-  // TODO: Format the timestamp properly using gleam/time/calendar
-  let created_at_str = ""
+  let format_config =
+    intldate.new()
+    |> intldate.with_year(intldate.YearNumeric)
+    |> intldate.with_month(intldate.MonthShort)
+    |> intldate.with_day(intldate.DayNumeric)
+    |> intldate.with_hour(intldate.HourNumeric)
+    |> intldate.with_hour12(False)
+    |> intldate.with_minute(intldate.MinuteNumeric)
+  let created_at_str =
+    intldate.format(post.created_at, None, None, format_config)
   let category_links =
     post.categories
     |> list.map(fn(c) {
@@ -176,6 +185,8 @@ fn render_post_row(
     <> "/"
     <> post.slug
   let preview_url = "/preview/" <> post.id
+
+  // Reference `render_post_table_header` for columns
 
   let cells = [
     h.td([a.class(class_cell)], [
