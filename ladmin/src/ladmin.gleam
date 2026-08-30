@@ -34,7 +34,8 @@ import core.{
   PostBodyContentChanged, PostFilterSubmitted, PostFormSubmitted,
   PresentationFormSubmitted, RouterInitDone, SlugGeneratorClicked,
   SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
-  UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
+  UserClickedEditLink, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
+  UserSubmittedLoginForm,
 }
 import ffi
 import form.{create_login_form}
@@ -303,6 +304,10 @@ fn update(model: Model, msg: Message) -> #(Model, Effect(Message)) {
     ApiReturnedLogOutDone(Error(_)) -> #(model, effect.none())
     ApiRenderedMarkdown(Error(_)) -> #(model, effect.none())
     ApiReturnedUsers(Error(_)) -> #(model, effect.none())
+    UserClickedEditLink(url) -> {
+      let _ = store.save_last_visit_post_list_url(url)
+      #(model, effect.none())
+    }
   }
 }
 

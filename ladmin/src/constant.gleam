@@ -5,6 +5,8 @@ pub const key_store = "ladmin"
 
 pub const key_store_user = "user"
 
+pub const key_last_visit_post_list_url = "ladmin.last_visit_post_list_url"
+
 pub const api_login = "/_api/login"
 
 pub const api_posts = "/_api/posts/"

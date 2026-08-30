@@ -3,10 +3,11 @@ import decoder
 import gleam/dynamic/decode.{type Decoder}
 import gleam/io
 import gleam/json.{type Json}
+import gleam/option.{None, Some}
 import gleam/result
 import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
-import plinth/javascript/storage
+import plinth/browser/web_storage
 
 import core.{type DraftPost, type User}
 
@@ -43,11 +44,17 @@ fn store_to_json(store: Store) -> Json {
 
 pub fn load_store() -> Result(Store, Nil) {
   let raw =
-    storage.local()
+    web_storage.local()
     |> result.map_error(fn(_e) {
       io.println_error("Failed to acquire localStorage!")
     })
-    |> result.try(storage.get_item(_, constant.key_store))
+    |> result.try(fn(storage) {
+      case web_storage.get_item(storage, constant.key_store) {
+        Ok(Some(value)) -> Ok(value)
+        Ok(None) -> Error(Nil)
+        Error(e) -> Error(io.println_error(e))
+      }
+    })
   case raw {
     Ok(s) ->
       json.parse(s, store_decoder())
@@ -72,20 +79,26 @@ pub fn save_user(user: User) {
     |> result.unwrap(core.DraftPost(id: "", body: ""))
   let jstore = store_to_json(Store(user:, last_auth:, draft_post: saved_draft))
   let raw = json.to_string(jstore)
-  storage.local()
-  |> result.map_error(fn(_e) {
-    io.println_error("Failed to acquire localStorage!")
-  })
-  |> result.try(storage.set_item(_, constant.key_store, raw))
+  case web_storage.local() {
+    Ok(storage) ->
+      web_storage.set_item(storage, constant.key_store, raw)
+      |> result.map_error(io.println_error)
+      |> result.unwrap(Nil)
+    Error(e) -> io.println_error(e)
+  }
 }
 
 pub fn destroy() {
-  storage.local()
-  |> result.map_error(fn(_e) {
-    io.println_error("Failed to acquire localStorage!")
-  })
-  |> result.map(storage.remove_item(_, constant.key_store))
-  |> result.unwrap(Nil)
+  case web_storage.local() {
+    Ok(storage) -> {
+      web_storage.remove_item(storage, constant.key_store)
+      Nil
+    }
+    Error(e) -> {
+      io.println_error(e)
+      Nil
+    }
+  }
 }
 
 pub fn save_draft_post(draft: DraftPost) -> Result(Nil, Nil) {
@@ -93,11 +106,12 @@ pub fn save_draft_post(draft: DraftPost) -> Result(Nil, Nil) {
   let Store(user:, last_auth:, ..) = existing
   let jstore = store_to_json(Store(user:, last_auth:, draft_post: draft))
   let raw = json.to_string(jstore)
-  storage.local()
-  |> result.map_error(fn(_e) {
-    io.println_error("Failed to acquire localStorage!")
-  })
-  |> result.try(storage.set_item(_, constant.key_store, raw))
+  case web_storage.local() {
+    Ok(storage) ->
+      web_storage.set_item(storage, constant.key_store, raw)
+      |> result.map_error(fn(_) { Nil })
+    Error(_) -> Error(Nil)
+  }
 }
 
 pub fn load_draft_post() -> Result(DraftPost, Nil) {
@@ -107,14 +121,61 @@ pub fn load_draft_post() -> Result(DraftPost, Nil) {
 }
 
 // Remove everything, except `draft_post` from the store.
-pub fn delete_authentication() {
-  use existing <- result.try(load_store())
-  let jstore =
-    json.object([#("draft_post", core.draft_post_to_json(existing.draft_post))])
-  let raw = json.to_string(jstore)
-  storage.local()
+pub fn delete_authentication() -> Nil {
+  case load_store() {
+    Ok(existing) -> {
+      let jstore =
+        json.object([
+          #("draft_post", core.draft_post_to_json(existing.draft_post)),
+        ])
+      let raw = json.to_string(jstore)
+      case web_storage.local() {
+        Ok(storage) ->
+          web_storage.set_item(storage, constant.key_store, raw)
+          |> result.map_error(io.println_error)
+          |> result.unwrap(Nil)
+        Error(e) -> io.println_error(e)
+      }
+    }
+    Error(_) -> Nil
+  }
+}
+
+pub fn save_last_visit_post_list_url(url: String) -> Result(Nil, Nil) {
+  case web_storage.session() {
+    Ok(storage) ->
+      web_storage.set_item(storage, constant.key_last_visit_post_list_url, url)
+      |> result.map_error(fn(_) { Nil })
+    Error(e) -> {
+      io.println_error(e)
+      Error(Nil)
+    }
+  }
+}
+
+pub fn load_last_visit_post_list_url() -> Result(String, Nil) {
+  web_storage.session()
   |> result.map_error(fn(_e) {
-    io.println_error("Failed to acquire localStorage!")
+    io.println_error("Failed to acquire sessionStorage!")
   })
-  |> result.try(storage.set_item(_, constant.key_store, raw))
+  |> result.try(fn(storage) {
+    case web_storage.get_item(storage, constant.key_last_visit_post_list_url) {
+      Ok(Some(value)) -> Ok(value)
+      Ok(None) -> Error(Nil)
+      Error(e) -> Error(io.println_error(e))
+    }
+  })
+}
+
+pub fn clear_last_visit_post_list_url() -> Nil {
+  case web_storage.session() {
+    Ok(storage) -> {
+      web_storage.remove_item(storage, constant.key_last_visit_post_list_url)
+      Nil
+    }
+    Error(e) -> {
+      io.println_error(e)
+      Nil
+    }
+  }
 }

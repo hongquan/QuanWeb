@@ -19,7 +19,7 @@ import plinth/browser/element as br_element
 import constant
 import core.{
   type MiniPost, ContentItemDeletionClicked, IsLoading, LogOutClicked,
-  PageOwnedPosts, PostId,
+  PageOwnedPosts, PostId, UserClickedEditLink,
 }
 import ffi
 import gleam/json
@@ -75,9 +75,11 @@ pub fn render_post_table_page(
 
       let paginator = render_paginator(page, total_pages, query_list)
       let deletion_handler = fn(id) { ContentItemDeletionClicked(PostId(id)) }
+      let current_url = routing.as_url_string(route)
+      let edit_link_handler = fn() { UserClickedEditLink(current_url) }
       let rows =
         posts
-        |> list.map(render_post_row(_, deletion_handler))
+        |> list.map(render_post_row(_, deletion_handler, edit_link_handler))
 
       let body =
         h.div(
@@ -156,6 +158,7 @@ fn render_post_table_header() {
 fn render_post_row(
   post: MiniPost,
   deletion_click_handler: fn(String) -> msg,
+  edit_link_click_handler: fn() -> msg,
 ) -> #(String, Element(msg)) {
   let format_config =
     intldate.new()
@@ -174,7 +177,16 @@ fn render_post_row(
       h.a([a.href(url), a.class("hover:underline")], [h.text(c.title)])
     })
     |> list.intersperse(h.text(", "))
-  let url = routing.as_url_string(PostEditPage(post.id))
+  let edit_url = routing.as_url_string(PostEditPage(post.id))
+  let edit_link =
+    h.a(
+      [
+        a.href(edit_url),
+        a.class("hover:underline"),
+        ev.on_click(edit_link_click_handler()),
+      ],
+      [h.text(post.title)],
+    )
   let #(creation_date, _t) =
     timestamp.to_calendar(post.created_at, local_offset())
   let pub_url =
@@ -190,7 +202,7 @@ fn render_post_row(
 
   let cells = [
     h.td([a.class(class_cell)], [
-      h.a([a.href(url), a.class("hover:underline")], [h.text(post.title)]),
+      edit_link,
     ]),
     h.td([a.class(class_cell), a.class("text-sm")], [h.text(post.slug)]),
     h.td([a.class(class_cell), a.class("text-sm")], category_links),

@@ -223,6 +223,10 @@ pub type Message {
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error(String)))
   PostFilterSubmitted(List(#(String, String)))
+  // Carries the URL of the post-listing page.
+  // The purpose is to save the URL (with `page` parameter) and let user
+  // back to this page after finishing editing post.
+  UserClickedEditLink(String)
   ApiReturnedSinglePost(Result(Post, rsvp.Error(String)))
   PostFormSubmitted(
     result: Result(PostEditablePart, Form(PostEditablePart)),

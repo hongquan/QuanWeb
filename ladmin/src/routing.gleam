@@ -217,6 +217,15 @@ pub fn goto(route: Route) -> Effect(b) {
   modem.push(full_path, q, None)
 }
 
+/// Navigate to a root-relative URL string (e.g. "/ladmin/posts?page=2&cat_id=abc").
+pub fn goto_url(url: String) -> Effect(b) {
+  case url |> string.split("?") {
+    [path] -> modem.push(path, None, None)
+    [path, query] -> modem.push(path, Some(query), None)
+    _ -> modem.push(url, None, None)
+  }
+}
+
 pub fn as_url_string(route: Route) {
   let #(full_path, query) = to_uri_parts(route) |> prefix
   case query {

@@ -209,7 +209,7 @@ pub fn handle_login_api_result(
       }
       let model = Model(..model, login_state:)
       // Save to localstorage
-      store.save_user(user) |> result.unwrap(Nil)
+      store.save_user(user)
       let flash_messages = [
         model.create_success_message("Login successfully!"),
         ..model.flash_messages
@@ -291,12 +291,6 @@ pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Message)) {
   let login_state = NonLogin
   // Delete user from localStorage
   store.delete_authentication()
-  |> result.map_error(fn(_e) {
-    io.println_error(
-      "Failed to remove authentication record from localStorage.",
-    )
-  })
-  |> result.unwrap(Nil)
   let flash_messages = [
     model.create_info_message("Logged out successfully."),
     ..model.flash_messages
@@ -606,7 +600,14 @@ pub fn handle_api_update_post_result(
         )
       let flash_messages = [message, ..model.flash_messages]
       let gonext = case stay {
-        False -> routing.goto(PostListPage(None, None, None))
+        False ->
+          case store.load_last_visit_post_list_url() {
+            Ok(url) -> {
+              let _ = store.clear_last_visit_post_list_url()
+              routing.goto_url(url)
+            }
+            Error(_) -> routing.goto(PostListPage(None, None, None))
+          }
         True -> effect.none()
       }
       #(
