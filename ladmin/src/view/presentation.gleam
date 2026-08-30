@@ -14,10 +14,10 @@ import core.{
 import lucide_lustre as lucide_icon
 import model.{type Model, Model}
 import routing.{PresentationEditPage}
+import view/form.{render_presentation_form}
 import view/load_indicator.{render_three_bar_pulse}
 import view/skeleton
 import view/ui_component.{render_flash_messages, render_paginator}
-import view/form.{render_presentation_form}
 
 const class_cell = "px-4 py-4"
 
@@ -177,8 +177,7 @@ pub fn render_presentation_edit_page(id: String, model: Model) {
 
     _ -> {
       let form = case model.presentation_form, id {
-        Some(form), "" ->
-          render_presentation_form(None, form, loading_status)
+        Some(form), "" -> render_presentation_form(None, form, loading_status)
         Some(form), pid ->
           render_presentation_form(Some(pid), form, loading_status)
         _, _ -> element.none()

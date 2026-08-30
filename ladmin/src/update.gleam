@@ -29,7 +29,7 @@ import core.{
   PresentationId, TryingLogin,
 }
 import ffi
-import model.{type AppMessage, type Model, Model}
+import model.{type Model, Model}
 import routing.{
   type Route, BookEditPage, BookListPage, CategoryEditPage, CategoryListPage,
   HomePage, LoginPage, PostEditPage, PostListPage, PresentationEditPage,
@@ -162,7 +162,7 @@ pub fn handle_router_init_done(model: Model) {
 pub fn handle_login_submission(
   form: Result(LoginData, Form(LoginData)),
   model: Model,
-) -> #(Model, Effect(AppMessage)) {
+) -> #(Model, Effect(Message)) {
   case form {
     Ok(login_data) -> {
       let model = Model(..model, loading_status: IsSubmitting)
@@ -287,7 +287,7 @@ pub fn handle_api_list_post_result(
   }
 }
 
-pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Message(a))) {
+pub fn handle_successful_logout(model: Model) -> #(Model, Effect(Message)) {
   let login_state = NonLogin
   // Delete user from localStorage
   store.delete_authentication()
@@ -691,7 +691,7 @@ pub fn handle_rendered_markdown_received(html: String, model: Model) {
 pub fn handle_submit_stay_button_clicked(
   button: Element,
   model: Model,
-) -> #(Model, Effect(Message(a))) {
+) -> #(Model, Effect(Message)) {
   let whatsnext = case model.post_form {
     Some(form) -> {
       let whatsnext = {
@@ -948,7 +948,7 @@ pub fn handle_api_delete_content_item_result(
 pub fn handle_api_list_presentations_result(
   res: Result(ApiListingResponse(Presentation), rsvp.Error(String)),
   model: Model,
-) -> #(Model, Effect(Message(a))) {
+) -> #(Model, Effect(Message)) {
   case res {
     Ok(info) -> {
       let ApiListingResponse(count:, total_pages:, links:, ..) = info
@@ -984,7 +984,7 @@ pub fn handle_api_list_presentations_result(
 pub fn handle_api_list_books_result(
   res: Result(ApiListingResponse(Book), rsvp.Error(String)),
   model: Model,
-) -> #(Model, Effect(Message(a))) {
+) -> #(Model, Effect(Message)) {
   case res {
     Ok(info) -> {
       let ApiListingResponse(count:, total_pages:, links:, ..) = info

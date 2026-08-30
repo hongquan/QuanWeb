@@ -12,7 +12,10 @@ import core.{
 
 pub fn create_login_form() -> Form(LoginData) {
   formlib.new({
-    use email <- formlib.field("email", formlib.parse_string |> formlib.check_not_empty)
+    use email <- formlib.field(
+      "email",
+      formlib.parse_string |> formlib.check_not_empty,
+    )
     use password <- formlib.field(
       "password",
       formlib.parse_string |> formlib.check_not_empty,
@@ -28,13 +31,22 @@ pub fn make_post_form(post: Option(Post)) -> Form(PostEditablePart) {
         "title",
         formlib.parse_string |> formlib.check_not_empty,
       )
-      use slug <- formlib.field("slug", formlib.parse_string |> formlib.check_not_empty)
+      use slug <- formlib.field(
+        "slug",
+        formlib.parse_string |> formlib.check_not_empty,
+      )
       use categories <- formlib.field(
         "categories",
         formlib.parse_list(formlib.parse_string),
       )
-      use body <- formlib.field("body", formlib.parse_optional(formlib.parse_string))
-      use locale <- formlib.field("locale", formlib.parse_optional(formlib.parse_string))
+      use body <- formlib.field(
+        "body",
+        formlib.parse_optional(formlib.parse_string),
+      )
+      use locale <- formlib.field(
+        "locale",
+        formlib.parse_optional(formlib.parse_string),
+      )
       use author <- formlib.field("author", formlib.parse_string)
       // This field is rendered as checkbox, which has special behaviour
       use is_published <- formlib.field("is_published", formlib.parse_checkbox)
@@ -97,7 +109,10 @@ pub fn make_category_form(
         "title",
         formlib.parse_string |> formlib.check_not_empty,
       )
-      use slug <- formlib.field("slug", formlib.parse_string |> formlib.check_not_empty)
+      use slug <- formlib.field(
+        "slug",
+        formlib.parse_string |> formlib.check_not_empty,
+      )
       use title_vi <- formlib.field(
         "title_vi",
         formlib.parse_optional(formlib.parse_string),
@@ -137,7 +152,10 @@ pub fn make_category_form(
         #("header_color", c.header_color |> option.unwrap("")),
         #("summary_en", c.summary_en |> option.unwrap("")),
         #("summary_vi", c.summary_vi |> option.unwrap("")),
-        #("featured_order", c.featured_order |> option.map(int.to_string) |> option.unwrap("")),
+        #(
+          "featured_order",
+          c.featured_order |> option.map(int.to_string) |> option.unwrap(""),
+        ),
       ]
       formlib.add_values(form, initial)
     }
@@ -154,8 +172,14 @@ pub fn make_presentation_form(
         "title",
         formlib.parse_string |> formlib.check_not_empty,
       )
-      use url <- formlib.field("url", formlib.parse_string |> formlib.check_not_empty)
-      use event <- formlib.field("event", formlib.parse_optional(formlib.parse_string))
+      use url <- formlib.field(
+        "url",
+        formlib.parse_string |> formlib.check_not_empty,
+      )
+      use event <- formlib.field(
+        "event",
+        formlib.parse_optional(formlib.parse_string),
+      )
       formlib.success(PresentationEditablePart(title:, url:, event:))
     })
   case presentation {

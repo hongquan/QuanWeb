@@ -69,7 +69,7 @@ fn submit_button(
   is_auto: Bool,
   color: Color,
   label: String,
-  click_handler: a.Attribute(core.Message(a)),
+  click_handler: a.Attribute(core.Message),
   is_submitting: Bool,
 ) {
   let #(class_button, children) = case is_submitting {
@@ -111,7 +111,7 @@ pub fn auto_submit_button(color: Color, label: String, is_submitting: Bool) {
 pub fn manual_submit_button(
   color: Color,
   label: String,
-  click_handler: a.Attribute(core.Message(a)),
+  click_handler: a.Attribute(core.Message),
   is_submitting: Bool,
 ) {
   submit_button(False, color, label, click_handler, is_submitting)

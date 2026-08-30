@@ -232,7 +232,7 @@ fn render_filter_form(
   initial_cat_id: String,
   categories: List(core.Category),
   url_new_post: String,
-) -> Element(core.Message(a)) {
+) -> Element(core.Message) {
   let choices =
     categories
     |> list.map(fn(c) {

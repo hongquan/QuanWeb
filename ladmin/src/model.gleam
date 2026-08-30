@@ -7,9 +7,9 @@ import plinth/javascript/global
 import core.{
   type BookAuthor, type BookEditablePart, type Category,
   type CategoryEditablePart, type DraftPost, type FlashMessage,
-  type LoadingStatus, type LoginState, type Message, type MiniUser,
-  type PageOwnedObjectPaging, type PageOwnedObjects, type PostEditablePart,
-  type PresentationEditablePart, DraftPost, FlashMessage, FlashMessageTimeUp,
+  type LoadingStatus, type LoginState, type MiniUser, type PageOwnedObjectPaging,
+  type PageOwnedObjects, type PostEditablePart, type PresentationEditablePart,
+  DraftPost, FlashMessage, FlashMessageTimeUp,
 }
 import routing.{type Route}
 
@@ -33,10 +33,6 @@ pub type Model {
     book_authors: List(BookAuthor),
   )
 }
-
-// `Msg` is generic with route type, we make concrete type here
-pub type AppMessage =
-  Message(Route)
 
 pub const default_model = Model(
   route: routing.HomePage,

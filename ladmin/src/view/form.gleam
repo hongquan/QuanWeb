@@ -47,7 +47,7 @@ pub fn render_post_form(
   categories: List(Category),
   users: List(MiniUser),
   loading_status: LoadingStatus,
-) -> Element(Message(a)) {
+) -> Element(Message) {
   let children = [
     h.div([a.class(class_row)], [
       h.label([a.class(class_label)], [h.text("Title")]),
@@ -221,7 +221,7 @@ fn category_as_choice(category: Category, selected: Bool) {
 fn render_body_field(
   _form: Form(PostEditablePart),
   draft: DraftPost,
-) -> Element(Message(a)) {
+) -> Element(Message) {
   let handler_preview_click = {
     use elm <- decode.field("target", decode.dynamic)
     let editing_body = case br_element.cast(elm) {
@@ -323,7 +323,7 @@ fn render_is_published_field(form: Form(PostEditablePart)) {
   ])
 }
 
-fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Message(a)) {
+fn render_bottom_buttons(loading_status: LoadingStatus) -> Element(Message) {
   let submit_stay_click_handler =
     ev.on("click", {
       use elm <- decode.field("target", decode.dynamic)
@@ -634,7 +634,7 @@ pub fn render_book_form(
 
 fn render_simple_form_buttons(
   loading_status: LoadingStatus,
-  _msg_constructor: fn(Result(a, Form(a))) -> Message(b),
+  _msg_constructor: fn(Result(a, Form(a))) -> Message,
 ) {
   h.div([a.class("flex flex-row justify-between w-60 mx-auto sm:mt-4")], [
     widget.auto_submit_button(core.Sky, "Save", loading_status == IsSubmitting),

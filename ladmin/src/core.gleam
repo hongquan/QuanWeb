@@ -5,6 +5,7 @@ import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import gleam/uri
 import plinth/browser/element.{type Element}
+import routing
 import rsvp
 
 pub type Category {
@@ -210,7 +211,7 @@ pub fn draft_post_to_json(draft_post: DraftPost) -> json.Json {
   ])
 }
 
-pub type Message(r) {
+pub type Message {
   RouterInitDone
   UserSubmittedLoginForm(Result(LoginData, Form(LoginData)))
   ApiLoginReturned(Result(User, rsvp.Error(String)))
@@ -218,7 +219,7 @@ pub type Message(r) {
   ApiReturnedCategories(
     Result(ApiListingResponse(Category), rsvp.Error(String)),
   )
-  OnRouteChange(r)
+  OnRouteChange(routing.Route)
   LogOutClicked
   ApiReturnedLogOutDone(Result(String, rsvp.Error(String)))
   PostFilterSubmitted(List(#(String, String)))

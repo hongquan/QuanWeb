@@ -109,10 +109,22 @@ pub fn make_category_decoder() -> Decoder(Category) {
     "header_color",
     decode.optional(decode.string),
   )
-  use featured_order <- decode.field("featured_order", decode.optional(decode.int))
+  use featured_order <- decode.field(
+    "featured_order",
+    decode.optional(decode.int),
+  )
   use summary_en <- decode.field("summary_en", decode.optional(decode.string))
   use summary_vi <- decode.field("summary_vi", decode.optional(decode.string))
-  decode.success(Category(id:, title:, slug:, title_vi:, header_color:, featured_order:, summary_en:, summary_vi:))
+  decode.success(Category(
+    id:,
+    title:,
+    slug:,
+    title_vi:,
+    header_color:,
+    featured_order:,
+    summary_en:,
+    summary_vi:,
+  ))
 }
 
 pub fn make_listing_api_decoder(
@@ -156,9 +168,6 @@ pub fn book_decoder() -> Decoder(core.Book) {
     "download_url",
     decode.optional(decode.string),
   )
-  use author <- decode.field(
-    "author",
-    decode.optional(book_author_decoder()),
-  )
+  use author <- decode.field("author", decode.optional(book_author_decoder()))
   decode.success(core.Book(id:, title:, download_url:, author:))
 }

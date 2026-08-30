@@ -1,20 +1,21 @@
 import formal/form.{type Form} as formlib
 import lustre/attribute as a
+import lustre/element.{type Element}
 import lustre/element/html as h
 import lustre/event as ev
 import view/ui_component.{render_flash_messages}
 import view/widget
 
 import core.{
-  type FlashMessage, type LoadingStatus, type LoginData, IsSubmitting,
-  UserSubmittedLoginForm,
+  type FlashMessage, type LoadingStatus, type LoginData, type Message,
+  IsSubmitting, UserSubmittedLoginForm,
 }
 
 pub fn make_login_page(
   loading_status: LoadingStatus,
   form: Form(LoginData),
   flash_messages: List(FlashMessage),
-) {
+) -> Element(Message) {
   let handle_submit = fn(values) {
     form |> formlib.add_values(values) |> formlib.run |> UserSubmittedLoginForm
   }

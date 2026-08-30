@@ -21,24 +21,24 @@ import store
 import action
 import constant.{mounted_path}
 import core.{
-  ApiCreatedBook, ApiCreatedCategory, ApiCreatedPost, ApiCreatedPresentation,
-  ApiDeletedContentItem, ApiLoginReturned, ApiRenderedMarkdown,
-  ApiReturnedBookAuthors, ApiReturnedBooks, ApiReturnedCategories,
-  ApiReturnedLogOutDone, ApiReturnedPosts, ApiReturnedPresentations,
-  ApiReturnedSingleBook, ApiReturnedSingleCategory, ApiReturnedSinglePost,
-  ApiReturnedSinglePresentation, ApiReturnedSlug, ApiReturnedUsers,
-  ApiUpdatedBook, ApiUpdatedCategory, ApiUpdatedPost, ApiUpdatedPresentation,
-  BookFormSubmitted, CategoryFormSubmitted, ContentItemDeletionClicked,
-  DraftPost, FlashMessageTimeUp, FormCancelClicked, Idle, IsSubmitting,
-  LogOutClicked, LoggedIn, NonLogin, OnRouteChange, PostBodyContentChanged,
-  PostFilterSubmitted, PostFormSubmitted, PresentationFormSubmitted,
-  RouterInitDone, SlugGeneratorClicked, SubmitStayButtonClicked, TryingLogin,
-  UserClickMarkdownPreview, UserConfirmedDeletion, UserMovedCategoryBetweenPane,
-  UserSubmittedLoginForm,
+  type Message, ApiCreatedBook, ApiCreatedCategory, ApiCreatedPost,
+  ApiCreatedPresentation, ApiDeletedContentItem, ApiLoginReturned,
+  ApiRenderedMarkdown, ApiReturnedBookAuthors, ApiReturnedBooks,
+  ApiReturnedCategories, ApiReturnedLogOutDone, ApiReturnedPosts,
+  ApiReturnedPresentations, ApiReturnedSingleBook, ApiReturnedSingleCategory,
+  ApiReturnedSinglePost, ApiReturnedSinglePresentation, ApiReturnedSlug,
+  ApiReturnedUsers, ApiUpdatedBook, ApiUpdatedCategory, ApiUpdatedPost,
+  ApiUpdatedPresentation, BookFormSubmitted, CategoryFormSubmitted,
+  ContentItemDeletionClicked, DraftPost, FlashMessageTimeUp, FormCancelClicked,
+  Idle, IsSubmitting, LogOutClicked, LoggedIn, NonLogin, OnRouteChange,
+  PostBodyContentChanged, PostFilterSubmitted, PostFormSubmitted,
+  PresentationFormSubmitted, RouterInitDone, SlugGeneratorClicked,
+  SubmitStayButtonClicked, TryingLogin, UserClickMarkdownPreview,
+  UserConfirmedDeletion, UserMovedCategoryBetweenPane, UserSubmittedLoginForm,
 }
 import ffi
 import form.{create_login_form}
-import model.{type AppMessage, type Model, Model, default_model}
+import model.{type Model, Model, default_model}
 import routing.{
   BookEditPage, BookListPage, CategoryEditPage, CategoryListPage, HomePage,
   LoginPage, PostEditPage, PostListPage, PresentationEditPage,
@@ -58,7 +58,7 @@ pub fn main(base_path: String) -> Nil {
   Nil
 }
 
-fn init(_args) -> #(Model, Effect(AppMessage)) {
+fn init(_args) -> #(Model, Effect(Message)) {
   let #(path, query) =
     modem.initial_uri()
     |> result.map(fn(u) { #(u.path, u.query) })
@@ -100,7 +100,7 @@ fn init(_args) -> #(Model, Effect(AppMessage)) {
   #(model, whatsnext)
 }
 
-fn update(model: Model, msg: AppMessage) -> #(Model, Effect(AppMessage)) {
+fn update(model: Model, msg: Message) -> #(Model, Effect(Message)) {
   let Model(route:, ..) = model
   case msg {
     RouterInitDone -> update.handle_router_init_done(model)
@@ -306,7 +306,7 @@ fn update(model: Model, msg: AppMessage) -> #(Model, Effect(AppMessage)) {
   }
 }
 
-fn view(model: Model) -> Element(AppMessage) {
+fn view(model: Model) -> Element(Message) {
   let Model(route:, login_state:, ..) = model
   case route, login_state {
     HomePage, _ -> {
