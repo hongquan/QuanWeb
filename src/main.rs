@@ -10,6 +10,8 @@ mod stores;
 mod thingsup;
 mod types;
 mod utils;
+#[cfg(test)]
+mod tests;
 
 use std::fs::Permissions;
 use std::os::unix::fs::PermissionsExt;

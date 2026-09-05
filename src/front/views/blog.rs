@@ -1,15 +1,13 @@
 use std::num::NonZeroU16;
 
 use axum::extract::{OriginalUri, Path, Query, State};
+use axum::http::HeaderMap;
 use axum::http::StatusCode;
 use axum::response::{Html, Result as AxumResult};
-use axum_extra::TypedHeader;
-use headers_accept::Accept;
-use http::header::LOCATION;
+use http::header::{ACCEPT, LOCATION};
 use indexmap::indexmap;
-use mediatype::media_type;
-use mediatype::names::MARKDOWN;
-use minijinja::{context, value::Value as MJValue};
+use minijinja::context;
+use minijinja::value::Value as MJValue;
 use str_macro::str;
 use tower_sessions::Session;
 use uuid::Uuid;
@@ -23,14 +21,24 @@ use crate::stores::blog::{get_detailed_post_by_slug, get_next_post, get_previous
 use crate::types::{AppState, HtmlOrMd, Paginator};
 use crate::utils::html::render_with;
 
+// Check if the Accept header indicates a preference for Markdown content.
+// Parses manually to avoid 400 errors from `headers_accept` when the header
+// format is unparseable (e.g. non-UTF-8 bytes from misbehaving HTTP clients).
+pub fn parse_accept_prefer_markdown(headers: &HeaderMap) -> bool {
+    headers.get_all(ACCEPT).iter().any(|v| {
+        v.to_str()
+            .map(|s| s.contains("text/markdown"))
+            .unwrap_or(false)
+    })
+}
+
 // If the client requests with `Accept: text/markdown` (indicating that it is an AI agent), we will redirect to the ".md" page,
 // which returns content in Markdown format. Otherwise, we serve HTML.
 pub async fn show_post(
     auth_session: AuthSession,
     Path((y, m, slug_ext)): Path<(u16, u16, String)>,
     Query(params): Query<PostPageParams>,
-    // Value of `Accept` header
-    TypedHeader(accept): TypedHeader<Accept>,
+    headers: HeaderMap,
     session: Session,
     State(state): State<AppState>,
 ) -> AxumResult<HtmlOrMd> {
@@ -40,9 +48,9 @@ pub async fn show_post(
         _ => (slug_ext.as_str(), false),
     };
     if !is_md {
-        let available = vec![media_type!(TEXT / HTML), media_type!(TEXT / MARKDOWN)];
-        let preferred_type = accept.negotiate(&available);
-        if preferred_type.map(|t| t.subty) == Some(MARKDOWN) {
+        // Check if client prefers Markdown (AI agents send Accept: text/markdown).
+        let accept_prefer_md = parse_accept_prefer_markdown(&headers);
+        if accept_prefer_md {
             return Err((
                 StatusCode::TEMPORARY_REDIRECT,
                 format!("/post/{y}/{m}/{slug}.md"),

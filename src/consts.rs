@@ -1,3 +1,4 @@
+use http::Uri;
 use syntect::html::ClassStyle;
 
 #[allow(dead_code)]
@@ -13,3 +14,19 @@ pub const ALPINE_HIGHLIGHTING_APP: &str = "need_highlight";
 pub const ALPINE_ORIG_CODE_ELM: &str = "orig_code";
 // Given by comrak
 pub const ATTR_CODEFENCE_EXTRA: &str = "data-meta";
+// Tracking
+pub const MATOMO_URL: &str = "matomo.quan.hoabinh.vn";
+pub const MATOMO_SITE_ID: u8 = 1;
+// User-agent of the AI agents
+pub const AI_AGENT_PATTERNS: [&str; 7] = [
+    "ChatGPT-User",
+    "MistralAI-User",
+    "Gemini-Deep-Research",
+    "Claude-User",
+    "Perplexity-User",
+    "Google-NotebookLM",
+    "Google-GeminiNotebook",
+    // TODO: Add more agents
+];
+// If AI agents request resources of this pattern, ignore tracking.
+pub const URL_IGNORE_PATTERN: &str = r"^[^?]+\\.(?:css|js|mjs|map|json|xml|webmanifest|manifest|png|jpe?g|gif|webp|avif|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|rss|atom|wasm|txt)(?:\\?|$)";

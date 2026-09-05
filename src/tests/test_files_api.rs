@@ -86,7 +86,7 @@ fn test_bunny_api_response_serialization() {
 fn test_file_response_structure() {
     let response = FileResponse {
         name: "test.svg".to_string(),
-        path: "/images/".to_string(),
+        dir_path: "/images/".to_string(),
         size: 2048,
         created_at: Some(
             DateTime::parse_from_rfc3339("2024-01-10T08:00:00Z")
@@ -126,7 +126,7 @@ fn test_file_response_structure() {
 fn test_directory_response_has_no_direct_url() {
     let response = FileResponse {
         name: "subfolder".to_string(),
-        path: "/".to_string(),
+        dir_path: "/".to_string(),
         size: 0,
         created_at: None,
         modified_at: None,

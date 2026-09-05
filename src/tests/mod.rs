@@ -4,6 +4,9 @@
 //! Tests are organized by feature area.
 
 #[cfg(test)]
+pub mod test_blog_accept;
+
+#[cfg(test)]
 pub mod test_files_api;
 
 // Re-export test utilities for use in other test modules
