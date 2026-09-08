@@ -23,7 +23,7 @@ chrono = { version = "0.4.45", features = [
 ], default-features = false }
 chrono-tz = "0.10.4"
 clap = { version = "4.6.6", features = ["derive"] }
-comrak = "0.47.0"
+comrak = "0.55.0"
 config = { version = "0.15.25", default-features = false, features = [
     "indexmap",
     "toml",
@@ -31,7 +31,7 @@ config = { version = "0.15.25", default-features = false, features = [
 djangohashers = { version = "1.8.4", default-features = false, features = [
     "with_argon2",
 ] }
-field_access = "0.1.12"
+field_access = "0.1.13"
 field_names = "0.2.0"
 fluent-bundle = "0.16.0"
 fluent-templates = "0.13.3"
@@ -43,29 +43,29 @@ gel-tokio = { git = "https://github.com/geldata/gel-rust", features = ["miette-e
 headers = "0.4.1"
 headers-accept = "0.3.0"
 http = "1.5.0"
-indexmap = { version = "2.14.0", features = ["serde"] }
+indexmap = { version = "2.14.2", features = ["serde"] }
 libpassgen = "1.0.3"
 mediatype = "0.21.0"
 miette = { version = "7.6.0", features = ["fancy", "serde"] }
 mime_guess = "2.0.5"
-minijinja = { version = "2.23.0", features = ["loader", "internal_debug"] }
-owo-colors = "4.3.0"
+minijinja = { version = "2.24.0", features = ["loader", "internal_debug"] }
+owo-colors = "4.4.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.11", features = ["serde"] }
-regex = "1.13.0"
+regex = "1.13.1"
 reqwest = { version = "0.12.28", features = ["json"] }
 rust-embed = { version = "8.12.0", features = [
     "axum",
     "mime-guess",
     "include-exclude",
 ] }
-serde = { version = "1.0.228", features = ["serde_derive"] }
-serde_json = "1.0.150"
+serde = { version = "1.0.229", features = ["serde_derive"] }
+serde_json = "1.0.151"
 serde_json5 = "0.2.1"
 serde_with = "3.17.0"
 sitemap-writer = "1.0.1"
 slugrs = "0.5.0"
-smallvec = "1.15.2"
+smallvec = "1.16.0"
 smart-default = "0.7.1"
 str-macro = "1.0.1"
 strum = { version = "0.27.2", features = ["derive", "strum_macros"] }
@@ -82,7 +82,7 @@ tracing = "0.1.44"
 tracing-journald = "0.3.2"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 unic-langid = { version = "0.9.6", features = ["serde"] }
-uuid = { version = "1.24.0", features = ["v1", "serde"] }
+uuid = { version = "1.26.0", features = ["v1", "serde"] }
 validify = "2.0.0"
 
 [dev-dependencies]

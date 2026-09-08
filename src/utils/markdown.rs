@@ -4,12 +4,16 @@ use std::collections::HashMap;
 
 use comrak::adapters::SyntaxHighlighterAdapter;
 use comrak::html;
+use comrak::nodes::NodeValue;
 use comrak::options::{Extension, Plugins, Render, RenderPlugins};
-use comrak::{Options, markdown_to_html_with_plugins};
+use comrak::{Arena, Options, format_html_with_plugins, parse_document};
 use minijinja::{Environment, context};
 use serde_json5;
 
-use crate::consts::{ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ATTR_CODEFENCE_EXTRA};
+use crate::consts::{
+    ALPINE_HIGHLIGHTING_APP, ALPINE_ORIG_CODE_ELM, ASCII_RE, ATTR_CODEFENCE_EXTRA,
+    EMBED_CLASS_ASCII, EMBED_CLASS_YOUTUBE, YT_SHORT_RE, YT_WATCH_RE,
+};
 use crate::errors::PageError;
 use crate::types::CodeFenceOptions;
 use crate::utils::html::render_with;
@@ -77,8 +81,16 @@ impl SyntaxHighlighterAdapter for JsHighlightAdapter {
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {
+    render_markdown(markdown, true)
+}
+
+fn render_markdown(markdown: &str, allow_embeds: bool) -> String {
     let extension = Extension::builder().table(true).autolink(true).build();
-    let render = Render::builder().full_info_string(true).build();
+    // `unsafe_` is required for HtmlInline (embeds) to pass through raw. Only
+    // our own validated iframes use that escape hatch; everything else still
+    // comes from comrak's own escaping.
+    let mut render = Render::builder().full_info_string(true).build();
+    render.r#unsafe = allow_embeds;
     let options = Options {
         extension,
         render,
@@ -89,7 +101,56 @@ pub fn markdown_to_html(markdown: &str) -> String {
         .codefence_syntax_highlighter(&adapter)
         .build();
     let plugins = Plugins::builder().render(render).build();
-    markdown_to_html_with_plugins(markdown, &options, &plugins)
+    let arena = Arena::new();
+    let root = parse_document(&arena, markdown, &options);
+    transform_embeds(root, allow_embeds);
+    let mut html = String::new();
+    format_html_with_plugins(root, &options, &mut html, &plugins).unwrap();
+    html
+}
+
+/// Replace image nodes whose URL points to YouTube or asciinema with an embed
+/// iframe. The iframe HTML is built only from a validated id, never from
+/// user-supplied attributes.
+fn transform_embeds(root: comrak::Node, allow_embeds: bool) {
+    if !allow_embeds {
+        return;
+    }
+    for node in root.descendants() {
+        let embed = {
+            let data = node.data.borrow_mut();
+            if let NodeValue::Image(ref link) = data.value {
+                embed_html(&link.url)
+            } else {
+                None
+            }
+        };
+        if let Some(html) = embed {
+            node.data.borrow_mut().value = NodeValue::HtmlInline(html);
+        }
+    }
+}
+
+fn embed_html(url: &str) -> Option<String> {
+    if let Some(caps) = YT_WATCH_RE.captures(url) {
+        return Some(youtube_embed(&caps[1]));
+    }
+    if let Some(caps) = YT_SHORT_RE.captures(url) {
+        return Some(youtube_embed(&caps[1]));
+    }
+    if let Some(caps) = ASCII_RE.captures(url) {
+        let id = &caps[1];
+        return Some(format!(
+            r#"<iframe src="https://asciinema.org/a/{id}/iframe" loading="lazy" class="{EMBED_CLASS_ASCII}" allowfullscreen></iframe>"#
+        ));
+    }
+    None
+}
+
+fn youtube_embed(id: &str) -> String {
+    format!(
+        r#"<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{id}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" class="{EMBED_CLASS_YOUTUBE}"></iframe>"#
+    )
 }
 
 pub fn make_excerpt(markdown: &str) -> String {
@@ -122,7 +183,7 @@ pub fn make_excerpt(markdown: &str) -> String {
     }
     content_lines.extend(definitions);
     let reduced = content_lines.join("\n");
-    let html = markdown_to_html(&reduced);
+    let html = render_markdown(&reduced, false);
     html + "…"
 }
 
@@ -174,19 +235,7 @@ fn find_link_definition<'a>(markdown: &'a str, label: &str) -> Option<&'a str> {
 // Convert markdown to full HTML document (enough markups), suitable to be
 // shown in an iframe.
 pub fn markdown_to_html_document(markdown: &str, engine: Environment) -> Result<String, PageError> {
-    let extension = Extension::builder().table(true).autolink(true).build();
-    let render = Render::builder().full_info_string(true).build();
-    let options = Options {
-        extension,
-        render,
-        ..Default::default()
-    };
-    let adapter = JsHighlightAdapter;
-    let render = RenderPlugins::builder()
-        .codefence_syntax_highlighter(&adapter)
-        .build();
-    let plugins = Plugins::builder().render(render).build();
-    let html = markdown_to_html_with_plugins(markdown, &options, &plugins);
+    let html = render_markdown(markdown, true);
     let vcontext = context! {
         content => html,
     };
@@ -235,6 +284,63 @@ mod tests {
         let html = make_excerpt(markdown);
         assert!(html.contains("<pre"));
         assert!(html.contains("</pre>"));
+        assert!(html.ends_with("…"));
+    }
+
+    #[test]
+    fn test_youtube_watch_embed() {
+        let html = markdown_to_html("![youtube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)");
+        assert!(html.contains(r#"src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ""#));
+        assert!(html.contains("q-embed-youtube"));
+        assert!(!html.contains("<img"));
+    }
+
+    #[test]
+    fn test_youtube_short_embed() {
+        let html = markdown_to_html("![youtube](https://youtu.be/dQw4w9WgXcQ)");
+        assert!(html.contains(r#"src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ""#));
+        assert!(!html.contains("<img"));
+    }
+
+    #[test]
+    fn test_asciinema_embed() {
+        let html = markdown_to_html("![asciinema](https://asciinema.org/a/293140)");
+        assert!(html.contains(r#"src="https://asciinema.org/a/293140/embed""#));
+        assert!(html.contains("q-embed-asciinema"));
+        assert!(!html.contains("<img"));
+    }
+
+    #[test]
+    fn test_normal_image_untouched() {
+        let html = markdown_to_html("![cat](cat.png)");
+        assert!(html.contains(r#"<img src="cat.png" alt="cat""#));
+        assert!(!html.contains("<iframe"));
+    }
+
+    #[test]
+    fn test_evil_embed_urls_rejected() {
+        for url in [
+            "https://www.youtube.com/watch?v=;alert(1)",
+            "https://youtu.be/;alert(1)",
+            "https://asciinema.org/a/;alert(1)",
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ\" onload=\"alert(1)",
+        ] {
+            let html = markdown_to_html(&format!("![x]({url})"));
+            assert!(
+                !html.contains("<iframe"),
+                "expected no iframe for {url:?}, got: {html}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_excerpt_has_no_iframe() {
+        let markdown = "![youtube](https://youtu.be/dQw4w9WgXcQ)";
+        let html = make_excerpt(markdown);
+        assert!(
+            !html.contains("<iframe"),
+            "excerpt must not contain an iframe, got: {html}"
+        );
         assert!(html.ends_with("…"));
     }
 }

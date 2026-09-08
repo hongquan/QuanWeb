@@ -69,6 +69,22 @@ article .entry-content.front h2 {
   width: 100%;
 }
 
+/* Full-width embeds (YouTube, Asciinema). Fill the container (so they look
+   natural on a 1366px laptop) but cap the width so they stay sane on larger
+   screens. YouTube keeps its 16:9 ratio by ignoring the fixed height attribute. */
+.q-embed {
+  display: block;
+  width: 100%;
+  max-width: 1280px;
+  margin: 1rem auto;
+}
+
+.q-embed-youtube,
+.q-embed-asciinema {
+  aspect-ratio: 16 / 9;
+  height: auto;
+}
+
 /* Code line numbering */
 .q-need-highlight code.q-with-lineno {
   counter-reset: step calc(var(--start-line, 1) - 1);

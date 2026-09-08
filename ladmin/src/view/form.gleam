@@ -270,6 +270,27 @@ fn render_body_field(
         ]),
       ],
     ),
+    render_embed_tips(),
+  ])
+}
+
+fn render_embed_tips() {
+  let example = fn(label, snippet: String) {
+    h.div([a.class("space-y-0.5")], [
+      h.p([a.class("text-gray-500 dark:text-gray-400")], [h.text(label)]),
+      h.pre([a.class("bg-gray-100 dark:bg-gray-800 rounded px-2 py-1")], [
+        h.code([], [h.text(snippet)]),
+      ]),
+    ])
+  }
+  h.details([a.class("text-sm mt-2")], [
+    h.summary([a.class("cursor-pointer text-gray-500 dark:text-gray-400")], [
+      h.text("Embed YouTube / Asciinema"),
+    ]),
+    h.div([a.class("mt-1 space-y-2 font-mono")], [
+      example("YouTube", "![youtube](https://youtu.be/VIDEO_ID)"),
+      example("Asciinema", "![asciinema](https://asciinema.org/a/RECORDING_ID)"),
+    ]),
   ])
 }
 

@@ -1,4 +1,7 @@
+use std::sync::LazyLock;
+
 use http::Uri;
+use regex::Regex;
 use syntect::html::ClassStyle;
 
 #[allow(dead_code)]
@@ -14,6 +17,23 @@ pub const ALPINE_HIGHLIGHTING_APP: &str = "need_highlight";
 pub const ALPINE_ORIG_CODE_ELM: &str = "orig_code";
 // Given by comrak
 pub const ATTR_CODEFENCE_EXTRA: &str = "data-meta";
+// URL allowlist for media embeds (YouTube / asciinema). Each regex captures
+// exactly one group: the validated id `^[A-Za-z0-9_-]{6,}$`. Iframes are built
+// only from this captured id and fixed literals, never from user attributes.
+pub static YT_WATCH_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"^https?://(?:www\.)?(?:youtube\.com/watch\?v=|music\.youtube\.com/watch\?v=|youtube\.com/embed/)([A-Za-z0-9_-]{6,})/?$",
+    )
+    .expect("static YT_WATCH_RE regex")
+});
+pub static YT_SHORT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^https?://youtu\.be/([A-Za-z0-9_-]{6,})/?$").expect("static YT_SHORT_RE regex")
+});
+pub static ASCII_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^https?://asciinema\.org/a/([A-Za-z0-9_-]{6,})/?$").expect("static ASCII_RE regex")
+});
+pub const EMBED_CLASS_YOUTUBE: &str = "q-embed q-embed-youtube";
+pub const EMBED_CLASS_ASCII: &str = "q-embed q-embed-asciinema";
 // Tracking
 pub const MATOMO_URL: &str = "matomo.quan.hoabinh.vn";
 pub const MATOMO_SITE_ID: u8 = 1;

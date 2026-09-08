@@ -16,6 +16,9 @@ quanweb.egg-info
 *.ez
 .lustre
 build
+# Resource for AI agent to learn
+temp-vendor
+.agents/plans
 erl_crash.dump
 ladmin/priv
 
