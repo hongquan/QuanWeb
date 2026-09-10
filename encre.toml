@@ -23,8 +23,8 @@ dark_mode = "media"
 # Custom screen breakpoints (in addition to Tailwind defaults)
 # Original Tailwind v4 config: --breakpoint-xxs: 358px; --breakpoint-xs: 475px
 [theme.screens]
-xxs = "358px"
-xs = "475px"
+xxs = "24rem"
+# xs = "475px"
 
 # Custom container breakpoints
 [theme.containers]
