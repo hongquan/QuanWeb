@@ -7,11 +7,11 @@ mod errors;
 mod front;
 mod models;
 mod stores;
+#[cfg(test)]
+mod tests;
 mod thingsup;
 mod types;
 mod utils;
-#[cfg(test)]
-mod tests;
 
 use std::fs::Permissions;
 use std::os::unix::fs::PermissionsExt;

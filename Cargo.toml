@@ -12,6 +12,9 @@ default-run = "quanweb"
 strip = "debuginfo"
 
 [dependencies]
+encre-css = "0.21.1"
+encre-css-typography = "0.7.1"
+glob = "0.3.2"
 ammonia = "4.1.4"
 atom_syndication = { version = "0.12.10", features = ["serde"] }
 axum = { version = "0.8.9", features = ["macros"] }
@@ -87,6 +90,10 @@ validify = "2.0.0"
 
 [dev-dependencies]
 notzero = "1.1.0"
+
+[[bin]]
+name = "css-gen"
+path = "bin/gen_css.rs"
 
 [build-dependencies]
 crate-git-revision = "0.0.6"

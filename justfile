@@ -4,13 +4,13 @@
 default:
     @just --list
 
-# Build CSS with EncreCSS
-build-css:
-    encrecss build -o static/css/built-tailwind.css
+# Generate CSS using the built-in binary
+generate-css:
+    cargo run --bin css-gen
 
-# Watch and rebuild CSS on changes
+# Watch and regenerate CSS on changes
 watch-css:
-    encrecss build -o static/css/built-tailwind.css -w
+    cargo watch -w minijinja -w src -w static/js -w encre.toml -x "run --bin css-gen"
 
 # Build the Rust backend
 build-backend:
