@@ -94,6 +94,13 @@
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  .prose {
+    --en-prose-quotes: #d1d5db;
+    --en-prose-quote-borders: #4b5563;
+  }
+}
+
 /* Link hover styles */
 .link-hover {
   color: var(--text-primary);

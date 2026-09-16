@@ -2,6 +2,9 @@ on: [push, workflow_dispatch]
 
 name: CI
 
+# Build commands are defined in the project justfile. Keep this workflow in
+# sync with the `generate-css` and `build-backend` recipes there.
+
 jobs:
   classify-changes:
     runs-on: ubuntu-latest
@@ -37,23 +40,14 @@ jobs:
     needs: classify-changes
     if: needs.classify-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        BUILD_TARGET: [release]
-      fail-fast: false
     steps:
       - uses: actions/checkout@v7
 
-      # Our backend binary needs to embed the frontend built files.
-      - name: Download and install EncreCSS
-        run: |
-          wget -q -O encre-css.tar.gz "https://gitlab.com/api/v4/projects/35540843/packages/generic/encre-css/0.21.1/encre-css-x86_64-unknown-linux-gnu.tar.gz"
-          tar -xzf encre-css.tar.gz
-          mkdir -p ~/.local/bin
-          mv encre-css-x86_64-unknown-linux-gnu ~/.local/bin/encrecss
-
-      - name: Build CSS
-        run: encrecss build -c encre.toml -o static/css/built-tailwind.css
+      # Mirrors `just generate-css`: the backend embeds the generated CSS,
+      # so it has to be built first. `css-gen` uses EncreCSS as a library,
+      # which removes the need for a separately installed binary.
+      - name: Generate CSS
+        run: cargo run --bin css-gen
 
       - name: Cache Rust dependencies
         uses: actions/cache@v6
@@ -68,14 +62,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      # Mirrors `just build-backend`.
       - name: Build binary
-        run: cargo build --profile ${{ matrix.BUILD_TARGET }} --all-features
+        run: cargo build --release --all-features
 
       - name: Archive built files
         uses: actions/upload-artifact@v7
         with:
           name: Built binaries
-          path: target/${{ matrix.BUILD_TARGET }}/quanweb
+          path: target/release/quanweb
 
   build-ladmin-app:
     needs: classify-changes

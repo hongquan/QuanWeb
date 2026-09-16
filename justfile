@@ -18,4 +18,4 @@ build-backend:
 
 # Run the development server
 dev:
-    cargo run --all-features
+    cargo run --all-features serve
