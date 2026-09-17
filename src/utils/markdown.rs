@@ -305,7 +305,7 @@ mod tests {
     #[test]
     fn test_asciinema_embed() {
         let html = markdown_to_html("![asciinema](https://asciinema.org/a/293140)");
-        assert!(html.contains(r#"src="https://asciinema.org/a/293140/embed""#));
+        assert!(html.contains(r#"src="https://asciinema.org/a/293140/iframe""#));
         assert!(html.contains("q-embed-asciinema"));
         assert!(!html.contains("<img"));
     }
