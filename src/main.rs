@@ -37,7 +37,6 @@ use tower_http::trace::TraceLayer;
 use tower_sessions::{Expiry, SessionManagerLayer};
 use tracing::info;
 
-use consts::{MATOMO_SITE_ID, MATOMO_URL};
 use matomo::{AIChatbotEvent, flush_stale_visits, handle_ai_chatbot_event};
 use thingsup::{AppOptions, Commands, config_jinja, config_logging, get_binding_addr};
 use types::{AppState, BindingAddr};
@@ -82,11 +81,7 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     let (tx, rx) = mpsc::channel::<AIChatbotEvent>(4096);
 
     // Spawn the consumer task
-    tokio::spawn(report_ai_chatbot_visit(
-        rx,
-        MATOMO_URL.to_string(),
-        MATOMO_SITE_ID,
-    ));
+    tokio::spawn(report_ai_chatbot_visit(rx));
 
     let app_state = AppState {
         db: client.clone(),
@@ -144,11 +139,7 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
 
 /// Background Tokio task that receives AI chatbot events from a channel,
 /// merges request + response events, and reports to the Matomo tracking API.
-async fn report_ai_chatbot_visit(
-    mut rx: mpsc::Receiver<AIChatbotEvent>,
-    _matomo_url: String,
-    _site_id: u8,
-) {
+async fn report_ai_chatbot_visit(mut rx: mpsc::Receiver<AIChatbotEvent>) {
     let mut pending: HashMap<matomo::AIChatbotVisitId, matomo::PendingVisit> = HashMap::new();
     let timeout = Duration::from_secs(5);
     let client = reqwest::Client::builder()

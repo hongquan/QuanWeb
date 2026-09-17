@@ -298,16 +298,26 @@ async fn send_tracking_request(
     bw_bytes: u32,
     pf_srv: u64,
 ) {
-    let tracking_url =
-        build_matomo_url(&entry.target, &entry.user_agent, &entry.cdt, http_status, bw_bytes, pf_srv);
+    let name = entry.user_agent.as_str();
+    let tracking_url = build_matomo_url(
+        &entry.target,
+        name,
+        &entry.cdt,
+        http_status,
+        bw_bytes,
+        pf_srv,
+    );
 
-    if let Err(e) = client.get(&tracking_url).send().await {
-        tracing::warn!(
-            "Failed to send bot tracking event for {}: {}",
-            entry.visit_id,
-            e
-        );
-    }
+    match client.get(&tracking_url).send().await {
+        Ok(_r) => tracing::debug!("Submitted AI Chatbot ({}) tracking to Matomo.", name),
+        Err(e) => {
+            tracing::warn!(
+                "Failed to send bot tracking event for {}:\n{}",
+                entry.visit_id,
+                e
+            )
+        }
+    };
 }
 
 /// Send tracking requests for visits that exceeded `max_age` (or all of them on shutdown).
