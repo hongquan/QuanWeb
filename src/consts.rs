@@ -1,6 +1,5 @@
 use std::sync::LazyLock;
 
-use http::Uri;
 use regex::Regex;
 use syntect::html::ClassStyle;
 
@@ -38,7 +37,7 @@ pub const EMBED_CLASS_ASCII: &str = "q-embed q-embed-asciinema";
 pub const MATOMO_URL: &str = "matomo.quan.hoabinh.vn";
 pub const MATOMO_SITE_ID: u8 = 1;
 // User-agent of the AI agents
-pub const AI_AGENT_PATTERNS: [&str; 7] = [
+pub const AI_AGENT_PATTERNS: [&str; 19] = [
     "ChatGPT-User",
     "MistralAI-User",
     "Gemini-Deep-Research",
@@ -46,7 +45,18 @@ pub const AI_AGENT_PATTERNS: [&str; 7] = [
     "Perplexity-User",
     "Google-NotebookLM",
     "Google-GeminiNotebook",
-    // TODO: Add more agents
+    "GPTBot",
+    "OAI-SearchBot",
+    "ClaudeBot",
+    "Anthropic",
+    "CohereAI",
+    "Bytespider",
+    "Amazonbot",
+    "CCBot",
+    "Google-Extended",
+    "PerplexityBot",
+    "Applebot-Extended",
+    "meta-externalagent",
 ];
 // If AI agents request resources of this pattern, ignore tracking.
-pub const URL_IGNORE_PATTERN: &str = r"^[^?]+\\.(?:css|js|mjs|map|json|xml|webmanifest|manifest|png|jpe?g|gif|webp|avif|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|rss|atom|wasm|txt)(?:\\?|$)";
+pub const URL_IGNORE_PATTERN: &str = r"^[^?]+\.(?:css|js|mjs|map|json|xml|webmanifest|manifest|png|jpe?g|gif|webp|avif|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|rss|atom|wasm|txt)(?:\?|$)";

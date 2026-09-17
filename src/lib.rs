@@ -2,6 +2,7 @@ pub mod conf;
 pub mod consts;
 pub mod db;
 pub mod errors;
+pub mod matomo;
 pub mod models;
 pub mod thingsup;
 pub mod types;

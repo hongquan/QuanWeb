@@ -56,7 +56,7 @@ owo-colors = "4.4.0"
 querystring_tiny = "0.2.1"
 redact = { version = "0.1.11", features = ["serde"] }
 regex = "1.13.1"
-reqwest = { version = "0.12.28", features = ["json"] }
+reqwest = { version = "0.13.5", features = ["json"] }
 rust-embed = { version = "8.12.0", features = [
     "axum",
     "mime-guess",
@@ -78,6 +78,7 @@ syntect = { version = "5.3.0", default-features = false, features = [
 ] }
 thiserror = "2.0.20"
 tokio = { version = "1.53.1", features = ["full"] }
+tower = { version = "0.5", features = ["full"] }
 tower-http = { version = "0.6.11", features = ["trace"] }
 tower-sessions = "0.14.0"
 tower-sessions-redis-store = "0.16.0"
@@ -86,6 +87,7 @@ tracing-journald = "0.3.2"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 unic-langid = { version = "0.9.6", features = ["serde"] }
 uuid = { version = "1.26.0", features = ["v1", "serde"] }
+ulid = "3.0.0"
 validify = "2.0.0"
 
 [dev-dependencies]

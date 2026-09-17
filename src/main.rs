@@ -5,6 +5,7 @@ mod consts;
 mod db;
 mod errors;
 mod front;
+mod matomo;
 mod models;
 mod stores;
 #[cfg(test)]
@@ -13,23 +14,33 @@ mod thingsup;
 mod types;
 mod utils;
 
+use std::collections::HashMap;
+use std::fs;
 use std::fs::Permissions;
 use std::os::unix::fs::PermissionsExt;
-use std::{fs, path::PathBuf};
+use std::path::PathBuf;
+use std::sync::Arc;
+use std::time::Duration;
 
 use auth::backend::Backend;
 use axum::routing::Router;
+use axum::middleware;
 use axum_login::AuthManagerLayerBuilder;
+use chrono::{DateTime, Utc};
 use clap::Parser;
 use miette::{IntoDiagnostic, miette};
 use owo_colors::OwoColorize;
 use tokio::net::{TcpListener, UnixListener};
 use tokio::signal;
+use tokio::sync::mpsc;
+use tokio::time;
 use tower_http::trace::TraceLayer;
 use tower_sessions::{Expiry, SessionManagerLayer};
 use tracing::info;
 
+use consts::{MATOMO_SITE_ID, MATOMO_URL};
 use thingsup::{AppOptions, Commands, config_jinja, config_logging, get_binding_addr};
+use matomo::AIChatbotEvent;
 use types::{AppState, BindingAddr};
 
 #[tokio::main]
@@ -68,6 +79,16 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
         .map_err(|e| miette!("Error getting Bunny CDN host: {e}"))?
         .clone();
 
+    // Create channel for AI chatbot tracking events
+    let (tx, rx) = mpsc::channel::<AIChatbotEvent>(4096);
+
+    // Spawn the consumer task
+    tokio::spawn(report_ai_chatbot_visit(
+        rx,
+        MATOMO_URL.to_string(),
+        MATOMO_SITE_ID,
+    ));
+
     let app_state = AppState {
         db: client.clone(),
         jinja,
@@ -83,13 +104,20 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     let home_router: Router<AppState> = front::routes::get_router();
     let api_router: Router<AppState> = api::get_router().with_state(app_state.clone());
 
-    let app = Router::new()
+    // Build middleware layer for AI chatbot tracking (wraps the whole app so it runs first)
+    let tracking_tx = Arc::new(tx);
+    let tracking_layer =
+        middleware::from_fn_with_state(tracking_tx, matomo::ai_chatbot_tracking_middleware);
+
+    let router = Router::new()
         .merge(home_router)
         .nest("/_api", api_router)
         .fallback(front::views::fallback_view)
         .with_state(app_state)
         .layer(auth_layer)
         .layer(TraceLayer::new_for_http());
+
+    let app = router.layer(tracking_layer);
 
     let main_service = app.into_make_service();
     match addr {
@@ -113,6 +141,153 @@ async fn serve_web(bind: Option<&str>) -> miette::Result<()> {
     }
     .into_diagnostic()?;
     Ok(())
+}
+
+#[derive(Debug, Clone)]
+struct PendingVisit {
+    visit_id: matomo::AIChatbotVisitId,
+    target: matomo::ChatbotTarget,
+    user_agent: String,
+    cdt: DateTime<Utc>,
+    inserted_at: DateTime<Utc>,
+}
+
+/// Background Tokio task that receives AI chatbot events from a channel,
+/// merges request + response events, and reports to the Matomo tracking API.
+async fn report_ai_chatbot_visit(
+    mut rx: mpsc::Receiver<AIChatbotEvent>,
+    _matomo_url: String,
+    _site_id: u8,
+) {
+    let mut pending: HashMap<matomo::AIChatbotVisitId, PendingVisit> = HashMap::new();
+    let timeout = Duration::from_secs(5);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .build()
+        .unwrap_or_default();
+
+    const FLUSH_INTERVAL: Duration = Duration::from_secs(1);
+    let mut flush_timer = time::interval(FLUSH_INTERVAL);
+    flush_timer.set_missed_tick_behavior(time::MissedTickBehavior::Delay);
+
+    loop {
+        tokio::select! {
+            biased;
+
+            event = rx.recv() => match event {
+                Some(event) => handle_ai_chatbot_event(&client, &mut pending, event).await,
+                None => {
+                    flush_stale_visits(&client, &mut pending, None).await;
+                    tracing::info!("Chatbot tracking consumer shutting down gracefully");
+                    break;
+                }
+            },
+
+            _ = flush_timer.tick() => {
+                flush_stale_visits(&client, &mut pending, Some(timeout)).await;
+            }
+        }
+    }
+}
+
+async fn handle_ai_chatbot_event(
+    client: &reqwest::Client,
+    pending: &mut HashMap<matomo::AIChatbotVisitId, PendingVisit>,
+    event: AIChatbotEvent,
+) {
+    match event {
+        AIChatbotEvent::Request(partial) => {
+            const PENDING_LIMIT: usize = 4096;
+            if pending.len() >= PENDING_LIMIT {
+                evict_oldest_pending_visit(client, pending).await;
+            }
+            pending.insert(
+                partial.visit_id.clone(),
+                PendingVisit {
+                    visit_id: partial.visit_id,
+                    target: partial.target,
+                    user_agent: partial.user_agent,
+                    cdt: partial.cdt,
+                    inserted_at: Utc::now(),
+                },
+            );
+        }
+        AIChatbotEvent::Response(response) => match pending.remove(&response.visit_id) {
+            Some(entry) => {
+                send_tracking_request(
+                    client,
+                    &entry,
+                    response.http_status,
+                    response.bw_bytes,
+                    response.pf_srv,
+                )
+                .await;
+            }
+            None => {
+                tracing::debug!("Received response for unknown visit {}", response.visit_id);
+            }
+        },
+    }
+}
+
+/// When the pending map is full, drop the oldest visit so the map stays bounded.
+async fn evict_oldest_pending_visit(
+    client: &reqwest::Client,
+    pending: &mut HashMap<matomo::AIChatbotVisitId, PendingVisit>,
+) {
+    let oldest = pending
+        .iter()
+        .min_by_key(|(_, entry)| entry.inserted_at)
+        .map(|(k, _)| k.clone());
+    match oldest.and_then(|key| pending.remove(&key)) {
+        Some(entry) => send_tracking_request(client, &entry, 0, 0, 0).await,
+        None => {}
+    }
+}
+
+/// Send tracking requests for visits that exceeded `max_age` (or all of them on shutdown).
+async fn flush_stale_visits(
+    client: &reqwest::Client,
+    pending: &mut HashMap<matomo::AIChatbotVisitId, PendingVisit>,
+    max_age: Option<Duration>,
+) {
+    let now = Utc::now();
+    let stale: Vec<matomo::AIChatbotVisitId> = pending
+        .iter()
+        .filter(|(_, entry)| match max_age {
+            None => true,
+            Some(max_age) => {
+                (now - entry.inserted_at).num_milliseconds() > max_age.as_millis() as i64
+            }
+        })
+        .map(|(k, _)| k.clone())
+        .collect();
+
+    for visit_id in &stale {
+        match pending.remove(visit_id) {
+            Some(entry) => send_tracking_request(client, &entry, 0, 0, 0).await,
+            None => {}
+        }
+    }
+}
+
+async fn send_tracking_request(
+    client: &reqwest::Client,
+    entry: &PendingVisit,
+    http_status: u16,
+    bw_bytes: u32,
+    pf_srv: u64,
+) {
+    let _ = (http_status, bw_bytes, pf_srv);
+    let tracking_url = matomo::build_matomo_url(&entry.target, &entry.user_agent, &entry.cdt);
+
+    if let Err(e) = client.get(&tracking_url).send().await {
+        tracing::warn!(
+            "Failed to send bot tracking event for {}: {}",
+            entry.visit_id,
+            e
+        );
+    }
 }
 
 async fn regenerate_html_all_posts() -> miette::Result<()> {
