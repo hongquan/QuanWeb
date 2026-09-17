@@ -105,7 +105,7 @@ fn test_file_response_structure() {
     let json = serde_json::to_value(&response).expect("Should serialize");
 
     assert_eq!(json["name"], "test.svg");
-    assert_eq!(json["path"], "/images/");
+    assert_eq!(json["dir_path"], "/images/");
     assert_eq!(json["size"], 2048);
     assert_eq!(json["is_directory"], false);
     assert_eq!(
@@ -160,7 +160,10 @@ fn test_cdn_url_generation() {
         None
     } else {
         let cdn_path = format!("{}{}", bunny_response.path, bunny_response.object_name);
-        Some(format!("https://quan-images.b-cdn.net/{}", cdn_path))
+        Some(format!(
+            "https://quan-images.b-cdn.net/{}",
+            cdn_path.trim_start_matches('/')
+        ))
     };
 
     assert_eq!(
@@ -189,12 +192,15 @@ fn test_cdn_url_for_root_path() {
         None
     } else {
         let cdn_path = format!("{}{}", bunny_response.path, bunny_response.object_name);
-        Some(format!("https://quan-images.b-cdn.net/{}", cdn_path))
+        Some(format!(
+            "https://quan-images.b-cdn.net/{}",
+            cdn_path.trim_start_matches('/')
+        ))
     };
 
     assert_eq!(
         direct_url,
-        Some("https://quan-images.b-cdn.net//file.txt".to_string())
+        Some("https://quan-images.b-cdn.net/file.txt".to_string())
     );
 }
 
@@ -218,7 +224,10 @@ fn test_directory_has_no_cdn_url() {
         None
     } else {
         let cdn_path = format!("{}{}", bunny_response.path, bunny_response.object_name);
-        Some(format!("https://quan-images.b-cdn.net/{}", cdn_path))
+        Some(format!(
+            "https://quan-images.b-cdn.net/{}",
+            cdn_path.trim_start_matches('/')
+        ))
     };
 
     assert_eq!(direct_url, None);
