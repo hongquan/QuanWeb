@@ -8,7 +8,7 @@
     {% for p in posts %}
       {% include 'blog/block_post_content.jinja' %}
       {% if not loop.last %}
-        <hr class='mt-8 border-gray-200'>
+        <hr class='mt-8 border-theme'>
       {% endif %}
     {% endfor %}
   {% endwith %}

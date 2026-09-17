@@ -1,15 +1,19 @@
 /* CSS Variables for theming */
 :root {
   --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
+  --bg-secondary: #f5f5f5;
   --bg-card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --border: #e5e7eb;
-  --border-hover: #d1d5db;
+  --text-primary: #000000de;
+  --text-secondary: #0000008c;
+  --text-muted: #00000052;
+  --accent: #4051b5;
+  --accent-hover: #526cfe;
+  --accent-warm: #ff9100;
+  --accent-warm-soft: rgba(255, 145, 0, 0.1);
+  --en-prose-headings: #000000de;
+  --border: #0000001f;
+  --border-hover: #00000052;
+  --code-bg: #f5f5f5;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,10 +24,14 @@
     --text-primary: #e5e5e5;
     --text-secondary: #a3a3a3;
     --text-muted: #737373;
-    --accent: #3b82f6;
-    --accent-hover: #60a5fa;
+    --accent: #5d6cc0;
+    --accent-hover: #526cfe;
+    --accent-warm: #ff9100;
+    --accent-warm-soft: rgba(255, 145, 0, 0.1);
+    --en-prose-headings: #e5e5e5;
     --border: #404040;
     --border-hover: #525252;
+    --code-bg: #2a2a2a;
   }
 }
 
@@ -98,6 +106,8 @@
   .prose {
     --en-prose-quotes: #d1d5db;
     --en-prose-quote-borders: #4b5563;
+    --en-prose-code: #f5f5f5;
+    --en-prose-links: var(--accent);
   }
 }
 
@@ -185,8 +195,8 @@
 
 .nav-link:hover,
 .nav-link.active {
-  color: var(--accent);
-  background-color: var(--bg-card);
+  color: var(--accent-warm);
+  background-color: var(--accent-warm-soft);
 }
 
 .nav-link-logo {
@@ -199,16 +209,7 @@
   color: var(--accent-hover);
 }
 
-.nav-link-muted {
-  color: var(--text-muted);
-  transition: color 0.2s;
-}
-
-.nav-link-muted:hover,
-.nav-link-muted.active {
-  color: var(--text-primary);
-}
-
+/* Navbar dropdown link styles */
 .nav-dropdown-link {
   color: var(--text-primary);
   background-color: transparent;
@@ -217,144 +218,22 @@
 
 .nav-dropdown-link:hover,
 .nav-dropdown-link.active {
-  color: var(--accent);
-  background-color: var(--bg-secondary);
+  color: var(--accent-warm);
+  background-color: var(--accent-warm-soft);
 }
 
-/* Base link styles - only for links without explicit color classes */
-a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo):not(.nav-link-muted):not(.nav-dropdown-link) {
-  color: var(--accent);
+/* Prose headings use theme text color so they track light/dark mode */
+.entry-content.prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+  color: var(--text-primary);
 }
 
-a:not([class*="text-"]):not([class*="link-"]):not(.nav-link):not(.nav-link-logo):not(.nav-link-muted):not(.nav-dropdown-link):hover {
+/* Prev/next post navigation buttons */
+.post-nav-link {
+  color: var(--accent-warm);
+  transition: color 0.2s;
+}
+
+.post-nav-link:hover,
+.post-nav-link.active {
   color: var(--accent-hover);
-}
-
-/* Strong text styles - make them more distinguishable */
-.entry-content strong {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-/* Inline code styles - lighter than normal text */
-/* Only apply to inline code, not code blocks (pre > code) */
-.entry-content :not(pre)>code,
-.entry-content :not(pre)>code[class*="language-"],
-:not(pre)>code,
-:not(pre)>code[class*="language-"] {
-  color: var(--text-muted);
-  background-color: var(--bg-secondary);
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.875em;
-}
-
-/* Code inside links should inherit link color to make links distinguishable */
-.entry-content a:not([class*="text-"]):not([class*="link-"])>code,
-a:not([class*="text-"]):not([class*="link-"])>code {
-  color: inherit;
-}
-
-@media (prefers-color-scheme: dark) {
-
-  .entry-content :not(pre)>code,
-  .entry-content :not(pre)>code[class*="language-"],
-  :not(pre)>code,
-  :not(pre)>code[class*="language-"] {
-    color: #d4d4d4;
-  }
-}
-
-/* Code block styles - using q-need-highlight class */
-.entry-content .q-need-highlight {
-  border-radius: 0.5rem;
-  margin: 1.5rem 0;
-  overflow-x: auto;
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  display: block;
-}
-
-/* Headings in markdown content should not have background color */
-.entry-content h1,
-.entry-content h2,
-.entry-content h3,
-.entry-content h4,
-.entry-content h5,
-.entry-content h6 {
-  background-color: transparent;
-  color: var(--text-primary);
-}
-
-/* Make headings bigger */
-.entry-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-.entry-content h2 {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-top: 1.75rem;
-  margin-bottom: 0.875rem;
-}
-
-.entry-content h3 {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.entry-content h4 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-top: 1.25rem;
-  margin-bottom: 0.625rem;
-}
-
-.entry-content h5 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.entry-content h6 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Ensure lists maintain their default styling */
-.entry-content ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.entry-content ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.entry-content li {
-  margin-bottom: 0.25rem;
-}
-
-.entry-content li>p {
-  margin: 0;
-}
-
-/* AlpineJS cloak */
-[x-cloak] {
-  display: none;
 }
