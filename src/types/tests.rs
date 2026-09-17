@@ -152,11 +152,14 @@ fn matomo_url_encodes_components() {
     let target = ChatbotTarget::Page("https://example.com/hello world".to_string());
     let ua = "ChatGPT-User/1.0; foo&bar";
     let cdt = chrono::DateTime::UNIX_EPOCH;
-    let url = build_matomo_url(&target, ua, &cdt);
+    let url = build_matomo_url(&target, ua, &cdt, 200, 1024, 150);
     assert!(url.starts_with("https://matomo.quan.hoabinh.vn/matomo.php?"));
     assert!(url.contains("url=https%3A%2F%2Fexample.com%2Fhello+world"), "{url}");
     assert!(url.contains("ua=ChatGPT-User%2F1.0%3B+foo%26bar"), "{url}");
     assert!(url.contains("bots=1"), "{url}");
     assert!(url.contains("rec=1"), "{url}");
     assert!(url.contains("idsite=1"), "{url}");
+    assert!(url.contains("h=200"), "{url}");
+    assert!(url.contains("bw_bytes=1024"), "{url}");
+    assert!(url.contains("pf_srv=150"), "{url}");
 }
