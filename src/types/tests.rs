@@ -1,6 +1,6 @@
 use notzero::nz;
 
-use crate::matomo::{self, is_ai_agent, is_ignored_url, build_matomo_url, ChatbotTarget};
+use crate::matomo::{self, build_matomo_url, is_ai_agent, is_ignored_url, ChatbotTarget};
 use crate::types::{PageLinkItem, Paginator};
 
 #[test]
@@ -154,9 +154,12 @@ fn matomo_url_encodes_components() {
     let cdt = chrono::DateTime::UNIX_EPOCH;
     let url = build_matomo_url(&target, ua, &cdt, 200, 1024, 150);
     assert!(url.starts_with("https://matomo.quan.hoabinh.vn/matomo.php?"));
-    assert!(url.contains("url=https%3A%2F%2Fexample.com%2Fhello+world"), "{url}");
+    assert!(
+        url.contains("url=https%3A%2F%2Fexample.com%2Fhello+world"),
+        "{url}"
+    );
     assert!(url.contains("ua=ChatGPT-User%2F1.0%3B+foo%26bar"), "{url}");
-    assert!(url.contains("bots=1"), "{url}");
+    assert!(url.contains("recMode=1"), "{url}");
     assert!(url.contains("rec=1"), "{url}");
     assert!(url.contains("idsite=1"), "{url}");
     assert!(url.contains("h=200"), "{url}");

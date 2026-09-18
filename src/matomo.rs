@@ -146,7 +146,7 @@ pub fn build_matomo_url(
         &[
             ("idsite", MATOMO_SITE_ID.to_string()),
             ("rec", "1".to_string()),
-            ("bots", "1".to_string()),
+            ("recMode", "1".to_string()),
             ("url", page_url.to_string()),
             ("ua", user_agent.to_string()),
             ("cdt", cdt),
