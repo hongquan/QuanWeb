@@ -15,6 +15,13 @@
     <meta name='flattr:id' content='e350d5'>
 
     {% block css -%}
+      <style>
+      /* Hide uninitialized AlpineJS apps */
+      [x-cloak] {
+        display: none;
+      }
+      </style>
+
       <link rel='icon' href='/static/img/favicon.png'>
       <link href='/static/css/built-tailwind.css?v={{ GIT_REVISION }}' rel='stylesheet' media='screen'>
       <link rel='preconnect' href='https://fonts.googleapis.com'>
