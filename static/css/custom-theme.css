@@ -237,3 +237,8 @@
 .post-nav-link.active {
   color: var(--accent-hover);
 }
+
+/* For AlpineJS */
+[x-cloak] {
+  display: none;
+}
