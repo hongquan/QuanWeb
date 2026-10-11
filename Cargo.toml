@@ -89,6 +89,7 @@ unic-langid = { version = "0.9.6", features = ["serde"] }
 uuid = { version = "1.26.0", features = ["v1", "serde"] }
 ulid = "3.0.0"
 validify = "2.0.0"
+lazy-regex = "3.6.2"
 
 [dev-dependencies]
 notzero = "1.1.0"

@@ -1,11 +1,9 @@
-use std::sync::LazyLock;
-
 use axum::extract::{Path, State};
 use axum::response::{Redirect, Result};
 use chrono::{DateTime, Utc};
 use gel_tokio::Client;
 use http::StatusCode;
-use regex::Regex;
+use lazy_regex::{regex_captures, regex_is_match};
 
 use crate::errors::PageError;
 use crate::models::blogs::MiniBlogPost;
@@ -15,17 +13,13 @@ pub async fn redirect_old_blog_view(
     Path(rest): Path<String>,
     State(db): State<Client>,
 ) -> Result<Redirect> {
-    static RE_OLD_CAT_URL: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[-\w]+/$").unwrap());
-    static RE_OLD_POST_URL: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"^\d+/\d+/(\d+)-([-\w]+)$").unwrap());
-    let is_cat = RE_OLD_CAT_URL.is_match(&rest);
+    let is_cat = regex_is_match!(r"^[-\w]+/$", &rest);
     if is_cat {
         return Ok(Redirect::temporary(&format!("/category/{}", rest)));
     }
-    let capt = RE_OLD_POST_URL
-        .captures(&rest)
-        .ok_or((StatusCode::NOT_FOUND, "URL should be \"id-slug\""))?;
-    let (_, [old_id, _slug]) = capt.extract();
+    let Some((_, old_id, _slug)) = regex_captures!(r"^\d+/\d+/(\d+)-([-\w]+)$", &rest) else {
+        return Err((StatusCode::NOT_FOUND, "URL should be \"id-slug\"").into());
+    };
     let old_id = old_id
         .parse()
         .map_err(|_e| (StatusCode::NOT_FOUND, "ID must be number"))?;

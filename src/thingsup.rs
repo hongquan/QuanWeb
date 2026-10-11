@@ -93,6 +93,7 @@ pub fn config_jinja() -> Result<Environment<'static>, io::Error> {
     jinja.add_function("add_url_param", jinja_extra::add_url_param);
     jinja.add_function("_f", jinja_extra::fluent);
     jinja.add_filter("striptags", jinja_extra::striptags);
+    jinja.add_filter("img_srcset", jinja_extra::img_srcset);
     jinja.add_global("UNCATEGORIZED_URL", UNCATEGORIZED_URL);
     jinja.add_global("GIT_REVISION", env!("GIT_REVISION"));
     #[cfg(debug_assertions)]

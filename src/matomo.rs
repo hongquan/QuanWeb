@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::fmt::{self, Display};
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 use std::time::Duration;
 
 use axum::body::Body;
@@ -15,7 +15,9 @@ use http::header::USER_AGENT;
 use serde::Serialize;
 use tokio::sync::mpsc;
 
-use crate::consts::{AI_AGENT_PATTERNS, MATOMO_SITE_ID, MATOMO_URL, URL_IGNORE_PATTERN};
+use lazy_regex::regex_is_match;
+
+use crate::consts::{AI_AGENT_PATTERNS, MATOMO_SITE_ID, MATOMO_URL};
 
 const PENDING_LIMIT: usize = 4096;
 
@@ -96,9 +98,10 @@ pub fn is_ai_agent(user_agent: &str) -> bool {
 
 /// Check whether the request path matches the ignored URL pattern.
 pub fn is_ignored_url(path: &str) -> bool {
-    static IGNORE_RE: LazyLock<regex::Regex> =
-        LazyLock::new(|| regex::Regex::new(URL_IGNORE_PATTERN).unwrap());
-    IGNORE_RE.is_match(path)
+    regex_is_match!(
+        r"^[^?]+\.(?:css|js|mjs|map|json|xml|webmanifest|manifest|png|jpe?g|gif|webp|avif|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|rss|atom|wasm|txt)(?:\?|$)",
+        path
+    )
 }
 
 /// Classify a request URI into a ChatbotTarget with the full URL.

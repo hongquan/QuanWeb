@@ -1,12 +1,11 @@
 use std::str::FromStr;
-use std::sync::LazyLock;
 
 use chrono::DateTime;
 use fluent_templates::Loader;
 use http::Uri;
+use lazy_regex::{regex_captures, regex_remove_all};
 use minijinja::value::{Kwargs, Value as MJValue, ValueKind};
 use minijinja::{Error, ErrorKind, State};
-use regex::Regex;
 use unic_langid::LanguageIdentifier;
 
 use crate::consts::{DEFAULT_LANG, KEY_LANG};
@@ -53,6 +52,17 @@ pub fn category_url(slug: String) -> String {
     format!("/category/{}/", slug)
 }
 
+pub fn img_srcset(url: MJValue) -> String {
+    let Some(url) = url.as_str() else {
+        return String::new();
+    };
+    let Some((_, dir, file)) = regex_captures!(r"^(.*/blogs/\d{4}/\d{2}/)([^/?]+)$", url)
+    else {
+        return String::new();
+    };
+    format!("{dir}.thumb-320/{file} 320w, {dir}.thumb-400/{file} 400w, {url} 800w")
+}
+
 pub fn gen_element_attr(name: &str, value: MJValue) -> String {
     match value.as_str() {
         Some(value) => format!("{}=\"{}\"", name, value),
@@ -69,11 +79,8 @@ pub fn add_url_param(url: String, name: String, value: String) -> String {
 
 // Ref: https://github.com/pallets/markupsafe/blob/main/src/markupsafe/__init__.py
 pub fn striptags(html: String) -> String {
-    static RE_COMMENTS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<!--.*?-->").unwrap());
-    static RE_TAGS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]*>").unwrap());
-    let stripped = RE_COMMENTS.replace_all(&html, "");
-    let stripped = RE_TAGS.replace_all(&stripped, "");
-    stripped.to_string()
+    let stripped = regex_remove_all!(r"<!--.*?-->", &html);
+    regex_remove_all!(r"<[^>]*>", &stripped).to_string()
 }
 
 // Function to provide translation via Fluent
@@ -101,4 +108,44 @@ pub fn get_embedded_template(name: &str) -> Result<Option<String>, Error> {
     file.map(|f| String::from_utf8(f.data.into()))
         .transpose()
         .map_err(|e| Error::new(ErrorKind::SyntaxError, e.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn img_srcset_rewrites_cdn_blog_urls() {
+        assert_eq!(
+            img_srcset(MJValue::from(
+                "https://quan-images.b-cdn.net/blogs/2026/08/huong_buoi_bao_vinh_long.jpg"
+            )),
+            "https://quan-images.b-cdn.net/blogs/2026/08/.thumb-320/huong_buoi_bao_vinh_long.jpg 320w, \
+             https://quan-images.b-cdn.net/blogs/2026/08/.thumb-400/huong_buoi_bao_vinh_long.jpg 400w, \
+             https://quan-images.b-cdn.net/blogs/2026/08/huong_buoi_bao_vinh_long.jpg 800w"
+        );
+    }
+
+    #[test]
+    fn img_srcset_ignores_unmatched_urls() {
+        for url in [
+            "https://i.imgur.com/abc123.jpg",
+            "https://quan-images.b-cdn.net/blogs/2026/x.jpg",
+            "https://quan-images.b-cdn.net/blogs/2026/08/x.jpg?v=2",
+            "",
+        ] {
+            assert_eq!(img_srcset(MJValue::from(url)), "", "url: {url}");
+        }
+        assert_eq!(img_srcset(MJValue::from(())), "");
+    }
+
+    #[test]
+    fn img_srcset_rewrites_root_relative_blog_urls() {
+        assert_eq!(
+            img_srcset(MJValue::from("/blogs/2026/08/x.jpg")),
+            "/blogs/2026/08/.thumb-320/x.jpg 320w, \
+             /blogs/2026/08/.thumb-400/x.jpg 400w, \
+             /blogs/2026/08/x.jpg 800w"
+        );
+    }
 }

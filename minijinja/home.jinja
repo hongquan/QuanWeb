@@ -107,8 +107,11 @@
             {# Cover Image #}
             <a href="{{ post_url }}" class="block relative overflow-hidden aspect-video">
               {% if post.og_image %}
-                <img src="{{ post.og_image }}" 
-                     alt="{{ post.title }}" 
+                {% set srcset = post.og_image|img_srcset %}
+                <img src="{{ post.og_image }}"
+                     {% if srcset %}srcset="{{ srcset }}"
+                     sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc((min(100vw, 896px) - 56px) / 2), 272px"{% endif %}
+                     alt="{{ post.title }}"
                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                      loading="lazy">
               {% else %}
