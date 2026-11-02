@@ -1,4 +1,5 @@
 <div class="z-10 border-b transition-colors floral-bg border-theme">
+{% from 'icons.jinja' import search, menu_toggle, chevron_down %}
   <div class="nav-overlay">
     <nav class='mx-auto w-full max-w-6xl flex flex-wrap p-4 flex-col md:flex-row md:items-center space-y-4 md:space-y-0' 
          x-data="{ mobileMenuShown: false }">
@@ -10,7 +11,7 @@
         <button class='text-right hidden xxs:block md:hidden flex me-3 nav-link-muted' 
                 :class="{ 'active': formShown }"
                 @click.stop='formShown = true'>
-          <svg width='24' height='24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='flex-none' aria-hidden='true'><path d='m19 19-3.5-3.5'></path><circle cx='11' cy='11' r='6'></circle></svg>
+          {{ search(size=24, class='flex-none') }}
         </button>
         <!-- Floating search form for mobile -->
         <div class='absolute z-4 -start-8 -top-4' :class="formShown ? '' : 'hidden'" @click.outside='formShown = false' @keyup.escape='formShown = false'>
@@ -33,10 +34,7 @@
       <button class='md:hidden rounded-lg focus:outline-none focus:shadow-outline nav-link-muted' 
               :class="{ 'active': mobileMenuShown }"
               @click='mobileMenuShown = !mobileMenuShown'>
-        <svg fill='currentColor' viewBox='0 0 20 20' class='w-6 h-6'>
-          <path x-show='!mobileMenuShown' fill-rule='evenodd' d='M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z' clip-rule='evenodd'></path>
-          <path x-show='mobileMenuShown' fill-rule='evenodd' d='M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z' clip-rule='evenodd' style='display: none;'></path>
-        </svg>
+        {{ menu_toggle() }}
       </button>
     </div>
     <!-- To be shown for < 24rem screen -->
@@ -55,9 +53,7 @@
            :class="{ 'active': open }"
            href='/blog/' @click.prevent='open = !open'>
           <span class='flex-grow'>Blog</span>
-          <svg class='inline fill-current h-4 w-4 -mr-2 transform group-hover:-rotate-180 transition duration-150 ease-in-out' :class="{'rotate-180': open, 'rotate-0': !open}" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-            <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'></path>
-          </svg>
+          {{ chevron_down() }}
         </a>
         <ul class='md:absolute left-0 md:min-w-max md:mt-2 origin-top-right rounded-md shadow-lg px-2 py-2 border transition-colors bg-card border-theme'
             aria-labelledby='themes'

@@ -140,6 +140,24 @@ mod tests {
     }
 
     #[test]
+    fn all_icon_macros_render() {
+        let icon_names = [
+            "search", "rss", "menu_toggle", "chevron_down", "chevron_left", "chevron_right",
+            "chevron_right_outline", "arrow_right_outline", "document_text", "photograph",
+            "calendar", "presentation", "book_open", "link", "markdown", "folder", "github",
+            "bitbucket", "gitlab", "linkedin",
+        ];
+        for name in icon_names {
+            let source = format!("{{% from 'icons.jinja' import {name} %}}{{{{ {name}() }}}}");
+            let mut probe = minijinja::Environment::new();
+            probe.set_loader(get_embedded_template);
+            probe.add_template("icon_probe", &source).unwrap();
+            let rendered = probe.get_template("icon_probe").unwrap().render(()).unwrap();
+            assert!(rendered.contains("<svg"), "icon '{name}' did not render an <svg>");
+        }
+    }
+
+    #[test]
     fn img_srcset_rewrites_root_relative_blog_urls() {
         assert_eq!(
             img_srcset(MJValue::from("/blogs/2026/08/x.jpg")),
